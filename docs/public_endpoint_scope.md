@@ -9,6 +9,7 @@ Contents:
 - [How to read the data sources](#how-to-read-the-data-sources)
 - [Required endpoints and data sources](#required-endpoints-and-data-sources)
 - [Preserved links and excluded behavior](#preserved-links-and-excluded-behavior)
+- [Additional endpoints approved on September 26](#additional-endpoints-approved-on-september-26)
 - [Candidates still needing review](#candidates-still-needing-review)
 - [Turnstile configuration requirement](#turnstile-configuration-requirement)
 - [Source trace and remaining work](#source-trace-and-remaining-work)
@@ -69,20 +70,24 @@ The table covers required endpoint families, not every possible query combinatio
 - Keep the VIVO back end and data-management systems as existing dependencies, rather than rebuilding them.
 - Preserve other confirmed external links. Their destinations' workflows and crawler/scanner requests do not become replacement features.
 
+## Additional endpoints approved on September 26
+
+The owner approved all nine additional cases below. These are required behavior, subject to the explicit limits in the last column. Earlier decisions remain unchanged.
+
+| Method and endpoint | Sources and observed behavior | Required behavior and limits |
+| --- | --- | --- |
+| GET `/display/{person_id}/viz/coauthor_treemap` | Solr profile context and visualization-service data; browser draws the treemap using ordinary coauthor JSON/CSV. | Reproduce the treemap and its supporting data/download links. |
+| GET `/display/{organization_id}/viz/publications`, `.json`, `.csv` | Solr organization/member publication data aggregated by `PublicationHistory`; browser controls select the history range. | Reproduce the chart, range controls, and supporting formats. |
+| GET `/display/{organization_id}/viz/research`, `.json` | Solr organization/member research areas assembled by `AlluvialGraph`; the chart consumes research JSON. | Reproduce the view and supporting JSON. Preserve the existing visible download link to collaboration JSON for now. Its correction is deferred in [issue #3](https://github.com/birkin/vivo-on-django/issues/3); do not implement it yet. |
+| GET `/individual/{record_id}/{record_id}.rdf` | HTTP 200 RDF/XML through the VIVO/Vitro proxy. | Retain the RDF representation alongside the approved JSON-LD and Turtle formats. |
+| GET `/individual/{record_id}` with exact Accept `application/json` or `text/turtle` | HTTP 303 to the corresponding approved representation; destination uses VIVO/Vitro. | Preserve both format-selection redirects. Other Accept combinations remain unverified. |
+| GET `/file/{file_id}/{filename}` | HTTP 301 to the current image; `ModelUtils.thumbnail_url` constructs its location using `IMAGES_URL`. | Preserve the old image redirect and working destination. |
+| GET `/status` | HTTP 200 JSON in the observed normal state; Rails checks Solr for records. | Retain the status response. Caller ownership and controlled failure behavior remain implementation checks, not conditions on this approval. |
+| GET `/services/data/v1/faculty/{person_id}` | HTTP 301 to the same URL with a trailing slash; no matching Rails route was found. | Preserve this trailing-slash redirect and existing destination. This approval does not require rebuilding the service or its JSON backend. Confirm routing ownership before configuration changes. |
+
 ## Candidates still needing review
 
-The final stage-1 pass distinguishes working public behavior from source-only possibilities. The following are Codex recommendations for review, not new explicit owner decisions. Dated record-level evidence remains outside Git.
-
-| Observed candidate | Method, response, and source | Recommendation |
-| --- | --- | --- |
-| `/display/{person_id}/viz/coauthor_treemap` | GET HTML; uses the ordinary coauthor JSON/CSV endpoints. Solr profile context plus visualization-service data; browser draws the treemap. | Include: linked from retained person views and rendered successfully. |
-| `/display/{organization_id}/viz/publications`, `.json`, `.csv` | GET HTML/JSON/CSV; Solr organization and member publication data aggregated by `PublicationHistory`. Browser controls select history range. | Include: linked from organization graphs; both ranges and supporting formats observed. |
-| `/display/{organization_id}/viz/research`, `.json` | GET HTML/JSON; Solr organization/member research areas assembled by `AlluvialGraph`. | Include: linked and rendered. Existing title/download-link behavior requires an explicit decision before any correction. |
-| `/individual/{record_id}/{record_id}.rdf` | GET HTTP 200 RDF/XML, through the VIVO/Vitro proxy; XML parsed. | Include: current response and historical successful requests support compatibility use. |
-| `/individual/{record_id}` with exact Accept `application/json` or `text/turtle` | GET HTTP 303 to the corresponding approved representation, then HTTP 200. Redirect action uses the header and ID; destination uses VIVO/Vitro. | Preserve these observed redirects. Other Accept combinations remain unverified. |
-| `/file/{file_id}/{filename}` | GET HTTP 301 to a working current image. `ModelUtils.thumbnail_url` computes the location using `IMAGES_URL`. | Preserve the legacy conversion supported by an actual historical example. |
-| `/status` | GET HTTP 200 JSON; Rails checks Solr for records. | Preserve if existing monitoring continues to use it; caller ownership remains to confirm. |
-| `/services/data/v1/faculty/{person_id}` and its slash-terminated form | GET HTTP 301 to the trailing slash, then HTTP 200 JSON. No matching Rails route; backend/source ownership unestablished. | Preserve routing to the existing service; do not assume it needs reimplementation in Django. Confirm ownership before changing routing. |
+The nine reviewed cases above are settled. Dated record-level evidence remains outside Git. Other unobserved variants do not become required merely because the related endpoint is approved.
 
 The following remain source-only or insufficiently supported possibilities, with no implementation requirement inferred: display CSV/XML/`json_txt`, organization JSON, non-person/non-organization display, home `alias`, `/side_stuff/brown_classic/{name}`, result sorting/diagnostics, and the generic `/display/{record_id}/viz` redirect. Code shows Solr-backed display exports; other record types can use VIVO/Vitro after type lookup when enabled; legacy entries construct a search redirect. Current consumers were not established. Historical summaries without query strings cannot settle parameter use. Individual authenticated report downloads remain outside the approved public report-entry behavior.
 
@@ -98,6 +103,6 @@ When enabled, required requests should use the challenge and server-side verific
 
 Source references are paths in the separate Rails checkout: `config/routes.rb`; `app/controllers/{search,display,individual,visualization,home,reports,application,bot_detect}_controller.rb`; and `app/models/{search,model_utils,faculty,organization,vitro_api,coauthor_graph,collab_graph,publication_history,book_cover,team}.rb`. Relevant view templates establish which controls and requests a page uses. Deployed behavior must still be checked against this source trace.
 
-Maintain this table during scope review and implementation. For each endpoint/format, distinguish the main data source from related lookups, browser requests, caches, templates, files, and session/authentication checks. Mark unknown dependencies explicitly. Keep actual request/response samples in the outer workspace. The local manifest now has 62 specifications: 53 core discovery cases and nine additional observed candidates for scope review. These are not passing automated comparisons. Public responses do not substitute for upstream replay fixtures.
+Maintain this table during scope review and implementation. For each endpoint/format, distinguish the main data source from related lookups, browser requests, caches, templates, files, and session/authentication checks. Mark unknown dependencies explicitly. Keep actual request/response samples in the outer workspace. The local manifest has 62 specifications, including all nine additional cases approved by the owner. These are not passing automated comparisons. Public responses do not substitute for upstream replay fixtures.
 
-**Stage-1 investigation is complete for review.** The owner’s existing decisions remain valid; recommendations above are awaiting scope acceptance. The next implementation-stage step is obtaining authorized SEARCH and PROFILE upstream inputs for representative cases. Complete asset packaging, matched visual comparisons, controlled failure/challenge tests, and final acceptance remain later-stage work.
+**Stage-1 investigation is complete for review.** The earlier decisions remain valid and all nine additional cases above are approved. Source-only variants remain unconfirmed. Preserve the Research Areas download link until the separately tracked correction is scheduled. The next implementation-stage step is obtaining authorized SEARCH and PROFILE upstream inputs for representative cases. Complete asset packaging, matched visual comparisons, controlled failure/challenge tests, and final acceptance remain later-stage work.
