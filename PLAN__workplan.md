@@ -4,7 +4,7 @@ Initial draft: September 25, 2026. Maintained by Codex and the project owner. Re
 
 The guiding measure of success is that a regular Researchers@Brown user notices **no difference** after the replacement. Match behavior, content, and appearance closely. Record any proposed intentional difference, explain why it is needed, and obtain the project owner's acceptance before treating it as resolved.
 
-The initial task created this workplan. The repository's [public endpoint scope and data-source table](docs/public_endpoint_scope.md) records required URL patterns using placeholders, including the owner's September 26 decisions. Detailed stage-1 discovery remains in the local [endpoint inventory](../public_site_review/planning/public_endpoint_inventory.md), [feature coverage](../public_site_review/planning/public_feature_coverage.md), and [case manifest](../public_site_review/planning/public_cases.json). Those local files live in the outer workspace and are not part of a standalone repository checkout. Stage 2 has started with local runtime checks and a [saved-response reader](docs/recorded_responses.md); authentic upstream capture, page integration, and comparison tooling remain incomplete. [GOAL.md](GOAL.md) defines the scope; [AGENTS.md](AGENTS.md) defines repository practices. This document supplies the current sequence of work. Earlier plans and route mappings remain historical references where they conflict with that scope.
+The initial task created this workplan. The repository's [public endpoint scope and data-source table](docs/public_endpoint_scope.md) records required URL patterns using placeholders, including the owner's September 26 decisions. Detailed stage-1 discovery remains in the local [endpoint inventory](../public_site_review/planning/public_endpoint_inventory.md), [feature coverage](../public_site_review/planning/public_feature_coverage.md), and [case manifest](../public_site_review/planning/public_cases.json). Those local files live in the outer workspace and are not part of a standalone repository checkout. Stage 2 has started with local runtime checks and a [saved-response reader](docs/recorded_responses.md). The next work supplies prepared data to templates so local presentation work can proceed before authentic upstream capture and integration. These changes and comparison tooling remain to be implemented. [GOAL.md](GOAL.md) defines the scope; [AGENTS.md](AGENTS.md) defines repository practices. This document supplies the current sequence of work. Earlier plans and route mappings remain historical references where they conflict with that scope.
 
 Contents:
 
@@ -22,6 +22,8 @@ Contents:
 ## Success and scope
 
 Preserve the public site's existing URLs, query behavior, redirects, page content, navigation, downloads, visualizations, and supporting responses wherever current use is confirmed. Include the small details visitors rely on: result order, counts, filter removal, browser Back behavior, profile tabs, image placement, link destinations, and useful behavior at narrower screen widths.
+
+**Match the user experience as exactly as reasonably possible.** Source code and build choices may differ: Django JavaScript can remain readable even if Rails serves minified JavaScript. There is no requirement to copy source formatting, minification, internal function names, or asset bundling. Judge the result by rendered appearance, content, interaction, keyboard and assistive-technology behavior, loading behavior, and perceived responsiveness. Required public paths, response formats, and linked assets still need to work. Minification is an optional delivery choice if performance calls for it; it is not an acceptance criterion. An internal code change needs no separate approval when it preserves those outcomes.
 
 Automated checks provide evidence toward the no-noticeable-difference goal. They do not replace a final walkthrough by the project owner or a regular R@B user. A passing status code, a working Django page, or a low screenshot-difference score alone does not establish success.
 
@@ -54,7 +56,7 @@ Rails search and profile code uses Solr documents, including nested data in `jso
 4. [Implement complete public journeys](#4-implement-complete-public-journeys)
 5. [Verify the complete scope and obtain acceptance](#5-verify-the-complete-scope-and-obtain-acceptance)
 
-Codex carries out the investigation, tooling, implementation, and checks below within each authorized task. The project owner supplies missing access or data when needed and reviews scope ambiguities and proposed differences. Each phase produces evidence that the next phase can use.
+Codex carries out the investigation, tooling, implementation, and checks below within each authorized task. The project owner supplies missing access or data when needed and reviews scope ambiguities and proposed differences. After stage 2 establishes prepared local data, stages 3 and 4 can proceed while authentic data integration continues. Final acceptance still requires the real source connections to work.
 
 ### 1. Confirm the public endpoints and user journeys
 
@@ -88,9 +90,13 @@ Include cases with optional sections present and absent, short and long content,
 
 Prepare the Python 3.12 environment using the locked dependencies and the existing local setup instructions. Check required settings, local directories, startup, and the current test suite; record failures before changing application behavior. Keep environment values outside tracked files.
 
-Trace the selected cases through Rails' data access and capture the minimum complete set of responses needed to reproduce them. Include related lookups and assets, not just a handful of top-level records. Build the replay approach described below first unless the investigation shows that a small Solr setup is the better first step.
+**First, supply prepared page data.** Codex defines the fields and types each selected template or supporting response needs, using stage-1 evidence and Rails templates. Put small functions for each page family in `vivo_app/lib/`; views call them without knowing where their data comes from. Start with local files containing prepared search and profile data, including optional sections and interaction states. Extend this to the other required endpoints. This supports iterative layout and interaction work without waiting for source credentials. It does not require one universal function literally named `get_data()`.
 
-**Ready to proceed when:** Codex can start Django, select the saved case data, and run data checks repeatedly without contacting production. Missing recordings cause a clear failure. Real service access remains a distinct, explicitly selected mode.
+**Then, connect authentic sources.** Trace each selected case through Rails' data access, collect the required upstream responses, and implement the code that turns them into the same page data. Include related lookups and assets. Replay those responses locally through the same processing used for live responses. Configuration chooses the source; it does not replace the code needed to request, parse, and prepare real data. The sequence and optional capture behavior are described [below](#repeatable-data-for-local-development).
+
+**Ready for local presentation work when:** Django renders selected cases from explicit local data with the required fields and assets, without contacting live services. Missing data or unsupported case inputs fail clearly. Development checks identify whether data is invented, prepared from reference observations, or replayed from authentic responses.
+
+**Stage 2 complete when:** the selected cases also have authentic inputs, shared processing for replayed and live responses, and repeatable offline checks. Prepared template data alone does not complete source integration or establish exact content equivalence.
 
 **September 26 progress:** the locked environment, system checks, migration check, local homepage startup, and original test suite pass. A saved-response reader now checks external manifests, exact requests, case dependencies, and body checksums, with synthetic tests for repeatability and failures. All 44 tests and changed-file type checks pass. Authentic search/profile recordings and upstream connection settings were not found in the inspected workspace locations. Source-derived requests are prepared outside Git, but no real upstream responses have been collected and the reader is not connected to page handlers. Stage 2 remains incomplete.
 
@@ -110,8 +116,8 @@ For each journey, Codex:
 
 1. Adds or adjusts routes in `config/urls.py`, preserving observed paths, parameters, formats, and redirects.
 2. Keeps function-based request handlers in `vivo_app/views.py`; puts query building, service access, data preparation, and reusable rendering helpers in `vivo_app/lib/`.
-3. Uses the same data-access code for recorded and real responses, switching only the source of those responses. Uses `httpx` for application HTTP requests.
-4. Builds or refines the selected templates and assets. Uses JavaScript where interaction requires it; otherwise prefers Python, templates, and CSS.
+3. Supplies templates and response serializers through the same small page-data functions in prepared, replay, and live modes. Prepared mode reads already assembled data; replay and live modes share request construction and response processing. Uses `httpx` for application HTTP requests. A journey can advance in prepared mode while its source integration remains explicitly incomplete.
+4. Builds or refines the selected templates and assets. Uses JavaScript where interaction requires it; otherwise prefers Python, templates, and CSS. Readable or reorganized JavaScript is acceptable when the required user experience remains the same.
 5. Adds focused behavior and failure checks. Makes template failures and sample-data fallbacks visible to tests instead of accepting a successful placeholder page.
 6. Runs the relevant browser cases, inspects reported text and image differences, fixes them, and checks already completed journeys for regressions.
 
@@ -125,16 +131,28 @@ Present the owner with the coverage report, remaining differences, and a short w
 
 ## Repeatable data for local development
 
-**Initial recommendation:** replay saved upstream responses at the Django service-access layer, then add Docker Solr if needed to verify query execution. This recommendation remains provisional until the first data dependencies have been traced.
+**Agreed sequence:** start with prepared data for local template and interaction development; add authentic response capture, processing, and replay; then verify live integration. Preserve a consistent set of fields and types for each page family so changing the source does not require parallel versions of the templates. Refine that structure when evidence requires it, with focused checks for affected pages.
 
-| Approach | What it establishes | Limits and requirements |
+| Data mode | What it reads and supplies | Limits and requirements |
 | --- | --- | --- |
-| Recorded response replay | Given a known request, Django receives the same saved response that supplied the reference case. This can preserve exact result order, totals, facets, and nested records for that case. | Requires authentic request/response pairs. Does not prove that a new query is correct or that real Solr accepts it. Unexpected requests must fail, not return generic sample data or contact production. |
-| Small Docker Solr instance | Django's actual query requests run against an index. Useful for filters, query syntax, sorting, and response parsing across varied inputs. | Requires a compatible Solr version, schema, request-handler settings, text analysis, and sufficiently complete records. A small index can change ranking, totals, and facet counts; real records alone do not make its answers equal to production. |
+| Prepared page data | Reads local files already arranged for the templates or supporting responses. Supplies repeatable content for layout, navigation, and selected interaction cases without contacting services. | Can use invented content or data assembled from saved public observations, with its origin recorded. It bypasses upstream processing and cannot prove that processing works. Invented content cannot establish exact content or visual equivalence to a real page. |
+| Recorded response replay | Reads saved upstream responses through the existing reader, then runs the application's parsing and data preparation. | Requires authentic request/response pairs to prove real response handling. Does not prove that a new query is correct or that live Solr accepts it. |
+| Live services | Uses configured service connections and the same request construction and processing as replay. Supplies the same page-data structure to the same templates. | Requires implemented clients and processing as well as real configuration. Select explicitly; never enter this mode because local data is missing. Optional capture is a separate setting. |
+
+These modes are planned, not implemented. Proposed `.env` names are `PAGE_DATA_MODE` (`prepared`, `replay`, or `live`) and `CAPTURE_UPSTREAM_RESPONSES` (default `false`); document the final names when implemented. Startup checks should report the selected mode and validate its settings. Keep this information in developer diagnostics and comparison reports rather than adding it to the public pages. Invalid modes, missing local files, unsupported prepared inputs, and missing live processing must fail clearly without substituting sample content or making unexpected network requests.
+
+Prepared cases must cover the whole selected journey: the query, repeated filters, page number, optional sections, totals, result order, and any supporting JSON must agree. Use explicit saved states for supported combinations; do not try to recreate a search engine in the prepared-data reader. For download or original-representation endpoints, retain the required response bytes, status, and relevant headers separately where a template data dictionary is insufficient. Keep prepared page data distinct from raw upstream recordings in storage and documentation.
+
+When live access becomes available, proceed in this order:
+
+1. Codex implements the minimum source clients and an optional capture path, using the requests traced from Rails. These can save responses before all page-processing code is finished.
+2. The owner deploys Django at a separate test URL and sets real connection values in its local `.env`. This does not switch existing public traffic. Setting values alone does not make an unimplemented integration work.
+3. Codex or the owner runs selected read-only captures there. Store response bodies and request/response metadata in dedicated files outside Git; exclude credentials, cookies, and authentication headers. Ordinary application logs contain only a capture identifier, service label, status, timing, and outcome, not raw bodies or identifying request values. Keep capture disabled unless explicitly selected, limit it to the selected cases, and pace scripted requests sequentially with at least 0.3 seconds after each response.
+4. Codex uses the saved responses to build and check source processing locally, then connects each completed page family to live mode and checks its results at the test URL. Templates continue receiving the same documented page data. Live failures remain visible; prepared data is never an automatic fallback.
 
 For replay, record the request method, service-relative path, repeated query parameters, relevant headers or body, and response status, content type, and body. Preserve query meaning when comparing request keys, including multiple `fq` values. Record fixtures before Django transforms the response, so the actual parsing and data-preparation code is exercised. Browser request interception can supply browser assets or browser API responses; it cannot replace server-to-Solr recordings.
 
-Keep a fixture manifest linking each case to its requests, responses, capture date, checksums, and reference browser capture. Obtain recordings through authorized service access or an existing export. If neither is available, document that dependency and continue with synthetic data for tool development, clearly marked as insufficient to prove production content matches. Do not derive the expected answer from Django's own output.
+Keep a fixture manifest linking each case to its data, origin, capture or preparation date, checksums, and reference browser capture. For upstream replay, include the requests and responses. If authentic inputs are unavailable, continue local template, interaction, and tool development with prepared data. Record which checks it can support and which source/content checks remain incomplete. Derive expected observations from reference evidence, not Django's own output.
 
 Keep raw captures, personal data, publication content, cookies, service addresses, screenshots, and all real-case recordings outside Git checkouts, not merely untracked within them. Repository tests should use deliberately invented fixtures or separately reviewed material containing no identifying information or actual publication content. Removing names alone is insufficient when citations, links, identifiers, or combinations of facts still identify real records. Retain exact real data locally for faithful comparisons; altered names, text lengths, or images cannot establish visual equivalence to the live page.
 
@@ -149,7 +167,7 @@ The first case set should cover these behaviors where confirmed:
 
 Add separate synthetic failure cases for timeouts and malformed service responses. Match documented failure behavior where appropriate without deliberately causing failures on production.
 
-If Docker Solr is needed, pin a compatible image and configuration after checking the actual service requirements. Provide documented start, readiness, load, verify, and reset commands. Loading the same fixture set twice must produce the same local index; reset must target only the disposable local data. Compare results against recorded requests and clearly state where the smaller index limits equivalence. Apache's [Solr in Docker guide](https://solr.apache.org/guide/solr/latest/deployment-guide/solr-in-docker.html) describes running the image with a supplied configuration; it does not establish compatibility with this application's existing schema.
+Add Docker Solr only if executing queries locally would resolve checks that prepared data and replay cannot cover. It requires a compatible version, schema, request-handler settings, text analysis, and sufficiently complete records; a small index can change ranking, totals, and facets. Pin the image and configuration after checking actual requirements. Provide start, readiness, load, verify, and reset commands. Loading the same fixture set twice must produce the same local index; reset must target only disposable local data. Compare results against recorded requests and state where the smaller index limits equivalence. Apache's [Solr in Docker guide](https://solr.apache.org/guide/solr/latest/deployment-guide/solr-in-docker.html) describes running the image with a supplied configuration; it does not establish compatibility with this application's existing schema.
 
 ## Browser comparison tool
 
@@ -171,13 +189,15 @@ For each case, return:
 - Visible headings, text, result IDs and order, totals, selected filters, tab state, link destinations, and structured data where applicable. Compare meaning, not raw HTML byte equality.
 - Matched screenshots, a difference image, and side-by-side review output at fixed desktop and narrow viewports.
 - Browser console errors, failed required requests, and private trace files for failures where useful.
-- A result of pass, fail, blocked, or needs review, with the precise differing assertion and links to local evidence. Include fixture and baseline versions, browser version, case counts, and any accepted differences applied.
+- A result of pass, fail, blocked, or needs review, with the precise differing assertion and links to local evidence. Include data mode and origin, fixture and baseline versions, browser version, case counts, and any accepted differences applied. Prepared-data presentation checks cannot be reported as passed source-integration checks.
 
 Provide JSON for Codex and a short Markdown or HTML report for people. A successful command exit requires all selected required checks to pass under recorded rules. Failures, blocked cases, and unresolved review items return a nonzero result. A full-coverage run also fails if required cases are omitted; a small selected run reports its limited coverage prominently.
 
 ### Keep comparisons meaningful
 
 Use the same browser build, operating environment, viewport, device scale, locale, and timezone for a screenshot pair. Wait for the relevant content, fonts, images, and interaction state before capture. Establish tolerances by comparing repeated unchanged captures; record them rather than increasing them merely to get a pass.
+
+Compare what the browser displays and how it behaves, including focus, keyboard use, downloads, and noticeable loading delays. Differences in JavaScript whitespace, minification, internal names, or bundling are not failures by themselves. Investigate them only when they change required behavior, break a required URL, or cause a noticeable regression.
 
 For randomized homepage imagery or moving elements, select the same observed state where possible or apply a small, documented mask. Separately check that the expected imagery exists and the interaction works. Do not mask missing content, altered navigation, or whole page sections. Preserve raw captures so normalizations remain reviewable.
 
@@ -206,6 +226,7 @@ Keep completed entries brief: date, outcome, checks performed, and any remaining
 - [ ] Every confirmed feature that depends on record content has representative cases, including presence and absence where meaningful. The feature-to-case table records evidence and remaining gaps; a single passing profile cannot establish completion for all profiles.
 - [ ] The initial 12–24 cases, plus cases needed for remaining confirmed behavior, run repeatably with documented data and baseline versions.
 - [ ] A clean local setup can run the application and comparisons without production access when fixtures are selected. Missing fixtures or assets produce failures.
+- [ ] Prepared, replay, and live modes supply the documented page data to the same templates. Local modes make no live requests; missing data never causes an automatic mode change. Reports state the data origin and do not equate prepared-data checks with verified integration.
 - [ ] Required URLs, redirects, parameters, response formats, search results, filters, tabs, links, downloads, and visualizations match the reference evidence.
 - [ ] All required pages have been visually reviewed at the chosen viewports; unexplained visible differences remain failures or open review items.
 - [ ] The real service connection and current public-site comparisons have been checked, with data drift identified separately.
@@ -217,9 +238,10 @@ Keep completed entries brief: date, outcome, checks performed, and any remaining
 
 | Item | Initial position and next action |
 | --- | --- |
-| Definition of success | Confirmed by the owner: match behavior, content, and appearance; a regular R@B user should notice no difference. |
-| Replay or Docker Solr | Start by investigating replay of authentic responses. Decide after tracing the first cases; add real local query execution where it provides missing evidence. |
-| Obtaining real data | Confirm an authorized source of service responses and related assets. Public browser access alone does not supply server-side Solr recordings. |
+| Definition of success | Confirmed by the owner: match the user experience as exactly as reasonably possible. Source formatting and minification need not match. Preserve appearance, behavior, content, accessibility, and perceived responsiveness. |
+| Local development before integration | Supply prepared page data through small functions for each page family. Begin presentation work without credentials; later feed the same templates through shared processing for replay and live responses. |
+| Replay or Docker Solr | Replay authentic responses once available. Add local query execution only where it supplies evidence that prepared page data and replay cannot. |
+| Obtaining real data | The owner can configure a separate deployment; Codex supplies the clients and optional capture tooling. Save selected raw responses outside Git and use them to build processing locally. Public browser captures alone are not Solr recordings, and `.env` values alone do not implement processing. |
 | Supported browsers and widths | Start with one fixed Chromium environment at desktop and narrow widths. Confirm the actual browser coverage needed before final acceptance. Consider Firefox and WebKit where relevant. |
 | Non-Solr dependencies | Identify them during endpoint tracing; supply local recordings or document the integration check needed. Avoid treating Solr as the entire data source without evidence. |
 | September 26 endpoint decisions | Replicate the selected person collaboration/coauthor views, JSON-LD/Turtle representations, profile JSON, organization publication TSV, older display/search redirects, JSON search, department search parameter, and additional information page. Preserve the report-list entry's owner-observed redirect to home. Keep Manager as a link and exclude the edit entry. The [scope table](docs/public_endpoint_scope.md) records the complete current endpoint list and the variants not included. |
@@ -249,7 +271,8 @@ No intentional user-visible differences have been accepted in this initial draft
 - [x] **Codex: complete the stage-1 endpoint-to-data-source table.** Traced observed pages, formats, custom membership, browser exports, and supporting requests. Explicitly marked separate-service ownership and static delivery configuration as matters for data preparation and operational confirmation.
 - [x] **Codex: finish remaining stage-1 investigation and prepare recommendations.** The [local completion assessment](../public_site_review/planning/stage1_completion.md) records the outcomes against all six stage-1 instructions. There are 62 specifications, including nine additional cases now approved by the owner. Complete assets, controlled tests, and matched comparisons remain later-stage work.
 - [x] **Owner: review the nine additional scope recommendations.** Keep all nine, preserving earlier approvals. The public faculty-data service approval covers its trailing-slash redirect only. Preserve the Research Areas download link for now; its correction is deferred in [issue #3](https://github.com/birkin/vivo-on-django/issues/3). Unsupported old-code possibilities are not included in the current scope.
-- [ ] **Codex: establish data availability.** Obtain the missing upstream settings or existing recordings, capture the prepared search/profile requests with their required lookups, and demonstrate authentic replay. The [reader and usage instructions](docs/recorded_responses.md) are ready for file validation; page integration remains open. Continue with replay first; a local Solr instance is not yet justified by the available evidence.
+- [ ] **Codex: supply prepared data for the first local journey.** Define the search/profile fields from saved reference evidence, add local data for the selected filter/pagination/profile states, and connect small page-data functions to the existing views and templates. Check that the journey renders without live requests and that missing cases fail clearly. Record data origin and leave authentic integration explicitly incomplete.
+- [ ] **Codex: add real source access and optional capture. Owner: configure the separate deployment when ready.** Implement minimal clients for the traced requests, save selected responses outside Git, and build shared response processing from those recordings. Verify replay locally and live results at the test URL. The [existing reader](docs/recorded_responses.md) validates raw recordings; it does not yet supply page data or live access. This work does not block initial local presentation development.
 - [x] **Codex: prepare and check the local runtime.** Verified the locked environment, settings, migration state, startup, and homepage HTML. The original 33 tests passed before changes; 44 tests pass with the new offline-reader checks.
 - [ ] **Codex: build the first browser comparison.** Capture a dated reference, compare the selected local pages, and prove that the report detects meaningful differences.
 - [ ] **Project owner: review later implementation evidence and proposed differences.** Stage 1 and its current endpoint list are complete. Raise a new endpoint decision only when concrete development evidence reveals a requirement that needs an owner choice. Final site acceptance belongs to the later stages.
@@ -257,6 +280,8 @@ No intentional user-visible differences have been accepted in this initial draft
 ## Completed
 
 (most-recent first)
+
+- **2026-09-26 — Revised the development sequence and fidelity requirements.** Planned prepared page data for local presentation work before authentic source integration, followed by optional response capture outside Git and shared replay/live processing. Clarified that equivalent user experience does not require identical or minified JavaScript. Updated readiness checks and next actions; no data modes, clients, capture tooling, or page behavior were implemented in this planning change.
 
 - **2026-09-26 — Recorded approval of all nine additional cases.** Updated scope, cases, and reference documents while preserving earlier decisions. Limited the public service requirement to its trailing-slash redirect. Created [issue #3](https://github.com/birkin/vivo-on-django/issues/3) for the Research Areas JSON download link and explicitly deferred its correction. No page behavior or application code changed.
 

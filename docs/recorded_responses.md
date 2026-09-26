@@ -58,6 +58,8 @@ The example uses invented search text and requires an exactly matching entry in 
 
 ## Remaining integration work
 
+Local template and interaction development can begin with prepared page data before authentic responses are available, as described in the [workplan](../PLAN__workplan.md#repeatable-data-for-local-development). That data is already arranged for rendering and will use a separate reader; do not present it as a raw upstream recording or weaken this reader's checks to accept it. Both approaches will supply the same documented fields to the same templates once response processing is connected. Prepared-data support remains to be implemented.
+
 Obtain authentic requests and responses from the services that supply the selected search and profile. Include type detection, graph-availability lists when required, and the assets needed for the selected pages. Confirm the deployed request settings and align the capture date with the public reference. Public page JSON is not a substitute for an unchanged Solr response.
 
 Then connect the selected recording set to the same parsing and data-preparation code that will consume live service responses. Live access must be explicitly selected and use `httpx`; it must never serve as a fallback after a missing recording. This reader does not yet supply that live mode, Solr query execution, a capture command, or complete offline page rendering. Start with response replay; there is not yet evidence that a local Solr instance is necessary.
