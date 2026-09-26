@@ -1,3 +1,5 @@
+from importlib import import_module
+
 from django.apps import AppConfig
 
 
@@ -10,6 +12,5 @@ class VivoAppConfig(AppConfig):
 
         Called by: Django application setup
         """
-        from vivo_app import checks
-
-        # Importing checks registers the decorated check with Django.
+        ## importing checks registers the decorated check with Django
+        import_module('vivo_app.checks')

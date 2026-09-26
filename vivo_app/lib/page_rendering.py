@@ -4,11 +4,34 @@ Converts validated page data and explicit failures to HTTP responses.
 
 import logging
 
-from django.http import HttpResponse, QueryDict
+from django.http import HttpRequest, HttpResponse, JsonResponse, QueryDict
+from django.shortcuts import render
+from django.template.loader import get_template
 
 from vivo_app.lib.prepared_data import PageDataError, PreparedEntry
 
 logger = logging.getLogger(__name__)
+
+
+def render_or_stub(
+    request: HttpRequest, template_name: str, context: dict[str, object] | None = None, status: int = 200
+) -> HttpResponse:
+    """
+    Renders sample pages or returns a placeholder after logging a template failure.
+
+    Called by: vivo_app.views sample page and error handlers
+    """
+    context = context or {}
+    if request.GET.get('format') == 'json':
+        response = JsonResponse(context, status=status)
+    else:
+        try:
+            get_template(template_name)
+            response = render(request, template_name, context, status=status)
+        except Exception:
+            logger.exception('Sample page rendering failed.')
+            response = HttpResponse(f'Stub for {template_name}'.encode(), status=status, content_type='text/plain')
+    return response
 
 
 def query_pairs(query: QueryDict) -> list[tuple[str, str]]:

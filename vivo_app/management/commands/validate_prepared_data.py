@@ -4,6 +4,7 @@ Checks a complete external prepared-data bundle without network access.
 
 import json
 from pathlib import Path
+from typing import ClassVar
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
@@ -15,7 +16,7 @@ class Command(BaseCommand):
     """Validates every included file and reports data origin and coverage."""
 
     help = 'Validate prepared pages, responses, assets, and cases; never contacts services.'
-    requires_system_checks: list[str] = []
+    requires_system_checks: ClassVar[list[str]] = []
 
     def add_arguments(self, parser: CommandParser) -> None:
         """
@@ -43,9 +44,15 @@ class Command(BaseCommand):
         except PageDataError as exc:
             raise CommandError(str(exc)) from exc
         report = {
-            'status': 'valid', 'bundle_version': bundle.version, 'data_origin': bundle.origin,
-            'prepared_at': bundle.prepared_at, 'application_revision': bundle.application_revision,
-            'cases': len(bundle.cases), 'entries': len(bundle.entries), 'assets': len(bundle.assets),
-            'source_integration': 'not_verified', 'visual_equivalence': 'not_verified',
+            'status': 'valid',
+            'bundle_version': bundle.version,
+            'data_origin': bundle.origin,
+            'prepared_at': bundle.prepared_at,
+            'application_revision': bundle.application_revision,
+            'cases': len(bundle.cases),
+            'entries': len(bundle.entries),
+            'assets': len(bundle.assets),
+            'source_integration': 'not_verified',
+            'visual_equivalence': 'not_verified',
         }
         self.stdout.write(json.dumps(report, indent=2))

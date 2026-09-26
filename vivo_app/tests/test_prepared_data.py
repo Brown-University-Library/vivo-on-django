@@ -29,34 +29,78 @@ class PreparedDataTests(TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.search_data = {
-            'query': 'Example', 'page': 1, 'page_size': 20, 'total': 1,
-            'results': [{'id': 'invented-a', 'name': 'Invented Researcher', 'title': 'Example title',
-                         'email': '', 'url': '/display/invented-a', 'thumbnail': '/__prepared_assets/portrait.png'}],
-            'facets': [{'name': 'record_type', 'title': 'Type', 'values': [
-                {'text': 'PEOPLE', 'count': 1, 'url': '/search?q=Example&fq=record_type%7CPEOPLE', 'selected': False}]}],
+            'query': 'Example',
+            'page': 1,
+            'page_size': 20,
+            'total': 1,
+            'results': [
+                {
+                    'id': 'invented-a',
+                    'name': 'Invented Researcher',
+                    'title': 'Example title',
+                    'email': '',
+                    'url': '/display/invented-a',
+                    'thumbnail': '/__prepared_assets/portrait.png',
+                }
+            ],
+            'facets': [
+                {
+                    'name': 'record_type',
+                    'title': 'Type',
+                    'values': [
+                        {'text': 'PEOPLE', 'count': 1, 'url': '/search?q=Example&fq=record_type%7CPEOPLE', 'selected': False}
+                    ],
+                }
+            ],
             'pagination': [{'label': '1', 'url': '/search?q=Example&page=1', 'current': True}],
-            'previous_url': '', 'next_url': '', 'remove_query_url': '/search', 'selected_filters': [],
+            'previous_url': '',
+            'next_url': '',
+            'remove_query_url': '/search',
+            'selected_filters': [],
         }
         self.profile_data = {
-            'id': 'invented-a', 'name': 'Invented Researcher', 'title': 'Example title',
+            'id': 'invented-a',
+            'name': 'Invented Researcher',
+            'title': 'Example title',
             'thumbnail': '/__prepared_assets/portrait.png',
-            'sections': [{'id': 'Overview', 'label': 'Overview', 'html': '<p>Invented overview.</p>'},
-                         {'id': 'Research', 'label': 'Research', 'html': '<p>Invented research.</p>'}],
+            'sections': [
+                {'id': 'Overview', 'label': 'Overview', 'html': '<p>Invented overview.</p>'},
+                {'id': 'Research', 'label': 'Research', 'html': '<p>Invented research.</p>'},
+            ],
         }
         self.manifest: dict[str, object] = {
-            'format_version': 1, 'bundle_version': 'test.1', 'data_origin': 'invented',
-            'prepared_at': '2026-09-26T12:00:00+00:00', 'application_revision': 'invented-test-revision',
+            'format_version': 1,
+            'bundle_version': 'test.1',
+            'data_origin': 'invented',
+            'prepared_at': '2026-09-26T12:00:00+00:00',
+            'application_revision': 'invented-test-revision',
             'readme': self.save('README.md', b'Invented test bundle'),
-            'assets': {'portrait.png': {**self.save('assets/portrait.png', b'invented-image'), 'content_type': 'image/png'},
-                       'source-sans-pro.ttf': {**self.save('assets/font.woff2', b'invented-font'), 'content_type': 'font/woff2'}},
+            'assets': {
+                'portrait.png': {**self.save('assets/portrait.png', b'invented-image'), 'content_type': 'image/png'},
+                'source-sans-pro.ttf': {**self.save('assets/font.woff2', b'invented-font'), 'content_type': 'font/woff2'},
+            },
             'entries': {
-                'search': {**self.save('data/search.json', json.dumps(self.search_data).encode()),
-                           'family': 'search', 'path': '/search', 'query': [['q', 'Example']]},
-                'profile': {**self.save('data/profile.json', json.dumps(self.profile_data).encode()),
-                            'family': 'profile', 'path': '/display/invented-a', 'query': []},
-                'facets': {**self.save('data/facets.json', b'[{"text":"Example","count":1}]'),
-                           'family': 'response', 'path': '/search_facets', 'query': [['q', 'Example'], ['f_name', 'affiliations']],
-                           'status': 200, 'content_type': 'application/json', 'headers': []},
+                'search': {
+                    **self.save('data/search.json', json.dumps(self.search_data).encode()),
+                    'family': 'search',
+                    'path': '/search',
+                    'query': [['q', 'Example']],
+                },
+                'profile': {
+                    **self.save('data/profile.json', json.dumps(self.profile_data).encode()),
+                    'family': 'profile',
+                    'path': '/display/invented-a',
+                    'query': [],
+                },
+                'facets': {
+                    **self.save('data/facets.json', b'[{"text":"Example","count":1}]'),
+                    'family': 'response',
+                    'path': '/search_facets',
+                    'query': [['q', 'Example'], ['f_name', 'affiliations']],
+                    'status': 200,
+                    'content_type': 'application/json',
+                    'headers': [],
+                },
             },
             'cases': {'journey': ['search', 'profile', 'facets']},
         }
@@ -216,8 +260,11 @@ class PreparedDataTests(TestCase):
         """
         from vivo_app.lib.page_fields import validate_page
 
-        for changes in ({'name': None}, {'thumbnail': 'https://example.invalid/photo.jpg'},
-                        {'sections': [{'id': 'Overview', 'label': 'Overview', 'html': '<script>bad()</script>'}]}):
+        for changes in (
+            {'name': None},
+            {'thumbnail': 'https://example.invalid/photo.jpg'},
+            {'sections': [{'id': 'Overview', 'label': 'Overview', 'html': '<script>bad()</script>'}]},
+        ):
             with self.subTest(changes=changes), self.assertRaises(PageDataError):
                 validate_page('profile', {**self.profile_data, **changes}, {'portrait.png'})
 
@@ -225,6 +272,8 @@ class PreparedDataTests(TestCase):
         """
         Checks a broken prepared template cannot become a successful placeholder response.
         """
-        with patch('vivo_app.views.render', side_effect=RuntimeError('broken template')):
-            with self.assertRaisesRegex(RuntimeError, 'broken template'):
-                self.get_page('/search?q=Example')
+        with (
+            patch('vivo_app.views.render', side_effect=RuntimeError('broken template')),
+            self.assertRaisesRegex(RuntimeError, 'broken template'),
+        ):
+            self.get_page('/search?q=Example')
