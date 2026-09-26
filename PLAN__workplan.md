@@ -4,7 +4,7 @@ Initial draft: September 25, 2026. Maintained by Codex and the project owner. Re
 
 The guiding measure of success is that a regular Researchers@Brown user notices **no difference** after the replacement. Match behavior, content, and appearance closely. Record any proposed intentional difference, explain why it is needed, and obtain the project owner's acceptance before treating it as resolved.
 
-This task creates the workplan only. Tool development and application changes described below are future work. [GOAL.md](GOAL.md) defines the scope; [AGENTS.md](AGENTS.md) defines repository practices. This document supplies the current sequence of work. Earlier plans and route mappings remain historical references where they conflict with that scope.
+The initial task created this workplan. Subsequent authorized stage-1 discovery is recorded in the local [endpoint inventory](../public_site_review/planning/public_endpoint_inventory.md), [feature coverage](../public_site_review/planning/public_feature_coverage.md), and [case manifest](../public_site_review/planning/public_cases.json). Those files live in the outer workspace and are not part of a standalone repository checkout. Tool development and application changes described below remain future work for this review. [GOAL.md](GOAL.md) defines the scope; [AGENTS.md](AGENTS.md) defines repository practices. This document supplies the current sequence of work. Earlier plans and route mappings remain historical references where they conflict with that scope.
 
 Contents:
 
@@ -26,6 +26,10 @@ Preserve the public site's existing URLs, query behavior, redirects, page conten
 Automated checks provide evidence toward the no-noticeable-difference goal. They do not replace a final walkthrough by the project owner or a regular R@B user. A passing status code, a working Django page, or a low screenshot-difference score alone does not establish success.
 
 Rebuilding the separate Manager application, unused editing features, the VIVO back end, or data-management systems is outside scope. Preserve public links to those services where used. A local Solr instance, if needed, is a development and verification aid; the application must ultimately use the existing services. No redesign or new user-facing features are planned.
+
+**Repository privacy:** keep actual personal names, usernames, profile identifiers, contact information, biographical or CV content, and actual publication titles, author lists, citations, or abstracts out of new repository content. This applies even when the information is publicly available. Keep real-case manifests, feature observations, identifying bindings, captures, screenshots, recordings, and detailed comparison reports in the outer workspace, outside every Git checkout. Case IDs alone do not make the accompanying facts anonymous or suitable for a commit.
+
+The repository may contain general route patterns, tool code, aggregate progress summaries, and deliberately invented examples that do not copy real personal or publication details. Review the exact diff and any proposed fixtures before committing. Do not move real evidence into the repository merely because an automated test needs it; read it through local configuration instead.
 
 ## Starting evidence
 
@@ -68,13 +72,13 @@ To find faculty examples, Codex follows this browser workflow once the search en
 1. Run a few searches through the public site's search form. Start with Chemistry or Physics for natural sciences, Economics or Sociology for social sciences, and English or History for humanities. Try one term per group first and use the alternatives or observed affiliation filters when needed.
 2. Follow actual result links and inspect each candidate's displayed affiliations, research information, sections, and controls. A subject keyword match is a lead, not proof of a faculty member's discipline or of a particular page feature.
 3. Select distinct profiles that provide the required subject spread and useful feature differences. Add or replace candidates when results repeat or leave feature gaps. This initial discovery can use the available browser directly; it does not depend on the future comparison tool being built.
-4. Record the search term, filters used, inspection date, selected relative profile path, case ID, and reason for selection in the local discovery record. Link each selected case to the feature observations below. Keep identifying details local and use case IDs in shared documentation.
+4. Record the search term, filters used, inspection date, selected relative profile path, case ID, and reason for selection in the local discovery record outside Git. Link each selected case to the local feature observations. Repository progress summaries may report aggregate coverage; keep record-level facts outside the repository even when represented by case IDs.
 
 For each endpoint family with optional content, build a table linking observed features to case IDs. Record which examples show each section or control, which omit it, the data condition that appears to govern it, and the source and date of the evidence. Distinguish an observed absence from a feature that has not yet been checked. Section names suggested during planning are hypothetical until confirmed on the public site.
 
 Include cases with optional sections present and absent, short and long content, and relevant combinations of features that affect layout or interaction. Inspect Rails conditions to guide the search for missing examples, then verify those examples in the running site. Add pages when the initial sample misses a confirmed feature; apply the same approach to organizations and other pages whose presentation depends on their data.
 
-**Deliverables:** a concise endpoint inventory and feature-to-case table in `docs/`, plus a machine-readable case manifest with paths relative to the configured site. Store private identifiers and service addresses in separate local configuration. Every confirmed family and observed feature must map to a case or an explicit remaining task.
+**Deliverables:** a concise endpoint inventory, feature-to-case table, and machine-readable case manifest in `../public_site_review/planning/`, outside the repository. The manifest uses paths relative to the configured site; identifiers and service addresses remain in separate local configuration. This workplan keeps general instructions and links to those local documents. Every confirmed family and observed feature must map to a local case or an explicit remaining task.
 
 **Ready to proceed when:** the first cases have evidence of current use, cover the main public journeys and their observed content variations, and identify which upstream responses and assets are needed to reproduce them. Record gaps explicitly; checking one page does not establish coverage of its whole endpoint family.
 
@@ -128,7 +132,7 @@ For replay, record the request method, service-relative path, repeated query par
 
 Keep a fixture manifest linking each case to its requests, responses, capture date, checksums, and reference browser capture. Obtain recordings through authorized service access or an existing export. If neither is available, document that dependency and continue with synthetic data for tool development, clearly marked as insufficient to prove production content matches. Do not derive the expected answer from Django's own output.
 
-Keep raw captures, personal data, cookies, service addresses, and unreviewed screenshots outside tracked files. Use reviewed synthetic or sanitized fixtures for repository tests; retain exact real data privately where needed for faithful comparisons. Changing names, text lengths, or images during sanitization can affect layout, so those replacements cannot by themselves establish visual equivalence to the live page.
+Keep raw captures, personal data, publication content, cookies, service addresses, screenshots, and all real-case recordings outside Git checkouts, not merely untracked within them. Repository tests should use deliberately invented fixtures or separately reviewed material containing no identifying information or actual publication content. Removing names alone is insufficient when citations, links, identifiers, or combinations of facts still identify real records. Retain exact real data locally for faithful comparisons; altered names, text lengths, or images cannot establish visual equivalence to the live page.
 
 The first case set should cover these behaviors where confirmed:
 
@@ -147,7 +151,7 @@ If Docker Solr is needed, pin a compatible image and configuration after checkin
 
 Use Playwright's Python library within the existing `uv` workflow, with Django tests and `unittest` for supporting checks. Add development dependencies and the browser-installation instructions when implementing the tool. Playwright supports [standalone Python use](https://playwright.dev/python/docs/library), [browser network observation](https://playwright.dev/python/docs/network), and [screenshots](https://playwright.dev/python/docs/screenshots). Implement explicit report generation and image comparison around those capabilities.
 
-The following interface is a proposal; the script and options do not exist yet. An entry point such as `tools/compare_sites.py` would read the case manifest and local configuration. Proposed configuration names are `REFERENCE_BASE_URL`, `LOCAL_BASE_URL`, `FIXTURE_DIR`, and `ARTIFACT_DIR`; store actual values locally.
+The following interface is a proposal; the script and options do not exist yet. An entry point such as `tools/compare_sites.py` would read the external case manifest and local configuration. Proposed configuration names are `CASE_MANIFEST_PATH`, `REFERENCE_BASE_URL`, `LOCAL_BASE_URL`, `FIXTURE_DIR`, and `ARTIFACT_DIR`; store actual values locally. Real-case input and output locations must be outside Git checkouts. The tool must not copy private inputs into repository fixtures or write identifying comparison output into tracked documentation.
 
 | Proposed mode | What it reads and contacts | What it writes |
 | --- | --- | --- |
@@ -175,7 +179,7 @@ For randomized homepage imagery or moving elements, select the same observed sta
 
 A dated reference capture and its upstream fixtures must describe the same data state as closely as possible. When that alignment cannot be established, label exact content comparison as needing review. A newer live result can legitimately differ from an older recording; investigate and record the reason before refreshing either. Never refresh the expected output just because Django differs.
 
-Limit production checks to the selected public journeys. Stop and report access challenges or unavailable dependencies rather than bypassing them. Keep reports and traces local until their contents have been reviewed for publication.
+Limit production checks to the selected public journeys. Stop and report access challenges or unavailable dependencies rather than bypassing them. Keep reports and traces in the outer workspace. If a repository summary is needed, write a separate account of behavior and checks that contains no actual personal or publication details.
 
 ## How Codex works toward completion
 
@@ -216,15 +220,17 @@ Keep completed entries brief: date, outcome, checks performed, and any remaining
 | Non-Solr dependencies | Identify them during endpoint tracing; supply local recordings or document the integration check needed. Avoid treating Solr as the entire data source without evidence. |
 | Baseline upkeep | Keep captures dated and versioned. Agree on refresh frequency after observing how often reference content changes. |
 | Automated checks on GitHub | Consider running sanitized offline cases there once the local checks are reliable. Keep private fixtures and reference-site access out of routine automation. |
+| Real records and publication details | Keep them outside Git, including case-level observations expressed through case IDs. Repository tests use invented or separately reviewed non-identifying material. |
 | Perceived responsiveness and keyboard use | Include representative loading, keyboard navigation, focus, and Back-button checks in the final walkthrough. Record noticeable regressions without turning the conversion into a redesign. |
 
 No intentional user-visible differences have been accepted in this initial draft.
 
 ## Next steps
 
-- [ ] **Codex: build the candidate endpoint inventory.** Reconcile historical evidence with current Rails links and routes, then verify the primary journeys in the public site.
-- [ ] **Codex: find and select varied real examples through public-site searches.** After confirming the main endpoints, use the browser workflow above to select approximately six distinct faculty profiles across the natural sciences, social sciences, and humanities. Record how each was found, its observed features, and remaining gaps; add examples where needed.
-- [ ] **Codex: define the first 12–24 cases.** Include the selected examples and their expected sections and interactions. Connect each to evidence, upstream requests, and required assets. Record unanswered scope questions separately.
+- [x] **Codex: build the candidate endpoint inventory.** Saved the local draft and verified primary public journeys. Uncertain candidates and scope decisions remain explicit in the [inventory outside Git](../public_site_review/planning/public_endpoint_inventory.md); the draft is not owner acceptance.
+- [x] **Codex: find and select varied real examples through public-site searches.** Selected two profiles per subject group, then added a seventh to cover missing detail sections and a placeholder portrait. Three organizations provide additional role-group variation. See [local coverage and remaining gaps](../public_site_review/planning/public_feature_coverage.md).
+- [x] **Codex: define the first 12–24 cases.** Defined an initial 24 and expanded to 26 for two observed gaps. The [local manifest](../public_site_review/planning/public_cases.json) records actions, expectations, evidence keys, and required data; all replay fixtures remain missing.
+- [ ] **Codex and owner: resolve the remaining stage-1 decisions.** Review intended visualization scope and current consumers of uncertain exports/legacy candidates. Finish remaining content variations and HTTP metadata checks as recorded in the inventory; do not treat the case draft as complete coverage.
 - [ ] **Codex: establish data availability.** Identify a permitted source of authentic responses, demonstrate replay for a search and profile, and record whether Docker Solr is needed next.
 - [ ] **Codex: prepare and check the local runtime.** Verify startup and the existing test suite before implementing new behavior.
 - [ ] **Codex: build the first browser comparison.** Capture a dated reference, compare the selected local pages, and prove that the report detects meaningful differences.
@@ -232,6 +238,8 @@ No intentional user-visible differences have been accepted in this initial draft
 
 ## Completed
 
+- **2026-09-26 — Kept real-case working documents outside Git.** Moved the inventory, feature table, and manifest to the outer workspace and updated their links. The workplan now explicitly keeps actual personal and publication information, including case-level observations, out of repository content. Checked the remaining diff, document links, JSON, and case references. No application code changed or commits were made.
+- **2026-09-25 — Saved stage-1 discovery drafts.** Codex browsed representative public journeys, selected seven profiles and three organizations, traced required source dependencies, and saved the endpoint inventory, feature coverage, and 26-case manifest. Private evidence and identifying bindings remain outside Git. JSON, evidence references, document links, and repository whitespace were checked. HTTP metadata, some candidate families, intended visualization scope, authentic upstream fixtures, and fixed-width comparisons remain unresolved. No application code changed; the drafts are local and uncommitted.
 - **2026-09-25 — Added independent discovery of faculty examples.** Following the [browser-search suggestion](https://github.com/birkin/vivo-on-django/issues/1#issuecomment-5836105341), Codex added subject searches, profile inspection, selection criteria, and a local discovery record to the plan. Checked document links, anchors, and formatting. The public-site searches remain future work; no application code changed.
 - **2026-09-25 — Added coverage of variations within an endpoint.** Following the [review comment](https://github.com/birkin/vivo-on-django/issues/1#issuecomment-5835976507), Codex added real-page sampling, a feature-to-case table, and corresponding fixture, browser-assertion, and completion requirements. Checked document links, anchors, and formatting. Selecting pages and verifying their features remain future work; no application code changed.
 - **2026-09-25 — Initial workplan drafted.** Codex reviewed the repository guidance, goal, prototype routes and helpers, Rails search and display code, and historical URL summaries. The plan now sets out endpoint discovery, repeatable data, browser comparisons, implementation, and acceptance, using the owner's no-noticeable-difference goal. Production behavior, service access, and application tests have not been verified in this planning task; implementation remains future work.
