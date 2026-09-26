@@ -143,6 +143,24 @@ These modes are planned, not implemented. Proposed `.env` names are `PAGE_DATA_M
 
 Prepared cases must cover the whole selected journey: the query, repeated filters, page number, optional sections, totals, result order, and any supporting JSON must agree. Use explicit saved states for supported combinations; do not try to recreate a search engine in the prepared-data reader. For download or original-representation endpoints, retain the required response bytes, status, and relevant headers separately where a template data dictionary is insufficient. Keep prepared page data distinct from raw upstream recordings in storage and documentation.
 
+**Shareable prepared-data directory:** use `../prepared_fixture_data/` beside the Git checkout. Keep the loader, format documentation, validation code, and invented test examples in the repository. Distribute the prepared data separately as a versioned archive to the developers who need it. This is a planned layout; the directory and loader have not yet been created.
+
+```text
+workspace/
+├── vivo-on-django/
+└── prepared_fixture_data/
+    ├── manifest.json
+    ├── data/
+    ├── assets/
+    └── README.md
+```
+
+The manifest identifies the bundle version, data-format version, compatible application revision, data origin, included cases, relative file paths, and checksums. Package the supporting responses and data-specific assets needed by those cases, so another developer does not need the original research workspace. Keep application styles, scripts, and other repository-managed assets in the checkout. The bundle README explains local setup, covered journeys, and known limits. Use a proposed `PREPARED_FIXTURE_DIR` setting, resolving relative values against the Django project root, so each developer can choose a different location. Do not embed workstation paths in the data.
+
+The developer clones a compatible application revision, unpacks the matching bundle beside it, sets `PAGE_DATA_MODE=prepared` and `PREPARED_FIXTURE_DIR=../prepared_fixture_data` in their own `.env`, and runs the planned validation check before starting Django. These settings and that check remain to be implemented. Validate supported format versions, required files, case references, and checksums; report mismatches clearly. As part of implementation, verify that the bundle works from a fresh checkout in another directory with live network access disabled. Create a new bundle version for shared changes rather than silently replacing an existing release.
+
+Keep real personal and publication data outside Git when sharing as well as during development. Review the bundle for its intended recipients and transfer it separately; omit credentials, connection secrets, cookies, logs, prompt history, and unrelated captures. Raw upstream recordings remain separate from this prepared-data directory and are not needed merely to work on its local pages.
+
 When live access becomes available, proceed in this order:
 
 1. Codex implements the minimum source clients and an optional capture path, using the requests traced from Rails. These can save responses before all page-processing code is finished.
@@ -226,6 +244,7 @@ Keep completed entries brief: date, outcome, checks performed, and any remaining
 - [ ] Every confirmed feature that depends on record content has representative cases, including presence and absence where meaningful. The feature-to-case table records evidence and remaining gaps; a single passing profile cannot establish completion for all profiles.
 - [ ] The initial 12–24 cases, plus cases needed for remaining confirmed behavior, run repeatably with documented data and baseline versions.
 - [ ] A clean local setup can run the application and comparisons without production access when fixtures are selected. Missing fixtures or assets produce failures.
+- [ ] A compatible repository checkout and a versioned `prepared_fixture_data` bundle are sufficient for another developer to render its documented cases offline. The bundle validates and works without the original workspace or workstation paths.
 - [ ] Prepared, replay, and live modes supply the documented page data to the same templates. Local modes make no live requests; missing data never causes an automatic mode change. Reports state the data origin and do not equate prepared-data checks with verified integration.
 - [ ] Required URLs, redirects, parameters, response formats, search results, filters, tabs, links, downloads, and visualizations match the reference evidence.
 - [ ] All required pages have been visually reviewed at the chosen viewports; unexplained visible differences remain failures or open review items.
@@ -271,7 +290,7 @@ No intentional user-visible differences have been accepted in this initial draft
 - [x] **Codex: complete the stage-1 endpoint-to-data-source table.** Traced observed pages, formats, custom membership, browser exports, and supporting requests. Explicitly marked separate-service ownership and static delivery configuration as matters for data preparation and operational confirmation.
 - [x] **Codex: finish remaining stage-1 investigation and prepare recommendations.** The [local completion assessment](../public_site_review/planning/stage1_completion.md) records the outcomes against all six stage-1 instructions. There are 62 specifications, including nine additional cases now approved by the owner. Complete assets, controlled tests, and matched comparisons remain later-stage work.
 - [x] **Owner: review the nine additional scope recommendations.** Keep all nine, preserving earlier approvals. The public faculty-data service approval covers its trailing-slash redirect only. Preserve the Research Areas download link for now; its correction is deferred in [issue #3](https://github.com/birkin/vivo-on-django/issues/3). Unsupported old-code possibilities are not included in the current scope.
-- [ ] **Codex: supply prepared data for the first local journey.** Define the search/profile fields from saved reference evidence, add local data for the selected filter/pagination/profile states, and connect small page-data functions to the existing views and templates. Check that the journey renders without live requests and that missing cases fail clearly. Record data origin and leave authentic integration explicitly incomplete.
+- [ ] **Codex: supply prepared data for the first local journey.** Define the search/profile fields from saved reference evidence, add data for the selected filter/pagination/profile states to `../prepared_fixture_data/`, and connect small page-data functions to the existing views and templates. Include a versioned manifest, required assets, and local setup instructions; validate the bundle from a fresh checkout location. Check that the journey renders without live requests and that missing cases fail clearly. Record data origin and leave authentic integration explicitly incomplete.
 - [ ] **Codex: add real source access and optional capture. Owner: configure the separate deployment when ready.** Implement minimal clients for the traced requests, save selected responses outside Git, and build shared response processing from those recordings. Verify replay locally and live results at the test URL. The [existing reader](docs/recorded_responses.md) validates raw recordings; it does not yet supply page data or live access. This work does not block initial local presentation development.
 - [x] **Codex: prepare and check the local runtime.** Verified the locked environment, settings, migration state, startup, and homepage HTML. The original 33 tests passed before changes; 44 tests pass with the new offline-reader checks.
 - [ ] **Codex: build the first browser comparison.** Capture a dated reference, compare the selected local pages, and prove that the report detects meaningful differences.
@@ -280,6 +299,8 @@ No intentional user-visible differences have been accepted in this initial draft
 ## Completed
 
 (most-recent first)
+
+- **2026-09-26 — Planned a shareable prepared-data bundle.** Selected a sibling `prepared_fixture_data` directory, separately distributed versions, a manifest, local path configuration, and validation from a fresh checkout. The repository supplies the loader and format documentation; real data remains outside Git. This updates the plan only; the bundle and loader remain to be built.
 
 - **2026-09-26 — Revised the development sequence and fidelity requirements.** Planned prepared page data for local presentation work before authentic source integration, followed by optional response capture outside Git and shared replay/live processing. Clarified that equivalent user experience does not require identical or minified JavaScript. Updated readiness checks and next actions; no data modes, clients, capture tooling, or page behavior were implemented in this planning change.
 
