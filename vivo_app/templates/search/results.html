@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Researchers@Brown{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <form action="/search" method="get" class="search-form" role="search">
+    <h1 class="sr-only">Search</h1>
+    <label for="search-query" class="sr-only">Search</label>
+    <input id="search-query" name="q" value="{{ query }}" type="search" placeholder="Search researchers">
+    <button type="submit" class="btn btn-default">Search</button>
+  </form>
+</div>
+<div class="container-fluid results-page col-sm-12">
+  <div class="row results-page-wrapper">
+    <div class="results-wrapper col-lg-9 col-lg-push-3 col-md-9 col-md-push-3 col-sm-8 col-sm-push-4">
+      <div class="result-nums-breadcrumbs-wrapper">
+        <div id="search-result-count" class="text-muted">
+          {% if previous_url %}<a href="{{ previous_url }}" aria-label="Previous page">Previous</a>{% endif %}
+          <span class="search-result-numbers"><span id="search-page-start">{{ start }}</span> - <span id="search-page-end">{{ end }}</span> of <span id="search-total-matching">{{ total }}</span> search results</span>
+          {% if next_url %}<a href="{{ next_url }}" aria-label="Next page">Next</a>{% endif %}
+        </div>
+        <div class="facet-breadcrumbs">
+          {% if query and remove_query_url %}<a href="{{ remove_query_url }}">Searched for: {{ query }} <span class="sr-only">Remove search term {{ query }}</span> ×</a>{% endif %}
+          {% for item in selected_filters %}<a href="{{ item.url }}">{{ item.label }} <span class="sr-only">Remove filter {{ item.label }}</span> ×</a>{% endfor %}
+        </div>
+      </div>
+      <h2 class="visible-print">Results</h2>
+      <div class="row results-row" style="display:flex; flex-wrap:wrap;">
+        {% for item in results %}
+        <article class="col-lg-4 col-md-4 col-sm-12 col-xs-12 expert-results" data-result-id="{{ item.id }}">
+          <div class="gap30"></div>
+          <div class="results__photo"><a href="{{ item.url }}"><img src="{{ item.thumbnail }}" alt="Profile picture of {{ item.name }}" class="img-circle" width="130" height="130"></a></div>
+          <div class="contact-content"><h4><a href="{{ item.url }}">{{ item.name }}</a></h4><span class="results-title">{{ item.title }}</span></div>
+          {% if item.email %}<a href="mailto:{{ item.email }}" aria-label="Email researcher at {{ item.email }}"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span></a>{% endif %}
+        </article>
+        {% empty %}<p>No results were found.</p>{% endfor %}
+      </div>
+      <nav aria-label="Search result pages"><ul class="pagination">
+        {% for item in pagination %}<li{% if item.current %} class="active"{% endif %}><a href="{{ item.url }}"{% if item.current %} aria-current="page"{% endif %}>{{ item.label }}</a></li>{% endfor %}
+      </ul></nav>
+    </div>
+    {% if total %}<aside class="col-lg-3 col-lg-pull-9 col-md-3 col-md-pull-9 col-sm-4 col-sm-pull-8" id="search-facets">
+      <h2 class="sr-only">Refine</h2><div class="panel panel-default">
+      {% for facet in facets %}
+        <div class="panel-heading"><h3 class="facetLabel">{{ facet.title }}</h3></div>
+        <div class="panel-body"><ul class="list-unstyled">
+        {% for value in facet.values %}<li><a href="{{ value.url }}">{{ value.text }}{% if value.selected %} <span class="sr-only">Remove facet {{ value.text }}</span> ×{% endif %}</a> ({{ value.count }})</li>{% endfor %}
+        </ul></div>
+      {% endfor %}</div>
+    </aside>{% endif %}
+  </div>
+</div>
+{% endblock %}

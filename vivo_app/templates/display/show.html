@@ -3,7 +3,9 @@
 {% block title %}Profile - VIVO{% endblock %}
 
 {% block content %}
-  {% if presenter and presenter.faculty %}
+  {% if profile %}
+    {% include "display/profile_data.html" %}
+  {% elif presenter and presenter.faculty %}
     <div class="container profile">
       <h1>{{ presenter.faculty.name }}</h1>
       <p class="muted">VIVO ID: {{ presenter.faculty.vivo_id }}</p>

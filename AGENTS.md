@@ -101,7 +101,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 
 ### Additional coding directives
 
-- Inspect `ruff.toml` for formatting settings: 125-character lines, four-space indentation, and single quotes. Its copied `target-version = "py38"` is a Ruff setting; the application's runtime requirement remains Python 3.12.
+- Inspect `ruff.toml` for formatting settings: Python 3.12, 125-character lines, four-space indentation, and single quotes. Keep Ruff's target version aligned with the runtime requirement in `pyproject.toml`.
 
 ### Markdown formatting
 
@@ -134,7 +134,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 - `views.py` should primarily import:
   - Django primitives (`HttpRequest`, `HttpResponse`, `render`, `redirect`, etc.)
   - The minimal set of functions/classes from `vivo_app/lib/` needed for each endpoint
-- Place new view helpers in `vivo_app/lib/`. The existing `render_or_stub()` helper in `views.py` predates this convention; move shared rendering logic into `lib/` when that logic needs changes, without refactoring unrelated code.
+- Place new view helpers in `vivo_app/lib/`; shared rendering helpers, including `render_or_stub()`, live in `vivo_app/lib/page_rendering.py`.
 
 
 ## Front-end change guidance
@@ -159,7 +159,7 @@ When implementing a change (especially from an issue/task):
 1. Read relevant surrounding code and match existing conventions.
 2. Make the smallest correct change that satisfies the request.
 3. Update tests when behavior changes and run `uv run ./run_tests.py`. For local page changes, use `uv run ./run_tests.py vivo_app -v`.
-4. Check changed Python files with Pylance or Pyright. If a check cannot run, report what prevented it and the concrete command or setup needed.
+4. Before finishing significant new code or changes, run `ruff check` and `ruff format --check` on the changed Python files, then check those files with Pylance using the project's `.venv` interpreter and type-checking settings. Use Pyright if Pylance is unavailable. Fix warnings and errors instead of suppressing diagnostics. If a check cannot run, report what prevented it and the concrete command or setup needed.
 
 ### Issue-based work and review
 

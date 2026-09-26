@@ -55,32 +55,21 @@
       sections.forEach(function (s) { show(s); });
     }
 
-    // Initialize: if a button has .active, reflect it; else default to Overview
-    var activeBtn = btns.find(function (b) { return b.classList.contains('active'); });
-    if (activeBtn && activeBtn.id !== 'tabAllBtn') {
-      var sid = mapBtnToSection(activeBtn.id);
-      if (sid) showOnly(sid);
-    } else {
-      // default to Overview
-      showOnly('tabOverview');
-      var overviewBtn = $('#tabOverviewBtn');
-      if (overviewBtn) setActive(btns, overviewBtn);
+    function activateFromHash() {
+      var wanted = window.location.hash.slice(1) || 'Overview';
+      var active = btns.find(function (b) { return b.getAttribute('href') === '#' + wanted; });
+      if (!active) active = $('#tabOverviewBtn');
+      if (active && active.id === 'tabAllBtn') showAll();
+      else if (active) showOnly(mapBtnToSection(active.id));
+      setActive(btns, active);
     }
-
-    // Wire clicks
+    activateFromHash();
+    window.addEventListener('hashchange', activateFromHash);
     btns.forEach(function (btn) {
       btn.addEventListener('click', function (ev) {
         ev.preventDefault();
-        if (btn.id === 'tabAllBtn') {
-          showAll();
-          setActive(btns, btn);
-          return false;
-        }
-        var sectionId = mapBtnToSection(btn.id);
-        if (!sectionId) return false;
-        showOnly(sectionId);
-        setActive(btns, btn);
-        return false;
+        window.location.hash = btn.getAttribute('href');
+        activateFromHash();
       });
     });
   });

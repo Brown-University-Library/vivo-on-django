@@ -75,6 +75,8 @@ uv run ./manage.py runserver 127.0.0.1:8000
 
 Open <http://127.0.0.1:8000/> to view the homepage. Informational pages include `/about/`, `/faq/`, and `/help/`. The current `/display/n123/` page uses sample record data; `/display/n123/?format=json` returns that display data as JSON. Stop the server with Ctrl+C.
 
+To render selected searches and profiles from a separately distributed local data bundle, follow [Prepared data for local pages](docs/prepared_data.md). The guide describes mode selection, bundle validation, supported requests, and current limits. Prepared data does not require Solr access.
+
 The local settings write application logs to `../logs/django.log` and use `../cache_dir` for cached responses. Some unfinished routes return placeholder text. Search is not yet connected to Solr, so a successful page response does not demonstrate a working search against real records.
 
 ## Tests

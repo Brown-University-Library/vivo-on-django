@@ -1,0 +1,19 @@
+<div class="container profile">
+  <div class="wrapper__back-to-search"><a href="{{ back_to_search }}" class="back-to-search">Back to Search</a></div>
+  <h1>{{ profile.name }}</h1>
+  <div class="row person-content">
+    <aside class="col-md-3 col-sm-4" id="people-left-panel">
+      <img src="{{ profile.thumbnail }}" alt="Profile picture of {{ profile.name }}" class="img-circle" width="200" height="200">
+      <p>{{ profile.title }}</p>
+      <nav id="tabButtons" class="btn-group-vertical" aria-label="Profile sections">
+        {% for section in profile.sections %}<a id="tab{{ section.id }}Btn" class="btn btn-default{% if forloop.first %} active{% endif %}" href="#{{ section.id }}">{{ section.label }}</a>{% endfor %}
+        {% if profile.sections|length > 1 %}<a id="tabAllBtn" class="btn btn-default" href="#All">View All</a>{% endif %}
+      </nav>
+    </aside>
+    <div class="col-md-9 col-sm-8" id="people-right-panel">
+      <div id="section_overview">
+        {% for section in profile.sections %}<section id="tab{{ section.id }}" class="tabFinder"><h2>{{ section.label }}</h2>{{ section.html|safe }}</section>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>

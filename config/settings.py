@@ -19,6 +19,8 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+## django PROJECT settings ------------------------------------------
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -29,53 +31,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-key-change-me-in-production')
 
-# Site configuration pulled from environment to mirror legacy Rails behavior
-GOOGLE_ANALYTICS_KEY = os.getenv('GOOGLE_ANALYTICS_KEY', '')
-MANAGER_URL = os.getenv('MANAGER_URL', 'https://vivo.brown.edu/manager')
-NOTICE_BANNER = os.getenv('NOTICE_BANNER', '')
-CONTACT_US_URL_TEMPLATE = os.getenv(
-    'CONTACT_US_URL_TEMPLATE',
-    'https://docs.google.com/forms/d/e/1FAIpQLSfK1UdN-DfWid2UbboAXc3Pj_rgZZqI0E7dHI58EOdTlYLrrQ/viewform?usp=pp_url&entry.1611024492={LINK}',
-)
-BOOK_COVER_STUB = os.getenv('BOOK_COVER_STUB', 'true').lower() == 'true'
-BOOK_COVER_BASE_PATH = os.getenv('BOOK_COVER_BASE_PATH', '')
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = json.loads(os.environ['ALLOWED_HOSTS_JSON'])
 
-
-# Custom user model
-AUTH_USER_MODEL = 'vivo_app.CustomUser'
-
-# Login/Logout URLs
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'home'
-
-# Password validation
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-        'OPTIONS': {
-            'min_length': 9,
-        },
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
-# Session settings
-SESSION_COOKIE_AGE = 1209600  # 2 weeks, in seconds
-SESSION_SAVE_EVERY_REQUEST = True
 
 # Authentication Settings
 AUTH_USER_MODEL = 'auth.User'  # Using default User model with UserProfile
@@ -86,30 +46,11 @@ LOGOUT_REDIRECT_URL = 'home'
 # Email settings (configure these in your .env file)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.example.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'webmaster@example.com')
-
-# Password validation
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-        'OPTIONS': {
-            'min_length': 9,
-        },
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
 
 # Session settings
 SESSION_COOKIE_AGE = 1209600  # 2 weeks, in seconds
@@ -127,12 +68,8 @@ INSTALLED_APPS = [
     'vivo_app',
 ]
 
-# Live reload in development (opt-in via env var to avoid import errors if not installed)
-ENABLE_BROWSER_RELOAD = os.getenv('DJANGO_BROWSER_RELOAD', 'false').lower() == 'true'
-if DEBUG and ENABLE_BROWSER_RELOAD:
-    INSTALLED_APPS += ['django_browser_reload']
-
 MIDDLEWARE = [
+    'vivo_app.middleware.LocalPageDataMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -141,9 +78,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-if DEBUG and ENABLE_BROWSER_RELOAD:
-    MIDDLEWARE.insert(0, 'django_browser_reload.middleware.BrowserReloadMiddleware')
 
 ROOT_URLCONF = 'config.urls'
 
@@ -278,3 +212,25 @@ os.makedirs(os.path.join(BASE_DIR, '../logs'), exist_ok=True)
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+## django APP settings ----------------------------------------------
+
+# Site configuration pulled from environment to mirror legacy Rails behavior
+GOOGLE_ANALYTICS_KEY = os.getenv('GOOGLE_ANALYTICS_KEY', '')
+MANAGER_URL = os.getenv('MANAGER_URL', 'https://vivo.brown.edu/manager')
+NOTICE_BANNER = os.getenv('NOTICE_BANNER', '')
+CONTACT_US_URL_TEMPLATE = os.getenv(
+    'CONTACT_US_URL_TEMPLATE',
+    'https://docs.google.com/forms/d/e/1FAIpQLSfK1UdN-DfWid2UbboAXc3Pj_rgZZqI0E7dHI58EOdTlYLrrQ/viewform?usp=pp_url&entry.1611024492={LINK}',
+)
+BOOK_COVER_STUB = os.getenv('BOOK_COVER_STUB', 'true').lower() == 'true'
+BOOK_COVER_BASE_PATH = os.getenv('BOOK_COVER_BASE_PATH', '')
+PAGE_DATA_MODE = os.getenv('PAGE_DATA_MODE', 'prototype')
+PREPARED_FIXTURE_DIR = os.getenv('PREPARED_FIXTURE_DIR', '../prepared_fixture_data')
+
+# Live reload in development (opt-in via environment configuration)
+ENABLE_BROWSER_RELOAD = os.getenv('DJANGO_BROWSER_RELOAD', 'false').lower() == 'true'
+if DEBUG and ENABLE_BROWSER_RELOAD:
+    INSTALLED_APPS += ['django_browser_reload']
+    MIDDLEWARE.insert(0, 'django_browser_reload.middleware.BrowserReloadMiddleware')

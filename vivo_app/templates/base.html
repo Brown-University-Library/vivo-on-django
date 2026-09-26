@@ -20,7 +20,11 @@
         </script>
     {% endif %}
 
+    {% if local_page_data %}
+    <style>@font-face { font-family: 'Source Sans Pro'; font-style: normal; font-weight: 400; src: url('/__prepared_assets/source-sans-pro.ttf') format('truetype'); }</style>
+    {% else %}
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet">
+    {% endif %}
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap-theme.css' %}">
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
