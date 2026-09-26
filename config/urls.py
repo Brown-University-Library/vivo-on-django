@@ -88,6 +88,10 @@ urlpatterns = [
     path('edit/web_link/<str:faculty_id>/delete', vivo_views.web_link_delete, name='web_link_delete'),
     
     # Search
+    path('search', vivo_views.search),
+    path('search_facets', vivo_views.search_facets),
+    path('display/<str:id>', vivo_views.display_show),
+    path('__prepared_assets/<str:name>', vivo_views.prepared_asset, name='prepared_asset'),
     path('search/', vivo_views.search, name='search'),
     path('search/advanced/', vivo_views.advanced_search, name='advanced_search'),
     path('search_facets/', vivo_views.search_facets, name='search_facets'),

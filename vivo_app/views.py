@@ -3,7 +3,7 @@ from urllib.parse import quote_plus
 
 from django.conf import settings
 from django.shortcuts import redirect, render
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpRequest, Http404
 from django.template.loader import get_template
 from django.templatetags.static import static
 from django.urls import reverse
@@ -12,6 +12,9 @@ import logging
 from .lib.display import get_type_for_id, build_display_context, build_publications_context
 from .lib.assets import get_random_background_relpath
 from .lib.home import BookCover, get_book_cover_pages
+from .lib.page_data import get_bundle, get_profile_data, get_response_data, get_search_data
+from .lib.prepared_data import PageDataError
+from .lib.page_rendering import data_unavailable, prepared_response, query_pairs
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +33,7 @@ def render_or_stub(request, template_name, context=None, status=200):
         return render(request, template_name, context, status=status)
     except Exception:
         # Fallback stub response to keep endpoints working during scaffolding
-        return HttpResponse(f"Stub for {template_name}", status=status, content_type="text/plain")
+        return HttpResponse(f"Stub for {template_name}".encode(), status=status, content_type="text/plain")
 
 # Home and static pages
 def home_index(request):
@@ -135,6 +138,20 @@ def display_show(request, id):
       to preserve existing test expectations and scaffolding behavior.
     - For known types, build a minimal presenter-like context for progressive parity.
     """
+    try:
+        if request.GET.get('format') == 'json':
+            saved_response = get_response_data(request.path, query_pairs(request.GET))
+            if saved_response is not None:
+                return prepared_response(saved_response)
+        else:
+            profile_data = get_profile_data(request.path, query_pairs(request.GET))
+            if profile_data is not None:
+                return render(request, 'display/show.html', {
+                    'profile': profile_data,
+                    'back_to_search': request.session.get('prepared_search_url', '/search'),
+                })
+    except PageDataError as exc:
+        return data_unavailable(exc)
     entity_type = get_type_for_id(id)
 
     # JSON response handling
@@ -235,6 +252,18 @@ def web_link_delete(request, faculty_id):
 # Search
 def search(request):
     """Handle search requests."""
+    try:
+        if request.GET.get('format') == 'json':
+            saved_response = get_response_data(request.path, query_pairs(request.GET))
+            if saved_response is not None:
+                return prepared_response(saved_response)
+        else:
+            search_data = get_search_data(request.path, query_pairs(request.GET))
+            if search_data is not None:
+                request.session['prepared_search_url'] = request.get_full_path()
+                return render(request, 'search/results.html', search_data)
+    except PageDataError as exc:
+        return data_unavailable(exc)
     query = request.GET.get('q', '')
     context = {'query': query}
     return render_or_stub(request, 'search/results.html', context)
@@ -245,8 +274,32 @@ def advanced_search(request):
 
 def search_facets(request):
     """Return search facets."""
-    # TODO: Implement facet logic
+    try:
+        saved_response = get_response_data(request.path, query_pairs(request.GET))
+        if saved_response is not None:
+            return prepared_response(saved_response)
+    except PageDataError as exc:
+        return data_unavailable(exc)
+    # TODO: Implement facet logic for authentic sources.
     return JsonResponse({'facets': {}})
+
+
+def prepared_asset(request: HttpRequest, name: str) -> HttpResponse:
+    """
+    Serves only assets explicitly included in the selected external bundle.
+
+    Called by: config.urls
+    """
+    try:
+        bundle = get_bundle()
+        if bundle is None or name not in bundle.assets:
+            raise Http404('Prepared asset is unavailable.')
+        asset = bundle.assets[name]
+        response = HttpResponse(asset.body, content_type=asset.content_type)
+        response['X-Content-Type-Options'] = 'nosniff'
+    except PageDataError as exc:
+        response = data_unavailable(exc)
+    return response
 
 # Reports
 def subject_lib_list(request):
@@ -301,7 +354,7 @@ def individual_export(request, id, fmt, id2=None):
         payload['id2'] = id2
     if fmt.lower() == 'json' or request.GET.get('format') == 'json':
         return JsonResponse(payload)
-    return HttpResponse(f"Export for {id} as {fmt}", content_type='text/plain')
+    return HttpResponse(f"Export for {id} as {fmt}".encode(), content_type='text/plain')
 
 
 # Editor fast search (de-prioritized functionality; stub only)

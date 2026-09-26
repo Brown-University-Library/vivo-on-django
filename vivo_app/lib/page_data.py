@@ -1,0 +1,88 @@
+"""
+Supplies page-family data through explicitly selected local modes.
+"""
+
+from functools import lru_cache
+from pathlib import Path
+
+from django.conf import settings
+
+from vivo_app.lib.prepared_data import PageDataError, PreparedBundle, PreparedEntry, load_bundle
+
+
+def selected_mode() -> str:
+    """
+    Rejects unknown modes and source processing that is not implemented yet.
+
+    Called by: get_bundle(), checks.check_page_data()
+    """
+    mode: str = settings.PAGE_DATA_MODE
+    if mode not in {'prototype', 'prepared', 'replay', 'live'}:
+        raise PageDataError('PAGE_DATA_MODE must be prototype, prepared, replay, or live.')
+    if mode in {'replay', 'live'}:
+        raise PageDataError(f'{mode} page processing is not implemented. Select prepared data explicitly for local work.')
+    return mode
+
+
+@lru_cache(maxsize=4)
+def cached_bundle(directory: str) -> PreparedBundle:
+    """
+    Loads an immutable bundle once per process; a new version requires a restart.
+
+    Called by: get_bundle()
+    """
+    return load_bundle(Path(directory))
+
+
+def get_bundle() -> PreparedBundle | None:
+    """
+    Loads the explicitly selected prepared bundle or retains explicit prototype mode.
+
+    Called by: get_search_data(), get_profile_data(), get_response_data(), views.prepared_asset()
+    """
+    result = None
+    if selected_mode() == 'prepared':
+        directory = Path(settings.PREPARED_FIXTURE_DIR)
+        if not directory.is_absolute():
+            directory = Path(settings.BASE_DIR) / directory
+        result = cached_bundle(str(directory.resolve()))
+    return result
+
+
+def get_search_data(path: str, query: list[tuple[str, str]]) -> dict[str, object] | None:
+    """
+    Supplies an exact search state without implementing a local search engine.
+
+    Called by: views.search()
+    """
+    bundle = get_bundle()
+    result = None
+    if bundle is not None:
+        result = dict(bundle.page('search', path, query).data)
+        page, page_size, total = result['page'], result['page_size'], result['total']
+        if isinstance(page, int) and isinstance(page_size, int) and isinstance(total, int):
+            result['start'] = (page - 1) * page_size + 1 if total else 0
+            result['end'] = min(page * page_size, total)
+    return result
+
+
+def get_profile_data(path: str, query: list[tuple[str, str]]) -> dict[str, object] | None:
+    """
+    Supplies a profile with its recorded optional sections and explicit identity.
+
+    Called by: views.display_show()
+    """
+    bundle = get_bundle()
+    result = None if bundle is None else dict(bundle.page('profile', path, query).data)
+    return result
+
+
+def get_response_data(path: str, query: list[tuple[str, str]]) -> PreparedEntry | None:
+    """
+    Supplies original bytes for saved JSON, download, or redirect responses.
+
+    Called by: views.search(), views.display_show(), views.search_facets()
+    """
+    bundle = get_bundle()
+    result = None if bundle is None else bundle.page('response', path, query)
+    return result
