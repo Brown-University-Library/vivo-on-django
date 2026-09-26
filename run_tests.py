@@ -51,7 +51,7 @@ def normalize_test_label(test_label: str) -> str:
 
     Called by: run_tests()
     """
-    normalized_label: str = test_label[:-3] if test_label.endswith('.py') else test_label
+    normalized_label: str = test_label.removesuffix('.py')
     if normalized_label in {'tests', 'test', '.'}:
         normalized_label = '.'
     return normalized_label

@@ -3,11 +3,12 @@
 Provides small utilities for selecting randomized images to support
 homepage parity with the legacy Rails implementation.
 """
+
 from __future__ import annotations
 
-from pathlib import Path
 import random
-from typing import List
+from pathlib import Path
+
 from django.conf import settings
 
 
@@ -18,15 +19,15 @@ def get_random_background_relpath() -> str:
     returns one randomized file with image extensions. Falls back to a safe
     placeholder if none are present.
     """
-    candidates: List[str] = []
-    exts = ("*.jpg", "*.jpeg", "*.png", "*.webp")
-    for static_dir in getattr(settings, "STATICFILES_DIRS", []):
-        base = Path(static_dir) / "images" / "new-backgrounds"
+    candidates: list[str] = []
+    exts = ('*.jpg', '*.jpeg', '*.png', '*.webp')
+    for static_dir in getattr(settings, 'STATICFILES_DIRS', []):
+        base = Path(static_dir) / 'images' / 'new-backgrounds'
         if base.exists():
             for pattern in exts:
                 for fp in base.glob(pattern):
-                    candidates.append(f"images/new-backgrounds/{fp.name}")
+                    candidates.append(f'images/new-backgrounds/{fp.name}')
     if candidates:
         return random.choice(candidates)
     # Fallback image used earlier in CSS
-    return "images/vivo_blank_profile.jpg"
+    return 'images/vivo_blank_profile.jpg'
