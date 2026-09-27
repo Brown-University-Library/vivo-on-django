@@ -154,6 +154,8 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 
 ## Change workflow expectations
 
+- For every user prompt, append the prompt and a concise summary of the resulting work or answer to `../PROMPTS.md`, with a local timestamp. Treat it as an archive: do not maintain its contents list. Keep it outside Git and update it efficiently without rereading the whole file unless older context is needed.
+
 When implementing a change (especially from an issue/task):
 
 1. Read relevant surrounding code and match existing conventions.
