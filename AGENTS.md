@@ -81,7 +81,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 
 ### HTTP and networking
 
-- Use `httpx` for all HTTP calls.
+- Use `httpx2` for application HTTP calls and new HTTP helpers. Add it as a dependency when source-client implementation begins.
 - Do not introduce alternate HTTP libraries (e.g., `requests`, `aiohttp`) unless the repository already depends on them and there is a documented reason.
 
 ### Docstrings
@@ -108,6 +108,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 - Do not use hard line-breaks in markdown files; let paragraphs wrap naturally.
 - When creating a Markdown file with more than three top-level `##` headings, add a table of contents near the top with links to those `##` headings.
 - Use plain, direct language. Explain who does what, in what order, and why; describe command behavior and failure recovery with concrete actions.
+- Say "made-up names and records in repository examples; real data stays outside Git" instead of "invented and non-identifying examples."
 
 
 ## Django architecture conventions
@@ -155,6 +156,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 ## Change workflow expectations
 
 - For every user prompt, append the prompt and a concise summary of the resulting work or answer to `../PROMPTS.md`, with a local timestamp. Treat it as an archive: do not maintain its contents list. Keep it outside Git and update it efficiently without rereading the whole file unless older context is needed.
+- The owner prefers Sol with High reasoning for routine work. Flag a concrete reason to consider Astra with Extra-high reasoning when a task or unresolved problem would benefit; do not switch models automatically.
 
 When implementing a change (especially from an issue/task):
 
@@ -265,7 +267,7 @@ When implementing a change (especially from an issue/task):
 
 ### Local configuration and current limitations
 
-- Settings call `load_dotenv()` and require `ALLOWED_HOSTS_JSON`, `STATIC_URL`, and `STATIC_ROOT`. The enclosing workspace may supply `.env`; `sample.env` does not list every required setting. Keep real values out of repository content.
+- Settings call `load_dotenv()` and require `ALLOWED_HOSTS_JSON`, `STATIC_URL`, and `STATIC_ROOT`. Use `example.env` for current keys and Rails counterparts; later source settings are explicitly commented out. Keep the actual `.env` outside Git.
 - Local settings use `../DBs/`, `../cache_dir/`, and `../logs/`. Imports create the logs directory, but local database use requires its parent directory to exist. After relocating a checkout, verify `.venv` and use `uv sync --locked` to prepare dependencies as needed.
 - Several routes return placeholders. `render_or_stub()` can return a successful text response when a template fails, so a status-code assertion alone does not prove a page renders correctly. Check content, templates, and browser behavior for affected pages.
 - `?format=json` changes the response for many views; preserve confirmed query-parameter behavior. Keep individual-export URL patterns before the generic individual route.
