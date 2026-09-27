@@ -264,6 +264,7 @@ class PreparedDataTests(TestCase):
             self.assertContains(response, 'Invented first book')
             self.assertContains(response, 'Invented second book')
             self.assertContains(response, 'background-image: url(/__prepared_assets/portrait.png)')
+            self.assertContains(response, 'alt="A clip art visualization of a simple network"')
             self.assertContains(self.get_page('/display/invented-a'), 'Invented overview.')
         self.assertEqual(self.get_page('/?unsupported=yes').status_code, 503)
 
