@@ -23,17 +23,3 @@ dev = [
     "pillow>=11,<13",
     "playwright>=1.63,<2",
 ]
-
-[tool.birkin_project_guidelines]
-llm_code_directives = [
-  "use python-3.12 type-hints everywhere for functions and variables; avoid unnecessary `typing` imports via using generics",
-  "structure scripts with `if __name__ == '__main__': main()`",
-  "keep main() as simple as possible; delegate to helper functions",
-  "for tests, use standard unittest framework, not pytest",
-  "to run tests, always use `uv`; example: `uv run -m unittest discover -v`",
-  "use `uv` to run all code and scripts; do not invoke `python` or `python3` directly; example: `uv run ./the_script.py`",
-  "use httpx2 for application HTTP calls and new HTTP helpers",
-  "don't use functions within functions",
-  "prefer single-return functions",
-  "use present-tense triple-quoted function docstrings; opening and closing triple quotes on their own lines; example: \"\"\"\nParses... (not Parse...)\n\"\"\""
-]
