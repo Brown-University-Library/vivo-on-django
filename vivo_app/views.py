@@ -1,6 +1,7 @@
 """Views for the VIVO Django application."""
 
 import logging
+import random
 import sys
 from urllib.parse import quote_plus
 
@@ -14,7 +15,14 @@ from django.views.decorators.http import require_http_methods
 from .lib.assets import get_random_background_relpath
 from .lib.display import build_display_context, build_publications_context, get_type_for_id
 from .lib.home import BookCover, get_book_cover_pages
-from .lib.page_data import get_bundle, get_profile_data, get_response_data, get_search_data
+from .lib.page_data import (
+    get_bundle,
+    get_home_data,
+    get_organization_data,
+    get_profile_data,
+    get_response_data,
+    get_search_data,
+)
 from .lib.page_rendering import data_unavailable, prepared_response, query_pairs, render_or_stub
 from .lib.prepared_data import PageDataError
 
@@ -29,6 +37,16 @@ def home_index(request):
         query: str = alias_value.replace('_', ' ')
         redirect_url: str = f'{reverse("search")}?q={quote_plus(query)}'
         return redirect(redirect_url)
+
+    try:
+        home_data = get_home_data(request.path, query_pairs(request.GET))
+        if home_data is not None:
+            backgrounds = home_data['backgrounds']
+            if isinstance(backgrounds, list):
+                home_data['hero_background_url'] = random.choice(backgrounds)
+            return render(request, 'home/index.html', home_data)
+    except PageDataError as exc:
+        return data_unavailable(exc)
 
     hero_background_relpath: str = get_random_background_relpath()
     carousel_pages_raw: list[list[BookCover]] = get_book_cover_pages(page_size=4)
@@ -141,6 +159,10 @@ def display_show(request, id):
             if saved_response is not None:
                 return prepared_response(saved_response)
         else:
+            if id.startswith('org-'):
+                organization_data = get_organization_data(request.path, query_pairs(request.GET))
+                if organization_data is not None:
+                    return render(request, 'display/organization_data.html', {'organization': organization_data})
             profile_data = get_profile_data(request.path, query_pairs(request.GET))
             if profile_data is not None:
                 return render(
@@ -301,6 +323,23 @@ def search_facets(request):
     return JsonResponse({'facets': {}})
 
 
+def prepared_document(request: HttpRequest, filename: str) -> HttpResponse:
+    """
+    Serves a document only when its exact request exists in the selected bundle.
+
+    Called by: config.urls
+    """
+    try:
+        entry = get_response_data(request.path, query_pairs(request.GET))
+        if entry is None:
+            raise Http404('Prepared document is unavailable.')
+        response = prepared_response(entry)
+        response['X-Content-Type-Options'] = 'nosniff'
+    except PageDataError as exc:
+        response = data_unavailable(exc)
+    return response
+
+
 def prepared_asset(request: HttpRequest, name: str) -> HttpResponse:
     """
     Serves only assets explicitly included in the selected external bundle.
@@ -343,11 +382,23 @@ def bot_detect_challenge(request):
 # Legacy VIVO URLs
 def people(request):
     """Legacy people listing."""
+    try:
+        saved_response = get_response_data(request.path, query_pairs(request.GET))
+        if saved_response is not None:
+            return prepared_response(saved_response)
+    except PageDataError as exc:
+        return data_unavailable(exc)
     return render_or_stub(request, 'legacy/people.html')
 
 
 def organizations(request):
     """Legacy organizations listing."""
+    try:
+        saved_response = get_response_data(request.path, query_pairs(request.GET))
+        if saved_response is not None:
+            return prepared_response(saved_response)
+    except PageDataError as exc:
+        return data_unavailable(exc)
     return render_or_stub(request, 'legacy/organizations.html')
 
 
@@ -363,6 +414,12 @@ def individual_redirect(request, id):
 
     For now, return a simple stub or JSON with the id, keeping behavior predictable.
     """
+    try:
+        saved_response = get_response_data(request.path, query_pairs(request.GET))
+        if saved_response is not None:
+            return prepared_response(saved_response)
+    except PageDataError as exc:
+        return data_unavailable(exc)
     context = {'id': id}
     return render_or_stub(request, 'vivo/individual_redirect.html', context)
 

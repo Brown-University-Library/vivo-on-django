@@ -19,6 +19,10 @@ staging = [
 prod = [ 
     "mysqlclient~=2.2.0", 
     ]
+dev = [
+    "pillow>=11,<13",
+    "playwright>=1.63,<2",
+]
 
 [tool.birkin_project_guidelines]
 llm_code_directives = [

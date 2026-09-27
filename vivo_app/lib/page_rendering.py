@@ -4,7 +4,7 @@ Converts validated page data and explicit failures to HTTP responses.
 
 import logging
 
-from django.http import HttpRequest, HttpResponse, JsonResponse, QueryDict
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse, QueryDict
 from django.shortcuts import render
 from django.template.loader import get_template
 
@@ -49,7 +49,13 @@ def prepared_response(entry: PreparedEntry) -> HttpResponse:
 
     Called by: views.search(), views.display_show(), views.search_facets()
     """
-    response = HttpResponse(entry.body, status=entry.status, content_type=entry.content_type)
+    location = next((value for key, value in entry.headers if key.lower() == 'location'), '')
+    if 300 <= entry.status < 400 and location:
+        response = HttpResponseRedirect(location, content_type=entry.content_type)
+        response.status_code = entry.status
+        response.content = entry.body
+    else:
+        response = HttpResponse(entry.body, status=entry.status, content_type=entry.content_type)
     for key, value in entry.headers:
         response[key] = value
     return response

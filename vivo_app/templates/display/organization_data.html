@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ organization.page_title }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/prepared_organization.css' %}">{% endblock %}
+{% block content %}
+{% include "includes/prepared_search.html" %}
+<div class="container org-profile">
+  <div class="row org-content" itemscope itemtype="http://schema.org/Organization">
+    <div class="container organization-page">
+      <div class="organization-photo-panel col-xs-12 col-sm-12 col-md-4 col-lg-4">
+        <section itemscope itemtype="http://schema.org/Organization" id="individual-intro" class="vcard person" role="region">
+          <section role="region"><div id="photo-wrapper" aria-hidden="true">
+            <img alt="Organization Picture" src="{{ organization.image }}">
+          </div></section>
+        </section>
+      </div>
+      <div class="decorative-bar"></div>
+      <div class="organization-title">
+        <h2>{{ organization.name }}</h2>
+        {% if organization.website_links %}<ul>{% for link in organization.website_links %}<li><a href="{{ link.url }}">{{ link.label }}</a></li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="col-md-8 col-sm-12 col-xs-12" id="section_overview">
+        <div class="organization-overview">{{ organization.overview_html|safe }}</div>
+        {% if organization.visualization_url %}<div class="viz_collab-wrapper">
+          <div class="viz_collab-image" aria-hidden="true"><svg transform="scale(4)" viewBox="{{ organization.visualization_graph.view_box }}">
+            {% for line in organization.visualization_graph.lines %}<line x1="{{ line.x1 }}" y1="{{ line.y1 }}" x2="{{ line.x2 }}" y2="{{ line.y2 }}" style="stroke: rgb(204, 204, 204); stroke-width: 1;"></line>{% endfor %}
+            {% for node in organization.visualization_graph.nodes %}<g transform="translate({{ node.x }},{{ node.y }})"><circle r="{{ node.radius }}" style="fill: {{ node.color }};"></circle></g>{% endfor %}
+          </svg></div>
+          <a id="viz_collab" class="btn btn-default" href="{{ organization.visualization_url }}" target="_blank" title="Visualize collaboration for members of this organization">Visualize it <i class="glyphicon glyphicon-signal" style="color:rgb(232, 217, 139);" aria-hidden="true"></i></a>
+        </div>{% endif %}
+        <div id="tabOverview" class="tabFinder">
+          <h3>Affiliations</h3>
+          {% if organization.administrative_positions %}
+            <h4 class="brown-affiliations panel-heading">Faculty Administrative Positions</h4>
+            <div class="brown-affiliations-list">{% for member in organization.administrative_positions %}
+              <div class="brown-affiliate"><img alt="Faculty Picture" src="{{ member.image }}"><p><a href="{{ member.url }}">{{ member.name }}</a><span>{{ member.title }}</span></p></div>
+            {% endfor %}</div>
+          {% endif %}
+          {% if organization.faculty_positions %}
+            <h4 class="brown-affiliations panel-heading">Faculty Positions</h4>
+            <div class="brown-affiliations-list">{% for member in organization.faculty_positions %}
+              <div class="brown-affiliate"><img alt="Faculty Picture" src="{{ member.image }}"><p><a href="{{ member.url }}">{{ member.name }}</a><span>{{ member.title }}</span></p></div>
+            {% endfor %}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

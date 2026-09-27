@@ -61,7 +61,7 @@ def get_search_data(path: str, query: list[tuple[str, str]]) -> dict[str, object
         result = dict(bundle.page('search', path, query).data)
         page, page_size, total = result['page'], result['page_size'], result['total']
         if isinstance(page, int) and isinstance(page_size, int) and isinstance(total, int):
-            result['start'] = (page - 1) * page_size + 1 if total else 0
+            result['start'] = (page - 1) * page_size + 1
             result['end'] = min(page * page_size, total)
     return result
 
@@ -74,6 +74,28 @@ def get_profile_data(path: str, query: list[tuple[str, str]]) -> dict[str, objec
     """
     bundle = get_bundle()
     result = None if bundle is None else dict(bundle.page('profile', path, query).data)
+    return result
+
+
+def get_organization_data(path: str, query: list[tuple[str, str]]) -> dict[str, object] | None:
+    """
+    Supplies one exact organization page with its ordered member roles.
+
+    Called by: views.display_show()
+    """
+    bundle = get_bundle()
+    result = None if bundle is None else dict(bundle.page('organization', path, query).data)
+    return result
+
+
+def get_home_data(path: str, query: list[tuple[str, str]]) -> dict[str, object] | None:
+    """
+    Supplies the observed homepage book order and background choices.
+
+    Called by: views.home_index()
+    """
+    bundle = get_bundle()
+    result = None if bundle is None else dict(bundle.page('home', path, query).data)
     return result
 
 

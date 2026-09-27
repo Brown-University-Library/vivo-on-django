@@ -9,7 +9,7 @@
 {% block content %}
     <h1 class="sr-only">Welcome to Researchers@Brown</h1>
 
-    <div class="row hero" style="background-image: url({% static hero_background_relpath %}); background-size: cover; background-position: 50% 50%; background-repeat: no-repeat;">
+    <div class="row hero" style="background-image: url({% if hero_background_url %}{{ hero_background_url }}{% else %}{% static hero_background_relpath %}{% endif %}); background-size: cover; background-position: 50% 50%; background-repeat: no-repeat;">
       <div class="theme-showcase">
         <div class="col-md-12">
           <div class="container" role="main">

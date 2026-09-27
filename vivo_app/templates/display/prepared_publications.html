@@ -1,0 +1,10 @@
+<h3 class="prepared-publications-heading">Publications</h3>
+<div class="panel-body">
+  <div class="btn-group" role="group" aria-label="Filter publications by type">
+    {% if profile.publication_filters|length > 1 %}<button type="button" class="btn btn-default active btn-filter-pub" id="btn-for_all" data-publication-type="all" aria-pressed="true">View All ({{ profile.publications|length }})</button>{% endif %}
+    {% for filter in profile.publication_filters %}<button type="button" class="btn btn-default btn-filter-pub{% if profile.publication_filters|length == 1 %} active{% endif %}" id="btn-for_{{ filter.id }}" data-publication-type="{{ filter.id }}" aria-pressed="{% if profile.publication_filters|length == 1 %}true{% else %}false{% endif %}">{{ filter.label }} ({{ filter.count }})</button>{% endfor %}
+  </div>
+  <table class="table table-hover"><tbody>
+    {% for publication in profile.publications %}<tr class="publicationTableRow" data-publication-type="{{ publication.type }}"><td class="citation-data pub-item pub-type_{{ publication.type }}">{{ publication.html|safe }}</td></tr>{% endfor %}
+  </tbody></table>
+</div>

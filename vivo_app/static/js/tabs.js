@@ -33,7 +33,7 @@
   }
 
   ready(function () {
-    var panel = $('#people-right-panel');
+    var panel = $('#section_overview');
     var tabButtons = $('#tabButtons');
     if (!panel || !tabButtons) return; // Only run on people profile pages with tabs
 
@@ -68,8 +68,27 @@
     btns.forEach(function (btn) {
       btn.addEventListener('click', function (ev) {
         ev.preventDefault();
-        window.location.hash = btn.getAttribute('href');
+        history.replaceState(null, '', btn.getAttribute('href'));
         activateFromHash();
+      });
+    });
+  });
+})();
+
+(function () {
+  document.addEventListener('DOMContentLoaded', function () {
+    var buttons = document.querySelectorAll('button[data-publication-type]');
+    var rows = document.querySelectorAll('tr[data-publication-type]');
+    buttons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        var type = button.dataset.publicationType;
+        rows.forEach(function (row) {
+          row.hidden = type !== 'all' && row.dataset.publicationType !== type;
+        });
+        buttons.forEach(function (other) {
+          other.classList.toggle('active', other === button);
+          other.setAttribute('aria-pressed', String(other === button));
+        });
       });
     });
   });

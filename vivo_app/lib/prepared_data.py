@@ -126,7 +126,7 @@ def read_entry(root: Path, value: object, assets: dict[str, PreparedAsset]) -> P
 
     row = object_value(value)
     family = row.get('family')
-    if family not in {'search', 'profile', 'response'}:
+    if family not in {'search', 'profile', 'organization', 'home', 'response'}:
         raise PageDataError('Unsupported prepared page family.')
     _, body = read_file(root, row)
     result: PreparedEntry
@@ -143,6 +143,10 @@ def read_entry(root: Path, value: object, assets: dict[str, PreparedAsset]) -> P
         allowed = {'content-disposition', 'location', 'cache-control'}
         if any(key.lower() not in allowed or '\r' in val or '\n' in val for key, val in headers):
             raise PageDataError('Unsupported supporting response header.')
+        if 300 <= status < 400:
+            locations = [value for key, value in headers if key.lower() == 'location']
+            if len(locations) != 1 or not locations[0].startswith('/') or locations[0].startswith('//'):
+                raise PageDataError('Prepared redirects need one local destination.')
         result = PreparedEntry('response', {}, status, content_type, body, headers)
     else:
         try:
@@ -217,6 +221,8 @@ def load_bundle(directory: Path) -> PreparedBundle:
                 raise PageDataError('Search fields disagree with the saved request query or page.')
         elif entry.family == 'profile' and entry.data['id'] != path.rstrip('/').rsplit('/', 1)[-1]:
             raise PageDataError('Profile identity disagrees with the saved request path.')
+        elif entry.family == 'organization' and entry.data['id'] != path.rstrip('/').rsplit('/', 1)[-1]:
+            raise PageDataError('Organization identity disagrees with the saved request path.')
         requests[key] = name
     cases: dict[str, list[str]] = {}
     for name, items in object_value(manifest.get('cases')).items():
@@ -232,4 +238,31 @@ def load_bundle(directory: Path) -> PreparedBundle:
         raise PageDataError('Every prepared entry must belong to a case.')
     if any(entry.family != 'response' for entry in entries.values()) and 'source-sans-pro.ttf' not in assets:
         raise PageDataError('Prepared HTML pages require the bundled source-sans-pro.ttf font.')
+    validate_documents(entries, requests)
     return PreparedBundle(version, str(origin), str(prepared_at), revision, entries, requests, cases, assets)
+
+
+def validate_documents(
+    entries: dict[str, PreparedEntry], requests: dict[tuple[str, tuple[tuple[str, str], ...]], str]
+) -> None:
+    """
+    Requires every profile CV link to resolve to a saved PDF response.
+
+    Called by: load_bundle()
+    """
+    from urllib.parse import parse_qsl, urlsplit
+
+    for entry in entries.values():
+        cv_url = entry.data.get('cv_url') if entry.family == 'profile' else None
+        if isinstance(cv_url, str) and cv_url:
+            parsed = urlsplit(cv_url)
+            name = requests.get(request_key(parsed.path, parse_qsl(parsed.query, keep_blank_values=True)))
+            document = entries.get(name) if name else None
+            if (
+                document is None
+                or document.family != 'response'
+                or document.status != 200
+                or document.content_type != 'application/pdf'
+                or not document.body.startswith(b'%PDF-')
+            ):
+                raise PageDataError('A profile CV link needs a saved PDF response.')

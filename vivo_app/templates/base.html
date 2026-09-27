@@ -25,16 +25,21 @@
     {% else %}
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet">
     {% endif %}
+    {% if local_page_data %}<link rel="stylesheet" href="{% static 'css/bootstrap-theme.css' %}">{% endif %}
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
-    <link rel="stylesheet" href="{% static 'css/bootstrap-theme.css' %}">
+    {% if not local_page_data %}<link rel="stylesheet" href="{% static 'css/bootstrap-theme.css' %}">{% endif %}
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% if local_page_data %}
+    <link rel="stylesheet" href="{% static 'css/individual.css' %}">
+    <link rel="stylesheet" href="{% static 'css/public.css' %}">
+    {% endif %}
     <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     {% block extra_css %}{% endblock %}
     {% block head_extra %}{% endblock %}
 </head>
-<body class="no-logo fae {% block body_class %}{% endblock %}">
+<body class="no-logo fae {% if local_page_data %}prepared-data{% endif %} {% block body_class %}{% endblock %}">
 <header id="branding" role="banner">
     <div class="header">
         <div class="hgroup">
@@ -93,14 +98,14 @@
         <div class="container">
             <div class="col-md-12">
                 <nav role="navigation">
-                    <ul id="footer-nav" role="list">
+                    {% spaceless %}<ul id="footer-nav" role="list">
                         <li role="listitem"><a href="{% url 'about' %}" title="About Researchers@Brown">About</a></li>
                         <li role="listitem"><a href="{% url 'help' %}" title="Help and Frequently Asked Questions">Help</a></li>
                         <li role="listitem"><a href="https://brown.edu/" target="_blank" rel="noopener">Brown University</a></li>
                         <li role="listitem"><a href="{{ contact_us_url }}" target="_blank" rel="noopener" title="Submit feedback about Researchers@Brown">Feedback</a></li>
-                    </ul>
+                    </ul>{% endspaceless %}
                 </nav>
-                <p class="copyright">&copy; {% now "Y" %} <a href="https://brown.edu/" target="_blank" rel="noopener">Brown University</a> |
+                <p class="copyright">&copy; {% if local_page_data %}2017{% else %}{% now "Y" %}{% endif %} <a href="https://brown.edu/" target="_blank" rel="noopener">Brown University</a> |
                     <a class="terms" href="{% url 'terms' %}" title="Terms of Use">Terms of Use</a> |
                     Powered by <a href="http://vivoweb.org/" target="_blank" rel="noopener" title="Powered by VIVO"><strong>VIVO</strong></a>
                 </p>

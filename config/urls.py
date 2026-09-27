@@ -93,6 +93,7 @@ urlpatterns = [
     path('search_facets', vivo_views.search_facets),
     path('display/<str:id>', vivo_views.display_show),
     path('__prepared_assets/<str:name>', vivo_views.prepared_asset, name='prepared_asset'),
+    path('docs/<path:filename>', vivo_views.prepared_document, name='prepared_document'),
     path('search/', vivo_views.search, name='search'),
     path('search/advanced/', vivo_views.advanced_search, name='advanced_search'),
     path('search_facets/', vivo_views.search_facets, name='search_facets'),
@@ -102,8 +103,10 @@ urlpatterns = [
     # Bot detection
     path('challenge/', vivo_views.bot_detect_challenge, name='bot_detect_challenge'),
     # Legacy VIVO URLs
-    path('people/', vivo_views.people, name='people'),
-    path('ous/', vivo_views.organizations, name='organizations'),
+    path('people', vivo_views.people, name='people'),
+    path('people/', vivo_views.people),
+    path('ous', vivo_views.organizations, name='organizations'),
+    path('ous/', vivo_views.organizations),
     path('file/<str:id>/<str:file_name>/', vivo_views.old_image, name='old_image'),
     # Individual (legacy VIVO export and redirect)
     # Export routes must come before the generic redirect to avoid matching 'n123.json' as <id>
@@ -116,6 +119,7 @@ urlpatterns = [
     # e.g., /individual/n123.json/
     re_path(r'^individual/(?P<id>[^/]+)\.(?P<fmt>[^/]+)/$', vivo_views.individual_export, name='individual_export'),
     path('individual/<str:id>/', vivo_views.individual_redirect, name='individual_redirect'),
+    path('individual/<str:id>', vivo_views.individual_redirect),
 ]
 
 # Serve static and media files in development

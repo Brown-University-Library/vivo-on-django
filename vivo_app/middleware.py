@@ -32,7 +32,17 @@ class LocalPageDataMiddleware:
         Called by: Django request handler
         """
         response = None
-        supported = {'search', 'display_show', 'search_facets', 'prepared_asset'}
+        supported = {
+            'home_index',
+            'search',
+            'display_show',
+            'search_facets',
+            'people',
+            'organizations',
+            'individual_redirect',
+            'prepared_asset',
+            'prepared_document',
+        }
         if (
             settings.PAGE_DATA_MODE == 'prepared'
             and getattr(view_func, '__module__', '') == 'vivo_app.views'
@@ -57,6 +67,8 @@ class LocalPageDataMiddleware:
         else:
             response = self.get_response(request)
         if mode in {'prepared', 'replay'}:
+            if response.status_code == 200 and response.get('Content-Type', '').startswith('text/html'):
+                response['Cache-Control'] = 'max-age=0, private, must-revalidate'
             response['Content-Security-Policy'] = (
                 "default-src 'self'; img-src 'self' data:; font-src 'self'; "
                 "style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; "

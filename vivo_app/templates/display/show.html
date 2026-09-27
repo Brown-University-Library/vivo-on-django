@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Profile - VIVO{% endblock %}
+{% block title %}{% if profile %}{{ profile.page_title|default:profile.name }}{% else %}Profile - VIVO{% endif %}{% endblock %}
 
 {% block content %}
   {% if profile %}

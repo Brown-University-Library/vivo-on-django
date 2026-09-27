@@ -1,0 +1,11 @@
+@media (min-width: 768px) {
+  .prepared-data .organization-page #section_overview {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .prepared-data .organization-page .organization-title ul {
+    margin: 10px 0;
+  }
+}

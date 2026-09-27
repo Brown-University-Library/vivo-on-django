@@ -1,19 +1,28 @@
-<div class="container profile">
-  <div class="wrapper__back-to-search"><a href="{{ back_to_search }}" class="back-to-search">Back to Search</a></div>
-  <h1>{{ profile.name }}</h1>
-  <div class="row person-content">
-    <aside class="col-md-3 col-sm-4" id="people-left-panel">
-      <img src="{{ profile.thumbnail }}" alt="Profile picture of {{ profile.name }}" class="img-circle" width="200" height="200">
-      <p>{{ profile.title }}</p>
+{% include "includes/prepared_search.html" %}
+<div class="container profile"><div class="row person-content"><div class="container profile-page">
+  <div class="wrapper__back-to-search col-xs-12"><a href="{{ back_to_search }}" class="back-to-search"><span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span><span>Back to search</span></a></div>
+  {% include "includes/prepared_profile_links.html" %}
+  <div class="col-md-3 col-sm-4 col-xs-12" id="people-left-panel">
+    <section id="individual-intro" class="vcard person" aria-label="Profile contact and sections"><section class="share-contact">
+      <div id="photo-wrapper"><img src="{{ profile.thumbnail }}" alt="Faculty Picture" class="img-circle" width="175"></div>
+      <h2 class="hidden-sm hidden-md hidden-lg">{{ profile.name }}</h2>
+      <div class="emailsContainer">{% if profile.email %}<a href="mailto:{{ profile.email }}" title="Email {{ profile.email }}"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span><span class="sr-only">Email {{ profile.email }}</span></a>{% endif %}</div>
       <nav id="tabButtons" class="btn-group-vertical" aria-label="Profile sections">
-        {% for section in profile.sections %}<a id="tab{{ section.id }}Btn" class="btn btn-default{% if forloop.first %} active{% endif %}" href="#{{ section.id }}">{{ section.label }}</a>{% endfor %}
-        {% if profile.sections|length > 1 %}<a id="tabAllBtn" class="btn btn-default" href="#All">View All</a>{% endif %}
+        {% for section in profile.sections %}<a id="tab{{ section.id }}Btn" class="btn btn-default{% if forloop.first %} active{% endif %}" href="#{{ section.id }}" title="{{ section.label }}"><span class="glyphicon glyphicon-{% if section.id == 'Overview' %}tag{% elif section.id == 'Publications' %}file{% elif section.id == 'Research' %}eye-open{% elif section.id == 'Background' %}education{% elif section.id == 'Affiliations' %}tower{% else %}leaf{% endif %}" aria-hidden="true"></span> {{ section.label }}</a>{% endfor %}
+        {% if profile.sections|length > 1 %}<a id="tabAllBtn" class="btn btn-default" href="#All" title="View All"><span class="glyphicon glyphicon-globe" aria-hidden="true"></span> View All</a>{% endif %}
+        {% if profile.cv_url %}<a class="btn btn-default" href="{{ profile.cv_url }}" target="_blank" rel="noopener" title="Curriculum Vitae">Curriculum Vitae [PDF]</a>{% endif %}
       </nav>
-    </aside>
-    <div class="col-md-9 col-sm-8" id="people-right-panel">
-      <div id="section_overview">
-        {% for section in profile.sections %}<section id="tab{{ section.id }}" class="tabFinder"><h2>{{ section.label }}</h2>{{ section.html|safe }}</section>{% endfor %}
-      </div>
-    </div>
+    </section></section>
   </div>
-</div>
+  <div class="col-md-9 col-sm-8 col-xs-12" id="section_overview">
+    <h2 class="vcard foaf-person individual_overview hidden-xs">{{ profile.name }}</h2>
+    <h3 class="individual_overview">{{ profile.title }}</h3>
+    {% for section in profile.sections %}
+    <div id="tab{{ section.id }}" class="tabFinder{% if section.id != 'Overview' %} panel panel-default{% endif %}">
+      {% if section.id == 'Publications' and profile.publication_filters %}
+        {% include "display/prepared_publications.html" %}
+      {% else %}{{ section.html|safe }}{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div></div></div>
