@@ -148,9 +148,6 @@ USE_TZ = True
 
 STATIC_URL = os.environ['STATIC_URL']
 STATIC_ROOT = os.environ['STATIC_ROOT']  # needed for collectstatic command
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'vivo_app/static'),
-]  # only used by assets.py get_random_background_relpath()
 
 # Media files (user uploaded files)
 MEDIA_URL = '/media/'
