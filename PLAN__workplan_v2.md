@@ -1,8 +1,8 @@
 # Workplan v2: complete the public Rails-to-Django replacement
 
-Proposed by Codex on September 27, 2026, following the owner's review of the development sequence. This is a continuation plan, not a record of completed implementation or final acceptance.
+Proposed by Codex and reviewed by the owner on September 27, 2026. Updated that day to use the development server first, adopt `httpx2`, and explain environment settings. The owner's approval of this plan does not mean that its implementation or final site acceptance is complete.
 
-**Recommendation:** extend the existing Playwright comparison command, use HTTPX alongside it for response capture and checks, and make an early, restricted server installation the next milestone. Start that installation with prepared data. Then connect one search-to-profile journey to real sources before expanding across the remaining endpoint families. Continue local appearance work throughout.
+**Recommendation:** extend the existing Playwright comparison command, use `httpx2` alongside it for response capture and checks, and make an early, restricted development-server installation the next milestone. Start that installation with prepared data. Then connect one search-to-profile journey to real sources before expanding across the remaining endpoint families. Continue local appearance work throughout. The separate production installation follows when available.
 
 Keep [PLAN__workplan.md](PLAN__workplan.md) unchanged as the v1 history. Use this v2 for the proposed next steps; use [GOAL.md](GOAL.md) and the [public endpoint scope](docs/public_endpoint_scope.md) for scope, and [AGENTS.md](AGENTS.md) for coding practices. The goal remains that regular visitors notice no difference in URLs, content, behavior, or appearance, except differences explicitly accepted by the owner.
 
@@ -34,6 +34,8 @@ Those are previously recorded results, not tests rerun for this planning task. T
 
 Current code explicitly rejects `PAGE_DATA_MODE=replay` and `PAGE_DATA_MODE=live`. Setting connection values or deploying the current checkout cannot make those modes work. Some v1 passages and older supporting documentation still describe now-existing prepared-data or comparison code as future work; the current code and the specific status statements above resolve that historical ambiguity.
 
+`PAGE_DATA_MODE` is one setting that chooses where Django gets page content. `prototype` selects existing sample pages; `prepared` reads saved data already arranged for the pages. The planned `replay` mode will read saved, unprocessed service responses and run Django's processing on them. The planned `live` mode will request current data from the services and run that same processing. Use `prepared` for the first installation. Its purpose is to let us work on appearance and interactions before service access is ready, then reproduce processing problems locally once raw responses can be saved.
+
 Keep these three kinds of evidence distinct:
 
 | Evidence | What it tells us | What it does not tell us |
@@ -42,15 +44,15 @@ Keep these three kinds of evidence distinct:
 | Prepared page data | Whether selected templates, assets, and interactions can reproduce saved observations. | Whether Django requests and transforms authentic source data correctly. |
 | Raw upstream request/response recordings | Whether Django can process authentic service responses when replayed through its real processing code. | Whether arbitrary new queries work against the live service or whether Rails had the same source state. |
 
-Real cases and artifacts remain outside every Git checkout. Existing local materials include the [discovery manifest](../public_site_review/planning/public_cases.json), [feature coverage](../public_site_review/planning/public_feature_coverage.md), and checkpoint directories. They are not included in a standalone clone. Repository examples must remain invented and non-identifying.
+Keep real people’s records, publications, saved responses, and screenshots outside Git. Tests and examples committed to the repository should use made-up names and records instead. This does not prevent local comparisons from using the real data stored beside the checkout. Existing local materials include the [discovery manifest](../public_site_review/planning/public_cases.json), [feature coverage](../public_site_review/planning/public_feature_coverage.md), and checkpoint directories. They are not included in a standalone clone.
 
 ## Comparison tooling and expected savings
 
-**Use both Playwright and HTTPX.** The repository's HTTP library choice is `httpx`; HTTP/2 support is a protocol capability, not a replacement for browser rendering. HTTPX retrieves responses and their metadata. Playwright runs a browser, so it can exercise JavaScript, observe the rendered page, and save screenshots. See the official [HTTPX documentation](https://www.python-httpx.org/), [Playwright screenshots documentation](https://playwright.dev/python/docs/screenshots), and [browser network documentation](https://playwright.dev/python/docs/network).
+**Use both Playwright and `httpx2`.** The owner has selected `httpx2`, the Python package continued from HTTPX, for future HTTP clients. It retrieves responses and their metadata. Playwright runs a browser, so it can exercise JavaScript, observe the rendered page, and save screenshots. See the official [HTTPX2 migration documentation](https://pydantic.dev/docs/httpx2/get-started/migration/), [Playwright screenshots documentation](https://playwright.dev/python/docs/screenshots), and [browser network documentation](https://playwright.dev/python/docs/network). Add `httpx2` to application dependencies when implementing source access; it is not yet used by the current application.
 
 | Method | Best use in this project |
 | --- | --- |
-| HTTPX | Save raw response bodies; check each redirect hop, status, relevant headers, JSON, RDF, CSV/TSV, PDFs, and images; request upstream data from Django's source clients. It does not lay out CSS or execute page JavaScript. |
+| `httpx2` | Save raw response bodies; check each redirect hop, status, relevant headers, JSON, RDF, CSV/TSV, PDFs, and images; request upstream data from Django's source clients. It does not lay out CSS or execute page JavaScript. |
 | Playwright | Repeat search/filter/profile journeys; check controls, keyboard focus, browser Back, downloads, and JavaScript-dependent content; capture matched desktop and narrow screenshots. Rendered positions and computed styles can help diagnose differences when needed. |
 | Interactive browser use | Discover an unfamiliar interaction, inspect an unexpected difference, and review screenshots or behavior that automated assertions do not explain. Convert recurring checks into saved cases. |
 
@@ -58,7 +60,7 @@ Playwright does not independently judge whether two sites feel the same. It reco
 
 ### Extend what already exists
 
-[tools/compare_sites.py](tools/compare_sites.py) and [its usage guide](docs/browser_comparison.md) already provide three modes:
+[tools/compare_sites.py](tools/compare_sites.py) contains the Playwright code. [pyproject.toml](pyproject.toml) lists `playwright` and `pillow` under `[dependency-groups].dev`, separately from application dependencies. The command and [its usage guide](docs/browser_comparison.md) already provide three modes:
 
 - `capture-reference` visits the configured reference pages and writes observations and viewport screenshots to a new external directory.
 - `compare-local` visits the configured loopback Django origin, blocks other browser requests, and compares against a saved baseline without updating it.
@@ -85,11 +87,11 @@ After the first reusable journey is stable, compare a small fixed set of checks 
 
 ## Early server installation and environment settings
 
-**Schedule server setup now; schedule broad live comparison after the first source-processing journey works.** The owner expects to have a production-parallel Django installation early and wants help preparing its `.env`. Early installation can reveal server configuration problems before extensive implementation depends on it. It need not wait for stage 2 to finish.
+**Schedule development-server setup now; schedule broad live comparison after the first source-processing journey works.** The owner will prepare the development server first; a separate installation on the production server follows when available. Early installation can reveal server configuration problems before extensive implementation depends on it. It need not wait for stage 2 to finish. When development data is copied from production, record its refresh date: a change since that copy can explain a difference from the public site.
 
 Use two increments:
 
-1. **Install the current prepared-data application.** Codex prepares configuration guidance and any necessary setup fixes. The owner and system administrator install it on the development server, then at a restricted, separate location on the production server. Check startup, static files, sessions, selected pages, one download, writable application directories, and restart behavior. This proves that the application can run there; it does not prove source integration.
+1. **Install the current prepared-data application on the development server.** Codex prepares configuration guidance and any necessary setup fixes. The owner and system administrator perform the installation. Check startup, static files, sessions, selected pages, one download, writable application directories, and restart behavior. This proves that the application can run there; it does not prove source integration. Repeat these checks at the restricted production location when that installation becomes available; it is not a prerequisite for starting integration work.
 2. **Enable one implemented live journey.** Codex adds the required clients, capture support, and processing. The owner supplies real connection settings and deploys that revision. Run a search, apply/remove a filter, open a profile, and return to the results. Save the upstream inputs so Codex can reproduce differences locally. Expand query variations only as the required processing becomes available.
 
 The second increment is an important part of stage 2, not a final deployment exercise. A parallel installation is especially useful when it can reach the same services as Rails. Being on the same server alone does not ensure that both apps use the same index, request defaults, cache state, or source revision. Confirm those conditions before treating differing results as a Django processing error.
@@ -98,7 +100,7 @@ The owner/system administrator maintains the access restriction and separate app
 
 ### Prepare the `.env` together before the first installation
 
-Codex's next setup task is to inspect the intended launch method with the owner and produce a minimal configuration with explanations of each setting. Do not copy the local development environment wholesale or assume `sample.env` is complete. Actual values stay in the installation's private environment configuration.
+The updated [example.env](example.env) lists the working settings, explains their purpose, and names the corresponding Rails files and keys where they exist. It also lists source values to gather for later implementation, clearly commented out because Django does not read them yet. Codex and the owner still need to check the intended launch method and choose installation-specific values. Actual values stay in the installation's private environment configuration.
 
 | Setting or concern | Current implementation and next action |
 | --- | --- |
@@ -125,8 +127,8 @@ The [scope table](docs/public_endpoint_scope.md) remains the checklist. Do not r
 
 Proceed through these milestones while continuing useful local appearance work:
 
-1. **Server setup works with prepared data.** Complete the first installation increment and `.env` preparation described above. The owner/system administrator checks both target environments; Codex resolves application-side setup problems.
-2. **One journey works with authentic inputs.** Codex traces Rails search and profile processing, implements the minimum HTTPX clients, and records all necessary source responses. Include supporting lookups, such as record-type and graph-availability requests, rather than treating Solr as the only possible source. Connect replay and live responses to the same parsing and page-data functions, supplying the existing templates.
+1. **Development-server setup works with prepared data.** Complete the first installation increment and `.env` preparation described above. The owner/system administrator checks that environment; Codex resolves application-side setup problems. Repeat on the production server when available.
+2. **One journey works with authentic inputs.** Codex traces Rails search and profile processing, implements the minimum `httpx2` clients, and records all necessary source responses. Include supporting lookups, such as record-type and graph-availability requests, rather than treating Solr as the only possible source. Connect replay and live responses to the same parsing and page-data functions, supplying the existing templates.
 3. **That journey compares successfully on the server.** The owner deploys it. Codex or the owner runs matched Rails/Django cases, identifies source-data differences separately, and returns any unexplained behavior to local reproduction. Include a query or record not already present in the prepared bundle to demonstrate real source processing.
 4. **Extend by endpoint family and content variation.** Add organizations and homepage sources, information pages, representations/downloads, visualizations, remaining compatibility behavior, missing-page behavior, and the configured challenge flow. Order individual tasks by their dependencies and the existing scope table. Reuse captured evidence unless it is missing, inconsistent, or too old for the intended check.
 
@@ -188,10 +190,10 @@ Reports should distinguish pass, fail, blocked, and needs-review results, along 
 
 ## Immediate next tasks
 
-1. **Codex and owner: prepare early server setup.** Establish the launch method and access arrangement, write the minimal `.env` configuration together, and identify the smallest application changes needed with debug disabled. Save server instructions outside READMEs. The owner/system administrator can install prepared mode before broad source integration is ready.
+1. **Codex and owner: prepare early development-server setup.** Use `example.env` to fill the private configuration, establish the launch method and access arrangement, and identify the smallest application changes needed with debug disabled. Save server instructions outside READMEs. The owner/system administrator can install prepared mode before broad source integration is ready.
 2. **Codex: select the first authentic search-to-profile journey.** Reuse the existing case inventory and saved public evidence. List its exact source dependencies and implement the minimum clients, reusable capture, and shared replay/live processing.
 3. **Codex: extend the existing comparator only as needed for that journey.** Add concise failure reporting, the needed response checks, and restricted deployed-site comparison. Prove the additions against controlled local changes before relying on them.
 4. **Owner/system administrator, then Codex: deploy, capture, and reproduce.** Verify the early installation; deploy the first live journey when ready; return selected captures; fix differences locally and repeat the matched comparison.
 5. **Codex: continue stage 2 and stage 3 by complete journeys.** Update this plan with brief dated milestones and remaining work. Preserve v1 and earlier evidence as history; keep detailed real-case reports outside Git.
 
-This planning change adds only this document. It does not change application code, `.env`, deployed services, baselines, or the deferred scope decisions. Implementation tasks above are proposed follow-up work.
+The initial v2 task added this document. The subsequent review updated its wording, `example.env`, and contributor guidance. Application behavior, private `.env` values, deployed services, baselines, and deferred scope decisions remain unchanged. The implementation tasks above remain follow-up work.

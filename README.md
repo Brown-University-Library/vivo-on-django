@@ -55,7 +55,7 @@ Install Git and uv, and ensure you can access this repository. uv manages the in
    STATIC_ROOT=../staticfiles
    ```
 
-   [config/settings.py](config/settings.py) loads environment values through `python-dotenv`. Keep the file in the outer directory, outside the Git checkout. Preserve any existing settings you need. The checked-in `sample.env` omits required settings and uses some names that the current code does not read; use the names above for this setup. `STATIC_URL` is a browser URL prefix, while `STATIC_ROOT` names a local output directory.
+   [config/settings.py](config/settings.py) loads environment values through `python-dotenv`. Keep the file in the outer directory, outside the Git checkout. Preserve any existing settings you need. The checked-in [example.env](example.env) explains the available settings; its commented source-connection keys are not implemented yet. `STATIC_URL` is a browser URL prefix, while `STATIC_ROOT` names a local output directory.
 
 4. Create or update the local database tables:
 
