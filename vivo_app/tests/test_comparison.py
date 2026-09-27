@@ -9,7 +9,7 @@ from pathlib import Path
 from PIL import Image
 from django.test import SimpleTestCase
 
-from tools.compare_sites import compare_snapshots, image_difference, normalize_url, read_cases
+from tools.compare_sites import Case, compare_snapshots, image_difference, normalize_url, read_cases, select_cases
 
 
 class ComparisonTests(SimpleTestCase):
@@ -57,7 +57,7 @@ class ComparisonTests(SimpleTestCase):
             with self.subTest(field=field):
                 self.assertIn('Changed ' + field, compare_snapshots(expected, {**expected, field: replacement}))
         changed = {**expected, 'images': [{'alt': 'Invented image', 'loaded': False}]}
-        self.assertIn('local: missing image', compare_snapshots(expected, changed))
+        self.assertIn('current: missing image', compare_snapshots(expected, changed))
 
     def test_pixel_changes_and_size_changes(self) -> None:
         """
@@ -85,11 +85,48 @@ class ComparisonTests(SimpleTestCase):
         """
         Checks malformed or repeated identifiers cannot overwrite comparison evidence.
         """
-        case = {'id': 'invented', 'path': '/example', 'width': 800, 'height': 600, 'selectors': {'heading': 'h1'}}
+        case = {
+            'id': 'invented',
+            'path': '/example',
+            'width': 800,
+            'height': 600,
+            'selectors': {'heading': 'h1'},
+            'screenshot_css': '.dynamic-image { background-image: none !important; }',
+        }
         with tempfile.TemporaryDirectory() as directory:
             manifest = Path(directory) / 'cases.json'
             manifest.write_text(json.dumps({'cases': [case]}))
-            self.assertEqual(read_cases(manifest)[1][0].id, 'invented')
+            parsed_case = read_cases(manifest)[1][0]
+            self.assertEqual(parsed_case.id, 'invented')
+            self.assertIn('background-image', parsed_case.screenshot_css)
             manifest.write_text(json.dumps({'cases': [case, case]}))
             with self.assertRaises(ValueError):
                 read_cases(manifest)
+
+    def test_case_selection_preserves_manifest_order(self) -> None:
+        """
+        Checks named cases retain manifest order and unknown names fail clearly.
+        """
+        cases = [Case('first', '/first', 800, 600, {}), Case('second', '/second', 800, 600, {})]
+        self.assertEqual([case.id for case in select_cases(cases, ['second', 'first'], None)], ['first', 'second'])
+        with self.assertRaisesRegex(ValueError, 'Unknown case IDs: missing'):
+            select_cases(cases, ['missing'], None)
+
+    def test_failed_case_selection_reads_an_earlier_report(self) -> None:
+        """
+        Checks an earlier report selects only cases that did not pass.
+        """
+        cases = [Case('first', '/first', 800, 600, {}), Case('second', '/second', 800, 600, {})]
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / 'report.json'
+            report.write_text(
+                json.dumps(
+                    {
+                        'cases': [
+                            {'case': 'first', 'result': 'pass'},
+                            {'case': 'second', 'result': 'needs_review'},
+                        ]
+                    }
+                )
+            )
+            self.assertEqual([case.id for case in select_cases(cases, [], report)], ['second'])

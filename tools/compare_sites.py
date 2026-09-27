@@ -33,6 +33,7 @@ class Case:
     height: int
     selectors: dict[str, str]
     actions: list[dict[str, str]] = field(default_factory=list)
+    screenshot_css: str = ''
 
 
 @dataclass
@@ -128,9 +129,55 @@ def read_cases(path: Path) -> tuple[dict[str, object], list[Case]]:
             if not all(isinstance(part, str) for part in action.values()):
                 raise TypeError('Browser action values must be text.')
             actions.append({key: str(part) for key, part in action.items()})
+        screenshot_css = raw.get('screenshot_css', '')
+        if not isinstance(screenshot_css, str) or len(screenshot_css) > 10000:
+            raise ValueError('Screenshot CSS must be text no longer than 10,000 characters.')
         seen.add(name)
-        cases.append(Case(name, route, width, height, selectors, actions))
+        cases.append(Case(name, route, width, height, selectors, actions, screenshot_css))
     return config, cases
+
+
+def read_failed_case_ids(path: Path) -> set[str]:
+    """
+    Reads case identifiers that did not pass in an earlier comparison report.
+
+    Called by: select_cases(), unit tests
+    """
+    report = json_object(json.loads(external_path(path).read_text()))
+    raw_cases = report.get('cases')
+    if not isinstance(raw_cases, list):
+        raise TypeError('The earlier report needs a cases list.')
+    failed: set[str] = set()
+    for value in raw_cases:
+        row = json_object(value)
+        name = row.get('case')
+        if not isinstance(name, str):
+            raise TypeError('Every earlier report case needs a text identifier.')
+        if row.get('result') != 'pass':
+            failed.add(name)
+    if not failed:
+        raise ValueError('The earlier report has no cases that need another comparison.')
+    return failed
+
+
+def select_cases(cases: list[Case], requested: list[str], failed_from: Path | None) -> list[Case]:
+    """
+    Selects named cases or cases that did not pass in an earlier report.
+
+    Called by: run(), unit tests
+    """
+    if requested and failed_from is not None:
+        raise ValueError('Use either --case or --failed-from, not both.')
+    selected_ids = set(requested)
+    if failed_from is not None:
+        selected_ids = read_failed_case_ids(failed_from)
+    available_ids = {case.id for case in cases}
+    unknown = selected_ids - available_ids
+    if unknown:
+        raise ValueError('Unknown case IDs: ' + ', '.join(sorted(unknown)))
+    if not selected_ids:
+        return cases
+    return [case for case in cases if case.id in selected_ids]
 
 
 def perform_actions(page: Page, actions: list[dict[str, str]]) -> Response | None:
@@ -228,6 +275,8 @@ def capture(browser: Browser, case: Case, origin: str, output: Path, local_only:
                 '(items) => items.map(i => ({alt:i.alt, loaded:i.complete && i.naturalWidth > 0}))'
             ),
         )
+        if case.screenshot_css:
+            page.add_style_tag(content=case.screenshot_css)
         page.screenshot(path=str(output / (case.id + '.png')), animations='disabled')
     except (BrowserError, ValueError, OSError) as exc:
         snapshot['capture_error'] = str(exc)
@@ -245,7 +294,7 @@ def compare_snapshots(expected: dict[str, object], actual: dict[str, object]) ->
     Called by: run(), self_test(), unit tests
     """
     failures: list[str] = []
-    for side, snapshot in [('reference', expected), ('local', actual)]:
+    for side, snapshot in [('reference', expected), ('current', actual)]:
         for key in ['capture_error', 'resource_failures', 'script_errors']:
             if snapshot.get(key):
                 failures.append(side + ': ' + key)
@@ -292,10 +341,13 @@ def write_report(output: Path, report: dict[str, object], rows: list[dict[str, o
     """
     report['cases'] = rows
     (output / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
+    current_label = str(report.get('current_label', 'Current page'))
+    selected = report.get('selected_cases', len(rows))
+    available = report.get('manifest_cases', selected)
     lines = [
         '# Browser comparison report',
         '',
-        f'Result: {report["result"]}. Selected cases only; source integration is not verified.',
+        f'Result: {report["result"]}. Compared {selected} of {available} manifest cases; source integration is not verified.',
         '',
         '| Case | Result | Details |',
         '| --- | --- | --- |',
@@ -313,7 +365,7 @@ def write_report(output: Path, report: dict[str, object], rows: list[dict[str, o
     for row in rows:
         name = str(row['case'])
         if (output / (name + '.png')).exists():
-            lines.append(f'- [{name}: local screenshot]({name}.png), [observations]({name}.json)')
+            lines.append(f'- [{name}: {current_label.lower()}]({name}.png), [observations]({name}.json)')
         if (output / (name + '-difference.png')).exists():
             lines.append(f'- [{name}: amplified pixel difference]({name}-difference.png)')
     (output / 'report.md').write_text('\n'.join(lines) + '\n')
@@ -329,7 +381,7 @@ def write_report(output: Path, report: dict[str, object], rows: list[dict[str, o
             + html.escape(json.dumps(row, indent=2))
             + '</pre><div class="pair">'
         )
-        for suffix, label in [('-reference', 'Saved reference'), ('', 'Current local page')]:
+        for suffix, label in [('-reference', 'Saved reference'), ('', current_label)]:
             if (output / (name + suffix + '.png')).exists():
                 html_rows.append(
                     f'<figure><figcaption>{label}</figcaption><img src="{name}{suffix}.png" alt="{label}"></figure>'
@@ -470,23 +522,31 @@ def run(args: argparse.Namespace) -> bool:
                 raise ValueError('This mode requires --manifest.')
             manifest_path = external_path(Path(args.manifest))
             config, cases = read_cases(manifest_path)
+            failed_from = external_path(Path(args.failed_from)) if args.failed_from else None
+            selected_cases = select_cases(cases, args.case, failed_from)
             local = args.mode == 'compare-local'
-            origin = str(config.get('local_base_url' if local else 'reference_base_url', '')).rstrip('/')
+            origin_keys = {
+                'capture-reference': 'reference_base_url',
+                'compare-local': 'local_base_url',
+                'compare-target': 'target_base_url',
+            }
+            origin = str(config.get(origin_keys[args.mode], '')).rstrip('/')
             parsed = urlsplit(origin)
             if parsed.scheme not in {'http', 'https'} or not parsed.netloc or parsed.path or parsed.username:
                 raise ValueError('Configure a plain HTTP(S) site origin.')
             if local and parsed.hostname not in {'127.0.0.1', 'localhost', '::1'}:
                 raise ValueError('Offline comparisons require a loopback local site.')
             baseline = external_path(Path(args.baseline)) if args.baseline else None
-            if local and baseline is None:
-                raise ValueError('compare-local requires --baseline.')
+            comparison = args.mode in {'compare-local', 'compare-target'}
+            if comparison and baseline is None:
+                raise ValueError(args.mode + ' requires --baseline.')
             (output / 'case-manifest.json').write_bytes(manifest_path.read_bytes())
             rows: list[dict[str, object]] = []
-            for case in cases:
+            for case in selected_cases:
                 actual = capture(browser, case, origin, output, local)
                 differences = []
                 pixels: dict[str, object] = {}
-                if local and baseline is not None:
+                if comparison and baseline is not None:
                     expected = json_object(json.loads((baseline / (case.id + '.json')).read_text()))
                     if (baseline / (case.id + '.png')).exists():
                         shutil.copy2(baseline / (case.id + '.png'), output / (case.id + '-reference.png'))
@@ -517,7 +577,7 @@ def run(args: argparse.Namespace) -> bool:
                     break
                 if not local:
                     time.sleep(0.4)
-            passed = len(rows) == len(cases) and all(row['result'] == 'pass' for row in rows)
+            passed = len(rows) == len(selected_cases) and all(row['result'] == 'pass' for row in rows)
             write_report(
                 output,
                 {
@@ -526,13 +586,45 @@ def run(args: argparse.Namespace) -> bool:
                     'data_mode': config.get('data_mode'),
                     'bundle_version': config.get('bundle_version'),
                     'browser_version': browser.version,
-                    'required_cases': len(cases),
+                    'manifest_cases': len(cases),
+                    'selected_cases': len(selected_cases),
+                    'required_cases': len(selected_cases),
                     'completed_cases': len(rows),
+                    'current_label': {
+                        'capture-reference': 'Captured reference page',
+                        'compare-local': 'Current local page',
+                        'compare-target': 'Current target page',
+                    }[args.mode],
                 },
                 rows,
             )
         browser.close()
     return passed
+
+
+def print_summary(output: Path) -> None:
+    """
+    Prints counts, cases that need review, and the saved HTML report location.
+
+    Called by: main()
+    """
+    report = json_object(json.loads((external_path(output) / 'report.json').read_text()))
+    raw_cases = report.get('cases')
+    if not isinstance(raw_cases, list):
+        raise TypeError('The saved report needs a cases list.')
+    rows = [json_object(value) for value in raw_cases]
+    passed = sum(row.get('result') == 'pass' for row in rows)
+    selected = report.get('selected_cases', len(rows))
+    available = report.get('manifest_cases', selected)
+    print(f'{report.get("result", "unknown")}: {passed}/{selected} selected cases passed ({available} in manifest).')
+    for row in rows:
+        if row.get('result') != 'pass':
+            differences = row.get('differences', [])
+            if not isinstance(differences, list):
+                differences = []
+            detail = '; '.join(str(value) for value in differences) or 'capture did not pass'
+            print(f'- {row.get("case", "unknown")}: {detail}')
+    print('Report: ' + str(external_path(output) / 'report.html'))
 
 
 def main() -> None:
@@ -542,14 +634,16 @@ def main() -> None:
     Called by: module entry point
     """
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('mode', choices=['capture-reference', 'compare-local', 'self-test'])
+    parser.add_argument('mode', choices=['capture-reference', 'compare-local', 'compare-target', 'self-test'])
     parser.add_argument('--manifest')
     parser.add_argument('--baseline')
+    parser.add_argument('--case', action='append', default=[], help='Compare only this case ID; repeat as needed.')
+    parser.add_argument('--failed-from', help='Compare cases that did not pass in this earlier report.json.')
     parser.add_argument('--output', required=True)
     parser.add_argument('--browser-executable', default=None)
     args = parser.parse_args()
     passed = run(args)
-    print('Comparison passed.' if passed else 'Comparison needs review; inspect the saved report.')
+    print_summary(Path(args.output))
     raise SystemExit(0 if passed else 1)
 
 

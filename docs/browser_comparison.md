@@ -12,6 +12,7 @@ Save a manifest such as this invented example outside Git:
 {
   "reference_base_url": "https://example.org",
   "local_base_url": "http://127.0.0.1:8000",
+  "target_base_url": "https://restricted-django.example.org",
   "data_mode": "prepared",
   "bundle_version": "example-1",
   "cases": [{
@@ -28,8 +29,13 @@ Save a manifest such as this invented example outside Git:
 1. Run `uv run -m tools.compare_sites self-test --output ../comparison-detector-check`. This starts a temporary local test website and checks that unchanged pages match and deliberate heading, redirect, content-type, missing-image, and layout changes are detected. It also checks missing required elements and a changed HTTP status after following a link. It does not contact a public site.
 2. Run `uv run -m tools.compare_sites capture-reference --manifest ../comparison-cases.json --output ../comparison-reference`. This visits the selected public pages and saves a baseline. It limits each case to 150 requests and pauses between pages. It does not submit forms unless the manifest explicitly instructs a browser action.
 3. Start Django using the chosen prepared bundle. Run `uv run -m tools.compare_sites compare-local --manifest ../comparison-cases.json --baseline ../comparison-reference --output ../comparison-local`. This visits only the chosen loopback origin and blocks requests elsewhere. It reads the baseline without changing it.
+4. After installing Django on a restricted development server, run `uv run -m tools.compare_sites compare-target --manifest ../comparison-cases.json --baseline ../comparison-reference --output ../comparison-target`. This visits `target_base_url` and allows that page to load its normal outside resources. Keep the target address and generated evidence outside Git when they identify a real server.
+
+Add `--case search-desktop` to compare one named case; repeat the option to choose several cases. Add `--failed-from ../earlier-comparison/report.json` to compare only cases that did not pass in an earlier report. Use one selection method at a time. The command prints the pass count, a short list of cases needing review, and the HTML report path.
 
 Each output directory must be new or empty. Keep earlier reports when repeating a run. Cases can use `click`, `navigate`, `fill`, `hover`, `focus`, and `press` actions with a CSS `selector`; `value` supplies input or a key. Use `navigate` when a link loads another page: it waits for navigation and records that destination's HTTP response. Optional `wait_for` waits for another selector to become visible. Captures wait for fonts, images, and jQuery animations. Every selector in `selectors` must find at least one element; missing observations fail even when both sites lack that element.
+
+A case can set `screenshot_css` when one changing visual detail hides the rest of a useful comparison. For example, `.hero { background-image: none !important; }` removes a randomly selected hero background from both captures while retaining the hero's size, text, and controls. Keep this CSS narrow. The copied manifest records the exact rule used for review.
 
 ## Read the results
 
@@ -39,4 +45,4 @@ Any changed pixel or observation requires review and produces exit code 1. Missi
 
 ## Current limits
 
-This command now compares selected search, profile, organization, and homepage pages. It compares final URLs, but does not yet report every redirect hop or check all linked destinations, downloads, or JSON responses. A separate external check compares selected full redirect chains, response formats and cache headers, one saved cover image, and a CV download. A screenshot covers one viewport, not the entire page. Add explicit selectors and interaction cases for content below it. Homepage backgrounds change on each load, so their screenshots need direct review. The invented detector check proves selected failure detection; it does not prove that every real page has complete coverage.
+This command now compares selected search, profile, organization, and homepage pages. It compares final URLs, but does not yet report every redirect hop or check all linked destinations, downloads, or JSON responses. A separate external check compares selected full redirect chains, response formats and cache headers, one saved cover image, and a CV download. A screenshot covers one viewport, not the entire page. Add explicit selectors and interaction cases for content below it. Use narrow `screenshot_css` for the homepage's changing background, then review the normal page separately to confirm that its background loads. The invented detector check proves selected failure detection; it does not prove that every real page has complete coverage.
