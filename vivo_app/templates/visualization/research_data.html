@@ -18,7 +18,7 @@
       <a class="btn btn-primary btn-lg" href="{% url 'visualization_research' id %}">Research Areas</a>
       {% if not is_team %}<p><b>Options</b></p><p><a href="{% url 'display_show' id %}">View Organization's Profile</a></p>{% endif %}
       <p><b>Data</b></p>
-      <p><a href="{% url 'visualization_research_json' id %}" target="_blank" rel="noopener">Download data (JSON)</a></p>
+      <p><a href="{% url 'collab_json' id %}" target="_blank" rel="noopener">Download data (JSON)</a></p>
       <p><button id="embedHtml" class="network-link-button" type="button">Embed SVG Code</button></p>
     </div>
   </div>

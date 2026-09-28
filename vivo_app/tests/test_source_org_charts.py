@@ -141,7 +141,7 @@ class OrganizationChartTests(TestCase):
         self.assertEqual(csv_response['Content-Type'], 'text/csv')
         self.assertIn('attachment;', csv_response['Content-Disposition'])
         self.assertContains(research_page, 'research areas and how common')
-        self.assertContains(research_page, '/display/org-example/viz/research.json')
+        self.assertContains(research_page, '/display/org-example/viz/collab.json')
         self.assertEqual(len(json.loads(research_json.content)['links']), 2)
 
     def test_missing_recording_fails(self) -> None:

@@ -18,6 +18,7 @@ from vivo_app.lib.source_requests import member_details_key, profile_key, read_s
 from vivo_app.lib.source_teams import CUSTOM_ORGANIZATION_IDS, custom_organization_members, team_definition
 
 GraphReader = Callable[[RequestKey, str], RecordedResponse]
+GRAPH_MEMBER_BATCH_SIZE = 20
 
 
 def visualization_key(kind: str, identifier: str = '') -> RequestKey:
@@ -108,15 +109,15 @@ def custom_graph_records(
     identifiers: list[str], mode: str, reader: GraphReader, require_all: bool
 ) -> dict[str, dict[str, object]]:
     """
-    Reads a limited number of member records in batches through the live or replay reader.
+    Reads small member batches so full profile records stay under the response size limit.
 
     Called by: custom_collaboration_graph()
     """
     if len(identifiers) > 500:
         raise PageDataError('The collaboration graph needs too many member records.')
     result: dict[str, dict[str, object]] = {}
-    for start in range(0, len(identifiers), 100):
-        batch = identifiers[start : start + 100]
+    for start in range(0, len(identifiers), GRAPH_MEMBER_BATCH_SIZE):
+        batch = identifiers[start : start + GRAPH_MEMBER_BATCH_SIZE]
         if start and mode == 'live':
             time.sleep(0.25)
         response = response_object(member_details_key(batch), mode, reader)
@@ -139,7 +140,7 @@ def add_custom_node(nodes: dict[str, dict[str, object]], uri: str, label: str, g
     """
     current = nodes.get(uri)
     if current is None:
-        nodes[uri] = {'id': uri, 'name': label, 'group': group, 'title': title, 'level': level}
+        nodes[uri] = {'id': uri, 'name': label, 'group': group or None, 'title': title, 'level': level}
     else:
         old_level = current.get('level')
         if isinstance(old_level, int):
@@ -296,7 +297,9 @@ def graph_csv(value: dict[str, object], kind: str) -> str:
         target = by_id.get(target_id)
         if source is None or target is None:
             raise PageDataError('The visualization graph refers to a missing node.')
-        weight = link.get('weight') if kind == 'coauthors' else 1
+        identifier = value.get('rabid')
+        is_custom = isinstance(identifier, str) and (identifier.startswith('team-') or identifier in CUSTOM_ORGANIZATION_IDS)
+        weight = link.get('weight') if kind == 'coauthors' or is_custom else 1
         writer.writerow([source['id'], source.get('name'), source.get('group'), target['id'], weight])
     return output.getvalue()
 

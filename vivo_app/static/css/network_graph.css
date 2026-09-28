@@ -12,5 +12,6 @@
 .network-page #embedHtmlText { width: 100%; }
 .network-page .network-tooltip { position: fixed; z-index: 10; padding: 8px; background: #fff; border: 1px solid #ccc; pointer-events: none; }
 .network-page .node-text { font-size: 10px; }
+.research-chart-page .node-text { font-size: 14px; }
 .network-page #svgElement circle { stroke: #fff; stroke-width: 1.5px; }
 @media (max-width: 767px) { .network-page .network-graph { max-width: 100%; height: auto; } }

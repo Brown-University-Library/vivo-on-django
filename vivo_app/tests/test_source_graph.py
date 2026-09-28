@@ -10,7 +10,7 @@ from django.test import TestCase, override_settings
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_graph import graph_csv, visualization_graph, visualization_key
+from vivo_app.lib.source_graph import custom_graph_records, graph_csv, visualization_graph, visualization_key
 from vivo_app.lib.source_requests import member_details_key, profile_key
 
 
@@ -218,6 +218,7 @@ class CustomGraphTests(TestCase):
         nodes = graph['nodes']
         assert isinstance(nodes, list)
         self.assertEqual([node['level'] for node in nodes], [0, 1, 2])
+        self.assertIsNone(nodes[2]['group'])
         self.assertIn('Invented Root', graph_csv(live, 'collaborators'))
 
     def test_missing_recording_fails(self) -> None:
@@ -230,6 +231,38 @@ class CustomGraphTests(TestCase):
             self.assertRaisesRegex(PageDataError, 'recording is missing'),
         ):
             visualization_graph('collaborators', 'team-example', 'replay', self.read)
+
+    def test_member_batches_limit_response_size(self) -> None:
+        """
+        Checks twenty-one member records use two bounded Solr requests.
+        """
+        identifiers = [f'invented-{index:02d}' for index in range(21)]
+        first, last = identifiers[:20], identifiers[20:]
+        self.responses = {
+            member_details_key(first): self.solr_response([(identifier, {'name': identifier}) for identifier in first]),
+            member_details_key(last): self.solr_response([(identifier, {'name': identifier}) for identifier in last]),
+        }
+        records = custom_graph_records(identifiers, 'replay', self.read, True)
+        self.assertEqual(set(records), set(identifiers))
+        self.assertEqual([key for key, _ in self.requested], list(self.responses))
+
+    def test_team_csv_keeps_collaboration_counts(self) -> None:
+        """
+        Checks calculated team downloads retain repeated collaboration counts.
+        """
+        graph = {
+            'graph': {
+                'nodes': [
+                    {'id': 'invented-a', 'name': 'Invented A', 'group': 'Example Team'},
+                    {'id': 'invented-b', 'name': 'Invented B', 'group': None},
+                ],
+                'links': [{'source': 'invented-a', 'target': 'invented-b', 'weight': 3}],
+            },
+            'rabid': 'team-example',
+        }
+        self.assertIn('invented-a,Invented A,Example Team,invented-b,3', graph_csv(graph, 'collaborators'))
+        graph['rabid'] = 'invented-a'
+        self.assertIn('invented-a,Invented A,Example Team,invented-b,1', graph_csv(graph, 'collaborators'))
 
     @override_settings(PAGE_DATA_MODE='replay', UPSTREAM_RECORDING_MANIFEST='unused-in-this-test')
     def test_team_page_uses_calculated_graph_in_replay(self) -> None:

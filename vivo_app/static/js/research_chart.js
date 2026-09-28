@@ -43,7 +43,7 @@
     svg.append('path').attr('class', 'link')
       .attr('d', 'M 213,' + y0 + ' C 462,' + y0 + ' 462,' + y1 + ' 711,' + y1)
       .attr('fill', 'none').attr('stroke', colors(link.target))
-      .attr('stroke-width', Math.max(1, scale)).attr('stroke-opacity', 0.45)
+      .attr('stroke-width', Math.max(1, scale))
       .append('title').text('Shared research area');
   });
   [people, areas].forEach(function (nodes) {
