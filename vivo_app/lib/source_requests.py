@@ -93,6 +93,28 @@ def profile_key(identifier: str) -> RequestKey:
     )
 
 
+def profile_export_key(identifier: str) -> RequestKey:
+    """
+    Looks up the additional Solr fields used by the public profile JSON response.
+
+    Called by: source_pages.profile_json_data(), tests
+    """
+    base = profile_key(identifier)
+    return RequestKey(
+        'solr',
+        base.path,
+        tuple(
+            (
+                key,
+                'id,record_type,thumbnail_file_path_s,json_txt,display_name_s,fis_updated_s,profile_updated_s,show_visualizations_s',
+            )
+            if key == 'fl'
+            else (key, value)
+            for key, value in base.query
+        ),
+    )
+
+
 def member_key(identifiers: list[str]) -> RequestKey:
     """
     Looks up the portrait fields for an organization's distinct members in one Solr request.
@@ -109,6 +131,36 @@ def member_key(identifiers: list[str]) -> RequestKey:
         'solr',
         '/select',
         (('q', query), ('fl', 'id,record_type,thumbnail_file_path_s'), ('rows', str(len(names))), ('wt', 'json')),
+    )
+
+
+def member_details_key(identifiers: list[str]) -> RequestKey:
+    """
+    Requests member records needed to produce an organization publication download.
+
+    Called by: source_pages.organization_publications_data(), tests
+    """
+    portrait_key = member_key(identifiers)
+    query = portrait_key.query[0][1]
+    return RequestKey(
+        'solr', '/select', (('q', query), ('fl', 'id,record_type,json_txt'), ('rows', str(len(identifiers))), ('wt', 'json'))
+    )
+
+
+def team_member_key(identifiers: list[str]) -> RequestKey:
+    """
+    Requests display names and portraits for a code-defined active team.
+
+    Called by: source_teams.team_data(), tests
+    """
+    base = member_details_key(identifiers)
+    return RequestKey(
+        'solr',
+        base.path,
+        tuple(
+            (key, 'id,record_type,json_txt,display_name_s,thumbnail_file_path_s') if key == 'fl' else (key, value)
+            for key, value in base.query
+        ),
     )
 
 
@@ -192,7 +244,12 @@ def source_origin(service: str) -> str:
 
     Called by: read_source(), document_key_from_url()
     """
-    raw = {'solr': settings.SOLR_URL, 'images': settings.IMAGES_URL, 'documents': settings.DOCUMENTS_URL}.get(service, '')
+    raw = {
+        'solr': settings.SOLR_URL,
+        'images': settings.IMAGES_URL,
+        'documents': settings.DOCUMENTS_URL,
+        'viz': settings.VIZ_SERVICE_URL,
+    }.get(service, '')
     parsed = urlsplit(raw)
     if (
         parsed.scheme not in {'http', 'https'}

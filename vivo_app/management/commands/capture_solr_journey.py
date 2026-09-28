@@ -14,8 +14,15 @@ from django.core.management.base import BaseCommand, CommandError
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RecordingError, RequestKey, external_path
-from vivo_app.lib.source_pages import facet_values_data, organization_data, profile_data, search_data
+from vivo_app.lib.source_pages import (
+    facet_values_data,
+    organization_data,
+    organization_publications_data,
+    profile_data,
+    search_data,
+)
 from vivo_app.lib.source_requests import document_key, document_key_from_url, image_key, image_path, read_source
+from vivo_app.lib.source_teams import custom_organization_members, team_data
 
 MAX_REQUESTS = 120
 MAX_TOTAL_BYTES = 60_000_000
@@ -204,7 +211,12 @@ class Command(BaseCommand):
             profile = profile_data(identifier, 'live', reader)
             capture_document_chain(profile.get('cv_url'), reader)
             if organization_id:
-                organization_data(organization_id, 'live', reader)
+                if organization_id.startswith('team-'):
+                    team_data(organization_id, 'live', reader)
+                else:
+                    extras = custom_organization_members(organization_id)
+                    organization_data(organization_id, 'live', reader, extras)
+                    organization_publications_data(organization_id, 'live', reader, extras)
             for key in image_requests(reader.responses):
                 reader(key, 'live')
             write_capture(output, reader.responses)

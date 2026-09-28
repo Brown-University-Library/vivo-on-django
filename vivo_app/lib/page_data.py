@@ -100,9 +100,16 @@ def get_organization_data(path: str, query: list[tuple[str, str]]) -> dict[str, 
     if bundle is None and selected_mode() in {'live', 'replay'}:
         if query:
             raise PageDataError('Organization query options are not connected to source data yet.')
-        from vivo_app.lib.source_pages import organization_data
+        identifier = path.rstrip('/').rsplit('/', 1)[-1]
+        if identifier.startswith('team-'):
+            from vivo_app.lib.source_teams import team_data
 
-        result = organization_data(path.rstrip('/').rsplit('/', 1)[-1], selected_mode())
+            result = team_data(identifier, selected_mode())
+        else:
+            from vivo_app.lib.source_pages import organization_data
+            from vivo_app.lib.source_teams import custom_organization_members
+
+            result = organization_data(identifier, selected_mode(), extra_member_ids=custom_organization_members(identifier))
     return result
 
 

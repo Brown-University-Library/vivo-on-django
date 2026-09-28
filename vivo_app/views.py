@@ -29,8 +29,11 @@ from .lib.page_data import (
 )
 from .lib.page_rendering import data_unavailable, prepared_response, query_pairs, render_or_stub
 from .lib.prepared_data import PageDataError
-from .lib.source_pages import facet_values_data
+from .lib.source_formats import profile_json_data
+from .lib.source_graph import visualization_graph
+from .lib.source_pages import facet_values_data, organization_publications_data, search_json_data
 from .lib.source_requests import document_key, document_key_from_url, image_key, read_source
+from .lib.source_teams import custom_organization_members
 from .lib.version_helper import GatherCommitAndBranchData
 
 logger = logging.getLogger(__name__)
@@ -245,12 +248,16 @@ def display_show(request, id):
     - For known types, build a minimal presenter-like context for progressive parity.
     """
     try:
-        if request.GET.get('format') == 'json':
+        if request.GET.get('format') == 'json' or id.endswith('.json'):
+            if settings.PAGE_DATA_MODE in {'live', 'replay'}:
+                if any(key != 'format' or value != 'json' for key, value in query_pairs(request.GET)):
+                    raise PageDataError('Profile JSON query options are unsupported.')
+                return JsonResponse(profile_json_data(id.removesuffix('.json'), settings.PAGE_DATA_MODE))
             saved_response = get_response_data(request.path, query_pairs(request.GET))
             if saved_response is not None:
                 return prepared_response(saved_response)
         else:
-            if id.startswith('org-'):
+            if id.startswith(('org-', 'team-')):
                 organization_data = get_organization_data(request.path, query_pairs(request.GET))
                 if organization_data is not None:
                     return render(request, 'display/organization_data.html', {'organization': organization_data})
@@ -297,11 +304,54 @@ def display_publications(request, id):
     return render_or_stub(request, 'display/publications.html', context)
 
 
+def organization_publications_tsv(request: HttpRequest, id: str) -> HttpResponse:
+    """
+    Serves a source-backed organization publication download.
+
+    Called by: config.urls
+    """
+    try:
+        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
+            saved = get_response_data(request.path, query_pairs(request.GET))
+            if saved is not None:
+                return prepared_response(saved)
+            raise PageDataError('The organization publication download is unavailable.')
+        if request.GET:
+            raise PageDataError('Organization publication query options are unsupported.')
+        body = organization_publications_data(id, settings.PAGE_DATA_MODE, extra_member_ids=custom_organization_members(id))
+        return HttpResponse(
+            body.encode(),
+            content_type='text/csv',
+            headers={'Content-Disposition': f'attachment; filename="{id}.tsv"'},
+        )
+    except PageDataError as exc:
+        return data_unavailable(exc)
+
+
 # Visualizations
 def visualization_home(request, id):
     """Home for visualizations."""
     context = {'id': id}
     return render_or_stub(request, 'visualization/home.html', context)
+
+
+def visualization_graph_json(request: HttpRequest, id: str, kind: str) -> HttpResponse:
+    """
+    Returns one unchanged graph object from a recorded or live visualization response.
+
+    Called by: config.urls
+    """
+    try:
+        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
+            saved = get_response_data(request.path, query_pairs(request.GET))
+            if saved is not None:
+                return prepared_response(saved)
+            raise PageDataError('This visualization is unavailable.')
+        if request.GET:
+            raise PageDataError('Visualization query options are unsupported.')
+        return JsonResponse(visualization_graph(kind, id, settings.PAGE_DATA_MODE))
+    except PageDataError as exc:
+        return data_unavailable(exc)
 
 
 def visualization_coauthor(request, id):
@@ -382,6 +432,11 @@ def search(request):
     """Handle search requests."""
     try:
         if request.GET.get('format') == 'json':
+            if settings.PAGE_DATA_MODE in {'live', 'replay'}:
+                pairs = [(key, value) for key, value in query_pairs(request.GET) if key != 'format']
+                return JsonResponse(
+                    search_json_data(pairs, settings.PAGE_DATA_MODE, request.build_absolute_uri('/')), safe=False
+                )
             saved_response = get_response_data(request.path, query_pairs(request.GET))
             if saved_response is not None:
                 return prepared_response(saved_response)

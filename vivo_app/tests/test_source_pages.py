@@ -4,6 +4,7 @@ Checks the first source-backed journey with made-up records and no network.
 
 import json
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from django.core.management import call_command
@@ -13,8 +14,26 @@ from django.test import TestCase, override_settings
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_pages import profile_data, publication_html, search_data
-from vivo_app.lib.source_requests import document_key, image_key, member_key, profile_key, search_key
+from vivo_app.lib.source_graph import visualization_key
+from vivo_app.lib.source_pages import (
+    organization_data,
+    organization_publications_data,
+    profile_data,
+    publication_html,
+    search_data,
+    search_json_data,
+)
+from vivo_app.lib.source_requests import (
+    document_key,
+    image_key,
+    member_details_key,
+    member_key,
+    profile_export_key,
+    profile_key,
+    search_key,
+    team_member_key,
+)
+from vivo_app.lib.source_teams import custom_organization_members, team_data
 from vivo_app.management.commands.capture_solr_journey import CapturingReader
 
 
@@ -120,6 +139,8 @@ class SourcePageTests(TestCase):
             profile_key('invented-a'): self.solr_response([person_doc], 1),
             profile_key('org-example'): self.solr_response([organization_doc], 1),
             member_key(['invented-a']): self.solr_response([person_doc], 1),
+            member_details_key(['invented-a']): self.solr_response([person_doc], 1),
+            team_member_key(['invented-a']): self.solr_response([person_doc], 1),
             image_key('/profile-images/123/4/portrait.jpg'): RecordedResponse(
                 200, (('content-type', 'image/jpeg'),), b'invented-portrait'
             ),
@@ -265,7 +286,7 @@ class SourcePageTests(TestCase):
         """
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
             self.assertEqual(self.get_page('/search?q=Other').status_code, 503)
-            self.assertEqual(self.get_page('/search?q=Example&format=json').status_code, 503)
+            self.assertEqual(self.get_page('/search?q=Example&format=xml').status_code, 503)
             self.assertEqual(self.get_page('/display/other').status_code, 503)
             self.assertEqual(self.get_page('/search_facets?q=Example&f_name=bad').status_code, 503)
             self.assertEqual(self.get_page('/display/invented-a/publications/').status_code, 503)
@@ -314,6 +335,141 @@ class SourcePageTests(TestCase):
         self.assertEqual(read.call_count, 2)
         sleep.assert_called_once_with(0.8)
 
+    def test_search_json_uses_the_html_search_response(self) -> None:
+        """
+        Checks search JSON has the public fields without requesting another Solr shape.
+        """
+        rows = search_json_data([('q', 'Example')], 'live', 'http://127.0.0.1/', self.read)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['vivo_id'], 'invented-a')
+        self.assertEqual(rows[0]['uri'], 'http://127.0.0.1/display/invented-a')
+        self.assertEqual(rows[0]['thumbnail'], 'http://example.invalid/profile-images/123/4/portrait.jpg')
+        self.assertEqual(
+            rows[0]['highlights'],
+            {'highlights': [{'field': 'short_id_s', 'values': ['<strong>Example</strong> <script>unsafe</script>']}]},
+        )
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            response = self.get_page('/search?q=Example&format=json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        self.assertEqual(json.loads(response.content), rows)
+        self.assertEqual(search_json_data([('q', 'none')], 'live', 'http://127.0.0.1/', self.read), [])
+
+    def test_organization_publications_tsv_uses_member_records(self) -> None:
+        """
+        Checks the public TSV fields come from complete member records and fail if one is absent.
+        """
+        body = organization_publications_data('org-example', 'live', self.read)
+        self.assertTrue(body.startswith('Id\tFaculty\tTitle\tAuthors\tYear\tType\tCitation\n'))
+        self.assertIn('Example publication\tResearcher, Invented\t2024\tArticle\t', body)
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            response = self.get_page('/display/org-example/publications.tsv')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        self.assertEqual(response['Content-Disposition'], 'attachment; filename="org-example.tsv"')
+        self.assertEqual(response.content.decode(), body)
+        self.responses.pop(member_details_key(['invented-a']))
+        with self.assertRaises(PageDataError):
+            organization_publications_data('org-example', 'live', self.read)
+
+    def test_sparse_profile_json_uses_graph_availability(self) -> None:
+        """
+        Checks profile JSON combines one person record with a graph-availability list.
+        """
+        sparse_doc = {
+            'id': 'http://vivo.brown.edu/individual/invented-sparse',
+            'record_type': ['PEOPLE'],
+            'json_txt': [
+                json.dumps({'uri': 'http://vivo.brown.edu/individual/invented-sparse', 'name': 'Sparse Researcher'})
+            ],
+            'display_name_s': 'Sparse Researcher',
+            'show_visualizations_s': 'false',
+        }
+        self.responses[profile_export_key('invented-sparse')] = self.solr_response([sparse_doc], 1)
+        self.responses[visualization_key('coauthors')] = RecordedResponse(
+            200, (('content-type', 'application/json'),), b'{}'
+        )
+        with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
+            response = self.get_page('/display/invented-sparse.json')
+        self.assertEqual(response.status_code, 200)
+        body = json.loads(response.content)
+        self.assertEqual(body['name'], 'Sparse Researcher')
+        self.assertEqual(body['id'], 'http://vivo.brown.edu/individual/invented-sparse')
+        self.assertEqual(body['has_coauthors'], False)
+        self.assertEqual(body['research_areas'], [])
+        self.responses.pop(visualization_key('coauthors'))
+        with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
+            self.assertEqual(self.get_page('/display/invented-sparse.json').status_code, 503)
+
+    def test_active_team_uses_external_members_and_solr_profiles(self) -> None:
+        """
+        Checks a configured active team builds its faculty rows without a team Solr record.
+        """
+        with TemporaryDirectory() as directory:
+            manifest = Path(directory) / 'teams.json'
+            manifest.write_text(
+                json.dumps({'teams': {'team-example': {'name': 'Invented Team', 'member_ids': ['invented-a']}}})
+            )
+            with (
+                override_settings(TEAM_SOURCE_MANIFEST=str(manifest)),
+                patch('vivo_app.lib.source_teams.read_source', side_effect=self.read),
+            ):
+                result = team_data('team-example', 'live', self.read)
+                self.assertEqual(result['name'], 'Invented Team')
+                self.assertEqual(result['administrative_positions'], [])
+                response = self.get_page('/display/team-example')
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, 'Invented Researcher')
+                with self.assertRaises(PageDataError):
+                    team_data('team-missing', 'live', self.read)
+
+    def test_custom_organization_adds_configured_members(self) -> None:
+        """
+        Checks a fixed custom member appears on the page and in its publication export.
+        """
+        added = {
+            'id': 'http://vivo.brown.edu/individual/invented-b',
+            'record_type': ['PEOPLE'],
+            'display_name_s': 'Another Researcher',
+            'json_txt': [
+                json.dumps(
+                    {
+                        'name': 'Another Researcher',
+                        'title': 'Example Lecturer',
+                        'contributor_to': [
+                            {
+                                'type': 'http://vivo.brown.edu/ontology/citation#Article',
+                                'title': 'Another publication',
+                                'authors': 'Researcher, Another',
+                                'date': '2023',
+                            }
+                        ],
+                    }
+                )
+            ],
+        }
+        existing = json.loads(self.responses[member_details_key(['invented-a'])].body)['response']['docs'][0]
+        self.responses[team_member_key(['invented-b'])] = self.solr_response([added], 1)
+        self.responses[member_key(['invented-a', 'invented-b'])] = self.solr_response([existing, added], 2)
+        self.responses[member_details_key(['invented-a', 'invented-b'])] = self.solr_response([existing, added], 2)
+        with TemporaryDirectory() as directory:
+            manifest = Path(directory) / 'members.json'
+            manifest.write_text(
+                json.dumps({'organizations': {'org-brown-univ-dept124': {'extra_member_ids': ['invented-b']}}})
+            )
+            with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
+                extras = custom_organization_members('org-brown-univ-dept124')
+                result = organization_data('org-example', 'live', self.read, extras)
+                faculty = result['faculty_positions']
+                self.assertIsInstance(faculty, list)
+                if not isinstance(faculty, list):
+                    self.fail('Organization faculty positions are not a list.')
+                self.assertEqual([row['name'] for row in faculty], ['Another Researcher', 'Researcher, Invented'])
+                export = organization_publications_data('org-example', 'live', self.read, extras)
+                self.assertIn('Another publication', export)
+                with self.assertRaises(PageDataError):
+                    custom_organization_members('org-brown-univ-dept148')
+
     def test_capture_includes_organization_facets_and_document(self) -> None:
         """
         Checks the extended capture includes the source requests needed by its linked pages.
@@ -334,6 +490,7 @@ class SourcePageTests(TestCase):
         writer.assert_called_once()
         responses = writer.call_args.args[1]
         self.assertIn(member_key(['invented-a']), responses)
+        self.assertIn(member_details_key(['invented-a']), responses)
         self.assertIn(search_key('Example', 1, [], -1), responses)
         self.assertIn(search_key('none', 1, []), responses)
         self.assertIn(search_key('none', 1, [], -1), responses)

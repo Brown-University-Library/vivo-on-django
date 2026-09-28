@@ -36,6 +36,8 @@ class LocalPageDataMiddleware:
             'home_index',
             'search',
             'display_show',
+            'organization_publications_tsv',
+            'visualization_graph_json',
             'search_facets',
             'people',
             'organizations',

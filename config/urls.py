@@ -71,9 +71,24 @@ urlpatterns = [
     # Display functionality
     path('display/', vivo_views.display_index, name='display_index'),
     path('display/<str:id>/', vivo_views.display_show, name='display_show'),
+    path(
+        'display/<str:id>/publications.tsv', vivo_views.organization_publications_tsv, name='organization_publications_tsv'
+    ),
     path('display/<str:id>/publications/', vivo_views.display_publications, name='display_publications'),
     # Visualizations
     path('display/<str:id>/viz/', vivo_views.visualization_home, name='visualization_home'),
+    path(
+        'display/<str:id>/viz/collab.json',
+        vivo_views.visualization_graph_json,
+        {'kind': 'collaborators'},
+        name='collab_json',
+    ),
+    path(
+        'display/<str:id>/viz/coauthor.json',
+        vivo_views.visualization_graph_json,
+        {'kind': 'coauthors'},
+        name='coauthor_json',
+    ),
     path('display/<str:id>/viz/coauthor/', vivo_views.visualization_coauthor, name='visualization_coauthor'),
     path(
         'display/<str:id>/viz/coauthor_treemap/',

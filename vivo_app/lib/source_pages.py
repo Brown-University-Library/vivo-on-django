@@ -20,10 +20,13 @@ from vivo_app.lib.source_requests import (
     FACET_TITLES,
     image_path,
     local_document_url,
+    member_details_key,
     member_key,
     profile_key,
     read_source,
     search_key,
+    source_origin,
+    team_member_key,
 )
 
 SourceReader = Callable[[RequestKey, str], RecordedResponse]
@@ -287,6 +290,61 @@ def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | 
     }
 
 
+def search_json_data(
+    pairs: list[tuple[str, str]], mode: str, site_origin: str, reader: SourceReader | None = None
+) -> list[dict[str, object]]:
+    """
+    Returns the public search JSON fields from the same Solr request as HTML search.
+
+    Called by: views.search(), tests
+    """
+    if reader is None:
+        reader = read_source
+    query, page, filters = search_inputs(pairs)
+    response = response_object(search_key(query, page, filters), mode, reader)
+    docs, _ = documents(response)
+    highlighting = response.get('highlighting')
+    result: list[dict[str, object]] = []
+    for doc in docs:
+        kind = first_text(doc.get('record_type'))
+        if kind not in {'PEOPLE', 'ORGANIZATION'}:
+            raise PageDataError('Solr returned an unsupported record type.')
+        item = record_data(doc)
+        identifier = record_id(doc)
+        name = first_text(doc.get('display_name_s')) or first_text(item.get('name'))
+        if not name:
+            raise PageDataError('A Solr result is missing its display name.')
+        raw_highlights = (
+            highlighting.get('vitroIndividual:' + first_text(doc.get('id'))) if isinstance(highlighting, dict) else None
+        )
+        hits: list[dict[str, object]] = []
+        if isinstance(raw_highlights, dict):
+            for field, values in raw_highlights.items():
+                if isinstance(field, str) and isinstance(values, list) and all(isinstance(value, str) for value in values):
+                    hits.append({'field': field, 'values': [value.strip() for value in values]})
+        path = image_path(doc.get('thumbnail_file_path_s'))
+        thumbnail = (
+            source_origin('images') + path
+            if path
+            else ('person_placeholder.jpg' if kind == 'PEOPLE' else 'org_placeholder.png')
+        )
+        title = first_text(item.get('title'))
+        result.append(
+            {
+                'id': first_text(doc.get('id')),
+                'vivo_id': identifier,
+                'uri': site_origin.rstrip('/') + '/display/' + identifier,
+                'name': name,
+                'thumbnail': thumbnail,
+                'title': title[:47] + '...' if len(title) > 50 else title,
+                'email': first_text(item.get('email')),
+                'type': kind,
+                'highlights': {'highlights': hits},
+            }
+        )
+    return result
+
+
 def facet_values_data(
     pairs: list[tuple[str, str]], mode: str, reader: SourceReader | None = None
 ) -> list[dict[str, object]]:
@@ -429,6 +487,34 @@ def publication_html(item: dict[str, object]) -> str:
             + '">Full Text</a></div>'
         )
     return citation
+
+
+def publication_citation(item: dict[str, object]) -> str:
+    """
+    Formats the citation cell used by the public organization TSV download.
+
+    Called by: organization_publications_data(), tests
+    """
+    title = first_text(item.get('title')).strip(' \t\r\n\v\f').removeprefix('“')
+    text = ''
+    if title:
+        title = title.strip('"')
+        text = '"' + title.rstrip('.') + '." '
+    venue = first_text(item.get('published_in')) or first_text(item.get('venue'))
+    fields = [('<i>' + venue + '</i>') if venue else '']
+    for name, prefix in (('volume', 'vol. '), ('issue', 'no. ')):
+        value = first_text(item.get(name))
+        if value:
+            fields.append(prefix + value)
+    year = first_text(item.get('date'))[:4]
+    if re.fullmatch(r'\d{4}', year):
+        fields.append(year)
+    pages = first_text(item.get('pages'))
+    if pages:
+        fields.append('pp. ' + pages)
+    parts = [field for field in fields if field]
+    text += (' ' if text and parts else '') + ', '.join(parts)
+    return text.rstrip(' ,.') + '.'
 
 
 def publications(item: dict[str, object]) -> tuple[list[dict[str, str]], list[dict[str, object]]]:
@@ -680,7 +766,43 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
     }
 
 
-def organization_data(identifier: str, mode: str, reader: SourceReader | None = None) -> dict[str, object]:
+def organization_members(
+    item: dict[str, object], extra_member_ids: list[str], mode: str, reader: SourceReader
+) -> list[dict[str, object]]:
+    """
+    Adds the configured faculty that Rails places on a custom organization page.
+
+    Called by: organization_data(), organization_publications_data()
+    """
+    members = entries(item, 'people')
+    known = {record_id({'id': first_text(member.get('faculty_uri'))}) for member in members}
+    if extra_member_ids:
+        response = response_object(team_member_key(extra_member_ids), mode, reader)
+        docs, _ = documents(response)
+        found: set[str] = set()
+        for doc in docs:
+            member_id = record_id(doc)
+            if member_id not in extra_member_ids or first_text(doc.get('record_type')) != 'PEOPLE' or member_id in found:
+                raise PageDataError('Solr returned an unrelated custom-organization member.')
+            found.add(member_id)
+            if member_id not in known:
+                person = record_data(doc)
+                members.append(
+                    {
+                        'faculty_uri': first_text(doc.get('id')),
+                        'label': first_text(person.get('name')),
+                        'specific_position': first_text(person.get('title')),
+                        'general_position': 'general position',
+                    }
+                )
+        if found != set(extra_member_ids):
+            raise PageDataError('Solr did not return every custom-organization member.')
+    return members
+
+
+def organization_data(
+    identifier: str, mode: str, reader: SourceReader | None = None, extra_member_ids: list[str] | None = None
+) -> dict[str, object]:
     """
     Builds an organization and its member portraits from exact Solr responses.
 
@@ -699,7 +821,7 @@ def organization_data(identifier: str, mode: str, reader: SourceReader | None = 
     name = first_text(item.get('name')) or first_text(doc.get('display_name_s'))
     if not name:
         raise PageDataError('The source organization has no display name.')
-    members = entries(item, 'people')
+    members = organization_members(item, extra_member_ids or [], mode, reader)
     member_ids: list[str] = []
     for member in members:
         uri = first_text(member.get('faculty_uri'))
@@ -746,3 +868,54 @@ def organization_data(identifier: str, mode: str, reader: SourceReader | None = 
         'administrative_positions': administrative,
         'faculty_positions': faculty,
     }
+
+
+def organization_publications_data(
+    identifier: str, mode: str, reader: SourceReader | None = None, extra_member_ids: list[str] | None = None
+) -> str:
+    """
+    Builds the public TSV download from an organization's Solr member records.
+
+    Called by: views.organization_publications_tsv(), tests
+    """
+    if reader is None:
+        reader = read_source
+    response = response_object(profile_key(identifier), mode, reader)
+    docs, _ = documents(response)
+    if not docs or first_text(docs[0].get('record_type')) != 'ORGANIZATION' or record_id(docs[0]) != identifier:
+        raise PageDataError('The requested source record is not an organization.')
+    organization = record_data(docs[0])
+    members = organization_members(organization, extra_member_ids or [], mode, reader)
+    member_ids = list(dict.fromkeys(record_id({'id': first_text(member.get('faculty_uri'))}) for member in members))
+    member_docs: list[dict[str, object]] = []
+    if member_ids:
+        member_response = response_object(member_details_key(member_ids), mode, reader)
+        member_docs, _ = documents(member_response)
+        found = {record_id(doc) for doc in member_docs}
+        if found != set(member_ids) or len(member_docs) != len(member_ids):
+            raise PageDataError('Solr did not return every organization member.')
+    lines = ['Id\tFaculty\tTitle\tAuthors\tYear\tType\tCitation\n']
+    for doc in member_docs:
+        if first_text(doc.get('record_type')) != 'PEOPLE':
+            raise PageDataError('Solr returned an unrelated organization member.')
+        person = record_data(doc)
+        publications_data = entries(person, 'contributor_to')
+        publications_data.sort(
+            key=lambda row: (
+                -int(first_text(row.get('date'))[:4]) if first_text(row.get('date'))[:4].isdigit() else 0,
+                first_text(row.get('title')).lower(),
+            )
+        )
+        for publication in publications_data:
+            _, kind = publication_type(publication)
+            fields = (
+                first_text(doc.get('id')),
+                first_text(person.get('name')),
+                first_text(publication.get('title')),
+                first_text(publication.get('authors')),
+                first_text(publication.get('date'))[:4],
+                kind,
+                publication_citation(publication),
+            )
+            lines.append('\t'.join(fields) + '\n')
+    return ''.join(lines)
