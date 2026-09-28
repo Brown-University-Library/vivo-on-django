@@ -18,7 +18,7 @@ local = [
     "playwright>=1.63,<2",
 ]
 staging = [ 
-    "pymysql~=1.2.0",  # not yet used on dev, but useful to confirm installation
+    "pymysql~=1.2.0",  # reads the separate homepage book database
     ]
 prod = [ 
     "pymysql~=1.2.0",

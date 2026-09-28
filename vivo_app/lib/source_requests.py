@@ -359,26 +359,33 @@ def read_source(key: RequestKey, mode: str) -> RecordedResponse:
         except RecordingError as exc:
             raise PageDataError(str(exc)) from exc
     elif mode == 'live':
-        origin = source_origin(key.service)
-        limit = MAX_DOCUMENT_BYTES if key.service == 'documents' else MAX_RESPONSE_BYTES
-        try:
-            with (
-                httpx2.Client(timeout=10.0, follow_redirects=False, trust_env=False) as client,
-                client.stream('GET', origin + key.path, params=list(key.query), headers=dict(key.headers)) as response,
-            ):
-                chunks: list[bytes] = []
-                size = 0
-                for chunk in response.iter_bytes():
-                    size += len(chunk)
-                    if size > limit:
-                        raise PageDataError('The upstream response exceeds the configured size limit.')
-                    chunks.append(chunk)
-                headers = [('content-type', response.headers.get('content-type', ''))]
-                if key.service == 'documents' and 'location' in response.headers:
-                    headers.append(('location', response.headers['location']))
-                result = RecordedResponse(response.status_code, tuple(headers), b''.join(chunks))
-        except httpx2.HTTPError as exc:
-            raise PageDataError(f'{key.service} source request failed.') from exc
+        if key.service == 'book_db':
+            from vivo_app.lib.source_books import BOOKS_KEY, book_rows_response
+
+            if key != BOOKS_KEY:
+                raise PageDataError('The requested homepage book query is unsupported.')
+            result = book_rows_response()
+        else:
+            origin = source_origin(key.service)
+            limit = MAX_DOCUMENT_BYTES if key.service == 'documents' else MAX_RESPONSE_BYTES
+            try:
+                with (
+                    httpx2.Client(timeout=10.0, follow_redirects=False, trust_env=False) as client,
+                    client.stream('GET', origin + key.path, params=list(key.query), headers=dict(key.headers)) as response,
+                ):
+                    chunks: list[bytes] = []
+                    size = 0
+                    for chunk in response.iter_bytes():
+                        size += len(chunk)
+                        if size > limit:
+                            raise PageDataError('The upstream response exceeds the configured size limit.')
+                        chunks.append(chunk)
+                    headers = [('content-type', response.headers.get('content-type', ''))]
+                    if key.service == 'documents' and 'location' in response.headers:
+                        headers.append(('location', response.headers['location']))
+                    result = RecordedResponse(response.status_code, tuple(headers), b''.join(chunks))
+            except httpx2.HTTPError as exc:
+                raise PageDataError(f'{key.service} source request failed.') from exc
     else:
         raise PageDataError('Source requests require replay or live mode.')
     limit = MAX_DOCUMENT_BYTES if key.service == 'documents' else MAX_RESPONSE_BYTES

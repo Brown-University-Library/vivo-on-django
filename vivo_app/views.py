@@ -9,6 +9,7 @@ import sys
 from urllib.parse import quote_plus, urlencode
 
 from django.conf import settings
+from django.contrib.sessions.backends.base import SessionBase
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import redirect, render
 from django.templatetags.static import static
@@ -17,6 +18,7 @@ from django.views.decorators.http import require_http_methods
 
 from .lib import version_helper
 from .lib.assets import get_random_background_relpath
+from .lib.bot_detect import SESSION_KEY, verify_token
 from .lib.display import build_display_context, build_publications_context, get_type_for_id
 from .lib.error_check import IntentionalErrorCheckError
 from .lib.home import BookCover, get_book_cover_pages
@@ -676,12 +678,34 @@ def subject_lib(request, list_id):
 
 
 # Bot detection
-def bot_detect_challenge(request):
-    """Handle bot detection challenge."""
+@require_http_methods(['GET', 'POST'])
+def bot_detect_challenge(request: HttpRequest) -> HttpResponse:
+    """
+    Shows or verifies a Turnstile challenge when search protection is enabled.
+
+    Called by: config.urls
+    """
+    if not settings.TURNSTILE_ENABLED:
+        return HttpResponseNotFound()
+    if not settings.CF_TURNSTILE_SITEKEY or not settings.CF_TURNSTILE_SECRET_KEY:
+        return data_unavailable(PageDataError('The browser challenge is not configured.'))
     if request.method == 'POST':
-        # TODO: Implement challenge verification
-        return JsonResponse({'status': 'success'})
-    return render_or_stub(request, 'bot_detect/challenge.html')
+        session = getattr(request, 'session', None)
+        if not isinstance(session, SessionBase):
+            return data_unavailable(PageDataError('The browser challenge cannot save a session.'))
+        try:
+            payload: object = json.loads(request.body) if len(request.body) <= 4096 else None
+        except (ValueError, UnicodeError):
+            payload = None
+        token = payload.get('cf_turnstile_response') if isinstance(payload, dict) else None
+        success = isinstance(token, str) and verify_token(token, request.META.get('REMOTE_ADDR', ''))
+        if success:
+            session[SESSION_KEY] = {
+                'time': datetime.datetime.now(tz=datetime.UTC).isoformat(),
+                'ip': request.META.get('REMOTE_ADDR', ''),
+            }
+        return JsonResponse({'success': success, 'redirect_for_challenge': bool(success)})
+    return render(request, 'bot_detect/challenge.html', {'turnstile_sitekey': settings.CF_TURNSTILE_SITEKEY})
 
 
 # Legacy VIVO URLs

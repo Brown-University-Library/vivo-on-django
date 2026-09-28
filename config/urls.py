@@ -163,7 +163,8 @@ urlpatterns = [
     path('reports/subject-lib/', vivo_views.subject_lib_list, name='subject_lib_list'),
     path('reports/subject-lib/<str:list_id>/', vivo_views.subject_lib, name='subject_lib'),
     # Bot detection
-    path('challenge/', vivo_views.bot_detect_challenge, name='bot_detect_challenge'),
+    path('challenge', vivo_views.bot_detect_challenge, name='bot_detect_challenge'),
+    path('challenge/', vivo_views.bot_detect_challenge),
     # Legacy VIVO URLs
     path('people', vivo_views.people, name='people'),
     path('people/', vivo_views.people),

@@ -196,7 +196,10 @@ def custom_collaboration_graph(identifier: str, mode: str, reader: GraphReader) 
     Called by: visualization_graph()
     """
     name, member_ids = custom_graph_members(identifier, mode, reader)
-    roots = custom_graph_records(member_ids, mode, reader, True)
+    roots = custom_graph_records(member_ids, mode, reader, identifier.startswith('team-'))
+    member_ids = [member_id for member_id in member_ids if member_id in roots]
+    if not member_ids:
+        raise PageDataError('The custom collaboration organization has no available member records.')
     prefix = 'http://vivo.brown.edu/individual/'
     nodes: dict[str, dict[str, object]] = {}
     links: dict[tuple[str, str], dict[str, object]] = {}

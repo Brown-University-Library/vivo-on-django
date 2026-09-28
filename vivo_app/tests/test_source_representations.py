@@ -2,14 +2,17 @@
 Checks VIVO representation routes with made-up upstream bytes.
 """
 
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 
+from tools.source_capture import capture_vivo_exports
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_requests import vitro_key
+from vivo_app.lib.source_requests import read_source, vitro_key
 
 
 @override_settings(PAGE_DATA_MODE='replay', UPSTREAM_RECORDING_MANIFEST='unused-in-this-test')
@@ -38,6 +41,16 @@ class SourceRepresentationTests(TestCase):
         if body is None:
             raise PageDataError('The requested recording is missing.')
         return RecordedResponse(200, (), body)
+
+    def read_live(self, key: RequestKey, mode: str) -> RecordedResponse:
+        """
+        Supplies one made-up live representation to the bounded capture.
+
+        Called by: test_capture_replays_the_same_three_requests_offline()
+        """
+        if mode != 'live' or key not in self.responses:
+            raise PageDataError('The requested response is unavailable.')
+        return RecordedResponse(200, (('content-type', 'text/plain'),), self.responses[key])
 
     def test_exports_retain_bytes(self) -> None:
         """
@@ -88,3 +101,21 @@ class SourceRepresentationTests(TestCase):
         self.assertEqual(mismatch.status_code, 503)
         with self.assertRaises(PageDataError):
             vitro_key('invented-a', 'unsupported')
+
+    def test_capture_replays_the_same_three_requests_offline(self) -> None:
+        """
+        Checks bounded VIVO capture saves three original responses for exact replay.
+        """
+        with TemporaryDirectory() as directory:
+            output = Path(directory) / 'exports'
+            with (
+                patch('tools.source_capture.read_source', side_effect=self.read_live),
+                patch('tools.source_capture.time.sleep'),
+            ):
+                count = capture_vivo_exports('invented-a', output)
+            self.assertEqual(count, 3)
+            with override_settings(
+                UPSTREAM_RECORDING_MANIFEST=str(output / 'manifest.json'), UPSTREAM_RECORDING_CASE='vivo-exports'
+            ):
+                for key, body in self.responses.items():
+                    self.assertEqual(read_source(key, 'replay').body, body)

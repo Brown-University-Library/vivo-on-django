@@ -23,6 +23,8 @@ def selected_mode() -> str:
         raise PageDataError('Live search and profiles require SOLR_URL.')
     if mode == 'replay' and not settings.UPSTREAM_RECORDING_MANIFEST:
         raise PageDataError('Replay search and profiles require UPSTREAM_RECORDING_MANIFEST.')
+    if mode in {'prepared', 'replay'} and settings.TURNSTILE_ENABLED:
+        raise PageDataError('Disable TURNSTILE_ENABLED for offline page-data modes.')
     return mode
 
 
@@ -124,7 +126,11 @@ def get_home_data(path: str, query: list[tuple[str, str]]) -> dict[str, object] 
     bundle = get_bundle()
     result = None if bundle is None else dict(bundle.page('home', path, query).data)
     if bundle is None and selected_mode() in {'live', 'replay'}:
-        raise PageDataError('The homepage is not connected to source data yet.')
+        if path != '/' or query:
+            raise PageDataError('The requested homepage variation is unsupported.')
+        from vivo_app.lib.source_books import homepage_books
+
+        result = homepage_books(selected_mode())
     return result
 
 

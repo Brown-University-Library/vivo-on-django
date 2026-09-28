@@ -74,6 +74,7 @@ MIDDLEWARE = [
     'vivo_app.middleware.LocalPageDataMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'vivo_app.middleware.TurnstileSearchMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -225,6 +226,15 @@ CONTACT_US_URL_TEMPLATE = os.getenv(
 )
 BOOK_COVER_STUB = os.getenv('BOOK_COVER_STUB', 'true').lower() == 'true'
 BOOK_COVER_BASE_PATH = os.getenv('BOOK_COVER_BASE_PATH', '')
+BOOK_COVER_DB_HOST = os.getenv('BOOK_COVER_DB_HOST', '')
+BOOK_COVER_DB_PORT = int(os.getenv('BOOK_COVER_DB_PORT', '3306'))
+BOOK_COVER_DB_NAME = os.getenv('BOOK_COVER_DB_NAME', '')
+BOOK_COVER_DB_USER = os.getenv('BOOK_COVER_DB_USER', '')
+BOOK_COVER_DB_PASSWORD = os.getenv('BOOK_COVER_DB_PASSWORD', '')
+TURNSTILE_ENABLED = os.getenv('TURNSTILE_ENABLED', 'False').lower() == 'true'
+CF_TURNSTILE_SITEKEY = os.getenv('CF_TURNSTILE_SITEKEY', '')
+CF_TURNSTILE_SECRET_KEY = os.getenv('CF_TURNSTILE_SECRET_KEY', '')
+ALLOWED_IP_RANGES = os.getenv('ALLOWED_IP_RANGES', '')
 PAGE_DATA_MODE = os.getenv('PAGE_DATA_MODE', 'prototype')
 PREPARED_FIXTURE_DIR = os.getenv('PREPARED_FIXTURE_DIR', '../prepared_fixture_data')
 SOLR_URL = os.getenv('SOLR_URL', '')

@@ -3,11 +3,14 @@ Checks visualization response routing with made-up graph data and no network.
 """
 
 import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 
+from tools.source_capture import capture_custom_graph
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_graph import custom_graph_records, graph_csv, visualization_graph, visualization_key
@@ -157,7 +160,7 @@ class CustomGraphTests(TestCase):
         Creates made-up root and neighboring faculty records.
         """
         prefix = 'http://vivo.brown.edu/individual/'
-        root = {
+        self.root: dict[str, object] = {
             'name': 'Invented Root',
             'title': 'Example Professor',
             'org_label': 'Example Unit',
@@ -168,7 +171,7 @@ class CustomGraphTests(TestCase):
             'collaborators': [{'uri': 'https://example.invalid/person', 'name': 'Outside Person'}],
         }
         self.responses = {
-            member_details_key(['invented-root']): self.solr_response([('invented-root', root)]),
+            member_details_key(['invented-root']): self.solr_response([('invented-root', self.root)]),
             member_details_key(['invented-neighbor']): self.solr_response([('invented-neighbor', neighbor)]),
         }
         self.requested: list[tuple[RequestKey, str]] = []
@@ -245,6 +248,77 @@ class CustomGraphTests(TestCase):
         records = custom_graph_records(identifiers, 'replay', self.read, True)
         self.assertEqual(set(records), set(identifiers))
         self.assertEqual([key for key, _ in self.requested], list(self.responses))
+
+    def test_specialized_organization_uses_its_added_members(self) -> None:
+        """
+        Checks a specialized organization combines its profile with configured members.
+        """
+        identifier = 'org-brown-univ-dept124'
+        profile = {
+            'responseHeader': {'status': 0},
+            'response': {
+                'numFound': 1,
+                'docs': [
+                    {
+                        'id': 'http://vivo.brown.edu/individual/' + identifier,
+                        'record_type': 'ORGANIZATION',
+                        'json_txt': json.dumps({'name': 'Invented Institute', 'people': []}),
+                    }
+                ],
+            },
+        }
+        self.responses[profile_key(identifier)] = RecordedResponse(200, (), json.dumps(profile).encode())
+        self.responses[member_details_key(['invented-root', 'invented-missing'])] = self.solr_response(
+            [('invented-root', self.root)]
+        )
+        with patch(
+            'vivo_app.lib.source_graph.custom_organization_members', return_value=['invented-root', 'invented-missing']
+        ) as members:
+            live = visualization_graph('collaborators', identifier, 'live', self.read)
+            live_keys = [key for key, _ in self.requested]
+            self.requested.clear()
+            replay = visualization_graph('collaborators', identifier, 'replay', self.read)
+        self.assertEqual(live['graph'], replay['graph'])
+        self.assertEqual(live_keys, [key for key, _ in self.requested])
+        self.assertEqual(
+            live_keys,
+            [
+                profile_key(identifier),
+                member_details_key(['invented-root', 'invented-missing']),
+                member_details_key(['invented-neighbor']),
+            ],
+        )
+        members.assert_called_with(identifier, 'replay', self.read)
+        graph = replay['graph']
+        assert isinstance(graph, dict)
+        nodes = graph['nodes']
+        assert isinstance(nodes, list)
+        self.assertEqual(nodes[0]['group'], 'Invented Institute')
+        self.assertNotIn('http://vivo.brown.edu/individual/invented-missing', {node['id'] for node in nodes})
+
+    def test_custom_graph_capture_replays_exact_member_requests(self) -> None:
+        """
+        Checks the bounded capture keeps all Solr responses needed by replay.
+        """
+        with TemporaryDirectory() as directory:
+            output = Path(directory) / 'custom-graph'
+            with (
+                patch('vivo_app.lib.source_graph.team_definition', return_value=('Example Team', ['invented-root'])),
+                patch('tools.source_capture.read_source', side_effect=self.read),
+                patch('tools.source_capture.time.sleep'),
+                patch('vivo_app.lib.source_graph.time.sleep'),
+            ):
+                self.assertEqual(capture_custom_graph('team-example', output), 2)
+            with (
+                override_settings(
+                    UPSTREAM_RECORDING_MANIFEST=str(output / 'manifest.json'), UPSTREAM_RECORDING_CASE='custom-graph'
+                ),
+                patch('vivo_app.lib.source_graph.team_definition', return_value=('Example Team', ['invented-root'])),
+            ):
+                graph = visualization_graph('collaborators', 'team-example', 'replay')
+            self.assertEqual(graph['rabid'], 'team-example')
+        with self.assertRaisesRegex(PageDataError, 'calculated Solr graph'):
+            capture_custom_graph('invented-other', Path(directory) / 'unused')
 
     def test_team_csv_keeps_collaboration_counts(self) -> None:
         """

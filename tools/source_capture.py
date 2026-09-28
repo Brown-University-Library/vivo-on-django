@@ -11,6 +11,8 @@ from urllib.parse import parse_qsl, urlsplit
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RecordingError, RequestKey, external_path
+from vivo_app.lib.source_books import BOOKS_KEY
+from vivo_app.lib.source_graph import visualization_graph
 from vivo_app.lib.source_pages import (
     facet_values_data,
     organization_data,
@@ -18,8 +20,8 @@ from vivo_app.lib.source_pages import (
     profile_data,
     search_data,
 )
-from vivo_app.lib.source_requests import document_key, document_key_from_url, image_key, image_path, read_source
-from vivo_app.lib.source_teams import custom_organization_members, team_data
+from vivo_app.lib.source_requests import document_key, document_key_from_url, image_key, image_path, read_source, vitro_key
+from vivo_app.lib.source_teams import CUSTOM_ORGANIZATION_IDS, custom_organization_members, team_data
 
 MAX_REQUESTS = 120
 MAX_TOTAL_BYTES = 60_000_000
@@ -152,6 +154,51 @@ def write_capture(directory: Path, responses: dict[RequestKey, RecordedResponse]
         'cases': {case_id: names},
     }
     (root / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+
+
+def capture_vivo_exports(identifier: str, output: Path) -> int:
+    """
+    Captures three original VIVO formats with a pause between requests.
+
+    Called by: capture_vivo_exports.Command.handle()
+    """
+    reader = CapturingReader()
+    for number, fmt in enumerate(('jsonld', 'ttl', 'rdf')):
+        if number:
+            time.sleep(0.3)
+        response = reader(vitro_key(identifier, fmt), 'live')
+        if response.status != 200:
+            raise PageDataError('A VIVO representation is unavailable.')
+    write_capture(output, reader.responses, 'vivo-exports')
+    return len(reader.responses)
+
+
+def capture_homepage_books(output: Path) -> int:
+    """
+    Captures the active homepage book rows outside Git for exact replay.
+
+    Called by: capture_homepage_books.Command.handle()
+    """
+    reader = CapturingReader()
+    reader(BOOKS_KEY, 'live')
+    write_capture(output, reader.responses, 'homepage-books')
+    return len(reader.responses)
+
+
+def capture_custom_graph(identifier: str, output: Path) -> int:
+    """
+    Captures paced Solr inputs for a team or specialized-organization graph.
+
+    Called by: capture_custom_graph.Command.handle()
+    """
+    if not (identifier.startswith('team-') or identifier in CUSTOM_ORGANIZATION_IDS):
+        raise PageDataError('The selected record does not use a calculated Solr graph.')
+    reader = CapturingReader()
+    visualization_graph('collaborators', identifier, 'live', reader)
+    if not reader.responses or any(key.service != 'solr' for key in reader.responses):
+        raise PageDataError('The selected record does not use a calculated Solr graph.')
+    write_capture(output, reader.responses, 'custom-graph')
+    return len(reader.responses)
 
 
 def capture_journey(

@@ -3,10 +3,13 @@ Keeps prepared and replay browser loads local.
 """
 
 from collections.abc import Callable
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.urls import reverse
 
+from vivo_app.lib.bot_detect import challenge_passed
 from vivo_app.lib.page_data import selected_mode
 from vivo_app.lib.page_rendering import data_unavailable
 from vivo_app.lib.prepared_data import PageDataError
@@ -57,6 +60,7 @@ class LocalPageDataMiddleware:
             'source_document',
             'error_check',
             'version',
+            'bot_detect_challenge',
         }
         if (
             settings.PAGE_DATA_MODE in {'prepared', 'replay', 'live'}
@@ -91,3 +95,44 @@ class LocalPageDataMiddleware:
                 "connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'"
             )
         return response
+
+
+class TurnstileSearchMiddleware:
+    """Requires a valid challenge pass before an enabled search request."""
+
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
+        """
+        Keeps the next Django request handler.
+
+        Called by: Django middleware setup
+        """
+        self.get_response = get_response
+
+    def process_view(
+        self, request: HttpRequest, view_func: object, view_args: object, view_kwargs: object
+    ) -> HttpResponse | None:
+        """
+        Redirects unverified search GETs to the local challenge page.
+
+        Called by: Django request handler
+        """
+        response = None
+        if (
+            settings.TURNSTILE_ENABLED
+            and request.method == 'GET'
+            and getattr(view_func, '__module__', '') == 'vivo_app.views'
+            and getattr(view_func, '__name__', '') == 'search'
+            and not challenge_passed(request)
+        ):
+            location = reverse('bot_detect_challenge') + '?' + urlencode({'dest': request.get_full_path()})
+            response = HttpResponse(status=307)
+            response['Location'] = location
+        return response
+
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        """
+        Passes the request through to Django's next handler.
+
+        Called by: Django middleware setup
+        """
+        return self.get_response(request)
