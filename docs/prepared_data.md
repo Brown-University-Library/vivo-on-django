@@ -19,6 +19,7 @@ Set these values in local environment configuration, or supply them for an indiv
 ```dotenv
 PAGE_DATA_MODE=prepared
 PREPARED_FIXTURE_DIR=../prepared_fixture_data
+DJANGO_DEBUG=True
 ```
 
 Relative bundle paths resolve against the Django project root. No original workstation paths are required.
@@ -29,6 +30,16 @@ PAGE_DATA_MODE=prepared uv run ./manage.py runserver 127.0.0.1:8000
 ```
 
 The validator reads every listed page, supporting response, image, font, and README. It checks required fields, request states, case references, relative paths, and SHA-256 checksums. It prints aggregate JSON including data origin and explicit unverified integration and visual results. `--case CASE_ID` additionally requires a listed case; it does not skip validation of the rest of the bundle. The command never contacts a service and changes no bundle data.
+
+### If local pages look unstyled
+
+Ordinary `runserver` serves application CSS, JavaScript, logos, and icons only when `DJANGO_DEBUG=True`. With debug disabled, saved portraits and background images may still load from the prepared bundle while the rest of the page appears as plain text or broken images. This does not mean the prepared layout is missing.
+
+1. Set `DJANGO_DEBUG=True` in your local environment configuration. Keep `PAGE_DATA_MODE=prepared` and the compatible bundle path.
+2. Stop the running process with Ctrl+C and start `uv run ./manage.py runserver` again. Editing `.env` or letting the code reloader restart its child process can leave the old value inherited from the original process. An exported shell value also takes precedence over `.env`.
+3. Reload the browser. Check `/static/css/public.css` if styles are still absent; it should return CSS rather than a 404 page.
+
+For a deliberate local check with debug disabled, `DJANGO_DEBUG=False uv run ./manage.py runserver --insecure` serves static files without enabling debug. This option is only for local testing. `--nostatic` disables static serving even with debug enabled. The application prints a startup explanation when either configuration would leave the preview without its assets.
 
 Use an exact URL listed in the bundle's manifest. The saved homepage can start selected journeys; unconverted public handlers return 503 in prepared mode. Use the bundle README for its supported journeys and limitations.
 
@@ -56,7 +67,7 @@ Parameter names may appear in a different order. Values under a repeated name re
 
 A `response` entry also declares `status`, `content_type`, and optional `headers` as string pairs. Its saved body bytes are returned unchanged. Supported headers are Content-Disposition, Location, and Cache-Control. A saved redirect needs one local Location. Selected `/people`, `/ous`, and `/individual/…` requests return their observed redirects and reach prepared destinations. Search JSON, profile JSON, and facet JSON require their own saved entries; they are not synthesized from HTML page fields. Profile CV downloads at `/docs/…` also require exact saved response entries, including their query parameters. Other download and representation handlers are not connected yet.
 
-Asset URLs use `/__prepared_assets/ASSET_NAME`. Only listed assets are served; missing names return 404. Images and fonts must use supported content types. HTML bundles include `source-sans-pro.ttf`; the application supplies its own styles, scripts, and icon font. The icon font comes from the existing Rails asset set.
+Asset URLs use `/__prepared_assets/ASSET_NAME`. Only listed assets are served; missing names return 404. Images and fonts must use supported content types. The application supplies its own styles, scripts, and [matching text and icon fonts](fonts.md). Older HTML bundles may include `source-sans-pro.ttf`; that file is still validated when listed, but the templates no longer use or require it.
 
 ## Page fields
 

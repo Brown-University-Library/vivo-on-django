@@ -236,8 +236,6 @@ def load_bundle(directory: Path) -> PreparedBundle:
         cases[name] = checked
     if not entries or not cases or set(entries) != {item for items in cases.values() for item in items}:
         raise PageDataError('Every prepared entry must belong to a case.')
-    if any(entry.family != 'response' for entry in entries.values()) and 'source-sans-pro.ttf' not in assets:
-        raise PageDataError('Prepared HTML pages require the bundled source-sans-pro.ttf font.')
     validate_documents(entries, requests)
     return PreparedBundle(version, str(origin), str(prepared_at), revision, entries, requests, cases, assets)
 

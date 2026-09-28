@@ -31,6 +31,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-key-change-me-in-production')
 
+# Keep debug enabled for ordinary local runserver so Django serves CSS, scripts, and images.
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
@@ -64,8 +65,9 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    # Register the local runserver diagnostic before Django's staticfiles command.
     'vivo_app',
+    'django.contrib.staticfiles',
 ]
 
 MIDDLEWARE = [

@@ -159,6 +159,20 @@ class PreparedDataTests(TestCase):
             self.assertNotContains(response, 'Mock Person')
             self.assertIn("connect-src 'self'", response['Content-Security-Policy'])
             self.assertNotContains(response, 'fonts.googleapis.com')
+            self.assertContains(response, '/static/css/fonts.css')
+            self.assertNotContains(response, '/__prepared_assets/source-sans-pro.ttf')
+
+    def test_application_fonts_do_not_require_a_bundle_font(self) -> None:
+        """
+        Checks that prepared HTML uses application fonts even when its bundle contains no font.
+        """
+        assets = self.manifest['assets']
+        assert isinstance(assets, dict)
+        del assets['source-sans-pro.ttf']
+        self.write_manifest()
+        response = self.get_page('/display/invented-a')
+        self.assertContains(response, 'Invented overview.')
+        self.assertContains(response, '/static/css/fonts.css')
 
     def test_unsaved_state_does_not_fall_back(self) -> None:
         """

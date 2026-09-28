@@ -2,6 +2,11 @@
   .prepared-data .organization-page #section_overview {
     margin-top: 0;
   }
+
+  /* Preserve the space around links contributed by empty paragraphs in the reference markup. */
+  .prepared-data .organization-page .organization-title ul {
+    margin: 10px 0 20px;
+  }
 }
 
 @media (max-width: 767px) {
