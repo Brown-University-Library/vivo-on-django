@@ -12,14 +12,13 @@ dependencies = [
 ]
 
 [dependency-groups]
-local = []
-staging = [ 
-    "mysqlclient~=2.2.0",  # not yet used on dev, but useful to confirm installation
-    ]
-prod = [ 
-    "mysqlclient~=2.2.0", 
-    ]
-dev = [
+local = [
     "pillow>=11,<13",
     "playwright>=1.63,<2",
 ]
+staging = [ 
+    "pymysql~=1.2.0",  # not yet used on dev, but useful to confirm installation
+    ]
+prod = [ 
+    "pymysql~=1.2.0",
+    ]
