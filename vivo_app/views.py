@@ -5,7 +5,7 @@ import json
 import logging
 import random
 import sys
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlencode
 
 from django.conf import settings
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse
@@ -29,7 +29,8 @@ from .lib.page_data import (
 )
 from .lib.page_rendering import data_unavailable, prepared_response, query_pairs, render_or_stub
 from .lib.prepared_data import PageDataError
-from .lib.source_requests import image_key, read_source
+from .lib.source_pages import facet_values_data
+from .lib.source_requests import document_key, document_key_from_url, image_key, read_source
 from .lib.version_helper import GatherCommitAndBranchData
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,32 @@ def source_image(request: HttpRequest, filename: str) -> HttpResponse:
         response = HttpResponse(result.body, content_type=content_type)
         response['X-Content-Type-Options'] = 'nosniff'
         return response
+    except PageDataError as exc:
+        return data_unavailable(exc)
+
+
+def source_document(request: HttpRequest, filename: str) -> HttpResponse:
+    """
+    Serves one recorded or live PDF while keeping a source version redirect local.
+
+    Called by: config.urls
+    """
+    try:
+        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
+            raise PageDataError('Source documents require live or replay mode.')
+        key = document_key('/' + filename, tuple(query_pairs(request.GET)))
+        result = read_source(key, settings.PAGE_DATA_MODE)
+        headers = dict(result.headers)
+        if result.status in {301, 302}:
+            location = headers.get('location', '')
+            target = document_key_from_url(location)
+            redirect_url = '/source-documents' + target.path
+            if target.query:
+                redirect_url += '?' + urlencode(target.query)
+            return HttpResponse(status=result.status, headers={'Location': redirect_url})
+        if headers.get('content-type', '').split(';', 1)[0] != 'application/pdf' or not result.body.startswith(b'%PDF-'):
+            raise PageDataError('The document source returned an unsupported PDF response.')
+        return HttpResponse(result.body, content_type='application/pdf')
     except PageDataError as exc:
         return data_unavailable(exc)
 
@@ -378,6 +405,10 @@ def advanced_search(request):
 def search_facets(request):
     """Return search facets."""
     try:
+        if settings.PAGE_DATA_MODE in {'live', 'replay'}:
+            if 'f_name' not in request.GET:
+                return JsonResponse(None, safe=False)
+            return JsonResponse(facet_values_data(query_pairs(request.GET), settings.PAGE_DATA_MODE), safe=False)
         saved_response = get_response_data(request.path, query_pairs(request.GET))
         if saved_response is not None:
             return prepared_response(saved_response)

@@ -229,6 +229,7 @@ PAGE_DATA_MODE = os.getenv('PAGE_DATA_MODE', 'prototype')
 PREPARED_FIXTURE_DIR = os.getenv('PREPARED_FIXTURE_DIR', '../prepared_fixture_data')
 SOLR_URL = os.getenv('SOLR_URL', '')
 IMAGES_URL = os.getenv('IMAGES_URL', '')
+DOCUMENTS_URL = os.getenv('DOCUMENTS_URL', '')
 UPSTREAM_RECORDING_MANIFEST = os.getenv('UPSTREAM_RECORDING_MANIFEST', '')
 UPSTREAM_RECORDING_CASE = os.getenv('UPSTREAM_RECORDING_CASE', 'search-profile')
 

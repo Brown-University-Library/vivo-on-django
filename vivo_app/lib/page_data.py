@@ -98,7 +98,11 @@ def get_organization_data(path: str, query: list[tuple[str, str]]) -> dict[str, 
     bundle = get_bundle()
     result = None if bundle is None else dict(bundle.page('organization', path, query).data)
     if bundle is None and selected_mode() in {'live', 'replay'}:
-        raise PageDataError('Organization pages are not connected to source data yet.')
+        if query:
+            raise PageDataError('Organization query options are not connected to source data yet.')
+        from vivo_app.lib.source_pages import organization_data
+
+        result = organization_data(path.rstrip('/').rsplit('/', 1)[-1], selected_mode())
     return result
 
 

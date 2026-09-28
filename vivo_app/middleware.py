@@ -43,6 +43,7 @@ class LocalPageDataMiddleware:
             'prepared_asset',
             'prepared_document',
             'source_image',
+            'source_document',
             'error_check',
             'version',
         }

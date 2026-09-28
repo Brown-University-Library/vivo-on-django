@@ -13,14 +13,16 @@ from django.test import TestCase, override_settings
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_pages import publication_html
-from vivo_app.lib.source_requests import image_key, profile_key, search_key
+from vivo_app.lib.source_pages import profile_data, publication_html, search_data
+from vivo_app.lib.source_requests import document_key, image_key, member_key, profile_key, search_key
+from vivo_app.management.commands.capture_solr_journey import CapturingReader
 
 
 @override_settings(
     PAGE_DATA_MODE='live',
     SOLR_URL='http://example.invalid/solr/example',
     IMAGES_URL='http://example.invalid',
+    DOCUMENTS_URL='https://example.invalid',
 )
 class SourcePageTests(TestCase):
     """Exercises source parsing, rendering, images, and explicit failures."""
@@ -50,6 +52,7 @@ class SourcePageTests(TestCase):
             'education': [{'date': '2001', 'degree': 'PhD', 'school_name': 'Example University'}],
             'appointments': [{'name': 'Editor', 'org_name': 'Example Journal', 'start_date': '2020-01-01'}],
             'teacher_for': ['EXMP 1000 - Example Course'],
+            'cv': [{'cv_link': 'http://example.invalid/docs/i/invented_cv.pdf?dt=1'}],
         }
         person_doc = {
             'id': person['id'],
@@ -62,6 +65,23 @@ class SourcePageTests(TestCase):
             'id': 'http://vivo.brown.edu/individual/org-example',
             'record_type': ['ORGANIZATION'],
             'thumbnail_file_path_s': '/file/n5678/logo.png',
+            'json_txt': [
+                json.dumps(
+                    {
+                        'name': 'Example Department',
+                        'overview': '<strong>Invented department</strong>',
+                        'people': [
+                            {
+                                'faculty_uri': person['id'],
+                                'label': 'Researcher, Invented',
+                                'specific_position': 'Example Professor',
+                                'general_position': 'http://vivoweb.org/ontology/core#FacultyPosition',
+                            }
+                        ],
+                        'web_pages': [{'url': 'https://example.invalid/department', 'text': 'Department website'}],
+                    }
+                )
+            ],
         }
         facets: dict[str, object] = {
             'facet_fields': {
@@ -79,13 +99,40 @@ class SourcePageTests(TestCase):
         self.responses = {
             search_key('Example', 1, []): self.solr_response([person_doc], 1, facets, highlights),
             search_key('Example', 1, [('record_type', 'PEOPLE')]): self.solr_response([person_doc], 1, facets, highlights),
+            search_key('Example', 1, [], -1): self.solr_response([person_doc], 1, facets, highlights),
+            search_key('Example', 1, [('record_type', 'PEOPLE')], -1): self.solr_response(
+                [person_doc], 1, facets, highlights
+            ),
+            search_key('none', 1, []): self.solr_response(
+                [],
+                0,
+                {'facet_fields': {field: [] for field in ('record_type', 'affiliations', 'research_areas', 'published_in')}},
+            ),
+            search_key('none', 1, [], -1): self.solr_response(
+                [],
+                0,
+                {'facet_fields': {field: [] for field in ('record_type', 'affiliations', 'research_areas', 'published_in')}},
+            ),
+            search_key('Example', 2, []): self.solr_response([person_doc], 21, facets),
+            search_key(
+                'Example', 1, [('record_type', 'PEOPLE'), ('affiliations', 'Example Department')]
+            ): self.solr_response([person_doc], 1, facets),
             profile_key('invented-a'): self.solr_response([person_doc], 1),
             profile_key('org-example'): self.solr_response([organization_doc], 1),
+            member_key(['invented-a']): self.solr_response([person_doc], 1),
             image_key('/profile-images/123/4/portrait.jpg'): RecordedResponse(
                 200, (('content-type', 'image/jpeg'),), b'invented-portrait'
             ),
             image_key('/profile-images/567/8/logo.png'): RecordedResponse(
                 200, (('content-type', 'image/png'),), b'invented-logo'
+            ),
+            document_key('/docs/i/invented_cv.pdf', (('dt', '1'),)): RecordedResponse(
+                200, (('content-type', 'application/pdf'),), b'%PDF-1.7 invented document'
+            ),
+            document_key('/docs/i/invented_cv.pdf'): RecordedResponse(
+                301,
+                (('content-type', 'text/html'), ('location', 'https://example.invalid/docs/i/invented_cv.pdf?dt=1')),
+                b'',
             ),
         }
 
@@ -151,10 +198,66 @@ class SourcePageTests(TestCase):
             self.assertContains(profile, 'Example University')
             self.assertContains(profile, 'EXMP 1000')
             self.assertContains(profile, '/source-images/profile-images/567/8/logo.png')
+            self.assertContains(profile, '/source-documents/docs/i/invented_cv.pdf?dt=1')
             picture = self.get_page('/source-images/profile-images/123/4/portrait.jpg')
             self.assertEqual(picture.content, b'invented-portrait')
             self.assertEqual(picture['Content-Type'], 'image/jpeg')
             self.assertEqual(self.get_page('/source-images/profile-images/567/8/logo.png').status_code, 200)
+            organization = self.get_page('/display/org-example')
+            self.assertContains(organization, 'Invented department')
+            self.assertContains(organization, 'Researcher, Invented')
+            self.assertContains(organization, '/source-images/profile-images/123/4/portrait.jpg')
+            facet = self.get_page('/search_facets?q=Example&f_name=record_type')
+            facet_rows = json.loads(facet.content)
+            self.assertEqual(facet_rows[0]['text'], 'PEOPLE')
+            self.assertEqual(facet_rows[0]['add_url'], '/search?q=Example&fq=record_type%7CPEOPLE')
+            selected = self.get_page('/search_facets?q=Example&fq=record_type%7CPEOPLE&f_name=record_type')
+            self.assertEqual(json.loads(selected.content)[0]['remove_url'], '/search?q=Example')
+            redirect = self.get_page('/source-documents/docs/i/invented_cv.pdf')
+            self.assertEqual(redirect.status_code, 301)
+            self.assertEqual(redirect['Location'], '/source-documents/docs/i/invented_cv.pdf?dt=1')
+            document = self.get_page(redirect['Location'])
+            self.assertEqual(document['Content-Type'], 'application/pdf')
+            self.assertTrue(document.content.startswith(b'%PDF-'))
+
+    def test_varied_search_and_sparse_profile_states(self) -> None:
+        """
+        Checks empty results, later pages, repeated filters, and a person with no optional fields.
+        """
+        sparse_doc = {
+            'id': 'http://vivo.brown.edu/individual/invented-sparse',
+            'record_type': ['PEOPLE'],
+            'json_txt': [json.dumps({'name': 'Sparse Researcher'})],
+        }
+        self.responses[profile_key('invented-sparse')] = self.solr_response([sparse_doc], 1)
+        empty = search_data([('q', 'none')], 'live', self.read)
+        self.assertEqual(empty['results'], [])
+        self.assertEqual(empty['start'], 0)
+        later = search_data([('q', 'Example'), ('page', '2')], 'live', self.read)
+        self.assertEqual((later['start'], later['end']), (21, 21))
+        pagination = later['pagination']
+        self.assertIsInstance(pagination, list)
+        if not isinstance(pagination, list):
+            self.fail('Search pagination was not a list.')
+        self.assertEqual(len(pagination), 2)
+        repeated = search_data(
+            [('q', 'Example'), ('fq', 'record_type|PEOPLE'), ('fq', 'affiliations|Example Department')],
+            'live',
+            self.read,
+        )
+        selected_filters = repeated['selected_filters']
+        self.assertIsInstance(selected_filters, list)
+        if not isinstance(selected_filters, list):
+            self.fail('Selected search filters were not a list.')
+        self.assertEqual(len(selected_filters), 2)
+        sparse = profile_data('invented-sparse', 'live', self.read)
+        sections = sparse['sections']
+        self.assertIsInstance(sections, list)
+        if not isinstance(sections, list):
+            self.fail('Profile sections were not a list.')
+        self.assertEqual([section['id'] for section in sections], ['Overview'])
+        self.assertEqual(sparse['publications'], [])
+        self.assertEqual(sparse['cv_url'], '')
 
     def test_missing_response_and_unsupported_option_do_not_fall_back(self) -> None:
         """
@@ -164,8 +267,13 @@ class SourcePageTests(TestCase):
             self.assertEqual(self.get_page('/search?q=Other').status_code, 503)
             self.assertEqual(self.get_page('/search?q=Example&format=json').status_code, 503)
             self.assertEqual(self.get_page('/display/other').status_code, 503)
+            self.assertEqual(self.get_page('/search_facets?q=Example&f_name=bad').status_code, 503)
             self.assertEqual(self.get_page('/display/invented-a/publications/').status_code, 503)
             self.assertEqual(self.get_page('/').status_code, 503)
+        self.responses.pop(member_key(['invented-a']))
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            self.assertEqual(self.get_page('/display/org-example').status_code, 503)
+        self.assertEqual(self.get_page('/source-documents/docs/../../private.pdf').status_code, 503)
 
     def test_publication_title_joins_venue_without_extra_comma(self) -> None:
         """
@@ -180,9 +288,54 @@ class SourcePageTests(TestCase):
         """
         with (
             patch('vivo_app.management.commands.capture_solr_journey.read_source', side_effect=self.read),
+            patch('vivo_app.management.commands.capture_solr_journey.time.sleep'),
             patch('vivo_app.management.commands.capture_solr_journey.write_capture') as writer,
         ):
             with self.assertRaises(CommandError) as caught:
                 call_command('capture_solr_journey', query='Example', id='other', output=Path('/tmp/unused-capture'))
             self.assertIn('not in the captured search results', str(caught.exception))
             writer.assert_not_called()
+
+    def test_capture_spaces_distinct_solr_requests(self) -> None:
+        """
+        Checks repeated reads use the saved response and new Solr reads wait one second.
+        """
+        reader = CapturingReader()
+        first = search_key('Example', 1, [])
+        second = search_key('Example', 1, [('record_type', 'PEOPLE')])
+        with (
+            patch('vivo_app.management.commands.capture_solr_journey.read_source', side_effect=self.read) as read,
+            patch('vivo_app.management.commands.capture_solr_journey.time.monotonic', side_effect=[0.0, 0.2, 0.2]),
+            patch('vivo_app.management.commands.capture_solr_journey.time.sleep') as sleep,
+        ):
+            reader(first, 'live')
+            reader(first, 'live')
+            reader(second, 'live')
+        self.assertEqual(read.call_count, 2)
+        sleep.assert_called_once_with(0.8)
+
+    def test_capture_includes_organization_facets_and_document(self) -> None:
+        """
+        Checks the extended capture includes the source requests needed by its linked pages.
+        """
+        with (
+            patch('vivo_app.management.commands.capture_solr_journey.read_source', side_effect=self.read),
+            patch('vivo_app.management.commands.capture_solr_journey.time.sleep'),
+            patch('vivo_app.management.commands.capture_solr_journey.write_capture') as writer,
+        ):
+            call_command(
+                'capture_solr_journey',
+                query='Example',
+                id='invented-a',
+                organization_id='org-example',
+                extra_search=['q=none'],
+                output=Path('/tmp/unused-capture'),
+            )
+        writer.assert_called_once()
+        responses = writer.call_args.args[1]
+        self.assertIn(member_key(['invented-a']), responses)
+        self.assertIn(search_key('Example', 1, [], -1), responses)
+        self.assertIn(search_key('none', 1, []), responses)
+        self.assertIn(search_key('none', 1, [], -1), responses)
+        self.assertIn(document_key('/docs/i/invented_cv.pdf', (('dt', '1'),)), responses)
+        self.assertIn(image_key('/profile-images/567/8/logo.png'), responses)

@@ -4,19 +4,22 @@ Captures one bounded search-to-profile journey outside Git for local replay.
 
 import hashlib
 import json
+import time
 from argparse import ArgumentParser
 from datetime import UTC, datetime
 from pathlib import Path
+from urllib.parse import parse_qsl, urlsplit
 
 from django.core.management.base import BaseCommand, CommandError
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RecordingError, RequestKey, external_path
-from vivo_app.lib.source_pages import profile_data, search_data
-from vivo_app.lib.source_requests import image_key, image_path, read_source
+from vivo_app.lib.source_pages import facet_values_data, organization_data, profile_data, search_data
+from vivo_app.lib.source_requests import document_key, document_key_from_url, image_key, image_path, read_source
 
-MAX_REQUESTS = 24
-MAX_TOTAL_BYTES = 25_000_000
+MAX_REQUESTS = 120
+MAX_TOTAL_BYTES = 60_000_000
+MIN_SOLR_INTERVAL_SECONDS = 1.0
 
 
 class CapturingReader:
@@ -29,18 +32,25 @@ class CapturingReader:
         Called by: Command.handle()
         """
         self.responses: dict[RequestKey, RecordedResponse] = {}
+        self.last_solr_request_at: float | None = None
 
     def __call__(self, key: RequestKey, mode: str) -> RecordedResponse:
         """
         Reads a live response once and retains its original bytes.
 
-        Called by: source_pages.search_data(), source_pages.profile_data(), Command.handle()
+        Called by: source_pages.search_data(), source_pages.profile_data(), source_pages.organization_data(), Command.handle()
         """
         if mode != 'live':
             raise PageDataError('Captures require live source access.')
         if key not in self.responses:
             if len(self.responses) >= MAX_REQUESTS:
                 raise PageDataError('The capture reached its request limit.')
+            if key.service == 'solr':
+                if self.last_solr_request_at is not None:
+                    elapsed = time.monotonic() - self.last_solr_request_at
+                    if elapsed < MIN_SOLR_INTERVAL_SECONDS:
+                        time.sleep(MIN_SOLR_INTERVAL_SECONDS - elapsed)
+                self.last_solr_request_at = time.monotonic()
             response = read_source(key, 'live')
             if sum(len(item.body) for item in self.responses.values()) + len(response.body) > MAX_TOTAL_BYTES:
                 raise PageDataError('The capture reached its total byte limit.')
@@ -72,6 +82,26 @@ def image_requests(responses: dict[RequestKey, RecordedResponse]) -> list[Reques
     if len(paths) + len(responses) > MAX_REQUESTS:
         raise PageDataError('The journey has more images than the capture limit permits.')
     return [image_key(path) for path in sorted(paths)]
+
+
+def capture_document_chain(url: object, reader: CapturingReader) -> None:
+    """
+    Captures a local CV link and at most two version redirects as exact responses.
+
+    Called by: Command.handle()
+    """
+    if not isinstance(url, str):
+        raise PageDataError('The profile CV link is invalid.')
+    parsed = urlsplit(url)
+    if parsed.path.startswith('/source-documents/'):
+        key = document_key(parsed.path.removeprefix('/source-documents'), tuple(parse_qsl(parsed.query)))
+        for _ in range(3):
+            response = reader(key, 'live')
+            if response.status == 200:
+                return
+            location = dict(response.headers).get('location', '')
+            key = document_key_from_url(location)
+        raise PageDataError('The document source redirected too many times.')
 
 
 def write_capture(directory: Path, responses: dict[RequestKey, RecordedResponse]) -> None:
@@ -123,7 +153,7 @@ def write_capture(directory: Path, responses: dict[RequestKey, RecordedResponse]
 class Command(BaseCommand):
     """Captures one bounded live journey for exact local replay."""
 
-    help = 'Capture a search and person profile, including required images, outside Git.'
+    help = 'Capture a search and person profile, optionally with an organization and extra search states, outside Git.'
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         """
@@ -133,6 +163,8 @@ class Command(BaseCommand):
         """
         parser.add_argument('--query', required=True)
         parser.add_argument('--id', required=True)
+        parser.add_argument('--organization-id')
+        parser.add_argument('--extra-search', action='append', default=[])
         parser.add_argument('--output', required=True, type=Path)
 
     def handle(self, *args: object, **options: object) -> None:
@@ -142,8 +174,18 @@ class Command(BaseCommand):
         Called by: Django management command runner
         """
         query, identifier, output = options['query'], options['id'], options['output']
+        organization_id = options.get('organization_id')
+        extra_searches = options.get('extra_search')
         if not isinstance(query, str) or not isinstance(identifier, str) or not isinstance(output, Path):
             raise CommandError('Query, profile identifier, and output directory are required.')
+        if organization_id is not None and not isinstance(organization_id, str):
+            raise CommandError('The organization identifier must be text.')
+        if (
+            not isinstance(extra_searches, list)
+            or len(extra_searches) > 4
+            or any(not isinstance(value, str) or len(value) > 1000 for value in extra_searches)
+        ):
+            raise CommandError('Provide at most four short extra search query strings.')
         reader = CapturingReader()
         try:
             search_page = search_data([('q', query)], 'live', reader)
@@ -153,7 +195,16 @@ class Command(BaseCommand):
             ):
                 raise PageDataError('The selected profile is not in the captured search results.')
             search_data([('q', query), ('fq', 'record_type|PEOPLE')], 'live', reader)
-            profile_data(identifier, 'live', reader)
+            facet_values_data([('q', query), ('f_name', 'record_type')], 'live', reader)
+            facet_values_data([('q', query), ('fq', 'record_type|PEOPLE'), ('f_name', 'record_type')], 'live', reader)
+            for raw in extra_searches:
+                pairs = parse_qsl(raw.removeprefix('?'), keep_blank_values=True)
+                search_data(pairs, 'live', reader)
+                facet_values_data([*pairs, ('f_name', 'record_type')], 'live', reader)
+            profile = profile_data(identifier, 'live', reader)
+            capture_document_chain(profile.get('cv_url'), reader)
+            if organization_id:
+                organization_data(organization_id, 'live', reader)
             for key in image_requests(reader.responses):
                 reader(key, 'live')
             write_capture(output, reader.responses)

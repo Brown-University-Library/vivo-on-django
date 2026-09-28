@@ -4,7 +4,7 @@ Builds and reads the upstream requests for a search-to-profile journey.
 
 import re
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, urlencode, urlsplit
 
 import httpx2
 from django.conf import settings
@@ -20,13 +20,14 @@ SEARCH_FIELDS = (
 FACETS = ('record_type', 'affiliations', 'research_areas', 'published_in')
 FACET_TITLES = ('Type', 'Brown Affiliations', 'Research Areas', 'Published In')
 MAX_RESPONSE_BYTES = 3_000_000
+MAX_DOCUMENT_BYTES = 10_000_000
 
 
 def quoted(value: str) -> str:
     """
     Quotes a value for a Solr field query after rejecting control characters.
 
-    Called by: search_key(), profile_key()
+    Called by: search_key(), profile_key(), member_key()
     """
     if any(ord(character) < 32 for character in value):
         raise PageDataError('Search and filter values cannot contain control characters.')
@@ -34,13 +35,13 @@ def quoted(value: str) -> str:
     return result
 
 
-def search_key(query: str, page: int, filters: list[tuple[str, str]]) -> RequestKey:
+def search_key(query: str, page: int, filters: list[tuple[str, str]], facet_limit: int = 10) -> RequestKey:
     """
     Builds one bounded Solr search with the same main fields and ranking as Rails.
 
-    Called by: source_pages.search_data(), capture_solr_journey.Command.handle()
+    Called by: source_pages.search_data(), source_pages.facet_values_data(), tests
     """
-    if page < 1 or page > 1000 or len(query) > 300 or len(filters) > 12:
+    if page < 1 or page > 1000 or len(query) > 300 or len(filters) > 12 or facet_limit not in {10, -1}:
         raise PageDataError('The requested search is outside the supported limits.')
     pairs = [
         ('q', query or '*'),
@@ -53,7 +54,7 @@ def search_key(query: str, page: int, filters: list[tuple[str, str]]) -> Request
         ('start', str((page - 1) * 20)),
         ('facet', 'true'),
         ('facet.mincount', '1'),
-        ('facet.limit', '10'),
+        ('facet.limit', str(facet_limit)),
         ('hl', 'true'),
         ('hl.fl', 'department_t research_areas_en affiliations_en overview_en ALLTEXT email_s short_id_s'),
         ('hl.snippets', '30'),
@@ -73,9 +74,9 @@ def search_key(query: str, page: int, filters: list[tuple[str, str]]) -> Request
 
 def profile_key(identifier: str) -> RequestKey:
     """
-    Looks up a single canonical person record by its public identifier.
+    Looks up one canonical person or organization by its public identifier.
 
-    Called by: source_pages.profile_data(), capture_solr_journey.Command.handle()
+    Called by: source_pages.profile_data(), source_pages.organization_data(), source_pages.organization_thumbnail(), tests
     """
     if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', identifier) is None:
         raise PageDataError('The requested profile identifier is unsupported.')
@@ -89,6 +90,25 @@ def profile_key(identifier: str) -> RequestKey:
             ('rows', '1'),
             ('wt', 'json'),
         ),
+    )
+
+
+def member_key(identifiers: list[str]) -> RequestKey:
+    """
+    Looks up the portrait fields for an organization's distinct members in one Solr request.
+
+    Called by: source_pages.organization_data(), tests
+    """
+    if not identifiers or len(identifiers) > 100 or len(set(identifiers)) != len(identifiers):
+        raise PageDataError('The organization member list is outside the supported limits.')
+    if any(re.fullmatch(r'[A-Za-z0-9_-]{1,80}', identifier) is None for identifier in identifiers):
+        raise PageDataError('An organization member identifier is unsupported.')
+    names = ['http://vivo.brown.edu/individual/' + identifier for identifier in identifiers]
+    query = 'id:(' + ' OR '.join(quoted(name) for name in names) + ')'
+    return RequestKey(
+        'solr',
+        '/select',
+        (('q', query), ('fl', 'id,record_type,thumbnail_file_path_s'), ('rows', str(len(names))), ('wt', 'json')),
     )
 
 
@@ -124,15 +144,63 @@ def image_key(path: str) -> RequestKey:
     return RequestKey('images', path)
 
 
+def document_key(path: str, query: tuple[tuple[str, str], ...] = ()) -> RequestKey:
+    """
+    Restricts a CV request to a public PDF path and its optional version value.
+
+    Called by: document_key_from_url(), views.source_document(), tests
+    """
+    if re.fullmatch(r'/docs/[A-Za-z0-9_-]{1,3}/[A-Za-z0-9._-]+\.pdf', path) is None:
+        raise PageDataError('The requested source document path is unsupported.')
+    if len(query) > 1 or any(key != 'dt' or re.fullmatch(r'[A-Za-z0-9_-]{1,40}', value) is None for key, value in query):
+        raise PageDataError('The requested source document version is unsupported.')
+    return RequestKey('documents', path, query)
+
+
+def document_key_from_url(url: str) -> RequestKey:
+    """
+    Accepts a PDF URL only from the configured document source.
+
+    Called by: local_document_url(), views.source_document(), capture_solr_journey.capture_document_chain()
+    """
+    origin = urlsplit(source_origin('documents'))
+    parsed = urlsplit(url)
+    if parsed.netloc != origin.netloc or parsed.scheme not in {'http', origin.scheme} or parsed.fragment:
+        raise PageDataError('The document URL does not match the configured source.')
+    return document_key(parsed.path, tuple(parse_qsl(parsed.query, keep_blank_values=True)))
+
+
+def local_document_url(url: str) -> str:
+    """
+    Rewrites a supported CV link to the local recorded or live PDF route.
+
+    Called by: source_pages.profile_data()
+    """
+    result = url
+    if settings.DOCUMENTS_URL:
+        try:
+            key = document_key_from_url(url)
+            result = '/source-documents' + key.path + ('?' + urlencode(key.query) if key.query else '')
+        except PageDataError:
+            pass
+    return result
+
+
 def source_origin(service: str) -> str:
     """
     Reads a configured source origin without allowing paths outside its root.
 
-    Called by: read_source()
+    Called by: read_source(), document_key_from_url()
     """
-    raw = settings.SOLR_URL if service == 'solr' else settings.IMAGES_URL if service == 'images' else ''
+    raw = {'solr': settings.SOLR_URL, 'images': settings.IMAGES_URL, 'documents': settings.DOCUMENTS_URL}.get(service, '')
     parsed = urlsplit(raw)
-    if parsed.scheme not in {'http', 'https'} or not parsed.netloc or parsed.query or parsed.fragment:
+    if (
+        parsed.scheme not in {'http', 'https'}
+        or not parsed.netloc
+        or parsed.query
+        or parsed.fragment
+        or (service == 'documents' and parsed.path not in {'', '/'})
+    ):
         raise PageDataError(f'{service} source URL is not configured.')
     result = raw.rstrip('/')
     return result
@@ -142,7 +210,7 @@ def read_source(key: RequestKey, mode: str) -> RecordedResponse:
     """
     Reads one response from the tunnel or exact saved input, with no fallback.
 
-    Called by: source_pages.read_json(), views.source_image(), capture_solr_journey.Command.handle()
+    Called by: source_pages.response_object(), views.source_image(), views.source_document(), capture_solr_journey.CapturingReader.__call__()
     """
     if mode == 'replay':
         manifest = settings.UPSTREAM_RECORDING_MANIFEST
@@ -157,6 +225,7 @@ def read_source(key: RequestKey, mode: str) -> RecordedResponse:
             raise PageDataError(str(exc)) from exc
     elif mode == 'live':
         origin = source_origin(key.service)
+        limit = MAX_DOCUMENT_BYTES if key.service == 'documents' else MAX_RESPONSE_BYTES
         try:
             with (
                 httpx2.Client(timeout=10.0, follow_redirects=False, trust_env=False) as client,
@@ -166,18 +235,19 @@ def read_source(key: RequestKey, mode: str) -> RecordedResponse:
                 size = 0
                 for chunk in response.iter_bytes():
                     size += len(chunk)
-                    if size > MAX_RESPONSE_BYTES:
+                    if size > limit:
                         raise PageDataError('The upstream response exceeds the configured size limit.')
                     chunks.append(chunk)
-                result = RecordedResponse(
-                    response.status_code,
-                    (('content-type', response.headers.get('content-type', '')),),
-                    b''.join(chunks),
-                )
+                headers = [('content-type', response.headers.get('content-type', ''))]
+                if key.service == 'documents' and 'location' in response.headers:
+                    headers.append(('location', response.headers['location']))
+                result = RecordedResponse(response.status_code, tuple(headers), b''.join(chunks))
         except httpx2.HTTPError as exc:
             raise PageDataError(f'{key.service} source request failed.') from exc
     else:
         raise PageDataError('Source requests require replay or live mode.')
-    if result.status != 200 or len(result.body) > MAX_RESPONSE_BYTES:
+    limit = MAX_DOCUMENT_BYTES if key.service == 'documents' else MAX_RESPONSE_BYTES
+    allowed_status = {200, 301, 302} if key.service == 'documents' else {200}
+    if result.status not in allowed_status or len(result.body) > limit:
         raise PageDataError(f'{key.service} source returned an unusable response.')
     return result

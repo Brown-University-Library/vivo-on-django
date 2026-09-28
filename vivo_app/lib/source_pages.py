@@ -19,6 +19,8 @@ from vivo_app.lib.source_requests import (
     FACETS,
     FACET_TITLES,
     image_path,
+    local_document_url,
+    member_key,
     profile_key,
     read_source,
     search_key,
@@ -283,6 +285,46 @@ def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | 
         'remove_query_url': search_url('', 1, filters),
         'selected_filters': selected_filters,
     }
+
+
+def facet_values_data(
+    pairs: list[tuple[str, str]], mode: str, reader: SourceReader | None = None
+) -> list[dict[str, object]]:
+    """
+    Returns every value of one search facet using a full Solr facet response.
+
+    Called by: views.search_facets(), capture_solr_journey.Command.handle(), tests
+    """
+    if reader is None:
+        reader = read_source
+    names = [value for key, value in pairs if key == 'f_name']
+    if len(names) != 1 or names[0] not in FACETS:
+        raise PageDataError('The requested search facet is unsupported.')
+    query, page, filters = search_inputs([(key, value) for key, value in pairs if key != 'f_name'])
+    response = response_object(search_key(query, page, filters, -1), mode, reader)
+    fields = response.get('facet_counts')
+    values = fields.get('facet_fields') if isinstance(fields, dict) else None
+    raw = values.get(names[0]) if isinstance(values, dict) else None
+    if not isinstance(raw, list) or len(raw) % 2:
+        raise PageDataError('Solr returned an invalid facet list.')
+    result: list[dict[str, object]] = []
+    for index in range(0, len(raw), 2):
+        label, count = raw[index : index + 2]
+        if not isinstance(label, str) or type(count) is not int or count < 0:
+            raise PageDataError('Solr returned an invalid facet value.')
+        selected = (names[0], label) in filters
+        remaining = [item for item in filters if item != (names[0], label)]
+        result.append(
+            {
+                'text': label,
+                'count': count,
+                'remove_url': search_url(query, 1, remaining) if selected else None,
+                'add_url': search_url(query, 1, [*filters, (names[0], label)]),
+                'range_start': None,
+                'range_end': None,
+            }
+        )
+    return result
 
 
 def entries(item: dict[str, object], name: str) -> list[dict[str, object]]:
@@ -634,5 +676,73 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
         'sections': profile_sections(item, mode, reader, len(publications_data)),
         'publications': publications_data,
         'publication_filters': publication_filters,
-        'cv_url': cv_url,
+        'cv_url': local_document_url(cv_url) if cv_url else '',
+    }
+
+
+def organization_data(identifier: str, mode: str, reader: SourceReader | None = None) -> dict[str, object]:
+    """
+    Builds an organization and its member portraits from exact Solr responses.
+
+    Called by: page_data.get_organization_data(), capture_solr_journey.Command.handle(), tests
+    """
+    if reader is None:
+        reader = read_source
+    response = response_object(profile_key(identifier), mode, reader)
+    docs, _ = documents(response)
+    if not docs:
+        raise PageDataError('The requested organization is absent from Solr.')
+    doc = docs[0]
+    if first_text(doc.get('record_type')) != 'ORGANIZATION' or record_id(doc) != identifier:
+        raise PageDataError('The requested source record is not an organization.')
+    item = record_data(doc)
+    name = first_text(item.get('name')) or first_text(doc.get('display_name_s'))
+    if not name:
+        raise PageDataError('The source organization has no display name.')
+    members = entries(item, 'people')
+    member_ids: list[str] = []
+    for member in members:
+        uri = first_text(member.get('faculty_uri'))
+        member_ids.append(record_id({'id': uri}))
+    identifiers = sorted(set(member_ids))
+    portraits: dict[str, str] = {}
+    if identifiers:
+        member_response = response_object(member_key(identifiers), mode, reader)
+        member_docs, _ = documents(member_response)
+        for member_doc in member_docs:
+            member_id = record_id(member_doc)
+            if member_id not in identifiers or first_text(member_doc.get('record_type')) != 'PEOPLE':
+                raise PageDataError('Solr returned an unrelated organization member.')
+            portraits[member_id] = thumbnail_url(member_doc)
+    administrative: list[dict[str, str]] = []
+    faculty: list[dict[str, str]] = []
+    for member, member_id in sorted(
+        zip(members, member_ids, strict=True), key=lambda pair: first_text(pair[0].get('label')).lower()
+    ):
+        row = {
+            'name': first_text(member.get('label')),
+            'title': first_text(member.get('specific_position')),
+            'url': '/display/' + member_id,
+            'image': portraits.get(member_id, static('images/vivo_blank_profile.jpg')),
+        }
+        if first_text(member.get('general_position')).endswith('#FacultyAdministrativePosition'):
+            administrative.append(row)
+        else:
+            faculty.append(row)
+    websites: list[dict[str, str]] = []
+    for website in entries(item, 'web_pages'):
+        url = safe_url(website.get('url'))
+        if url:
+            websites.append({'url': url, 'label': first_text(website.get('text')) or url})
+    overview = first_text(item.get('overview'))
+    return {
+        'id': identifier,
+        'name': name,
+        'page_title': name,
+        'image': thumbnail_url(doc, True),
+        'website_links': websites,
+        'overview_html': '<p>' + escape(strip_tags(overview)) + '</p>' if overview else '',
+        'visualization_url': '',
+        'administrative_positions': administrative,
+        'faculty_positions': faculty,
     }
