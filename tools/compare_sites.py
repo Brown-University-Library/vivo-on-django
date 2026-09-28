@@ -514,7 +514,12 @@ def run(args: argparse.Namespace) -> bool:
         raise ValueError('Use a new empty output directory; existing evidence is never overwritten.')
     output.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(headless=True, executable_path=args.browser_executable)
+        ## Chrome's GPU path can render the same JPEG differently at two site addresses.
+        browser = playwright.chromium.launch(
+            headless=True,
+            executable_path=args.browser_executable,
+            args=['--disable-gpu'],
+        )
         if args.mode == 'self-test':
             passed = self_test(browser, output)
         else:
