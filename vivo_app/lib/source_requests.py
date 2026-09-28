@@ -303,7 +303,7 @@ def source_origin(service: str) -> str:
 
 def read_source(key: RequestKey, mode: str) -> RecordedResponse:
     """
-    Reads one response from the tunnel or exact saved input, with no fallback.
+    Reads one response from the configured live source or exact saved input, with no fallback.
 
     Called by: source_pages.response_object(), views.source_image(), views.source_document(), tools.source_capture.CapturingReader.__call__()
     """

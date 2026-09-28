@@ -108,7 +108,7 @@ def capture_document_chain(url: object, reader: CapturingReader) -> None:
         raise PageDataError('The document source redirected too many times.')
 
 
-def write_capture(directory: Path, responses: dict[RequestKey, RecordedResponse]) -> None:
+def write_capture(directory: Path, responses: dict[RequestKey, RecordedResponse], case_id: str = 'search-profile') -> None:
     """
     Writes original response bytes and a checksum manifest outside Git.
 
@@ -149,7 +149,7 @@ def write_capture(directory: Path, responses: dict[RequestKey, RecordedResponse]
         'data_kind': 'recorded',
         'captured_at': datetime.now(UTC).isoformat(),
         'recordings': recordings,
-        'cases': {'search-profile': names},
+        'cases': {case_id: names},
     }
     (root / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
 
