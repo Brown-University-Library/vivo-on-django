@@ -122,7 +122,7 @@ Confirm how the actual server process loads the private environment and `.env`, 
 
 ### Stage 1 — Required URLs: retain the completed result
 
-The [scope table](docs/public_endpoint_scope.md) remains the checklist. Do not reopen unused Manager routes or unobserved formats. Preserve links to separate services and the approved redirect-only boundaries. Keep the Research Areas download-link correction deferred under issue #3.
+The [scope table](docs/public_endpoint_scope.md) remains the checklist. Do not reopen unused Manager routes or unobserved formats. Preserve links to separate services and the approved redirect-only boundaries. Keep the Research Areas download-link correction deferred under issue #3. The Django application may also provide the standard `/version/` and `/error_check/` support URLs even though the existing Rails application does not; these are accepted additions rather than Rails-compatibility requirements.
 
 **Completion:** already recorded. A later addition needs evidence of current use or of a dependency required by an included journey.
 

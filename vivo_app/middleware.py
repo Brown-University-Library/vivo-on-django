@@ -42,6 +42,8 @@ class LocalPageDataMiddleware:
             'individual_redirect',
             'prepared_asset',
             'prepared_document',
+            'error_check',
+            'version',
         }
         if (
             settings.PAGE_DATA_MODE == 'prepared'

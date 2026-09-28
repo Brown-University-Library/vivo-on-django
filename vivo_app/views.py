@@ -1,19 +1,23 @@
 """Views for the VIVO Django application."""
 
+import datetime
+import json
 import logging
 import random
 import sys
 from urllib.parse import quote_plus
 
 from django.conf import settings
-from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import redirect, render
 from django.templatetags.static import static
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
+from .lib import version_helper
 from .lib.assets import get_random_background_relpath
 from .lib.display import build_display_context, build_publications_context, get_type_for_id
+from .lib.error_check import IntentionalErrorCheckError
 from .lib.home import BookCover, get_book_cover_pages
 from .lib.page_data import (
     get_bundle,
@@ -25,8 +29,47 @@ from .lib.page_data import (
 )
 from .lib.page_rendering import data_unavailable, prepared_response, query_pairs, render_or_stub
 from .lib.prepared_data import PageDataError
+from .lib.version_helper import GatherCommitAndBranchData
 
 logger = logging.getLogger(__name__)
+
+
+# Standard application support endpoints
+def error_check(request: HttpRequest) -> HttpResponse:
+    """
+    Raises an intentional exception in development to check administrator error reporting.
+
+    Called by: config.urls
+    """
+    logger.debug('starting error_check(); request.method, ``%s``', request.method)
+    logger.debug('settings.DEBUG, ``%s``', settings.DEBUG)
+    if settings.DEBUG is True:
+        logger.debug('triggering intentional exception')
+        raise IntentionalErrorCheckError('Raising intentional exception to check email-admins-on-error functionality.')
+    response: HttpResponse = HttpResponseNotFound(b'<div>404 / Not Found</div>')
+    return response
+
+
+def version(request: HttpRequest) -> HttpResponse:
+    """
+    Returns the Git branch and commit.
+
+    Called by: config.urls
+    """
+    logger.debug('starting version()')
+    request_started: datetime.datetime = datetime.datetime.now().astimezone()
+    gatherer = GatherCommitAndBranchData()
+    gatherer.gather()
+    version_text: str = f'{gatherer.branch} {gatherer.commit}'
+    context: dict[str, dict[str, str]] = version_helper.make_context(
+        request,
+        request_started,
+        version_text,
+    )
+    output: str = json.dumps(context, sort_keys=True, indent=2)
+    logger.debug('version output, ``%s``', output)
+    response = HttpResponse(output.encode('utf-8'), content_type='application/json; charset=utf-8')
+    return response
 
 
 # Home and static pages

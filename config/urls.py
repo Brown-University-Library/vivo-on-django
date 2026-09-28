@@ -21,6 +21,9 @@ handler500 = 'vivo_app.views.server_error'
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
+    # Standard application support endpoints
+    path('error_check/', vivo_views.error_check, name='error_check'),
+    path('version/', vivo_views.version, name='version'),
     # Authentication
     path('accounts/register/', register, name='register'),
     path('accounts/login/', custom_login, name='login'),
