@@ -1,10 +1,11 @@
-# Source-backed search, profile, and organization journey
+# Source-backed search, profile, organization, and team journeys
 
-The live journey requests a Solr search, opens a person profile and an ordinary linked organization, and looks up member portraits in one additional Solr request. It also serves full search facet values and a supported profile CV PDF. Replay reads the same responses from an external manifest and runs the same page-building code without a network connection. Prepared mode remains the choice for the homepage and broader saved coverage.
+The live journey requests a Solr search, opens a person profile and an ordinary linked organization, and looks up member portraits in one additional Solr request. It also serves search JSON, organization publication TSV, full search facet values, and a supported profile CV PDF. A selected active team uses member IDs kept in a separate file outside Git. Graph JSON routes use a separate visualization source when it is configured. Replay reads exact saved responses and runs the same page-building code without a network connection. Prepared mode remains the choice for the homepage and broader saved coverage.
 
 ## Contents
 
 - [Configure a local source](#configure-a-local-source)
+- [Additional formats and team data](#additional-formats-and-team-data)
 - [Capture and replay one journey](#capture-and-replay-one-journey)
 - [Compare the result](#compare-the-result)
 - [Current limits](#current-limits)
@@ -15,6 +16,20 @@ Set `SOLR_URL` to the Solr core or collection URL, including its final name. Set
 
 Use `PAGE_DATA_MODE=live` for live search, person profile, and ordinary organization requests. This mode reads the configured sources at request time. It does not require a prepared bundle. Django startup checks verify configuration without contacting the sources; a successful check alone does not establish connectivity. The supported HTML routes are `/search?q=...` and `/display/ID`; `/search_facets?f_name=FIELD&q=...` returns all values for one supported facet. Search accepts a page number and repeated `fq=FIELD|VALUE` filters for the four listed facets. An unsupported option returns 503 instead of sample content.
 
+## Additional formats and team data
+
+`/search?q=...&format=json` uses the same Solr request as HTML search. `/display/ORG_ID/publications.tsv` makes one additional bounded member-record request and returns the public column names and download headers. A saved public organization TSV and a local source-backed TSV had the same 1,355 data rows by content; their row order differed between capture dates. The public profile JSON shape requires Solr metadata and visualization-availability lists. The new `/display/PERSON_ID.json` path currently handles profiles without nested publications, appointments, credentials, training, or collaborators. Records requiring those conversions return 503. One checked profile matched 34 of 35 public fields; its source update date changed between captures.
+
+An active team or fixed-member organization may use `TEAM_SOURCE_MANIFEST`, a JSON file outside Git that records names and member IDs defined in Rails. The file has this shape with made-up names and records in the example:
+
+```json
+{"teams": {"team-example": {"name": "Example Team", "member_ids": ["invented-a", "invented-b"]}}, "organizations": {"org-example": {"extra_member_ids": ["invented-b"]}}}
+```
+
+The selected team page requests those members in one Solr call and uses the organization layout. A local replay showed the same four member names and titles as the saved public page, though the order differed between capture dates. One fixed-member organization adds configured people to the members supplied by its Solr record; its page and TSV paths have local tests with made-up records. The dynamic research-area organization is still unsupported. The full public team variation still needs visualization support. Keep the actual definition file outside Git.
+
+`/display/ID/viz/collab.json` and `/display/ID/viz/coauthor.json` use `VIZ_SERVICE_URL` for ordinary live graph data. Their request paths and response shapes pass tests with made-up graph data. Rails builds collaboration graphs for teams and two specialized organizations from members locally; those graphs still return 503 here. These routes have not been verified against a live visualization service. The corresponding HTML graph pages and CSV downloads remain unfinished. A missing service setting or recording returns 503.
+
 ## Capture and replay one journey
 
 With the source connection available, create a new directory outside Git:
@@ -23,7 +38,7 @@ With the source connection available, create a new directory outside Git:
 uv run ./manage.py capture_solr_journey --query "$QUERY" --id "$PERSON_ID" --organization-id "$ORGANIZATION_ID" --output ../source_recordings/first-journey
 ```
 
-The command requires the chosen profile to appear in the first 20 unfiltered results. It then requests a People-filtered search, full facet values for both states, the profile, its affiliation records, and any supported CV PDF. When `--organization-id` is supplied, it also requests that organization and its member portraits. Add `--extra-search 'q=TERM&page=2'` up to four times to capture additional exact search states, including their full facets. Finally, it captures images named by the Solr documents. Omit `--organization-id` for a person-only journey. It reuses repeated responses and waits at least one second between distinct Solr requests. It stores unchanged response bytes and SHA-256 checksums in a format the existing recording reader validates. The capture is limited to 120 requests and 60 MB overall; Solr and images have a 3 MB per-response limit, and PDFs have a 10 MB limit. It refuses an existing output directory and any directory inside Git. If a request or write fails, files already written remain; the command writes the manifest last, so an incomplete directory cannot be selected for replay. The command makes no changes to upstream services.
+The command requires the chosen profile to appear in the first 20 unfiltered results. It then requests a People-filtered search, full facet values for both states, the profile, its affiliation records, and any supported CV PDF. When `--organization-id` is supplied, it also requests the organization, its member portraits, and the member records needed for its TSV. A configured active-team ID instead requests its member records and portraits. Add `--extra-search 'q=TERM&page=2'` up to four times to capture additional exact search states, including their full facets. Finally, it captures images named by the Solr documents. Omit `--organization-id` for a person-only journey. It reuses repeated responses and waits at least one second between distinct Solr requests. It stores unchanged response bytes and SHA-256 checksums in a format the existing recording reader validates. The capture is limited to 120 requests and 60 MB overall; Solr and images have a 3 MB per-response limit, and PDFs have a 10 MB limit. It refuses an existing output directory and any directory inside Git. If a request or write fails, files already written remain; the command writes the manifest last, so an incomplete directory cannot be selected for replay. The command makes no changes to upstream services.
 
 Run the saved journey with the manifest path and replay mode:
 
@@ -41,6 +56,6 @@ For a manual check, search for the captured term, select and remove the People f
 
 ## Current limits
 
-This increment covers HTML search, person profiles, ordinary Solr-backed organizations, full facet JSON, and CV PDFs whose links match `DOCUMENTS_URL`. Other page families, structured formats, graph availability, visualizations, specialized organizations with custom members, and additional source services still need implementation. Source modes return 503 for unconverted handlers. A CV link outside the configured document source remains an external link. The local tunnel proves workstation access, not access from the development server.
+This increment covers HTML search, person profiles, ordinary Solr-backed organizations, a selected active team, one fixed-member organization, search JSON, organization publication TSV, full facet JSON, and CV PDFs whose links match `DOCUMENTS_URL`. Sparse profile JSON and graph JSON have initial source paths but still need broader conversion and live visualization-service checks. The fixed-member organization still needs a matched public comparison. Specialized organizations with dynamic membership, visualization pages and CSV, other structured formats, and additional source services remain unfinished. Source modes return 503 for unconverted handlers. A CV link outside the configured document source remains an external link. The local tunnel proves workstation access, not access from the development server.
 
 The parser converts common person fields, publications, education, appointments, teaching, affiliations, and outgoing links. It escapes source text before inserting it into page sections. Four additional public record shapes and their live Solr journeys were checked locally, including sparse profiles and one with many publications. No-results, later-page, and repeated-filter searches were also captured and replayed. The selected organization had 58 member rows with matching public text and images that all loaded, but its source-backed page still lacks the public visualization preview. Other records and queries need matched checks. The public page can also fail optional analytics or status requests during a browser comparison; record those separately from core content and image differences.
