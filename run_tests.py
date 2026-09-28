@@ -10,8 +10,11 @@ Usage examples:
 
 Also takes a -v or --verbose flag to show each test's name, docstring, and result.
 
-Uses config.settings unless DJANGO_SETTINGS_MODULE is already set. Django creates
-and destroys a test database when needed.
+Uses config.settings unless DJANGO_SETTINGS_MODULE is already set. The runner
+selects prototype page data before Django loads the private .env so the complete
+suite has a consistent baseline. Individual tests override that setting when
+they check prepared, replay, live, or invalid modes. Django creates and destroys
+a test database when needed.
 """
 
 import argparse
@@ -57,12 +60,22 @@ def normalize_test_label(test_label: str) -> str:
     return normalized_label
 
 
+def configure_test_environment() -> None:
+    """
+    Selects the page-data baseline used by the complete test suite.
+
+    Called by: run_tests()
+    """
+    os.environ['PAGE_DATA_MODE'] = 'prototype'
+
+
 def run_tests(test_label: str, verbose: bool) -> int:
     """
     Initializes Django and runs the selected tests without interactive prompts.
 
     Called by: main()
     """
+    configure_test_environment()
     settings_module: str = os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     test_labels: list[str] = [normalize_test_label(test_label)]
     verbosity: int = 2 if verbose else 1
