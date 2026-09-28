@@ -56,12 +56,10 @@ response = recordings.get('SEARCH', request)
 
 The example uses invented search text and requires an exactly matching entry in the external manifest. Inspect `response.status` and `response.headers` before treating its body as successful data. `response.json()` parses JSON and raises `RecordingError` for invalid JSON. Raw bytes remain available as `response.body` for other formats. HTTP errors are preserved as responses; the eventual service parser must apply the application's error behavior.
 
-## Remaining integration work
+## Current integration and remaining work
 
-Local template and interaction development can begin with prepared page data before authentic responses are available, as described in the [workplan](../PLAN__workplan.md#repeatable-data-for-local-development). That data is already arranged for rendering and will use a separate reader; do not present it as a raw upstream recording or weaken this reader's checks to accept it. Both approaches will supply the same documented fields to the same templates once response processing is connected. Prepared-data support remains to be implemented.
+Prepared page data remains a separate source of already-arranged fields for local layout and interaction work. Do not present it as a raw upstream recording or weaken this reader's checks to accept it. The first search-to-person-profile journey now uses this reader in replay mode and the same parser for live Solr and image responses. [The source journey guide](source_journey.md) explains the bounded capture command and supported pages. A missing replay response cannot trigger a live request or sample fallback.
 
-Obtain authentic requests and responses from the services that supply the selected search and profile. Include type detection, graph-availability lists when required, and the assets needed for the selected pages. Confirm the deployed request settings and align the capture date with the public reference. Public page JSON is not a substitute for an unchanged Solr response.
-
-Then connect the selected recording set to the same parsing and data-preparation code that will consume live service responses. Live access must be explicitly selected and use `httpx2`; it must never serve as a fallback after a missing recording. This reader does not yet supply that live mode, Solr query execution, a capture command, or complete offline page rendering. Start with response replay; there is not yet evidence that a local Solr instance is necessary.
+Other source clients and page families remain unfinished. Add graph-availability lists, structured representations, downloads, and other supporting requests when a selected journey needs them. Confirm deployed request settings and align capture dates with public reference checks. Public page JSON is not a substitute for an unchanged upstream response. There is not yet evidence that a local Solr instance is necessary.
 
 Run the reader's tests with `uv run ./run_tests.py vivo_app.tests.test_recorded_responses -v`. They create invented responses in a temporary directory outside the repository. No authentic record or publication content is included.
