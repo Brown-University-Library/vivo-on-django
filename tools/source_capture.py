@@ -187,7 +187,7 @@ def capture_homepage_books(output: Path) -> int:
 
 def capture_custom_graph(identifier: str, output: Path) -> int:
     """
-    Captures paced Solr inputs for a team or specialized-organization graph.
+    Captures paced source inputs for a team or specialized-organization graph.
 
     Called by: capture_custom_graph.Command.handle()
     """
@@ -195,7 +195,7 @@ def capture_custom_graph(identifier: str, output: Path) -> int:
         raise PageDataError('The selected record does not use a calculated Solr graph.')
     reader = CapturingReader()
     visualization_graph('collaborators', identifier, 'live', reader)
-    if not reader.responses or any(key.service != 'solr' for key in reader.responses):
+    if not reader.responses or not any(key.service == 'solr' for key in reader.responses):
         raise PageDataError('The selected record does not use a calculated Solr graph.')
     write_capture(output, reader.responses, 'custom-graph')
     return len(reader.responses)

@@ -12,7 +12,7 @@ from vivo_app.lib.prepared_data import PageDataError
 
 
 class Command(BaseCommand):
-    """Captures one calculated graph's Solr inputs outside Git."""
+    """Captures one calculated graph's source inputs outside Git."""
 
     help = 'Capture a team or specialized-organization graph for exact replay outside Git.'
 
@@ -38,4 +38,4 @@ class Command(BaseCommand):
             count = capture_custom_graph(identifier, output)
         except PageDataError as exc:
             raise CommandError(str(exc)) from exc
-        self.stdout.write(f'Captured {count} Solr responses for one custom graph replay case.')
+        self.stdout.write(f'Captured {count} source responses for one custom graph replay case.')

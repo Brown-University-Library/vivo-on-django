@@ -431,6 +431,11 @@ class SourcePageTests(TestCase):
             ],
             'training': [{'name': 'Example Training', 'start_date': '2018-01-01T00:00:00'}],
             'collaborators': [{'uri': 'invented-b', 'name': 'B'}, {'uri': 'invented-a', 'name': 'A'}],
+            'education': [
+                {'date': '2020', 'degree': 'First', 'school_name': '  Example School  '},
+                {'date': '2020', 'degree': 'Second', 'school_name': 'Another School'},
+            ],
+            'on_the_web': [{'uri': 'invented-web', 'rank': '1', 'url': ' https://example.invalid/ ', 'text': ' '}],
         }
         doc = {'id': uri, 'record_type': ['PEOPLE'], 'json_txt': [json.dumps(raw)]}
         self.responses[profile_export_key('invented-nested')] = self.solr_response([doc], 1)
@@ -451,6 +456,10 @@ class SourcePageTests(TestCase):
         self.assertEqual([row['id'] for row in body['credentials']], ['invented-credential', 'invented-earlier'])
         self.assertEqual(body['training'][0]['start_date'], '2018-01-01')
         self.assertEqual([row['name'] for row in body['collaborators']], ['A', 'B'])
+        self.assertEqual([row['degree'] for row in body['education']], ['Second', 'First'])
+        self.assertEqual(body['education'][1]['school_name'], 'Example School')
+        self.assertEqual(body['on_the_web'][0]['url'], 'https://example.invalid/')
+        self.assertEqual(body['on_the_web'][0]['text'], '')
         self.assertTrue(body['has_coauthors'])
         self.assertTrue(body['has_collaborators'])
 

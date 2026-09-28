@@ -7,7 +7,6 @@ from datetime import date
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_graph import visualization_list
 from vivo_app.lib.source_pages import documents, entries, first_text, record_data, record_id, response_object
 from vivo_app.lib.source_requests import image_path, profile_export_key, read_source, source_origin
 
@@ -97,7 +96,23 @@ def profile_json_data(identifier: str, mode: str, reader: FormatReader | None = 
     docs, _ = documents(response)
     if not docs or record_id(docs[0]) != identifier or first_text(docs[0].get('record_type')) != 'PEOPLE':
         raise PageDataError('The requested source record is not a person.')
-    doc = docs[0]
+    from vivo_app.lib.source_graph import visualization_list
+
+    coauthors = visualization_list('coauthors', mode, reader)
+    collaborators = (
+        visualization_list('collaborators', mode, reader) if entries(record_data(docs[0]), 'collaborators') else {}
+    )
+    return faculty_item_from_doc(docs[0], coauthors, collaborators)
+
+
+def faculty_item_from_doc(
+    doc: dict[str, object], coauthors: dict[str, object], collaborators: dict[str, object]
+) -> dict[str, object]:
+    """
+    Converts one full person document for profile JSON and calculated graph roots.
+
+    Called by: profile_json_data(), source_graph.custom_collaboration_graph()
+    """
     raw = record_data(doc)
     item = dict(raw)
     item.pop('cv', None)
@@ -159,13 +174,25 @@ def profile_json_data(identifier: str, mode: str, reader: FormatReader | None = 
         for row in sorted(affiliations, key=lambda row: first_text(row.get('name')).lower())
     ]
     education = entries(raw, 'education')
+    sorted_education = sorted(education, key=lambda row: first_text(row.get('date')))
+    sorted_education.reverse()
     item['education'] = [
-        {key: row[key] for key in ('school_uri', 'date', 'degree', 'school_name') if key in row}
-        for row in sorted(education, key=lambda row: first_text(row.get('date')), reverse=True)
+        {
+            key: first_text(row[key]).strip() if key == 'school_name' else row[key]
+            for key in ('school_uri', 'date', 'degree', 'school_name')
+            if key in row
+        }
+        for row in sorted_education
     ]
     web_pages = entries(raw, 'on_the_web')
     item['on_the_web'] = [
-        {**row, 'rank': int(first_text(row.get('rank')) or '0'), 'id': first_text(row.get('uri'))}
+        {
+            **row,
+            'rank': int(first_text(row.get('rank')) or '0'),
+            'id': first_text(row.get('uri')),
+            'url': first_text(row.get('url')).strip(),
+            'text': (first_text(row.get('text')) or first_text(row.get('url'))).strip(),
+        }
         for row in sorted(web_pages, key=lambda row: int(first_text(row.get('rank')) or '0'))
     ]
     areas = raw.get('research_areas', [])
@@ -202,6 +229,6 @@ def profile_json_data(identifier: str, mode: str, reader: FormatReader | None = 
     uri = first_text(raw.get('uri'))
     if not uri:
         raise PageDataError('The source profile has no URI.')
-    item['has_coauthors'] = uri in visualization_list('coauthors', mode, reader)
-    item['has_collaborators'] = uri in visualization_list('collaborators', mode, reader) if item['collaborators'] else False
+    item['has_coauthors'] = uri in coauthors
+    item['has_collaborators'] = uri in collaborators if item['collaborators'] else False
     return item

@@ -13,8 +13,9 @@ from collections.abc import Callable
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
+from vivo_app.lib.source_formats import faculty_item_from_doc
 from vivo_app.lib.source_pages import documents, entries, first_text, record_data, record_id, response_object
-from vivo_app.lib.source_requests import member_details_key, profile_key, read_source
+from vivo_app.lib.source_requests import graph_root_key, member_details_key, profile_key, read_source
 from vivo_app.lib.source_teams import CUSTOM_ORGANIZATION_IDS, custom_organization_members, team_definition
 
 GraphReader = Callable[[RequestKey, str], RecordedResponse]
@@ -106,27 +107,29 @@ def custom_graph_members(identifier: str, mode: str, reader: GraphReader) -> tup
 
 
 def custom_graph_records(
-    identifiers: list[str], mode: str, reader: GraphReader, require_all: bool
+    identifiers: list[str], mode: str, reader: GraphReader, require_all: bool, full: bool = False
 ) -> dict[str, dict[str, object]]:
     """
-    Reads small member batches so full profile records stay under the response size limit.
+    Reads small member batches, retaining complete Solr documents for graph roots.
 
     Called by: custom_collaboration_graph()
     """
     if len(identifiers) > 500:
         raise PageDataError('The collaboration graph needs too many member records.')
     result: dict[str, dict[str, object]] = {}
-    for start in range(0, len(identifiers), GRAPH_MEMBER_BATCH_SIZE):
-        batch = identifiers[start : start + GRAPH_MEMBER_BATCH_SIZE]
+    batch_size = 5 if full else GRAPH_MEMBER_BATCH_SIZE
+    for start in range(0, len(identifiers), batch_size):
+        batch = identifiers[start : start + batch_size]
         if start and mode == 'live':
             time.sleep(0.25)
-        response = response_object(member_details_key(batch), mode, reader)
+        response = response_object(graph_root_key(batch) if full else member_details_key(batch), mode, reader)
         docs, _ = documents(response)
         for doc in docs:
             member_id = record_id(doc)
             if member_id not in batch or first_text(doc.get('record_type')) != 'PEOPLE' or member_id in result:
                 raise PageDataError('Solr returned an unrelated collaboration member.')
-            result[member_id] = record_data(doc)
+            record_data(doc)
+            result[member_id] = doc
     if require_all and set(result) != set(identifiers):
         raise PageDataError('Solr did not return every custom collaboration member.')
     return result
@@ -196,7 +199,7 @@ def custom_collaboration_graph(identifier: str, mode: str, reader: GraphReader) 
     Called by: visualization_graph()
     """
     name, member_ids = custom_graph_members(identifier, mode, reader)
-    roots = custom_graph_records(member_ids, mode, reader, identifier.startswith('team-'))
+    roots = custom_graph_records(member_ids, mode, reader, identifier.startswith('team-'), full=True)
     member_ids = [member_id for member_id in member_ids if member_id in roots]
     if not member_ids:
         raise PageDataError('The custom collaboration organization has no available member records.')
@@ -205,18 +208,32 @@ def custom_collaboration_graph(identifier: str, mode: str, reader: GraphReader) 
     links: dict[tuple[str, str], dict[str, object]] = {}
 
     neighbors: list[str] = []
+    people = {member_id: record_data(roots[member_id]) for member_id in member_ids}
+    coauthors = visualization_list('coauthors', mode, reader)
+    collaborators = (
+        visualization_list('collaborators', mode, reader)
+        if any(entries(person, 'collaborators') for person in people.values())
+        else {}
+    )
     for member_id in member_ids:
-        person = roots[member_id]
+        person = people[member_id]
         uri = prefix + member_id
         group = first_text(person.get('org_label')) if identifier == 'team-advctr' else name
         add_custom_node(nodes, uri, first_text(person.get('name')), group, first_text(person.get('title')), 0)
+        nodes[uri]['faculty'] = {
+            'solr_doc': roots[member_id],
+            'json_txt': person,
+            'item': faculty_item_from_doc(roots[member_id], coauthors, collaborators),
+            'errors': [],
+        }
     for member_id in member_ids:
-        neighbors.extend(add_custom_collaborators(nodes, links, prefix + member_id, roots[member_id], 1))
+        neighbors.extend(add_custom_collaborators(nodes, links, prefix + member_id, people[member_id], 1))
     missing_neighbors = sorted(set(neighbors) - set(roots))
     second_level = custom_graph_records(missing_neighbors, mode, reader, False) if missing_neighbors else {}
     for neighbor_id in neighbors:
-        person = roots.get(neighbor_id) or second_level.get(neighbor_id)
-        if person is not None:
+        doc = roots.get(neighbor_id) or second_level.get(neighbor_id)
+        if doc is not None:
+            person = record_data(doc)
             add_custom_node(
                 nodes,
                 prefix + neighbor_id,

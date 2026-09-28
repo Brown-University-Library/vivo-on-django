@@ -14,7 +14,7 @@ from tools.source_capture import capture_custom_graph
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_graph import custom_graph_records, graph_csv, visualization_graph, visualization_key
-from vivo_app.lib.source_requests import member_details_key, profile_key
+from vivo_app.lib.source_requests import graph_root_key, member_details_key, profile_key
 
 
 @override_settings(PAGE_DATA_MODE='live', VIZ_SERVICE_URL='http://example.invalid')
@@ -161,6 +161,7 @@ class CustomGraphTests(TestCase):
         """
         prefix = 'http://vivo.brown.edu/individual/'
         self.root: dict[str, object] = {
+            'uri': prefix + 'invented-root',
             'name': 'Invented Root',
             'title': 'Example Professor',
             'org_label': 'Example Unit',
@@ -171,7 +172,9 @@ class CustomGraphTests(TestCase):
             'collaborators': [{'uri': 'https://example.invalid/person', 'name': 'Outside Person'}],
         }
         self.responses = {
-            member_details_key(['invented-root']): self.solr_response([('invented-root', self.root)]),
+            graph_root_key(['invented-root']): self.solr_response([('invented-root', self.root)]),
+            visualization_key('coauthors'): self.json_response({prefix + 'invented-root': True}),
+            visualization_key('collaborators'): self.json_response({prefix + 'invented-root': True}),
             member_details_key(['invented-neighbor']): self.solr_response([('invented-neighbor', neighbor)]),
         }
         self.requested: list[tuple[RequestKey, str]] = []
@@ -192,6 +195,10 @@ class CustomGraphTests(TestCase):
         ]
         body = {'responseHeader': {'status': 0}, 'response': {'numFound': len(docs), 'docs': docs}}
         return RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(body).encode())
+
+    def json_response(self, value: dict[str, object]) -> RecordedResponse:
+        """Wraps a made-up visualization availability list."""
+        return RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(value).encode())
 
     def read(self, key: RequestKey, mode: str) -> RecordedResponse:
         """
@@ -222,6 +229,10 @@ class CustomGraphTests(TestCase):
         assert isinstance(nodes, list)
         self.assertEqual([node['level'] for node in nodes], [0, 1, 2])
         self.assertIsNone(nodes[2]['group'])
+        self.assertEqual(nodes[0]['faculty']['item']['name'], 'Invented Root')
+        self.assertTrue(nodes[0]['faculty']['item']['has_coauthors'])
+        self.assertTrue(nodes[0]['faculty']['item']['has_collaborators'])
+        self.assertNotIn('faculty', nodes[1])
         self.assertIn('Invented Root', graph_csv(live, 'collaborators'))
 
     def test_missing_recording_fails(self) -> None:
@@ -229,6 +240,15 @@ class CustomGraphTests(TestCase):
         Checks that a missing second-level member batch does not contact another source.
         """
         self.responses.pop(member_details_key(['invented-neighbor']))
+        with (
+            patch('vivo_app.lib.source_graph.team_definition', return_value=('Example Team', ['invented-root'])),
+            self.assertRaisesRegex(PageDataError, 'recording is missing'),
+        ):
+            visualization_graph('collaborators', 'team-example', 'replay', self.read)
+
+    def test_missing_availability_list_fails_replay(self) -> None:
+        """Requires the production availability list used by nested faculty fields."""
+        self.responses.pop(visualization_key('coauthors'))
         with (
             patch('vivo_app.lib.source_graph.team_definition', return_value=('Example Team', ['invented-root'])),
             self.assertRaisesRegex(PageDataError, 'recording is missing'),
@@ -268,7 +288,7 @@ class CustomGraphTests(TestCase):
             },
         }
         self.responses[profile_key(identifier)] = RecordedResponse(200, (), json.dumps(profile).encode())
-        self.responses[member_details_key(['invented-root', 'invented-missing'])] = self.solr_response(
+        self.responses[graph_root_key(['invented-root', 'invented-missing'])] = self.solr_response(
             [('invented-root', self.root)]
         )
         with patch(
@@ -284,7 +304,9 @@ class CustomGraphTests(TestCase):
             live_keys,
             [
                 profile_key(identifier),
-                member_details_key(['invented-root', 'invented-missing']),
+                graph_root_key(['invented-root', 'invented-missing']),
+                visualization_key('coauthors'),
+                visualization_key('collaborators'),
                 member_details_key(['invented-neighbor']),
             ],
         )
@@ -308,7 +330,7 @@ class CustomGraphTests(TestCase):
                 patch('tools.source_capture.time.sleep'),
                 patch('vivo_app.lib.source_graph.time.sleep'),
             ):
-                self.assertEqual(capture_custom_graph('team-example', output), 2)
+                self.assertEqual(capture_custom_graph('team-example', output), 4)
             with (
                 override_settings(
                     UPSTREAM_RECORDING_MANIFEST=str(output / 'manifest.json'), UPSTREAM_RECORDING_CASE='custom-graph'
@@ -356,5 +378,5 @@ class CustomGraphTests(TestCase):
         self.assertContains(page, 'Intradepartmental collaboration')
         self.assertContains(page, 'js/network_graph.js')
         self.assertContains(fit, 'id="forceToFit" type="checkbox" checked')
-        self.assertEqual(len(self.requested), 4)
+        self.assertEqual(len(self.requested), 8)
         self.assertTrue(all(mode == 'replay' for _, mode in self.requested))

@@ -164,6 +164,16 @@ def member_details_key(identifiers: list[str]) -> RequestKey:
     )
 
 
+def graph_root_key(identifiers: list[str]) -> RequestKey:
+    """
+    Requests complete root records for the faculty objects in calculated graph JSON.
+
+    Called by: source_graph.custom_graph_records(), tests
+    """
+    base = member_details_key(identifiers)
+    return RequestKey('solr', base.path, tuple((key, '*') if key == 'fl' else (key, value) for key, value in base.query))
+
+
 def chart_member_key(identifiers: list[str]) -> RequestKey:
     """
     Adds public display names to the member records used by organization charts.
