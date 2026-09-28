@@ -21,7 +21,13 @@ class SourceGraphTests(TestCase):
         """
         Creates two made-up graph responses.
         """
-        graph = {'nodes': [{'id': 'invented-a'}], 'links': []}
+        graph = {
+            'nodes': [
+                {'id': 'invented-a', 'name': 'Invented A', 'group': 'Example Group'},
+                {'id': 'invented-b', 'name': 'Invented B'},
+            ],
+            'links': [{'source': 'invented-a', 'target': 'invented-b', 'weight': 3}],
+        }
         self.replies = {
             visualization_key('collaborators', 'invented-a'): {'graph': graph, 'rabid': 'invented-a'},
             visualization_key('coauthors', 'invented-a'): {'data': graph, 'rabid': 'invented-a'},
@@ -72,3 +78,19 @@ class SourceGraphTests(TestCase):
             visualization_key('collaborators', '../private')
         with self.assertRaises(PageDataError):
             visualization_graph('collaborators', 'team-example', 'replay', self.read)
+
+    def test_network_page_and_downloads_use_graph_data(self) -> None:
+        """
+        Checks both network pages and CSV downloads use the matching graph family.
+        """
+        with patch('vivo_app.lib.source_graph.read_source', side_effect=self.read):
+            page = self.get_page('/display/invented-a/viz/coauthor/')
+            download = self.get_page('/display/invented-a/viz/coauthor/?format=csv')
+            collab = self.get_page('/display/invented-a/viz/collab/?format=csv')
+            missing = self.get_page('/display/other/viz/coauthor/')
+        self.assertEqual(page.status_code, 200)
+        self.assertContains(page, 'Invented A')
+        self.assertIn('id,name,info,collab_with,count', download.content.decode())
+        self.assertIn('invented-a,Invented A,Example Group,invented-b,3', download.content.decode())
+        self.assertIn('invented-a,Invented A,Example Group,invented-b,1', collab.content.decode())
+        self.assertEqual(missing.status_code, 503)

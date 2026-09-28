@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{% if graph.kind == 'coauthors' %}Coauthor{% else %}Collaborator{% endif %} Network{% endblock %}
+{% block content %}
+{% include "includes/prepared_search.html" %}
+<div class="container network-page">
+  <h1 class="researcherName">{% if graph.kind == 'coauthors' %}Coauthor{% else %}Collaborator{% endif %} Network</h1>
+  <div class="row">
+    <div class="col-md-9">
+      <p>{% if graph.kind == 'coauthors' %}This network connects researchers who have confirmed the same publications.{% else %}This network shows collaborators named in researcher profiles.{% endif %}</p>
+      <svg class="network-graph" viewBox="0 0 880 700" role="img" aria-label="Network of {{ graph.nodes|length }} researchers and {{ graph.links|length }} connections">
+        {% for link in graph.links %}<line x1="{{ link.x1 }}" y1="{{ link.y1 }}" x2="{{ link.x2 }}" y2="{{ link.y2 }}" stroke="#ccc" stroke-width="1"></line>{% endfor %}
+        {% for node in graph.nodes %}<g><circle cx="{{ node.x }}" cy="{{ node.y }}" r="7" fill="{{ node.color }}"><title>{{ node.name }}</title></circle></g>{% endfor %}
+      </svg>
+    </div>
+    <div class="col-md-3">
+      <p><a class="btn btn-default" href="{% url 'visualization_coauthor' graph.id %}">Coauthor Network</a></p>
+      <p><a class="btn btn-default" href="{% url 'visualization_collab' graph.id %}">Collaborator Network</a></p>
+      <p><b>Options</b></p>
+      <p><a href="{% url 'display_show' graph.id %}">Go to Researcher's Profile</a></p>
+      <p><b>Data</b></p>
+      <p><a href="?format=csv">Download data (CSV)</a></p>
+      <p><a href="?format=json">Download data (JSON)</a></p>
+      <p>Calculated on {{ graph.updated }}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_css %}<style>.network-page .network-graph{display:block;width:100%;height:auto;min-height:480px}.network-page .researcherName{margin:20px 0}.network-page .btn{white-space:normal}</style>{% endblock %}

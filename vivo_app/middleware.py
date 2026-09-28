@@ -38,6 +38,8 @@ class LocalPageDataMiddleware:
             'display_show',
             'organization_publications_tsv',
             'visualization_graph_json',
+            'visualization_coauthor',
+            'visualization_collab',
             'search_facets',
             'people',
             'organizations',
