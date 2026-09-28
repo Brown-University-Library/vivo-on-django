@@ -228,6 +228,7 @@ class SourcePageTests(TestCase):
             organization = self.get_page('/display/org-example')
             self.assertContains(organization, 'Invented department')
             self.assertContains(organization, 'Researcher, Invented')
+            self.assertContains(organization, '/display/org-example/viz/collab')
             self.assertContains(organization, '/source-images/profile-images/123/4/portrait.jpg')
             facet = self.get_page('/search_facets?q=Example&f_name=record_type')
             facet_rows = json.loads(facet.content)
@@ -517,6 +518,15 @@ class SourcePageTests(TestCase):
                 if not isinstance(faculty, list):
                     self.fail('Organization faculty positions are not a list.')
                 self.assertEqual([row['name'] for row in faculty], ['Another Researcher', 'Researcher, Invented'])
+                self.assertEqual(result['visualization_url'], '/display/org-example/viz/collab')
+                preview = result['visualization_graph']
+                self.assertIsInstance(preview, dict)
+                if not isinstance(preview, dict):
+                    self.fail('Organization preview was not an object.')
+                self.assertEqual(len(preview['nodes']), 8)
+                with override_settings(VIZ_ENABLED=False):
+                    hidden = organization_data('org-example', 'live', self.read, extras)
+                self.assertEqual(hidden['visualization_url'], '')
                 export = organization_publications_data('org-example', 'live', self.read, extras)
                 self.assertIn('Another publication', export)
                 self.responses[team_member_key(['invented-b'])] = self.solr_response([], 0)

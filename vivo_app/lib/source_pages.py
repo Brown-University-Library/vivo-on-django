@@ -10,6 +10,7 @@ from collections.abc import Callable
 from html import escape
 from urllib.parse import quote, urlencode, urlsplit
 
+from django.conf import settings
 from django.templatetags.static import static
 from django.utils.html import strip_tags
 
@@ -798,6 +799,31 @@ def organization_members(
     return members
 
 
+def organization_preview_graph() -> dict[str, object]:
+    """
+    Supplies the fixed decorative network shown beside organization visualizations.
+
+    Called by: organization_data(), source_teams.team_data()
+    """
+    points = [
+        (502.67, 350.69, 15, 'rgb(174, 199, 232)'),
+        (402.73, 416.59, 15, 'rgb(174, 199, 232)'),
+        (499.79, 237.86, 15, 'rgb(174, 199, 232)'),
+        (565.55, 443.74, 11, 'rgb(255, 127, 14)'),
+        (384.64, 335.43, 15, 'rgb(174, 199, 232)'),
+        (597.28, 294.16, 11, 'rgb(31, 119, 180)'),
+        (457.79, 418.67, 15, 'rgb(174, 199, 232)'),
+        (429.55, 302.86, 15, 'rgb(174, 199, 232)'),
+    ]
+    edges = [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (6, 7)]
+    lines = [
+        {'x1': points[left][0], 'y1': points[left][1], 'x2': points[right][0], 'y2': points[right][1]}
+        for left, right in edges
+    ]
+    nodes = [{'x': x, 'y': y, 'radius': radius, 'color': color} for x, y, radius, color in points]
+    return {'view_box': '10 -30 960 700', 'lines': lines, 'nodes': nodes}
+
+
 def organization_data(
     identifier: str, mode: str, reader: SourceReader | None = None, extra_member_ids: list[str] | None = None
 ) -> dict[str, object]:
@@ -862,7 +888,8 @@ def organization_data(
         'image': thumbnail_url(doc, True),
         'website_links': websites,
         'overview_html': '<p>' + escape(strip_tags(overview)) + '</p>' if overview else '',
-        'visualization_url': '',
+        'visualization_url': f'/display/{identifier}/viz/collab' if settings.VIZ_ENABLED and members else '',
+        'visualization_graph': organization_preview_graph() if settings.VIZ_ENABLED and members else {},
         'administrative_positions': administrative,
         'faculty_positions': faculty,
     }

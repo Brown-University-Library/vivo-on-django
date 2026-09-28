@@ -16,6 +16,7 @@ from vivo_app.lib.source_pages import (
     SourceReader,
     documents,
     first_text,
+    organization_preview_graph,
     record_data,
     record_id,
     response_object,
@@ -144,7 +145,8 @@ def team_data(identifier: str, mode: str, reader: SourceReader | None = None) ->
         'image': static('images/org_placeholder_noborder.png'),
         'website_links': [],
         'overview_html': '<p>' + escape(name) + '</p>',
-        'visualization_url': '',
+        'visualization_url': f'/display/{identifier}/viz/collab' if settings.VIZ_ENABLED else '',
+        'visualization_graph': organization_preview_graph() if settings.VIZ_ENABLED else {},
         'administrative_positions': [],
         'faculty_positions': faculty,
     }
