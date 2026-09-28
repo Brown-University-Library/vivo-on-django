@@ -222,7 +222,7 @@ def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | 
     """
     Supplies a rendered search state from the same parser in live and replay.
 
-    Called by: page_data.get_search_data(), capture_solr_journey.Command.handle(), tests
+    Called by: page_data.get_search_data(), tools.source_capture.capture_journey(), tests
     """
     if reader is None:
         reader = read_source
@@ -351,7 +351,7 @@ def facet_values_data(
     """
     Returns every value of one search facet using a full Solr facet response.
 
-    Called by: views.search_facets(), capture_solr_journey.Command.handle(), tests
+    Called by: views.search_facets(), tools.source_capture.capture_journey(), tests
     """
     if reader is None:
         reader = read_source
@@ -734,7 +734,7 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
     """
     Supplies a person profile from one Solr record and required lookups.
 
-    Called by: page_data.get_profile_data(), capture_solr_journey.Command.handle(), tests
+    Called by: page_data.get_profile_data(), tools.source_capture.capture_journey(), tests
     """
     if reader is None:
         reader = read_source
@@ -806,7 +806,7 @@ def organization_data(
     """
     Builds an organization and its member portraits from exact Solr responses.
 
-    Called by: page_data.get_organization_data(), capture_solr_journey.Command.handle(), tests
+    Called by: page_data.get_organization_data(), tools.source_capture.capture_journey(), tests
     """
     if reader is None:
         reader = read_source

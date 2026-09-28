@@ -168,7 +168,7 @@ def image_path(file_path: object) -> str | None:
     """
     Converts a VIVO thumbnail path to its public image-service path.
 
-    Called by: source_pages.thumbnail_url(), capture_solr_journey.Command.handle()
+    Called by: source_pages.thumbnail_url(), tools.source_capture.image_requests()
     """
     result = None
     if isinstance(file_path, str):
@@ -189,7 +189,7 @@ def image_key(path: str) -> RequestKey:
     """
     Restricts an image request to the profile-image path derived from Solr.
 
-    Called by: views.source_image(), capture_solr_journey.Command.handle()
+    Called by: views.source_image(), tools.source_capture.image_requests()
     """
     if re.fullmatch(r'/profile-images/(?:[A-Za-z0-9]{1,3}/)+[A-Za-z0-9._^-]+', path) is None:
         raise PageDataError('The requested source image path is unsupported.')
@@ -213,7 +213,7 @@ def document_key_from_url(url: str) -> RequestKey:
     """
     Accepts a PDF URL only from the configured document source.
 
-    Called by: local_document_url(), views.source_document(), capture_solr_journey.capture_document_chain()
+    Called by: local_document_url(), views.source_document(), tools.source_capture.capture_document_chain()
     """
     origin = urlsplit(source_origin('documents'))
     parsed = urlsplit(url)
@@ -267,7 +267,7 @@ def read_source(key: RequestKey, mode: str) -> RecordedResponse:
     """
     Reads one response from the tunnel or exact saved input, with no fallback.
 
-    Called by: source_pages.response_object(), views.source_image(), views.source_document(), capture_solr_journey.CapturingReader.__call__()
+    Called by: source_pages.response_object(), views.source_image(), views.source_document(), tools.source_capture.CapturingReader.__call__()
     """
     if mode == 'replay':
         manifest = settings.UPSTREAM_RECORDING_MANIFEST

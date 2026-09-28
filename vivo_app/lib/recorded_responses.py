@@ -6,7 +6,6 @@ supplies exact saved bytes to the supported replay pages; the manifest's
 data-kind label alone does not establish authenticity.
 """
 
-import argparse
 import hashlib
 import json
 from dataclasses import dataclass
@@ -155,7 +154,7 @@ class RecordedResponses:
         """
         Returns only the responses listed for the selected case.
 
-        Called by: get(), main(), tests
+        Called by: get(), tools.validate_recordings.main(), tests
         """
         if case_id not in self._cases:
             raise RecordingError('The selected case has no recordings.')
@@ -178,7 +177,7 @@ def load_recordings(manifest_path: Path) -> RecordedResponses:
     """
     Reads and validates a complete manifest and all referenced response files.
 
-    Called by: main(), response consumers, tests
+    Called by: tools.validate_recordings.main(), response consumers, tests
     """
     path: Path = external_path(manifest_path)
     try:
@@ -224,30 +223,3 @@ def load_recordings(manifest_path: Path) -> RecordedResponses:
             checked_names.append(name)
         cases[case_id] = tuple(checked_names)
     return RecordedResponses(data_kind, captured_at, entries, cases)
-
-
-def main() -> None:
-    """
-    Checks selected cases locally and reports whether their data is synthetic.
-
-    Called by: __main__
-    """
-    parser = argparse.ArgumentParser(description='Validate saved GET responses; never contacts a service.')
-    parser.add_argument('manifest', type=Path)
-    parser.add_argument('--case', action='append', required=True, dest='cases')
-    parser.add_argument('--require-recorded', action='store_true', help='Reject a manifest marked synthetic.')
-    args = parser.parse_args()
-    try:
-        recordings = load_recordings(args.manifest)
-        if args.require_recorded and recordings.data_kind != 'recorded':
-            raise RecordingError('Authentic upstream recordings are still required; this manifest is synthetic.')
-        counts = [len(recordings.for_case(case_id)) for case_id in args.cases]
-    except RecordingError as exc:
-        parser.exit(1, f'Recording check failed: {exc}\n')
-    else:
-        print(f'Validated {len(counts)} selected cases ({recordings.data_kind}); response counts: {counts}.')
-        print('This checks saved files, not completeness of page inputs or agreement with the public site.')
-
-
-if __name__ == '__main__':
-    main()

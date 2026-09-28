@@ -51,7 +51,7 @@ def custom_organization_members(identifier: str) -> list[str]:
     """
     Reads added member IDs for a scoped custom organization.
 
-    Called by: page_data.get_organization_data(), capture_solr_journey.Command.handle(), tests
+    Called by: page_data.get_organization_data(), tools.source_capture.capture_journey(), tests
     """
     if identifier not in CUSTOM_ORGANIZATION_IDS:
         return []
@@ -100,7 +100,7 @@ def team_data(identifier: str, mode: str, reader: SourceReader | None = None) ->
     """
     Builds the selected active-team organization page from Solr member records.
 
-    Called by: page_data.get_organization_data(), capture_solr_journey.Command.handle(), tests
+    Called by: page_data.get_organization_data(), tools.source_capture.capture_journey(), tests
     """
     if reader is None:
         reader = read_source

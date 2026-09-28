@@ -12,6 +12,7 @@ from django.core.management.base import CommandError
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 
+from tools.source_capture import CapturingReader
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_graph import visualization_key
@@ -34,7 +35,6 @@ from vivo_app.lib.source_requests import (
     team_member_key,
 )
 from vivo_app.lib.source_teams import custom_organization_members, team_data
-from vivo_app.management.commands.capture_solr_journey import CapturingReader
 
 
 @override_settings(
@@ -308,9 +308,9 @@ class SourcePageTests(TestCase):
         Checks capture rejects an unrelated profile before writing any files.
         """
         with (
-            patch('vivo_app.management.commands.capture_solr_journey.read_source', side_effect=self.read),
-            patch('vivo_app.management.commands.capture_solr_journey.time.sleep'),
-            patch('vivo_app.management.commands.capture_solr_journey.write_capture') as writer,
+            patch('tools.source_capture.read_source', side_effect=self.read),
+            patch('tools.source_capture.time.sleep'),
+            patch('tools.source_capture.write_capture') as writer,
         ):
             with self.assertRaises(CommandError) as caught:
                 call_command('capture_solr_journey', query='Example', id='other', output=Path('/tmp/unused-capture'))
@@ -325,9 +325,9 @@ class SourcePageTests(TestCase):
         first = search_key('Example', 1, [])
         second = search_key('Example', 1, [('record_type', 'PEOPLE')])
         with (
-            patch('vivo_app.management.commands.capture_solr_journey.read_source', side_effect=self.read) as read,
-            patch('vivo_app.management.commands.capture_solr_journey.time.monotonic', side_effect=[0.0, 0.2, 0.2]),
-            patch('vivo_app.management.commands.capture_solr_journey.time.sleep') as sleep,
+            patch('tools.source_capture.read_source', side_effect=self.read) as read,
+            patch('tools.source_capture.time.monotonic', side_effect=[0.0, 0.2, 0.2]),
+            patch('tools.source_capture.time.sleep') as sleep,
         ):
             reader(first, 'live')
             reader(first, 'live')
@@ -475,9 +475,9 @@ class SourcePageTests(TestCase):
         Checks the extended capture includes the source requests needed by its linked pages.
         """
         with (
-            patch('vivo_app.management.commands.capture_solr_journey.read_source', side_effect=self.read),
-            patch('vivo_app.management.commands.capture_solr_journey.time.sleep'),
-            patch('vivo_app.management.commands.capture_solr_journey.write_capture') as writer,
+            patch('tools.source_capture.read_source', side_effect=self.read),
+            patch('tools.source_capture.time.sleep'),
+            patch('tools.source_capture.write_capture') as writer,
         ):
             call_command(
                 'capture_solr_journey',

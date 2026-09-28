@@ -6,9 +6,12 @@ import hashlib
 import json
 import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
+from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
+from tools.validate_recordings import main as validate_recordings
 from vivo_app.lib.recorded_responses import RecordingError, RequestKey, load_recordings
 
 
@@ -73,6 +76,25 @@ class RecordedResponseTests(unittest.TestCase):
             profile = first.get('PROFILE_DEMO', RequestKey('solr', '/select', (('q', 'id:sample-a'),)))
             self.assertEqual(profile.body, (self.root / 'profile.json').read_bytes())
             self.assertEqual(first.data_kind, 'synthetic')
+
+    def test_validation_command_reads_selected_case(self) -> None:
+        """Checks the development command reads a case and rejects synthetic data when requested."""
+        output = StringIO()
+        with (
+            patch('sys.argv', ['validate_recordings', str(self.manifest_path), '--case', 'SEARCH_DEMO']),
+            redirect_stdout(output),
+        ):
+            validate_recordings()
+        self.assertIn('Validated 1 selected cases (synthetic)', output.getvalue())
+        with (
+            patch(
+                'sys.argv',
+                ['validate_recordings', str(self.manifest_path), '--case', 'SEARCH_DEMO', '--require-recorded'],
+            ),
+            redirect_stderr(StringIO()),
+            self.assertRaises(SystemExit),
+        ):
+            validate_recordings()
 
     def test_query_changes_fail_instead_of_falling_back(self) -> None:
         """Checks that missing, reordered, duplicated, or changed filters cannot reuse a response."""
