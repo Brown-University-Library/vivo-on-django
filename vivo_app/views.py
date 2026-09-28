@@ -30,7 +30,7 @@ from .lib.page_data import (
 from .lib.page_rendering import data_unavailable, prepared_response, query_pairs, render_or_stub
 from .lib.prepared_data import PageDataError
 from .lib.source_formats import profile_json_data
-from .lib.source_graph import graph_csv, graph_page_data, visualization_graph
+from .lib.source_graph import graph_csv, graph_page_data, graph_subject_data, visualization_graph
 from .lib.source_pages import facet_values_data, organization_publications_data, search_json_data
 from .lib.source_requests import document_key, document_key_from_url, image_key, read_source
 from .lib.source_teams import custom_organization_members
@@ -356,15 +356,59 @@ def visualization_graph_json(request: HttpRequest, id: str, kind: str) -> HttpRe
         return data_unavailable(exc)
 
 
+def visualization_graph_csv(request: HttpRequest, id: str, kind: str) -> HttpResponse:
+    """
+    Serves the public graph CSV path from the same source graph as JSON and HTML.
+
+    Called by: config.urls
+    """
+    try:
+        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
+            saved = get_response_data(request.path, query_pairs(request.GET))
+            if saved is not None:
+                return prepared_response(saved)
+            raise PageDataError('This visualization download is unavailable.')
+        if request.GET:
+            raise PageDataError('Visualization query options are unsupported.')
+        data = visualization_graph(kind, id, settings.PAGE_DATA_MODE)
+        return HttpResponse(graph_csv(data, kind).encode(), content_type='text/plain; charset=utf-8')
+    except PageDataError as exc:
+        return data_unavailable(exc)
+
+
 def visualization_coauthor(request, id):
     """Shows or downloads a source-backed coauthor network."""
     return visualization_network(request, id, 'coauthors')
 
 
-def visualization_coauthor_treemap(request, id):
-    """Coauthor treemap visualization."""
-    context = {'id': id}
-    return render_or_stub(request, 'visualization/coauthor_treemap.html', context)
+def visualization_coauthor_treemap(request: HttpRequest, id: str) -> HttpResponse:
+    """
+    Renders a coauthor treemap from the same graph used by the network page.
+
+    Called by: config.urls
+    """
+    try:
+        if settings.PAGE_DATA_MODE == 'prototype':
+            return render_or_stub(request, 'visualization/coauthor_treemap.html', {'id': id})
+        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
+            raise PageDataError('This visualization is unavailable.')
+        pairs = query_pairs(request.GET)
+        if len(pairs) > 1 or any(key != 'format' or value not in {'json', 'csv'} for key, value in pairs):
+            raise PageDataError('Visualization query options are unsupported.')
+        data = visualization_graph('coauthors', id, settings.PAGE_DATA_MODE)
+        response_format = request.GET.get('format')
+        if response_format == 'json':
+            return JsonResponse(data)
+        if response_format == 'csv':
+            return HttpResponse(graph_csv(data, 'coauthors').encode(), content_type='text/plain; charset=utf-8')
+        subject = graph_subject_data('coauthors', id, settings.PAGE_DATA_MODE)
+        return render(
+            request,
+            'visualization/treemap_data.html',
+            {'graph': graph_page_data(data, 'coauthors', id, subject)},
+        )
+    except PageDataError as exc:
+        return data_unavailable(exc)
 
 
 def visualization_collab(request, id):
@@ -388,19 +432,25 @@ def visualization_network(request: HttpRequest, identifier: str, kind: str) -> H
         if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
             raise PageDataError('This visualization is unavailable.')
         pairs = query_pairs(request.GET)
-        if any(key != 'format' or value not in {'json', 'csv'} for key, value in pairs) or len(pairs) > 1:
+        if len(pairs) > 1 or any(
+            (key == 'format' and value not in {'json', 'csv'})
+            or (key == 'fit' and value != '1')
+            or key not in {'format', 'fit'}
+            for key, value in pairs
+        ):
             raise PageDataError('Visualization query options are unsupported.')
         data = visualization_graph(kind, identifier, settings.PAGE_DATA_MODE)
         response_format = request.GET.get('format')
         if response_format == 'json':
             return JsonResponse(data)
         if response_format == 'csv':
-            return HttpResponse(
-                graph_csv(data, kind).encode(),
-                content_type='text/csv',
-                headers={'Content-Disposition': f'attachment; filename="{identifier}.csv"'},
-            )
-        return render(request, 'visualization/network_data.html', {'graph': graph_page_data(data, kind, identifier)})
+            return HttpResponse(graph_csv(data, kind).encode(), content_type='text/plain; charset=utf-8')
+        subject = graph_subject_data(kind, identifier, settings.PAGE_DATA_MODE)
+        return render(
+            request,
+            'visualization/network_data.html',
+            {'graph': graph_page_data(data, kind, identifier, subject), 'force_to_fit': request.GET.get('fit') == '1'},
+        )
     except PageDataError as exc:
         return data_unavailable(exc)
 

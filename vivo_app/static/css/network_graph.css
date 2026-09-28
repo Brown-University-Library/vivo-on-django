@@ -1,0 +1,16 @@
+.network-page .researcherName { clear: both; text-align: left; border-left: solid 6px #fff; margin-left: .67em; padding-left: .199em; margin-bottom: 0; padding-bottom: 0; }
+.network-page .facultyTitle { border-left: solid 6px #fff; margin-left: 1em; padding-left: .375em; margin-top: 0; padding-top: 0; line-height: 175%; }
+.network-page #descriptionMsg { margin-left: 1.5em; }
+.network-page .network-scope { margin-top: 1.4em; margin-left: 1.4em; float: left; }
+.network-page .network-graph { display: block; margin: 1.67em; float: left; }
+.network-page .network-options > .btn { display: block; width: 85%; min-height: 46px; margin-bottom: .333em; white-space: normal; }
+.network-page .network-options #legend { margin-top: 0; }
+.network-page #legendList { padding-left: 0; list-style: none; }
+.network-page #legendList span { display: inline-block; width: 13px; height: 13px; margin-right: 7px; }
+.network-page .network-link-button { padding: 0; border: 0; color: #337ab7; background: none; text-align: left; }
+.network-page .network-link-button:hover { text-decoration: underline; }
+.network-page #embedHtmlText { width: 100%; }
+.network-page .network-tooltip { position: fixed; z-index: 10; padding: 8px; background: #fff; border: 1px solid #ccc; pointer-events: none; }
+.network-page .node-text { font-size: 10px; }
+.network-page #svgElement circle { stroke: #fff; stroke-width: 1.5px; }
+@media (max-width: 767px) { .network-page .network-graph { max-width: 100%; height: auto; } }

@@ -3,15 +3,19 @@ Reads visualization-service lists and graph data through live or recorded reques
 """
 
 import csv
+import datetime
 import io
 import json
 import math
 import re
+import time
 from collections.abc import Callable
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_requests import read_source
+from vivo_app.lib.source_pages import documents, entries, first_text, record_data, record_id, response_object
+from vivo_app.lib.source_requests import member_details_key, profile_key, read_source
+from vivo_app.lib.source_teams import CUSTOM_ORGANIZATION_IDS, custom_organization_members, team_definition
 
 GraphReader = Callable[[RequestKey, str], RecordedResponse]
 
@@ -64,17 +68,199 @@ def visualization_graph(kind: str, identifier: str, mode: str, reader: GraphRead
 
     Called by: views.visualization_graph_json(), tests
     """
-    if kind == 'collaborators' and (
-        identifier.startswith('team-') or identifier in {'org-brown-univ-dept124', 'org-brown-univ-dept148'}
-    ):
-        raise PageDataError('This collaboration graph needs custom member processing that is not connected yet.')
     if reader is None:
         reader = read_source
+    if kind == 'collaborators' and (identifier.startswith('team-') or identifier in CUSTOM_ORGANIZATION_IDS):
+        return custom_collaboration_graph(identifier, mode, reader)
     value = visualization_response(visualization_key(kind, identifier), mode, reader)
+    if not value:
+        return value
     graph = value.get('graph') if kind == 'collaborators' else value.get('data')
     if not isinstance(graph, dict) or not isinstance(graph.get('nodes'), list) or not isinstance(graph.get('links'), list):
         raise PageDataError('The visualization service returned an invalid graph.')
     return value
+
+
+def custom_graph_members(identifier: str, mode: str, reader: GraphReader) -> tuple[str, list[str]]:
+    """
+    Reads the same configured and organization members used by custom collaboration graphs.
+
+    Called by: custom_collaboration_graph()
+    """
+    if identifier.startswith('team-'):
+        name, members = team_definition(identifier)
+    else:
+        response = response_object(profile_key(identifier), mode, reader)
+        docs, _ = documents(response)
+        if not docs or first_text(docs[0].get('record_type')) != 'ORGANIZATION':
+            raise PageDataError('The custom collaboration organization is unavailable.')
+        item = record_data(docs[0])
+        name = first_text(item.get('name'))
+        members = [record_id({'id': first_text(row.get('faculty_uri'))}) for row in entries(item, 'people')]
+        members.extend(custom_organization_members(identifier, mode, reader))
+    result = list(dict.fromkeys(members))
+    if not name or not result or len(result) > 500:
+        raise PageDataError('The custom collaboration member list is unavailable or too large.')
+    return name, result
+
+
+def custom_graph_records(
+    identifiers: list[str], mode: str, reader: GraphReader, require_all: bool
+) -> dict[str, dict[str, object]]:
+    """
+    Reads a limited number of member records in batches through the live or replay reader.
+
+    Called by: custom_collaboration_graph()
+    """
+    if len(identifiers) > 500:
+        raise PageDataError('The collaboration graph needs too many member records.')
+    result: dict[str, dict[str, object]] = {}
+    for start in range(0, len(identifiers), 100):
+        batch = identifiers[start : start + 100]
+        if start and mode == 'live':
+            time.sleep(0.25)
+        response = response_object(member_details_key(batch), mode, reader)
+        docs, _ = documents(response)
+        for doc in docs:
+            member_id = record_id(doc)
+            if member_id not in batch or first_text(doc.get('record_type')) != 'PEOPLE' or member_id in result:
+                raise PageDataError('Solr returned an unrelated collaboration member.')
+            result[member_id] = record_data(doc)
+    if require_all and set(result) != set(identifiers):
+        raise PageDataError('Solr did not return every custom collaboration member.')
+    return result
+
+
+def add_custom_node(nodes: dict[str, dict[str, object]], uri: str, label: str, group: str, title: str, level: int) -> None:
+    """
+    Keeps the closest level and first available group for a collaboration node.
+
+    Called by: custom_collaboration_graph(), add_custom_collaborators()
+    """
+    current = nodes.get(uri)
+    if current is None:
+        nodes[uri] = {'id': uri, 'name': label, 'group': group, 'title': title, 'level': level}
+    else:
+        old_level = current.get('level')
+        if isinstance(old_level, int):
+            current['level'] = min(old_level, level)
+        if not current.get('group') and group:
+            current['group'] = group
+
+
+def add_custom_collaborators(
+    nodes: dict[str, dict[str, object]],
+    links: dict[tuple[str, str], dict[str, object]],
+    source_uri: str,
+    person: dict[str, object],
+    level: int,
+) -> list[str]:
+    """
+    Adds one person's collaborators and returns Brown IDs that can be expanded.
+
+    Called by: custom_collaboration_graph()
+    """
+    neighbors: list[str] = []
+    prefix = 'http://vivo.brown.edu/individual/'
+    for collaborator in entries(person, 'collaborators'):
+        uri = first_text(collaborator.get('uri'))
+        if not uri or any(ord(character) < 32 for character in uri):
+            raise PageDataError('A collaborator has an invalid identifier.')
+        add_custom_node(
+            nodes,
+            uri,
+            first_text(collaborator.get('name')),
+            first_text(collaborator.get('org_name')),
+            first_text(collaborator.get('title')),
+            level,
+        )
+        pair = (source_uri, uri)
+        if pair in links:
+            old_weight = links[pair].get('weight')
+            if isinstance(old_weight, int):
+                links[pair]['weight'] = old_weight + 1
+        else:
+            links[pair] = {'source': source_uri, 'target': uri, 'weight': 1}
+        if level == 1 and uri.startswith(prefix):
+            neighbor_id = uri.removeprefix(prefix)
+            if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', neighbor_id):
+                neighbors.append(neighbor_id)
+    return neighbors
+
+
+def custom_collaboration_graph(identifier: str, mode: str, reader: GraphReader) -> dict[str, object]:
+    """
+    Calculates a two-level team or specialized-organization graph from Solr profiles.
+
+    Called by: visualization_graph()
+    """
+    name, member_ids = custom_graph_members(identifier, mode, reader)
+    roots = custom_graph_records(member_ids, mode, reader, True)
+    prefix = 'http://vivo.brown.edu/individual/'
+    nodes: dict[str, dict[str, object]] = {}
+    links: dict[tuple[str, str], dict[str, object]] = {}
+
+    neighbors: list[str] = []
+    for member_id in member_ids:
+        person = roots[member_id]
+        uri = prefix + member_id
+        group = first_text(person.get('org_label')) if identifier == 'team-advctr' else name
+        add_custom_node(nodes, uri, first_text(person.get('name')), group, first_text(person.get('title')), 0)
+    for member_id in member_ids:
+        neighbors.extend(add_custom_collaborators(nodes, links, prefix + member_id, roots[member_id], 1))
+    missing_neighbors = sorted(set(neighbors) - set(roots))
+    second_level = custom_graph_records(missing_neighbors, mode, reader, False) if missing_neighbors else {}
+    for neighbor_id in neighbors:
+        person = roots.get(neighbor_id) or second_level.get(neighbor_id)
+        if person is not None:
+            add_custom_node(
+                nodes,
+                prefix + neighbor_id,
+                first_text(person.get('name')),
+                first_text(person.get('org_label')),
+                first_text(person.get('title')),
+                0 if neighbor_id in roots else 1,
+            )
+            add_custom_collaborators(nodes, links, prefix + neighbor_id, person, 2)
+    yesterday = datetime.datetime.now(tz=datetime.UTC).date() - datetime.timedelta(days=1)
+    return {
+        'graph': {'nodes': list(nodes.values()), 'links': list(links.values())},
+        'rabid': identifier,
+        'updated': yesterday.isoformat(),
+    }
+
+
+def graph_subject_data(kind: str, identifier: str, mode: str, reader: GraphReader | None = None) -> dict[str, str]:
+    """
+    Reads the person or organization heading shown on a source-backed graph page.
+
+    Called by: views.visualization_network()
+    """
+    if reader is None:
+        reader = read_source
+    if identifier.startswith('team-'):
+        if kind != 'collaborators':
+            raise PageDataError('A team has no coauthor network.')
+        name, _ = team_definition(identifier)
+        return {'name': name, 'page_title': name, 'title': '', 'type': 'TEAM'}
+    response = response_object(profile_key(identifier), mode, reader)
+    docs, _ = documents(response)
+    if not docs or record_id(docs[0]) != identifier:
+        raise PageDataError('The visualization profile is unavailable.')
+    doc = docs[0]
+    record_type = first_text(doc.get('record_type'))
+    if record_type not in ({'PEOPLE'} if kind == 'coauthors' else {'PEOPLE', 'ORGANIZATION'}):
+        raise PageDataError('The requested record has no matching visualization page.')
+    item = record_data(doc)
+    name = first_text(doc.get('display_name_s')) or first_text(item.get('name'))
+    if not name:
+        raise PageDataError('The visualization profile has no display name.')
+    return {
+        'name': name,
+        'page_title': first_text(item.get('name')) or name,
+        'title': first_text(item.get('title')),
+        'type': record_type,
+    }
 
 
 def graph_csv(value: dict[str, object], kind: str) -> str:
@@ -83,6 +269,8 @@ def graph_csv(value: dict[str, object], kind: str) -> str:
 
     Called by: views.visualization_network(), tests
     """
+    if not value:
+        return ''
     graph = value.get('data') if kind == 'coauthors' else value.get('graph')
     if not isinstance(graph, dict):
         raise PageDataError('The visualization graph is unavailable.')
@@ -96,7 +284,7 @@ def graph_csv(value: dict[str, object], kind: str) -> str:
     if not links:
         return ''
     output = io.StringIO()
-    writer = csv.writer(output)
+    writer = csv.writer(output, lineterminator='\n')
     writer.writerow(['id', 'name', 'info', 'collab_with', 'count'])
     for link in links:
         if not isinstance(link, dict):
@@ -113,13 +301,15 @@ def graph_csv(value: dict[str, object], kind: str) -> str:
     return output.getvalue()
 
 
-def graph_page_data(value: dict[str, object], kind: str, identifier: str) -> dict[str, object]:
+def graph_page_data(
+    value: dict[str, object], kind: str, identifier: str, subject: dict[str, str] | None = None
+) -> dict[str, object]:
     """
     Places a source graph into a readable local SVG network page.
 
     Called by: views.visualization_network(), tests
     """
-    graph = value.get('data') if kind == 'coauthors' else value.get('graph')
+    graph = (value.get('data') if kind == 'coauthors' else value.get('graph')) if value else {'nodes': [], 'links': []}
     if not isinstance(graph, dict):
         raise PageDataError('The visualization graph is unavailable.')
     source_nodes = graph.get('nodes')
@@ -157,4 +347,15 @@ def graph_page_data(value: dict[str, object], kind: str, identifier: str) -> dic
         x1, y1 = positions[source_id]
         x2, y2 = positions[target_id]
         links.append({'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2})
-    return {'id': identifier, 'kind': kind, 'nodes': nodes, 'links': links, 'updated': value.get('updated', '')}
+    return {
+        'id': identifier,
+        'kind': kind,
+        'name': subject['name'] if subject else identifier,
+        'page_title': subject['page_title'] if subject else identifier,
+        'title': subject['title'] if subject else '',
+        'type': subject['type'] if subject else 'PEOPLE',
+        'nodes': nodes,
+        'links': links,
+        'source': graph,
+        'updated': value.get('updated', ''),
+    }

@@ -1,29 +1,69 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}{% if graph.kind == 'coauthors' %}Coauthor{% else %}Collaborator{% endif %} Network{% endblock %}
+{% block title %}{{ graph.page_title }} {% if graph.kind == 'coauthors' %}Coauthor{% else %}Collaborator{% endif %} network{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/network_graph.css' %}">{% endblock %}
 {% block content %}
 {% include "includes/prepared_search.html" %}
-<div class="container network-page">
-  <h1 class="researcherName">{% if graph.kind == 'coauthors' %}Coauthor{% else %}Collaborator{% endif %} Network</h1>
+<div class="network-page">
+  <h1 class="researcherName">{{ graph.name }}</h1>
+  {% if graph.title %}<h3 class="facultyTitle">{{ graph.title }}</h3>{% endif %}
   <div class="row">
     <div class="col-md-9">
-      <p>{% if graph.kind == 'coauthors' %}This network connects researchers who have confirmed the same publications.{% else %}This network shows collaborators named in researcher profiles.{% endif %}</p>
-      <svg class="network-graph" viewBox="0 0 880 700" role="img" aria-label="Network of {{ graph.nodes|length }} researchers and {{ graph.links|length }} connections">
-        {% for link in graph.links %}<line x1="{{ link.x1 }}" y1="{{ link.y1 }}" x2="{{ link.x2 }}" y2="{{ link.y2 }}" stroke="#ccc" stroke-width="1"></line>{% endfor %}
-        {% for node in graph.nodes %}<g><circle cx="{{ node.x }}" cy="{{ node.y }}" r="7" fill="{{ node.color }}"><title>{{ node.name }}</title></circle></g>{% endfor %}
-      </svg>
+      <div id="descriptionMsg">
+        {% if graph.kind == 'coauthors' %}
+          The coauthor network is created with the information available for this researcher under the
+          <a href="{% url 'display_show' graph.id %}#Publications">Publications tab of their profile</a>.
+          Only publications where more than one researcher at Brown has confirmed authorship are considered in this network.
+        {% elif graph.type == 'PEOPLE' %}
+          The collaborator network is created with the information provided by this researcher under the
+          <a href="{% url 'display_show' graph.id %}#Affiliations">Affiliations tab of their profile</a>.
+        {% else %}
+          The collaborator network for an organization is created with the information provided by each researcher associated with this organization under the Affiliations tab for their profile.
+        {% endif %}
+        {% if graph.type == 'PEOPLE' %}<span id="calculatedInfo"></span>{% else %}The collaborator network for this organization was calculated on <span id="txtLastUpdated"></span>.{% endif %}
+      </div>
+      <div id="errorMsg" class="alert alert-warning{% if graph.links %} hidden{% endif %}" role="alert">
+        No {% if graph.kind == 'coauthors' %}coauthor{% else %}collaboration{% endif %} data is available for this {% if graph.type == 'PEOPLE' %}researcher{% else %}organization{% endif %}.
+      </div>
+      {% if graph.links %}<div class="btn-group network-scope" role="group" aria-label="Network scope">
+        {% if graph.type == 'PEOPLE' %}
+          <button id="showLess" type="button" class="btn btn-info">Show {% if graph.kind == 'coauthors' %}Coauthors{% else %}Collaborators{% endif %}</button>
+          <button id="showMore" type="button" class="btn btn-default">Show {% if graph.kind == 'coauthors' %}Coauthors' coauthors{% else %}Collaborators' collaborators{% endif %}</button>
+        {% else %}
+          <button id="showLevel1" type="button" class="btn btn-info">Collaboration at Brown</button>
+          <button id="showLevel0" type="button" class="btn btn-default">Intradepartmental collaboration</button>
+        {% endif %}
+      </div>{% endif %}
+      <svg id="svgElement" class="network-graph" width="960" height="700" viewBox="0 0 960 700" role="img" aria-label="Network of {{ graph.nodes|length }} researchers and {{ graph.links|length }} connections"></svg>
     </div>
-    <div class="col-md-3">
-      <p><a class="btn btn-default" href="{% url 'visualization_coauthor' graph.id %}">Coauthor Network</a></p>
-      <p><a class="btn btn-default" href="{% url 'visualization_collab' graph.id %}">Collaborator Network</a></p>
+    <div class="col-md-3 network-options">
+      {% if graph.type == 'PEOPLE' %}
+        <a class="btn btn-{% if graph.kind == 'coauthors' %}primary{% else %}default{% endif %} btn-lg" href="{% url 'visualization_coauthor' graph.id %}">Coauthor Network</a>
+        <a class="btn btn-default btn-lg" href="{% url 'visualization_coauthor_treemap' graph.id %}">Coauthor Treemap</a>
+      {% endif %}
+      <a class="btn btn-{% if graph.kind == 'collaborators' %}primary{% else %}default{% endif %} btn-lg" href="{% url 'visualization_collab' graph.id %}">Collaborator Network</a>
+      {% if graph.type != 'PEOPLE' %}
+        {% if graph.type != 'TEAM' %}<a class="btn btn-default btn-lg" href="{% url 'visualization_publications' graph.id %}">Publication History</a>{% endif %}
+        <a class="btn btn-default btn-lg" href="{% url 'visualization_research' graph.id %}">Research Areas</a>
+      {% endif %}
+      {% if graph.type == 'PEOPLE' %}<p>&nbsp;</p>{% endif %}
+      <div id="legend"><p><b>Legend</b></p><ul id="legendList" class="legend"></ul></div>
       <p><b>Options</b></p>
-      <p><a href="{% url 'display_show' graph.id %}">Go to Researcher's Profile</a></p>
+      {% if graph.type != 'TEAM' %}<p><a href="{% url 'display_show' graph.id %}">Go to {% if graph.type == 'PEOPLE' %}Researcher's{% else %}Organization's{% endif %} Profile</a></p>{% endif %}
+      <p><label for="showLabels">{% if graph.type == 'PEOPLE' %}Display{% else %}Show{% endif %} labels</label> <input id="showLabels" type="checkbox" checked></p>
+      <p><label for="showDetails">{% if graph.type == 'PEOPLE' %}Display{% else %}Show{% endif %} details on mouse hover</label> <input id="showDetails" type="checkbox" checked></p>
+      <p><label for="forceToFit">Force to fit</label> <input id="forceToFit" type="checkbox"{% if force_to_fit %} checked{% endif %}></p>
       <p><b>Data</b></p>
-      <p><a href="?format=csv">Download data (CSV)</a></p>
-      <p><a href="?format=json">Download data (JSON)</a></p>
-      <p>Calculated on {{ graph.updated }}</p>
+      <p><a href="{% if graph.kind == 'coauthors' %}{% url 'coauthor_csv' graph.id %}{% else %}{% url 'collab_csv' graph.id %}{% endif %}" target="_blank" rel="noopener">Download data (CSV)</a></p>
+      <p><a href="{% if graph.kind == 'coauthors' %}{% url 'coauthor_json' graph.id %}{% else %}{% url 'collab_json' graph.id %}{% endif %}" target="_blank" rel="noopener">Download data (JSON)</a></p>
+      <p><button id="embedHtml" class="network-link-button" type="button">Embed SVG Code</button></p>
+      <p><button id="downloadPng" class="network-link-button" type="button">Download Image (PNG)</button></p>
+      <p id="downloadStatus" class="hidden" role="status"></p>
     </div>
   </div>
+  <div id="embedHtmlDiv" class="hidden"><p>Copy the following HTML to embed the SVG into your own page</p><textarea id="embedHtmlText" rows="10" aria-label="SVG code"></textarea></div>
+  <div id="tooltip" class="network-tooltip hidden" role="status"></div>
 </div>
+{{ graph|json_script:"network-data" }}
 {% endblock %}
-{% block extra_css %}<style>.network-page .network-graph{display:block;width:100%;height:auto;min-height:480px}.network-page .researcherName{margin:20px 0}.network-page .btn{white-space:normal}</style>{% endblock %}
+{% block extra_js %}<script src="{% static 'js/d3.v4.min.js' %}"></script><script src="{% static 'js/network_graph.js' %}"></script>{% endblock %}

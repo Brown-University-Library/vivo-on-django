@@ -89,15 +89,38 @@ urlpatterns = [
         {'kind': 'coauthors'},
         name='coauthor_json',
     ),
-    path('display/<str:id>/viz/coauthor/', vivo_views.visualization_coauthor, name='visualization_coauthor'),
     path(
-        'display/<str:id>/viz/coauthor_treemap/',
+        'display/<str:id>/viz/collab.csv',
+        vivo_views.visualization_graph_csv,
+        {'kind': 'collaborators'},
+        name='collab_csv',
+    ),
+    path(
+        'display/<str:id>/viz/coauthor.csv',
+        vivo_views.visualization_graph_csv,
+        {'kind': 'coauthors'},
+        name='coauthor_csv',
+    ),
+    path('display/<str:id>/viz/coauthor', vivo_views.visualization_coauthor, name='visualization_coauthor'),
+    path('display/<str:id>/viz/coauthor/', vivo_views.visualization_coauthor, name='visualization_coauthor_slash'),
+    path(
+        'display/<str:id>/viz/coauthor_treemap',
         vivo_views.visualization_coauthor_treemap,
         name='visualization_coauthor_treemap',
     ),
-    path('display/<str:id>/viz/collab/', vivo_views.visualization_collab, name='visualization_collab'),
-    path('display/<str:id>/viz/publications/', vivo_views.visualization_publications, name='visualization_publications'),
-    path('display/<str:id>/viz/research/', vivo_views.visualization_research, name='visualization_research'),
+    path(
+        'display/<str:id>/viz/coauthor_treemap/',
+        vivo_views.visualization_coauthor_treemap,
+        name='visualization_coauthor_treemap_slash',
+    ),
+    path('display/<str:id>/viz/collab', vivo_views.visualization_collab, name='visualization_collab'),
+    path('display/<str:id>/viz/collab/', vivo_views.visualization_collab, name='visualization_collab_slash'),
+    path('display/<str:id>/viz/publications', vivo_views.visualization_publications, name='visualization_publications'),
+    path(
+        'display/<str:id>/viz/publications/', vivo_views.visualization_publications, name='visualization_publications_slash'
+    ),
+    path('display/<str:id>/viz/research', vivo_views.visualization_research, name='visualization_research'),
+    path('display/<str:id>/viz/research/', vivo_views.visualization_research, name='visualization_research_slash'),
     # Edit functionality
     path('edit/fast/search/', vivo_views.edit_fast_search, name='edit_fast_search'),
     path('edit/<str:id>/', vivo_views.edit_profile, name='edit_profile'),
