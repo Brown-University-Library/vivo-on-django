@@ -227,6 +227,10 @@ BOOK_COVER_STUB = os.getenv('BOOK_COVER_STUB', 'true').lower() == 'true'
 BOOK_COVER_BASE_PATH = os.getenv('BOOK_COVER_BASE_PATH', '')
 PAGE_DATA_MODE = os.getenv('PAGE_DATA_MODE', 'prototype')
 PREPARED_FIXTURE_DIR = os.getenv('PREPARED_FIXTURE_DIR', '../prepared_fixture_data')
+SOLR_URL = os.getenv('SOLR_URL', '')
+IMAGES_URL = os.getenv('IMAGES_URL', '')
+UPSTREAM_RECORDING_MANIFEST = os.getenv('UPSTREAM_RECORDING_MANIFEST', '')
+UPSTREAM_RECORDING_CASE = os.getenv('UPSTREAM_RECORDING_CASE', 'search-profile')
 
 # Live reload in development (opt-in via environment configuration)
 ENABLE_BROWSER_RELOAD = os.getenv('DJANGO_BROWSER_RELOAD', 'false').lower() == 'true'

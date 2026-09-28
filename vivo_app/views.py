@@ -29,9 +29,30 @@ from .lib.page_data import (
 )
 from .lib.page_rendering import data_unavailable, prepared_response, query_pairs, render_or_stub
 from .lib.prepared_data import PageDataError
+from .lib.source_requests import image_key, read_source
 from .lib.version_helper import GatherCommitAndBranchData
 
 logger = logging.getLogger(__name__)
+
+
+def source_image(request: HttpRequest, filename: str) -> HttpResponse:
+    """
+    Returns an image from the selected live or recorded source.
+
+    Called by: config.urls
+    """
+    try:
+        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
+            raise PageDataError('Source images require live or replay mode.')
+        result = read_source(image_key('/' + filename), settings.PAGE_DATA_MODE)
+        content_type = next((value for key, value in result.headers if key.lower() == 'content-type'), '')
+        if content_type not in {'image/jpeg', 'image/png', 'image/gif', 'image/webp'}:
+            raise PageDataError('The image source returned an unsupported content type.')
+        response = HttpResponse(result.body, content_type=content_type)
+        response['X-Content-Type-Options'] = 'nosniff'
+        return response
+    except PageDataError as exc:
+        return data_unavailable(exc)
 
 
 # Standard application support endpoints

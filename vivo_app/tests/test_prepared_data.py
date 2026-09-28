@@ -497,10 +497,13 @@ class PreparedDataTests(TestCase):
 
     def test_invalid_modes_fail_startup(self) -> None:
         """
-        Checks invalid and unimplemented source modes report configuration errors.
+        Checks unknown modes and missing source settings report configuration errors.
         """
         for mode in ('invalid', 'replay', 'live'):
-            with self.subTest(mode=mode), override_settings(PAGE_DATA_MODE=mode):
+            with (
+                self.subTest(mode=mode),
+                override_settings(PAGE_DATA_MODE=mode, SOLR_URL='', UPSTREAM_RECORDING_MANIFEST=''),
+            ):
                 self.assertEqual(check_page_data()[0].id, 'vivo_app.E001')
                 self.assertEqual(self.get_page('/search?q=Example').status_code, 503)
                 self.assertEqual(self.get_page('/').status_code, 503)

@@ -12,15 +12,17 @@ from vivo_app.lib.prepared_data import PageDataError, PreparedBundle, PreparedEn
 
 def selected_mode() -> str:
     """
-    Rejects unknown modes and source processing that is not implemented yet.
+    Rejects unknown modes and missing source settings without contacting them.
 
     Called by: get_bundle(), checks.check_page_data()
     """
     mode: str = settings.PAGE_DATA_MODE
     if mode not in {'prototype', 'prepared', 'replay', 'live'}:
         raise PageDataError('PAGE_DATA_MODE must be prototype, prepared, replay, or live.')
-    if mode in {'replay', 'live'}:
-        raise PageDataError(f'{mode} page processing is not implemented. Select prepared data explicitly for local work.')
+    if mode == 'live' and not settings.SOLR_URL:
+        raise PageDataError('Live search and profiles require SOLR_URL.')
+    if mode == 'replay' and not settings.UPSTREAM_RECORDING_MANIFEST:
+        raise PageDataError('Replay search and profiles require UPSTREAM_RECORDING_MANIFEST.')
     return mode
 
 
@@ -63,6 +65,10 @@ def get_search_data(path: str, query: list[tuple[str, str]]) -> dict[str, object
         if isinstance(page, int) and isinstance(page_size, int) and isinstance(total, int):
             result['start'] = (page - 1) * page_size + 1
             result['end'] = min(page * page_size, total)
+    elif selected_mode() in {'live', 'replay'}:
+        from vivo_app.lib.source_pages import search_data
+
+        result = search_data(query, selected_mode())
     return result
 
 
@@ -74,6 +80,12 @@ def get_profile_data(path: str, query: list[tuple[str, str]]) -> dict[str, objec
     """
     bundle = get_bundle()
     result = None if bundle is None else dict(bundle.page('profile', path, query).data)
+    if bundle is None and selected_mode() in {'live', 'replay'}:
+        if query:
+            raise PageDataError('Profile query options are not connected to source data yet.')
+        from vivo_app.lib.source_pages import profile_data
+
+        result = profile_data(path.rstrip('/').rsplit('/', 1)[-1], selected_mode())
     return result
 
 
@@ -85,6 +97,8 @@ def get_organization_data(path: str, query: list[tuple[str, str]]) -> dict[str, 
     """
     bundle = get_bundle()
     result = None if bundle is None else dict(bundle.page('organization', path, query).data)
+    if bundle is None and selected_mode() in {'live', 'replay'}:
+        raise PageDataError('Organization pages are not connected to source data yet.')
     return result
 
 
@@ -96,6 +110,8 @@ def get_home_data(path: str, query: list[tuple[str, str]]) -> dict[str, object] 
     """
     bundle = get_bundle()
     result = None if bundle is None else dict(bundle.page('home', path, query).data)
+    if bundle is None and selected_mode() in {'live', 'replay'}:
+        raise PageDataError('The homepage is not connected to source data yet.')
     return result
 
 
@@ -107,4 +123,6 @@ def get_response_data(path: str, query: list[tuple[str, str]]) -> PreparedEntry 
     """
     bundle = get_bundle()
     result = None if bundle is None else bundle.page('response', path, query)
+    if bundle is None and selected_mode() in {'live', 'replay'}:
+        raise PageDataError('This response format is not connected to source data yet.')
     return result

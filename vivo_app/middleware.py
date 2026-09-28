@@ -13,7 +13,7 @@ from vivo_app.lib.prepared_data import PageDataError
 
 
 class LocalPageDataMiddleware:
-    """Prevents automatic remote browser loads in local data modes."""
+    """Prevents automatic remote browser loads and sample fallbacks in source modes."""
 
     def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
         """
@@ -27,7 +27,7 @@ class LocalPageDataMiddleware:
         self, request: HttpRequest, view_func: object, view_args: object, view_kwargs: object
     ) -> HttpResponse | None:
         """
-        Rejects unconverted public handlers when prepared data is selected.
+        Rejects unconverted public handlers when prepared or source data is selected.
 
         Called by: Django request handler
         """
@@ -42,16 +42,18 @@ class LocalPageDataMiddleware:
             'individual_redirect',
             'prepared_asset',
             'prepared_document',
+            'source_image',
             'error_check',
             'version',
         }
         if (
-            settings.PAGE_DATA_MODE == 'prepared'
+            settings.PAGE_DATA_MODE in {'prepared', 'replay', 'live'}
             and getattr(view_func, '__module__', '') == 'vivo_app.views'
             and getattr(view_func, '__name__', '') not in supported
         ):
+            label = 'prepared data' if settings.PAGE_DATA_MODE == 'prepared' else 'source data'
             response = HttpResponse(
-                b'This endpoint is not connected to prepared data yet.', status=503, content_type='text/plain'
+                f'This endpoint is not connected to {label} yet.'.encode(), status=503, content_type='text/plain'
             )
         return response
 

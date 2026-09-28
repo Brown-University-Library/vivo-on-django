@@ -96,6 +96,7 @@ urlpatterns = [
     path('search_facets', vivo_views.search_facets),
     path('display/<str:id>', vivo_views.display_show),
     path('__prepared_assets/<str:name>', vivo_views.prepared_asset, name='prepared_asset'),
+    path('source-images/<path:filename>', vivo_views.source_image, name='source_image'),
     path('docs/<path:filename>', vivo_views.prepared_document, name='prepared_document'),
     path('search/', vivo_views.search, name='search'),
     path('search/advanced/', vivo_views.advanced_search, name='advanced_search'),

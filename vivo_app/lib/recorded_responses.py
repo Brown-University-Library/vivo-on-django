@@ -1,8 +1,9 @@
 """
 Reads saved GET responses without opening a network connection.
 
-Real recordings and manifests belong outside every Git checkout. This loader
-does not yet replace the prototype page helpers or establish data authenticity.
+Real recordings and manifests belong outside every Git checkout. This reader
+supplies exact saved bytes to the supported replay pages; the manifest's
+data-kind label alone does not establish authenticity.
 """
 
 import argparse
