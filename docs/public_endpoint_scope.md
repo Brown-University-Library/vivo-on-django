@@ -92,9 +92,9 @@ This is a current scope boundary, not a claim that those routes never receive tr
 
 ## Turnstile configuration requirement
 
-The current challenge code uses Cloudflare Turnstile. The Django implementation must read a boolean setting from the new application's `.env` so the owner can turn enforcement on and off. Proposed setting name: `TURNSTILE_ENABLED`; this is a planning choice, not an existing implemented setting.
+The current challenge code uses Cloudflare Turnstile. Django reads `TURNSTILE_ENABLED` from the private environment file so the owner can turn search enforcement on and off.
 
-When enabled, required requests should use the challenge and server-side verification flow. When disabled, ordinary requests must not require the challenge or contact Turnstile verification. Define the direct `/challenge` behavior in disabled mode during implementation. Keep actual site keys, secret keys, session values, and service configuration out of repository content. Check enabled and disabled behavior using controlled local cases. No `.env` or application behavior changed during this planning review.
+When enabled, search GET requests redirect to the challenge until the visitor completes server-side verification. The pass remains valid for up to 24 hours for the same address. When disabled, ordinary requests do not require the challenge or contact Turnstile; direct `/challenge` requests return 404. Prepared and replay modes require enforcement off so their browser checks stay offline. Tests cover both settings without sending real tokens. Live verification with site keys for the Django hostname remains outstanding. Keep actual keys, session values, and service configuration out of repository content.
 
 ## Source trace and remaining work
 
