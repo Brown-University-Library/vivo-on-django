@@ -231,6 +231,7 @@ SOLR_URL = os.getenv('SOLR_URL', '')
 IMAGES_URL = os.getenv('IMAGES_URL', '')
 DOCUMENTS_URL = os.getenv('DOCUMENTS_URL', '')
 VIZ_SERVICE_URL = os.getenv('VIZ_SERVICE_URL', '')
+VIVO_BACKEND_URL = os.getenv('VIVO_BACKEND_URL', '')
 VIZ_ENABLED = os.getenv('VIZ_ENABLED', 'true').lower() == 'true'
 TEAM_SOURCE_MANIFEST = os.getenv('TEAM_SOURCE_MANIFEST', '')
 UPSTREAM_RECORDING_MANIFEST = os.getenv('UPSTREAM_RECORDING_MANIFEST', '')

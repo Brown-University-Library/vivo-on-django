@@ -164,6 +164,45 @@ def member_details_key(identifiers: list[str]) -> RequestKey:
     )
 
 
+def chart_member_key(identifiers: list[str]) -> RequestKey:
+    """
+    Adds public display names to the member records used by organization charts.
+
+    Called by: source_org_charts.organization_chart_members(), tests
+    """
+    base = member_details_key(identifiers)
+    query = tuple(
+        (key, 'id,record_type,json_txt,display_name_s') if key == 'fl' else (key, value) for key, value in base.query
+    )
+    return RequestKey('solr', base.path, query)
+
+
+def status_key() -> RequestKey:
+    """
+    Counts the person and organization records that the public search can show.
+
+    Called by: source_status.status_data(), tests
+    """
+    return RequestKey(
+        'solr',
+        '/select',
+        (('q', '*:*'), ('fq', 'record_type:(PEOPLE OR ORGANIZATION)'), ('rows', '0'), ('wt', 'json')),
+    )
+
+
+def vitro_key(identifier: str, fmt: str) -> RequestKey:
+    """
+    Names one original VIVO representation and its Rails request header.
+
+    Called by: views.individual_export(), tests
+    """
+    formats = {'jsonld': 'application/json', 'ttl': 'text/turtle', 'rdf': 'application/rdf+xml'}
+    content_type = formats.get(fmt)
+    if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', identifier) is None or content_type is None:
+        raise PageDataError('The requested VIVO representation is unsupported.')
+    return RequestKey('vitro', f'/individual/{identifier}/{identifier}.{fmt}', headers=(('Content-Type', content_type),))
+
+
 def team_member_key(identifiers: list[str]) -> RequestKey:
     """
     Requests display names and portraits for a code-defined active team.
@@ -287,6 +326,7 @@ def source_origin(service: str) -> str:
         'images': settings.IMAGES_URL,
         'documents': settings.DOCUMENTS_URL,
         'viz': settings.VIZ_SERVICE_URL,
+        'vitro': settings.VIVO_BACKEND_URL,
     }.get(service, '')
     parsed = urlsplit(raw)
     if (
@@ -342,7 +382,7 @@ def read_source(key: RequestKey, mode: str) -> RecordedResponse:
     else:
         raise PageDataError('Source requests require replay or live mode.')
     limit = MAX_DOCUMENT_BYTES if key.service == 'documents' else MAX_RESPONSE_BYTES
-    allowed_status = {200, 301, 302} if key.service == 'documents' else {200}
+    allowed_status = {200, 301, 302} if key.service == 'documents' else ({200, 404} if key.service == 'vitro' else {200})
     if result.status not in allowed_status or len(result.body) > limit:
         raise PageDataError(f'{key.service} source returned an unusable response.')
     return result

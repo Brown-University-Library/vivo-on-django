@@ -66,11 +66,13 @@ urlpatterns = [
     path('brown/', vivo_views.home_brown, name='brown'),
     path('help/viz/', vivo_views.home_help_viz, name='help_viz'),
     path('status/', vivo_views.home_status, name='status'),
+    path('status', vivo_views.home_status, name='status_public'),
     path('side_stuff/brown_classic/', vivo_views.home_brown_classic, name='brown_classic'),
     path('side_stuff/brown_classic/<str:name>/', vivo_views.home_brown_classic, name='brown_classic_named'),
     # Display functionality
     path('display/', vivo_views.display_index, name='display_index'),
     path('display/<str:id>/', vivo_views.display_show, name='display_show'),
+    path('display/<str:id>', vivo_views.display_show, name='display_show_public'),
     path(
         'display/<str:id>/publications.tsv', vivo_views.organization_publications_tsv, name='organization_publications_tsv'
     ),
@@ -115,9 +117,27 @@ urlpatterns = [
     ),
     path('display/<str:id>/viz/collab', vivo_views.visualization_collab, name='visualization_collab'),
     path('display/<str:id>/viz/collab/', vivo_views.visualization_collab, name='visualization_collab_slash'),
+    path(
+        'display/<str:id>/viz/publications.json',
+        vivo_views.visualization_publications,
+        {'fmt': 'json'},
+        name='visualization_publications_json',
+    ),
+    path(
+        'display/<str:id>/viz/publications.csv',
+        vivo_views.visualization_publications,
+        {'fmt': 'csv'},
+        name='visualization_publications_csv',
+    ),
     path('display/<str:id>/viz/publications', vivo_views.visualization_publications, name='visualization_publications'),
     path(
         'display/<str:id>/viz/publications/', vivo_views.visualization_publications, name='visualization_publications_slash'
+    ),
+    path(
+        'display/<str:id>/viz/research.json',
+        vivo_views.visualization_research,
+        {'fmt': 'json'},
+        name='visualization_research_json',
     ),
     path('display/<str:id>/viz/research', vivo_views.visualization_research, name='visualization_research'),
     path('display/<str:id>/viz/research/', vivo_views.visualization_research, name='visualization_research_slash'),
@@ -132,7 +152,6 @@ urlpatterns = [
     # Search
     path('search', vivo_views.search),
     path('search_facets', vivo_views.search_facets),
-    path('display/<str:id>', vivo_views.display_show),
     path('__prepared_assets/<str:name>', vivo_views.prepared_asset, name='prepared_asset'),
     path('source-images/<path:filename>', vivo_views.source_image, name='source_image'),
     path('source-documents/<path:filename>', vivo_views.source_document, name='source_document'),
@@ -151,8 +170,14 @@ urlpatterns = [
     path('ous', vivo_views.organizations, name='organizations'),
     path('ous/', vivo_views.organizations),
     path('file/<str:id>/<str:file_name>/', vivo_views.old_image, name='old_image'),
+    path('file/<str:id>/<str:file_name>', vivo_views.old_image, name='old_image_public'),
     # Individual (legacy VIVO export and redirect)
     # Export routes must come before the generic redirect to avoid matching 'n123.json' as <id>
+    re_path(
+        r'^individual/(?P<id>[^/]+)/(?P<id2>[^/]+)\.(?P<fmt>[^/]+)$',
+        vivo_views.individual_export,
+        name='individual_export_public',
+    ),
     # e.g., /individual/n123/n123.json/
     re_path(
         r'^individual/(?P<id>[^/]+)/(?P<id2>[^/]+)\.(?P<fmt>[^/]+)/$',

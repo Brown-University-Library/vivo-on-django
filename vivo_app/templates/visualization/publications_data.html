@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ name }} Publication Timeline{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/network_graph.css' %}">{% endblock %}
+{% block content %}
+{% include "includes/prepared_search.html" %}
+<div class="network-page publication-chart-page">
+  <h1 class="researcherName">{{ name }}</h1>
+  <div class="row">
+    <div class="col-md-9">
+      <div id="descriptionMsg">The publication history visualization for an organization is created with the information provided by each researcher associated with this organization under the Publications tab for their profile.</div>
+      <div id="errorMsg" class="alert alert-warning{% if chart.matrix %} hidden{% endif %}" role="alert">No publication data is available for this organization.</div>
+      <div class="btn-group network-scope" role="group" aria-label="Publication history range">
+        <button id="showLevel1" type="button" class="btn btn-info" title="Show publication history for the last 10 years">Last 10 years</button>
+        <button id="showLevel2" type="button" class="btn btn-default" title="Show all publication history">All history</button>
+      </div>
+      <svg id="svgElement" class="network-graph" width="960" height="700" viewBox="0 0 960 700" role="img" aria-label="Publication history"></svg>
+    </div>
+    <div class="col-md-3 network-options">
+      <a class="btn btn-default btn-lg" href="{% url 'visualization_collab' id %}">Collaboration Network</a>
+      <a class="btn btn-primary btn-lg" href="{% url 'visualization_publications' id %}">Publication History</a>
+      <a class="btn btn-default btn-lg" href="{% url 'visualization_research' id %}">Research Areas</a>
+      <p>&nbsp;</p>
+      <div id="legend"><p><b>Legend</b></p><ul id="legendList" class="legend"></ul></div>
+      <p><b>Options</b></p>
+      <p><a href="{% url 'display_show' id %}">View Organization's Profile</a></p>
+      <p><label for="showDetails">Show details on mouse hover</label> <input id="showDetails" type="checkbox" checked></p>
+      <p><b>Data</b></p>
+      <p><a href="{% url 'visualization_publications_csv' id %}" target="_blank" rel="noopener">Download data (CSV)</a></p>
+      <p><a href="{% url 'visualization_publications_json' id %}" target="_blank" rel="noopener">Download data (JSON)</a></p>
+      <p><button id="embedHtml" class="network-link-button" type="button">Embed SVG Code</button></p>
+      <p><button id="downloadPng" class="network-link-button" type="button">Download Image (PNG)</button></p>
+      <p id="downloadStatus" class="hidden" role="status"></p>
+    </div>
+  </div>
+  <div id="embedHtmlDiv" class="hidden"><p>Copy the following HTML to embed the SVG into your own page</p><textarea id="embedHtmlText" rows="10" aria-label="SVG code"></textarea></div>
+  <div id="tooltip" class="network-tooltip hidden" role="status"></div>
+</div>
+{{ chart|json_script:"publication-chart-data" }}
+{{ id|json_script:"publication-chart-id" }}
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/d3.v4.min.js' %}"></script><script src="{% static 'js/publication_chart.js' %}"></script>{% endblock %}

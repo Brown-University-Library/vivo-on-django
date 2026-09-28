@@ -34,6 +34,7 @@ class LocalPageDataMiddleware:
         response = None
         supported = {
             'home_index',
+            'home_status',
             'search',
             'display_show',
             'organization_publications_tsv',
@@ -42,10 +43,14 @@ class LocalPageDataMiddleware:
             'visualization_coauthor',
             'visualization_coauthor_treemap',
             'visualization_collab',
+            'visualization_publications',
+            'visualization_research',
             'search_facets',
             'people',
             'organizations',
             'individual_redirect',
+            'individual_export',
+            'old_image',
             'prepared_asset',
             'prepared_document',
             'source_image',

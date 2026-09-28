@@ -4,6 +4,7 @@ import datetime
 import json
 import logging
 import random
+import re
 import sys
 from urllib.parse import quote_plus, urlencode
 
@@ -31,8 +32,18 @@ from .lib.page_rendering import data_unavailable, prepared_response, query_pairs
 from .lib.prepared_data import PageDataError
 from .lib.source_formats import profile_json_data
 from .lib.source_graph import graph_csv, graph_page_data, graph_subject_data, visualization_graph
+from .lib.source_org_charts import publication_history_csv, publication_history_data, research_areas_data
 from .lib.source_pages import facet_values_data, organization_publications_data, search_json_data
-from .lib.source_requests import document_key, document_key_from_url, image_key, read_source
+from .lib.source_requests import (
+    document_key,
+    document_key_from_url,
+    image_key,
+    image_path,
+    read_source,
+    source_origin,
+    vitro_key,
+)
+from .lib.source_status import status_data
 from .lib.source_teams import custom_organization_members
 from .lib.version_helper import GatherCommitAndBranchData
 
@@ -215,9 +226,24 @@ def home_help_viz(request):
     return render_or_stub(request, 'home/help_viz.html')
 
 
-def home_status(request):
-    # Optionally include minimal status context later
-    return render_or_stub(request, 'home/status.html', context={})
+def home_status(request: HttpRequest) -> HttpResponse:
+    """
+    Reports whether the configured Solr index has searchable records.
+
+    Called by: config.urls
+    """
+    mode = settings.PAGE_DATA_MODE
+    if mode == 'prototype':
+        return render_or_stub(request, 'home/status.html', context={})
+    try:
+        if mode == 'prepared':
+            saved_response = get_response_data(request.path, query_pairs(request.GET))
+            if saved_response is None:
+                raise PageDataError('The status response is unavailable in prepared data.')
+            return prepared_response(saved_response)
+        return JsonResponse(status_data(mode))
+    except PageDataError:
+        return JsonResponse({'status': 'ERROR', 'message': 'The search status could not be checked.'}, status=500)
 
 
 def home_brown_classic(request, name=None):
@@ -455,16 +481,62 @@ def visualization_network(request: HttpRequest, identifier: str, kind: str) -> H
         return data_unavailable(exc)
 
 
-def visualization_publications(request, id):
-    """Publications visualization."""
-    context = {'id': id}
-    return render_or_stub(request, 'visualization/publications.html', context)
+def visualization_publications(request: HttpRequest, id: str, fmt: str = '') -> HttpResponse:
+    """
+    Serves an organization's publication timeline and its source-backed formats.
+
+    Called by: config.urls
+    """
+    try:
+        if settings.PAGE_DATA_MODE == 'prototype':
+            return render_or_stub(request, 'visualization/publications.html', {'id': id})
+        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
+            saved = get_response_data(request.path, query_pairs(request.GET))
+            if saved is not None:
+                return prepared_response(saved)
+            raise PageDataError('The publication chart is unavailable.')
+        if id.startswith('team-') or fmt not in {'', 'json', 'csv'} or request.GET:
+            raise PageDataError('The publication chart request is unsupported.')
+        name, data = publication_history_data(id, settings.PAGE_DATA_MODE)
+        if fmt == 'json':
+            return JsonResponse(data)
+        if fmt == 'csv':
+            return HttpResponse(
+                publication_history_csv(data).encode(),
+                content_type='text/csv',
+                headers={'Content-Disposition': f'attachment; filename="{id}.csv"'},
+            )
+        return render(request, 'visualization/publications_data.html', {'id': id, 'name': name, 'chart': data})
+    except PageDataError as exc:
+        return data_unavailable(exc)
 
 
-def visualization_research(request, id):
-    """Research visualization."""
-    context = {'id': id}
-    return render_or_stub(request, 'visualization/research.html', context)
+def visualization_research(request: HttpRequest, id: str, fmt: str = '') -> HttpResponse:
+    """
+    Serves an organization's shared research areas and the underlying data.
+
+    Called by: config.urls
+    """
+    try:
+        if settings.PAGE_DATA_MODE == 'prototype':
+            return render_or_stub(request, 'visualization/research.html', {'id': id})
+        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
+            saved = get_response_data(request.path, query_pairs(request.GET))
+            if saved is not None:
+                return prepared_response(saved)
+            raise PageDataError('The research chart is unavailable.')
+        if fmt not in {'', 'json'} or request.GET:
+            raise PageDataError('The research chart request is unsupported.')
+        name, data = research_areas_data(id, settings.PAGE_DATA_MODE)
+        if fmt == 'json':
+            return JsonResponse(data)
+        return render(
+            request,
+            'visualization/research_data.html',
+            {'id': id, 'name': name, 'chart': data, 'is_team': id.startswith('team-')},
+        )
+    except PageDataError as exc:
+        return data_unavailable(exc)
 
 
 # Edit functionality
@@ -635,39 +707,82 @@ def organizations(request):
     return render_or_stub(request, 'legacy/organizations.html')
 
 
-def old_image(request, id, file_name):
-    """Serve old image files."""
-    # TODO: Implement file serving logic
-    return page_not_found(request)
+def old_image(request: HttpRequest, id: str, file_name: str) -> HttpResponse:
+    """
+    Redirects a legacy image path to its current image location.
+
+    Called by: config.urls
+    """
+    path = image_path(f'/file/{id}/{file_name}')
+    if path is None:
+        return page_not_found(request)
+    try:
+        if settings.PAGE_DATA_MODE == 'replay':
+            location = '/source-images' + path
+        else:
+            location = source_origin('images') + path
+    except PageDataError as exc:
+        return data_unavailable(exc)
+    return HttpResponse(status=301, headers={'Location': location})
 
 
 # Legacy VIVO individual handlers
-def individual_redirect(request, id):
-    """Handle legacy /individual/<id>/ redirect semantics.
+def individual_redirect(request: HttpRequest, id: str) -> HttpResponse:
+    """
+    Redirects a VIVO record to the selected HTML or original-data representation.
 
-    For now, return a simple stub or JSON with the id, keeping behavior predictable.
+    Called by: config.urls
     """
     try:
-        saved_response = get_response_data(request.path, query_pairs(request.GET))
-        if saved_response is not None:
-            return prepared_response(saved_response)
+        if settings.PAGE_DATA_MODE == 'prototype':
+            return render_or_stub(request, 'vivo/individual_redirect.html', {'id': id})
+        if settings.PAGE_DATA_MODE == 'prepared':
+            saved_response = get_response_data(request.path, query_pairs(request.GET))
+            if saved_response is not None:
+                return prepared_response(saved_response)
+        if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', id) is None:
+            raise PageDataError('The requested VIVO identifier is unsupported.')
+        formats = {'application/json': 'jsonld', 'text/turtle': 'ttl', 'application/rdf+xml': 'rdf'}
+        fmt = formats.get(request.META.get('HTTP_ACCEPT', ''))
+        path = (
+            reverse('individual_export_public', kwargs={'id': id, 'id2': id, 'fmt': fmt})
+            if fmt
+            else reverse('display_show_public', args=[id])
+        )
+        return HttpResponse(status=303, headers={'Location': request.build_absolute_uri(path)})
     except PageDataError as exc:
         return data_unavailable(exc)
-    context = {'id': id}
-    return render_or_stub(request, 'vivo/individual_redirect.html', context)
 
 
-def individual_export(request, id, fmt, id2=None):
-    """Export legacy individual data in various formats (e.g., .json).
-
-    Supports both /individual/<id>.<fmt>/ and /individual/<id>/<id2>.<fmt>/ patterns.
+def individual_export(request: HttpRequest, id: str, fmt: str, id2: str | None = None) -> HttpResponse:
     """
-    payload = {'id': id, 'format': fmt}
-    if id2 is not None:
-        payload['id2'] = id2
-    if fmt.lower() == 'json' or request.GET.get('format') == 'json':
-        return JsonResponse(payload)
-    return HttpResponse(f'Export for {id} as {fmt}'.encode(), content_type='text/plain')
+    Returns unchanged bytes from an original VIVO representation.
+
+    Called by: config.urls
+    """
+    try:
+        if settings.PAGE_DATA_MODE == 'prototype':
+            payload = {'id': id, 'format': fmt}
+            if id2 is not None:
+                payload['id2'] = id2
+            if fmt.lower() == 'json' or request.GET.get('format') == 'json':
+                return JsonResponse(payload)
+            return HttpResponse(f'Export for {id} as {fmt}'.encode(), content_type='text/plain')
+        if settings.PAGE_DATA_MODE == 'prepared':
+            saved_response = get_response_data(request.path, query_pairs(request.GET))
+            if saved_response is not None:
+                return prepared_response(saved_response)
+            raise PageDataError('The VIVO representation is unavailable.')
+        if settings.PAGE_DATA_MODE not in {'live', 'replay'} or id2 != id or request.GET:
+            raise PageDataError('The requested VIVO representation is unsupported.')
+        key = vitro_key(id, fmt)
+        response = read_source(key, settings.PAGE_DATA_MODE)
+        content_type = {'jsonld': 'application/json', 'ttl': 'text/turtle', 'rdf': 'application/rdf+xml'}[fmt]
+        result = HttpResponse(response.body, status=response.status, content_type=content_type + '; charset=utf-8')
+        result['X-Content-Type-Options'] = 'nosniff'
+        return result
+    except PageDataError as exc:
+        return data_unavailable(exc)
 
 
 # Editor fast search (de-prioritized functionality; stub only)
