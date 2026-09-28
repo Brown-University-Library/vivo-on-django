@@ -127,6 +127,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 ### Business logic placement
 
 - Put domain logic, integrations, and reusable operations in `vivo_app/lib/`.
+- Keep conversion-only capture, validation, and browser comparison logic in `tools/`. A Django management command may remain as a small entry point for a tool.
 - If multiple endpoints share logic, move that shared logic into `vivo_app/lib/` and keep each view focused on handling the request and response.
 - Prefer testable functions in `vivo_app/lib/` that accept plain Python values; pass Django request objects only when necessary for a specific reason.
 
@@ -260,6 +261,8 @@ When implementing a change (especially from an issue/task):
 | `vivo_app/lib/display.py` | Sample display and publication data; entity types currently come from ID-prefix guesses. |
 | `vivo_app/lib/home.py`, `vivo_app/lib/assets.py` | Sample book-cover pages and random homepage background selection. |
 | `vivo_app/lib/visualization.py` | Visualization helpers that return local sample data. |
+| `vivo_app/lib/prepared_data.py`, `vivo_app/lib/recorded_responses.py`, `vivo_app/lib/source_*.py` | Readers and processors used while Django serves prepared, replayed, or live pages. |
+| `tools/`, `docs/conversion/` | Conversion checks, bounded source capture, saved-response validation command, and comparison findings. |
 | `vivo_app/templates/`, `vivo_app/static/` | Page templates, shared includes, CSS, JavaScript, and images; follow the template actually selected by each view. |
 | `vivo_app/context_processors.py` | Shared template values from settings. |
 | `vivo_app/views_auth.py`, `vivo_app/forms.py`, `vivo_app/models.py`, `vivo_app/migrations/` | Existing authentication and profile code. Its presence does not expand conversion scope. |

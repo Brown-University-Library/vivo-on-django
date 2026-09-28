@@ -1,6 +1,6 @@
 # Checking saved upstream responses
 
-The reader in [recorded_responses.py](../vivo_app/lib/recorded_responses.py) checks saved GET responses and returns their unchanged bytes. It never opens a network connection, writes files, or substitutes sample data for a missing recording. It is preparation for service integration; the current page helpers still use their existing prototype data.
+The runtime reader in [recorded_responses.py](../vivo_app/lib/recorded_responses.py) checks saved GET responses and returns their unchanged bytes. It never opens a network connection, writes files, or substitutes sample data for a missing recording. The separate [validation command](../tools/validate_recordings.py) checks selected cases for development work. Replay mode uses the reader to supply saved upstream responses to page processing.
 
 Keep the manifest and all response bodies in a directory outside every Git checkout. The reader enforces that rule for synthetic examples too. It rejects missing files, changed checksums, duplicate requests, incomplete case references, and files that escape the recording directory. These checks establish file integrity, not that the data is authentic or that every dependency needed by a page has been saved.
 
@@ -9,14 +9,14 @@ Contents:
 - [Run a local check](#run-a-local-check)
 - [Manifest format](#manifest-format)
 - [Use a saved response](#use-a-saved-response)
-- [Remaining integration work](#remaining-integration-work)
+- [Current integration and remaining work](#current-integration-and-remaining-work)
 
 ## Run a local check
 
 From the repository root, run:
 
 ```bash
-uv run python -m vivo_app.lib.recorded_responses ../recordings/manifest.json --case SEARCH --case PROFILE --require-recorded
+uv run -m tools.validate_recordings ../recordings/manifest.json --case SEARCH --case PROFILE --require-recorded
 ```
 
 The command reads all entries in the manifest and validates their bodies, then checks the selected case names. It prints the declared data kind and response counts. It exits with a nonzero status for invalid or missing data. `--require-recorded` also rejects a manifest marked `synthetic`; it cannot verify the provenance of a file merely marked `recorded`. Omit that option only when deliberately checking invented examples during tool development.

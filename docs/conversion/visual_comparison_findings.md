@@ -8,7 +8,7 @@ The narrow organization page matched pixel for pixel. At 1440 pixels wide, 5,659
 
 Browser inspection reported the same family, weight, size, width, and height for the affected elements. The public page receives the regular Source Sans Pro file as WOFF2. Prepared mode serves a TTF containing the same font version and the same character widths. This evidence points to Chrome drawing the synthesized bold edges slightly differently for those two file formats.
 
-Matching the font files is required by the existing appearance goal. On September 28, 2026, the application replaced the prepared TTF declaration with the exact reference WOFF2 files and character ranges, served as application static assets. Both prototype and prepared pages now use those files. The icon font already matched byte for byte. See [the font notes](fonts.md) for sources and behavior. Existing prepared bundles remain unchanged; the font update is tracked with application code. The older screenshot counts above describe the TTF implementation and must not be treated as an accepted difference.
+Matching the font files is required by the existing appearance goal. On September 28, 2026, the application replaced the prepared TTF declaration with the exact reference WOFF2 files and character ranges, served as application static assets. Both prototype and prepared pages now use those files. The icon font already matched byte for byte. See [the font notes](../fonts.md) for sources and behavior. Existing prepared bundles remain unchanged; the font update is tracked with application code. The older screenshot counts above describe the TTF implementation and must not be treated as an accepted difference.
 
 ## Homepage
 
