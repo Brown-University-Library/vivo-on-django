@@ -9,7 +9,7 @@ This first installation runs Django with the saved prepared-data bundle. It chec
 3. Install the locked application dependencies with `uv sync --locked`.
 4. Restrict access to the site through the server or proxy configuration while this work is in progress. Django's `ALLOWED_HOSTS_JSON` checks the requested hostname; it is not an access restriction.
 
-The first installation needs no Solr, VIVO, visualization-service, or Rails database values. The commented source settings in `example.env` record what later work will need, but Django does not read them yet.
+The first installation needs no Solr, VIVO, visualization-service, or Rails database values. Prepared mode does not request those services. When the development installation moves to live visualization data, set `VIZ_SERVICE_URL` in its private `.env` to the public production visualization HTTPS root ending in `/data/viz`. Check that the development server can read that service directly. Staging visualization data can differ from the public site's data and must not be used for public-page comparisons.
 
 ## Check and start Django
 
