@@ -318,7 +318,9 @@ def organization_publications_tsv(request: HttpRequest, id: str) -> HttpResponse
             raise PageDataError('The organization publication download is unavailable.')
         if request.GET:
             raise PageDataError('Organization publication query options are unsupported.')
-        body = organization_publications_data(id, settings.PAGE_DATA_MODE, extra_member_ids=custom_organization_members(id))
+        body = organization_publications_data(
+            id, settings.PAGE_DATA_MODE, extra_member_ids=custom_organization_members(id, settings.PAGE_DATA_MODE)
+        )
         return HttpResponse(
             body.encode(),
             content_type='text/csv',

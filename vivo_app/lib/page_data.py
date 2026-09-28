@@ -109,7 +109,9 @@ def get_organization_data(path: str, query: list[tuple[str, str]]) -> dict[str, 
             from vivo_app.lib.source_pages import organization_data
             from vivo_app.lib.source_teams import custom_organization_members
 
-            result = organization_data(identifier, selected_mode(), extra_member_ids=custom_organization_members(identifier))
+            result = organization_data(
+                identifier, selected_mode(), extra_member_ids=custom_organization_members(identifier, selected_mode())
+            )
     return result
 
 

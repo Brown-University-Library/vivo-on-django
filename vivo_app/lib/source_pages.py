@@ -795,8 +795,6 @@ def organization_members(
                         'general_position': 'general position',
                     }
                 )
-        if found != set(extra_member_ids):
-            raise PageDataError('Solr did not return every custom-organization member.')
     return members
 
 

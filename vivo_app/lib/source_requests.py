@@ -19,6 +19,23 @@ SEARCH_FIELDS = (
 )
 FACETS = ('record_type', 'affiliations', 'research_areas', 'published_in')
 FACET_TITLES = ('Type', 'Brown Affiliations', 'Research Areas', 'Published In')
+COMMUNITY_RESEARCH_AREAS = (
+    'community engagement',
+    'engaged scholarship',
+    'engaged teaching',
+    'engaged research',
+    'community-based participatory research',
+    'community-based learning and research',
+    'public service',
+    'civic engagement',
+    'service learning',
+    'public scholarship',
+    'publicly engaged scholarship',
+    'scholarship of engagement',
+    'community-based scholarship',
+    'broader impact',
+    'community-based',
+)
 MAX_RESPONSE_BYTES = 3_000_000
 MAX_DOCUMENT_BYTES = 10_000_000
 
@@ -160,6 +177,27 @@ def team_member_key(identifiers: list[str]) -> RequestKey:
         tuple(
             (key, 'id,record_type,json_txt,display_name_s,thumbnail_file_path_s') if key == 'fl' else (key, value)
             for key, value in base.query
+        ),
+    )
+
+
+def community_research_members_key() -> RequestKey:
+    """
+    Requests the people selected by the public community-engagement directory.
+
+    Called by: source_teams.custom_organization_members(), tests
+    """
+    values = ' OR '.join(quoted(area) for area in COMMUNITY_RESEARCH_AREAS)
+    return RequestKey(
+        'solr',
+        '/select',
+        (
+            ('q', '*'),
+            ('fq', 'record_type:PEOPLE'),
+            ('fq', f'research_areas:({values})'),
+            ('fl', 'id,record_type'),
+            ('rows', '500'),
+            ('wt', 'json'),
         ),
     )
 

@@ -180,7 +180,7 @@ def capture_journey(
         if organization_id.startswith('team-'):
             team_data(organization_id, 'live', reader)
         else:
-            extras = custom_organization_members(organization_id)
+            extras = custom_organization_members(organization_id, 'live', reader)
             organization_data(organization_id, 'live', reader, extras)
             organization_publications_data(organization_id, 'live', reader, extras)
     for key in image_requests(reader.responses):

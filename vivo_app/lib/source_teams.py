@@ -21,7 +21,7 @@ from vivo_app.lib.source_pages import (
     response_object,
     thumbnail_url,
 )
-from vivo_app.lib.source_requests import read_source, team_member_key
+from vivo_app.lib.source_requests import community_research_members_key, read_source, team_member_key
 
 CUSTOM_ORGANIZATION_IDS = {'org-brown-univ-dept124', 'org-brown-univ-dept148'}
 
@@ -47,7 +47,7 @@ def source_definitions() -> dict[str, object]:
     return value
 
 
-def custom_organization_members(identifier: str) -> list[str]:
+def custom_organization_members(identifier: str, mode: str, reader: SourceReader | None = None) -> list[str]:
     """
     Reads added member IDs for a scoped custom organization.
 
@@ -55,8 +55,8 @@ def custom_organization_members(identifier: str) -> list[str]:
     """
     if identifier not in CUSTOM_ORGANIZATION_IDS:
         return []
-    if identifier == 'org-brown-univ-dept148':
-        raise PageDataError('This organization needs a research-area member query that is not connected yet.')
+    if reader is None:
+        reader = read_source
     definitions = source_definitions()
     organizations = definitions.get('organizations')
     entry = organizations.get(identifier) if isinstance(organizations, dict) else None
@@ -69,7 +69,17 @@ def custom_organization_members(identifier: str) -> list[str]:
         raise PageDataError('The custom-organization member definition is missing or invalid.')
     if len(set(members)) != len(members):
         raise PageDataError('The custom-organization member list contains duplicates.')
-    return members
+    result = list(members)
+    if identifier == 'org-brown-univ-dept148':
+        response = response_object(community_research_members_key(), mode, reader)
+        docs, total = documents(response)
+        if total != len(docs):
+            raise PageDataError('The research-area member query exceeded its response limit.')
+        for doc in docs:
+            if first_text(doc.get('record_type')) != 'PEOPLE':
+                raise PageDataError('Solr returned an unrelated research-area member.')
+            result.append(record_id(doc))
+    return list(dict.fromkeys(result))
 
 
 def team_definition(identifier: str) -> tuple[str, list[str]]:

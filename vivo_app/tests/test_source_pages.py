@@ -25,6 +25,7 @@ from vivo_app.lib.source_pages import (
     search_json_data,
 )
 from vivo_app.lib.source_requests import (
+    community_research_members_key,
     document_key,
     image_key,
     member_details_key,
@@ -401,6 +402,57 @@ class SourcePageTests(TestCase):
         with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
             self.assertEqual(self.get_page('/display/invented-sparse.json').status_code, 503)
 
+    def test_nested_profile_json_converts_and_sorts_entries(self) -> None:
+        """
+        Checks publication, appointment, training, credential, and collaborator JSON fields.
+        """
+        uri = 'http://vivo.brown.edu/individual/invented-nested'
+        raw = {
+            'uri': uri,
+            'name': 'Invented Nested',
+            'contributor_to': [
+                {'title': 'Earlier', 'date': '2010-01-01', 'url': 'https://example.invalid/earlier'},
+                {'title': 'Later', 'date': '2024-01-01'},
+            ],
+            'appointments': [
+                {'uri': 'invented-old', 'name': 'Older', 'start_date': '2010-01-01'},
+                {
+                    'uri': 'invented-new',
+                    'name': 'Newer',
+                    'hospital_name': 'Example Hospital',
+                    'start_date': '2020-01-01',
+                    'end_date': 'invalid',
+                },
+            ],
+            'credentials': [
+                {'uri': 'invented-earlier', 'name': 'Earlier Credential'},
+                {'uri': 'invented-credential', 'name': 'Example Credential'},
+            ],
+            'training': [{'name': 'Example Training', 'start_date': '2018-01-01T00:00:00'}],
+            'collaborators': [{'uri': 'invented-b', 'name': 'B'}, {'uri': 'invented-a', 'name': 'A'}],
+        }
+        doc = {'id': uri, 'record_type': ['PEOPLE'], 'json_txt': [json.dumps(raw)]}
+        self.responses[profile_export_key('invented-nested')] = self.solr_response([doc], 1)
+        self.responses[visualization_key('coauthors')] = RecordedResponse(
+            200, (('content-type', 'application/json'),), json.dumps({uri: True}).encode()
+        )
+        self.responses[visualization_key('collaborators')] = RecordedResponse(
+            200, (('content-type', 'application/json'),), json.dumps({uri: True}).encode()
+        )
+        with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
+            response = self.get_page('/display/invented-nested.json')
+        self.assertEqual(response.status_code, 200)
+        body = json.loads(response.content)
+        self.assertEqual([row['title'] for row in body['contributor_to']], ['Later', 'Earlier'])
+        self.assertEqual(body['contributor_to'][1]['external_url'], 'https://example.invalid/earlier')
+        self.assertEqual(body['appointments'][0]['org_name'], 'Example Hospital')
+        self.assertIsNone(body['appointments'][0]['end_date'])
+        self.assertEqual([row['id'] for row in body['credentials']], ['invented-credential', 'invented-earlier'])
+        self.assertEqual(body['training'][0]['start_date'], '2018-01-01')
+        self.assertEqual([row['name'] for row in body['collaborators']], ['A', 'B'])
+        self.assertTrue(body['has_coauthors'])
+        self.assertTrue(body['has_collaborators'])
+
     def test_active_team_uses_external_members_and_solr_profiles(self) -> None:
         """
         Checks a configured active team builds its faculty rows without a team Solr record.
@@ -458,7 +510,7 @@ class SourcePageTests(TestCase):
                 json.dumps({'organizations': {'org-brown-univ-dept124': {'extra_member_ids': ['invented-b']}}})
             )
             with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
-                extras = custom_organization_members('org-brown-univ-dept124')
+                extras = custom_organization_members('org-brown-univ-dept124', 'live')
                 result = organization_data('org-example', 'live', self.read, extras)
                 faculty = result['faculty_positions']
                 self.assertIsInstance(faculty, list)
@@ -467,8 +519,37 @@ class SourcePageTests(TestCase):
                 self.assertEqual([row['name'] for row in faculty], ['Another Researcher', 'Researcher, Invented'])
                 export = organization_publications_data('org-example', 'live', self.read, extras)
                 self.assertIn('Another publication', export)
+                self.responses[team_member_key(['invented-b'])] = self.solr_response([], 0)
+                missing = organization_data('org-example', 'live', self.read, extras)
+                missing_faculty = missing['faculty_positions']
+                self.assertIsInstance(missing_faculty, list)
+                if not isinstance(missing_faculty, list):
+                    self.fail('Organization faculty positions are not a list.')
+                self.assertEqual(len(missing_faculty), 1)
                 with self.assertRaises(PageDataError):
-                    custom_organization_members('org-brown-univ-dept148')
+                    custom_organization_members('org-brown-univ-dept148', 'live', self.read)
+
+    def test_research_area_organization_combines_query_and_fixed_members(self) -> None:
+        """
+        Checks the selected research areas and fixed IDs form one bounded member list.
+        """
+        key = community_research_members_key()
+        self.assertTrue(any(name == 'fq' and value.startswith('research_areas:(') for name, value in key.query))
+        area_member = {'id': 'http://vivo.brown.edu/individual/invented-c', 'record_type': ['PEOPLE']}
+        self.responses[key] = self.solr_response([area_member], 1)
+        with TemporaryDirectory() as directory:
+            manifest = Path(directory) / 'members.json'
+            manifest.write_text(
+                json.dumps({'organizations': {'org-brown-univ-dept148': {'extra_member_ids': ['invented-b']}}})
+            )
+            with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
+                self.assertEqual(
+                    custom_organization_members('org-brown-univ-dept148', 'live', self.read),
+                    ['invented-b', 'invented-c'],
+                )
+                self.responses[key] = self.solr_response([area_member], 501)
+                with self.assertRaises(PageDataError):
+                    custom_organization_members('org-brown-univ-dept148', 'live', self.read)
 
     def test_capture_includes_organization_facets_and_document(self) -> None:
         """
