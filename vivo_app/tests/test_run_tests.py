@@ -11,7 +11,8 @@ class TestRunnerTests(SimpleTestCase):
         """
         Checks that the test runner does not inherit the application's private data mode.
         """
-        with patch.dict(os.environ, {'PAGE_DATA_MODE': 'prepared'}):
+        with patch.dict(os.environ, {'PAGE_DATA_MODE': 'prepared', 'STATIC_URL': 'https://example.invalid/assets/'}):
             configure_test_environment()
 
             self.assertEqual(os.environ['PAGE_DATA_MODE'], 'prototype')
+            self.assertEqual(os.environ['STATIC_URL'], '/static/')

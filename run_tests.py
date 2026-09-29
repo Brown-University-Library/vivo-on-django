@@ -11,10 +11,10 @@ Usage examples:
 Also takes a -v or --verbose flag to show each test's name, docstring, and result.
 
 Uses config.settings unless DJANGO_SETTINGS_MODULE is already set. The runner
-selects prototype page data before Django loads the private .env so the complete
-suite has a consistent baseline. Individual tests override that setting when
-they check prepared, replay, live, or invalid modes. Django creates and destroys
-a test database when needed.
+selects prototype page data and local static URLs before Django loads the
+private .env. This gives the suite a consistent baseline. Individual tests
+override the mode when they check prepared, replay, live, or invalid modes.
+Django creates and destroys a test database when needed.
 """
 
 import argparse
@@ -62,11 +62,12 @@ def normalize_test_label(test_label: str) -> str:
 
 def configure_test_environment() -> None:
     """
-    Selects the page-data baseline used by the complete test suite.
+    Selects the page-data and static URL baseline used by the complete test suite.
 
     Called by: run_tests()
     """
     os.environ['PAGE_DATA_MODE'] = 'prototype'
+    os.environ['STATIC_URL'] = '/static/'
 
 
 def run_tests(test_label: str, verbose: bool) -> int:

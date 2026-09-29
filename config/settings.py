@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import json
+import mimetypes
 import os
 from pathlib import Path
 
@@ -149,6 +150,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
+mimetypes.add_type('font/woff2', '.woff2')
 STATIC_URL = os.environ['STATIC_URL']
 STATIC_ROOT = os.environ['STATIC_ROOT']  # needed for collectstatic command
 
