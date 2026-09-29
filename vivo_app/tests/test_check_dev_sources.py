@@ -50,17 +50,41 @@ class CheckDevSourcesTests(SimpleTestCase):
         self.assertEqual(exit_status.exception.code, 1)
         self.assertIn('missing or unreadable', output.getvalue())
 
-    @override_settings(PAGE_DATA_MODE='live', SOLR_URL='https://example.invalid/solr/example')
-    def test_selected_sources_report_without_returned_records(self) -> None:
+    @override_settings(PAGE_DATA_MODE='prepared', PREPARED_FIXTURE_DIR='missing-directory')
+    def test_selected_sources_skip_unrelated_page_data_checks(self) -> None:
         """
-        Checks selected probes return status and omit response bodies.
+        Checks source probes succeed without a prepared directory or mode check.
         """
         output = io.StringIO()
-        with patch('vivo_app.management.commands.check_dev_sources.source_check', return_value={'status': 'ok'}) as source:
+        with (
+            patch('vivo_app.management.commands.check_dev_sources.source_check', return_value={'status': 'ok'}) as source,
+            patch('vivo_app.management.commands.check_dev_sources.prepared_check') as prepared,
+            patch('vivo_app.management.commands.check_dev_sources.selected_mode') as mode,
+        ):
             call_command('check_dev_sources', '--source', 'solr', '--source', 'solr', '--source', 'viz', stdout=output)
         report = json.loads(output.getvalue())
+        self.assertEqual(list(report), ['sources'])
         self.assertEqual(list(report['sources']), ['solr', 'viz'])
         self.assertEqual(source.call_count, 2)
+        prepared.assert_not_called()
+        mode.assert_not_called()
+
+    def test_failed_source_check_exits_after_reporting_its_reason(self) -> None:
+        """
+        Checks source failures remain visible and cause a nonzero exit.
+        """
+        output = io.StringIO()
+        with (
+            patch(
+                'vivo_app.management.commands.check_dev_sources.source_check',
+                return_value={'status': 'error', 'reason': 'solr source request failed.'},
+            ),
+            self.assertRaises(SystemExit) as exit_status,
+        ):
+            call_command('check_dev_sources', '--source', 'solr', stdout=output)
+        self.assertEqual(exit_status.exception.code, 1)
+        report = json.loads(output.getvalue())
+        self.assertEqual(report['sources']['solr']['reason'], 'solr source request failed.')
 
     def test_vivo_needs_an_existing_record_id(self) -> None:
         """

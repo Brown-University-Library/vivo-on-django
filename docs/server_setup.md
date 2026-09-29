@@ -38,7 +38,7 @@ The first server comparison should use the browser command's `compare-target` mo
 
 ### Repeatable checks after a deployment
 
-Run these commands from the Django checkout on the development server. The command reads the private `.env` loaded by Django and prints status without printing source addresses or returned records. With no `--source` option, it makes no service requests.
+Run these commands from the Django checkout on the development server. The command reads the private `.env` loaded by Django and prints status without printing source addresses or returned records. With no `--source` option, it checks the selected page-data mode and makes no service requests.
 
 ```console
 uv run ./manage.py check_dev_sources
@@ -56,6 +56,6 @@ uv run ./manage.py check_dev_sources --source vivo --vivo-id EXISTING_RECORD_ID
 uv run ./manage.py check_dev_sources --source books
 ```
 
-The Solr check sends one count query. The visualization check reads one graph-availability list. The VIVO check reads one existing record's JSON-LD export and prints its HTTP status and a SHA-256 digest, so the same record can be checked against another configured backend without printing its content. A 404 means that record was not found at the configured backend. The books check reads the active homepage rows and checks the image prefix; it needs the `staging` dependency group for the database driver. Each selected source check exits nonzero on failure. These checks use Django's source client and make read-only requests; they do not switch `PAGE_DATA_MODE` or change `.env`.
+When `--source` is supplied, the command checks only the named live services. It does not validate `PAGE_DATA_MODE` or look for prepared data, so a missing prepared manifest cannot cause a source check to fail. The Solr check sends one count query. The visualization check reads one graph-availability list. The VIVO check reads one existing record's JSON-LD export and prints its HTTP status and a SHA-256 digest, so the same record can be checked against another configured backend without printing its content. A 404 means that record was not found at the configured backend. The books check reads the active homepage rows and checks the image prefix; it needs the `staging` dependency group for the database driver. Each selected source check exits nonzero on failure. These checks use Django's source client and make read-only requests; they do not switch `PAGE_DATA_MODE` or change `.env`.
 
 After changing `.env`, restart Django and repeat the relevant command. Request `/version/` to confirm which code revision is deployed. Then load the root page and a selected search and profile through the existing access restriction. Compare source-backed results with the public site only after confirming which Solr index, VIVO backend, and visualization service the development process actually uses. The nightly Solr copy may have a different refresh time, and the development VIVO backend may contain different records.

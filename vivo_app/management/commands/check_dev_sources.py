@@ -84,30 +84,33 @@ class Command(BaseCommand):
 
     def handle(self, *args: object, **options: object) -> None:
         """
-        Prints a compact report and exits nonzero when a selected check fails.
+        Checks selected live sources independently, or checks the selected page-data mode.
 
         Called by: Django management command runner
         """
-        try:
-            mode = selected_mode()
-            mode_result: dict[str, object] = {'status': 'ok', 'value': mode}
-        except PageDataError as exc:
-            mode_result = {'status': 'error', 'reason': str(exc)}
-            mode = settings.PAGE_DATA_MODE
-        report: dict[str, object] = {'page_data_mode': mode_result}
-        if mode == 'prepared':
-            report['prepared_bundle'] = prepared_check()
-        selected = options.get('source')
-        vivo_id = options.get('vivo_id')
-        if isinstance(selected, list) and isinstance(vivo_id, str):
-            report['sources'] = {name: source_check(name, vivo_id) for name in dict.fromkeys(selected)}
+        requested = options.get('source')
+        source_names = [name for name in requested if isinstance(name, str)] if isinstance(requested, list) else []
+        requested_id = options.get('vivo_id')
+        vivo_id = requested_id if isinstance(requested_id, str) else ''
+        report: dict[str, object]
+        if source_names:
+            sources = {name: source_check(name, vivo_id) for name in dict.fromkeys(source_names)}
+            report = {'sources': sources}
+            failed = any(value['status'] != 'ok' for value in sources.values())
+        else:
+            try:
+                mode = selected_mode()
+                mode_result: dict[str, object] = {'status': 'ok', 'value': mode}
+            except PageDataError as exc:
+                mode_result = {'status': 'error', 'reason': str(exc)}
+                mode = settings.PAGE_DATA_MODE
+            report = {'page_data_mode': mode_result, 'sources': {}}
+            if mode == 'prepared':
+                report['prepared_bundle'] = prepared_check()
+            failed = mode_result['status'] != 'ok'
+            prepared = report.get('prepared_bundle')
+            if isinstance(prepared, dict):
+                failed = failed or prepared.get('status') != 'ok'
         self.stdout.write(json.dumps(report, indent=2))
-        failed = mode_result['status'] != 'ok'
-        prepared = report.get('prepared_bundle')
-        if isinstance(prepared, dict):
-            failed = failed or prepared.get('status') != 'ok'
-        sources = report.get('sources')
-        if isinstance(sources, dict):
-            failed = failed or any(isinstance(value, dict) and value.get('status') != 'ok' for value in sources.values())
         if failed:
             raise SystemExit(1)
