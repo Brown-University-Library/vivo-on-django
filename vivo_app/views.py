@@ -146,7 +146,7 @@ def home_index(request):
         return redirect(redirect_url)
 
     try:
-        home_data = get_home_data(request.path, query_pairs(request.GET))
+        home_data = get_home_data(request.path_info, query_pairs(request.GET))
         if home_data is not None:
             backgrounds = home_data['backgrounds']
             if isinstance(backgrounds, list):
@@ -239,7 +239,7 @@ def home_status(request: HttpRequest) -> HttpResponse:
         return render_or_stub(request, 'home/status.html', context={})
     try:
         if mode == 'prepared':
-            saved_response = get_response_data(request.path, query_pairs(request.GET))
+            saved_response = get_response_data(request.path_info, query_pairs(request.GET))
             if saved_response is None:
                 raise PageDataError('The status response is unavailable in prepared data.')
             return prepared_response(saved_response)
@@ -281,15 +281,15 @@ def display_show(request, id):
                 if any(key != 'format' or value != 'json' for key, value in query_pairs(request.GET)):
                     raise PageDataError('Profile JSON query options are unsupported.')
                 return JsonResponse(profile_json_data(id.removesuffix('.json'), settings.PAGE_DATA_MODE))
-            saved_response = get_response_data(request.path, query_pairs(request.GET))
+            saved_response = get_response_data(request.path_info, query_pairs(request.GET))
             if saved_response is not None:
                 return prepared_response(saved_response)
         else:
             if id.startswith(('org-', 'team-')):
-                organization_data = get_organization_data(request.path, query_pairs(request.GET))
+                organization_data = get_organization_data(request.path_info, query_pairs(request.GET))
                 if organization_data is not None:
                     return render(request, 'display/organization_data.html', {'organization': organization_data})
-            profile_data = get_profile_data(request.path, query_pairs(request.GET))
+            profile_data = get_profile_data(request.path_info, query_pairs(request.GET))
             if profile_data is not None:
                 return render(
                     request,
@@ -340,7 +340,7 @@ def organization_publications_tsv(request: HttpRequest, id: str) -> HttpResponse
     """
     try:
         if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            saved = get_response_data(request.path, query_pairs(request.GET))
+            saved = get_response_data(request.path_info, query_pairs(request.GET))
             if saved is not None:
                 return prepared_response(saved)
             raise PageDataError('The organization publication download is unavailable.')
@@ -373,7 +373,7 @@ def visualization_graph_json(request: HttpRequest, id: str, kind: str) -> HttpRe
     """
     try:
         if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            saved = get_response_data(request.path, query_pairs(request.GET))
+            saved = get_response_data(request.path_info, query_pairs(request.GET))
             if saved is not None:
                 return prepared_response(saved)
             raise PageDataError('This visualization is unavailable.')
@@ -392,7 +392,7 @@ def visualization_graph_csv(request: HttpRequest, id: str, kind: str) -> HttpRes
     """
     try:
         if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            saved = get_response_data(request.path, query_pairs(request.GET))
+            saved = get_response_data(request.path_info, query_pairs(request.GET))
             if saved is not None:
                 return prepared_response(saved)
             raise PageDataError('This visualization download is unavailable.')
@@ -493,7 +493,7 @@ def visualization_publications(request: HttpRequest, id: str, fmt: str = '') -> 
         if settings.PAGE_DATA_MODE == 'prototype':
             return render_or_stub(request, 'visualization/publications.html', {'id': id})
         if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            saved = get_response_data(request.path, query_pairs(request.GET))
+            saved = get_response_data(request.path_info, query_pairs(request.GET))
             if saved is not None:
                 return prepared_response(saved)
             raise PageDataError('The publication chart is unavailable.')
@@ -523,7 +523,7 @@ def visualization_research(request: HttpRequest, id: str, fmt: str = '') -> Http
         if settings.PAGE_DATA_MODE == 'prototype':
             return render_or_stub(request, 'visualization/research.html', {'id': id})
         if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            saved = get_response_data(request.path, query_pairs(request.GET))
+            saved = get_response_data(request.path_info, query_pairs(request.GET))
             if saved is not None:
                 return prepared_response(saved)
             raise PageDataError('The research chart is unavailable.')
@@ -594,11 +594,11 @@ def search(request):
                 return JsonResponse(
                     search_json_data(pairs, settings.PAGE_DATA_MODE, request.build_absolute_uri('/')), safe=False
                 )
-            saved_response = get_response_data(request.path, query_pairs(request.GET))
+            saved_response = get_response_data(request.path_info, query_pairs(request.GET))
             if saved_response is not None:
                 return prepared_response(saved_response)
         else:
-            search_data = get_search_data(request.path, query_pairs(request.GET))
+            search_data = get_search_data(request.path_info, query_pairs(request.GET))
             if search_data is not None:
                 request.session['prepared_search_url'] = request.get_full_path()
                 return render(request, 'search/results.html', search_data)
@@ -621,7 +621,7 @@ def search_facets(request):
             if 'f_name' not in request.GET:
                 return JsonResponse(None, safe=False)
             return JsonResponse(facet_values_data(query_pairs(request.GET), settings.PAGE_DATA_MODE), safe=False)
-        saved_response = get_response_data(request.path, query_pairs(request.GET))
+        saved_response = get_response_data(request.path_info, query_pairs(request.GET))
         if saved_response is not None:
             return prepared_response(saved_response)
     except PageDataError as exc:
@@ -637,7 +637,7 @@ def prepared_document(request: HttpRequest, filename: str) -> HttpResponse:
     Called by: config.urls
     """
     try:
-        entry = get_response_data(request.path, query_pairs(request.GET))
+        entry = get_response_data(request.path_info, query_pairs(request.GET))
         if entry is None:
             raise Http404('Prepared document is unavailable.')
         response = prepared_response(entry)
@@ -712,7 +712,7 @@ def bot_detect_challenge(request: HttpRequest) -> HttpResponse:
 def people(request):
     """Legacy people listing."""
     try:
-        saved_response = get_response_data(request.path, query_pairs(request.GET))
+        saved_response = get_response_data(request.path_info, query_pairs(request.GET))
         if saved_response is not None:
             return prepared_response(saved_response)
     except PageDataError as exc:
@@ -723,7 +723,7 @@ def people(request):
 def organizations(request):
     """Legacy organizations listing."""
     try:
-        saved_response = get_response_data(request.path, query_pairs(request.GET))
+        saved_response = get_response_data(request.path_info, query_pairs(request.GET))
         if saved_response is not None:
             return prepared_response(saved_response)
     except PageDataError as exc:
@@ -761,7 +761,7 @@ def individual_redirect(request: HttpRequest, id: str) -> HttpResponse:
         if settings.PAGE_DATA_MODE == 'prototype':
             return render_or_stub(request, 'vivo/individual_redirect.html', {'id': id})
         if settings.PAGE_DATA_MODE == 'prepared':
-            saved_response = get_response_data(request.path, query_pairs(request.GET))
+            saved_response = get_response_data(request.path_info, query_pairs(request.GET))
             if saved_response is not None:
                 return prepared_response(saved_response)
         if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', id) is None:
@@ -793,7 +793,7 @@ def individual_export(request: HttpRequest, id: str, fmt: str, id2: str | None =
                 return JsonResponse(payload)
             return HttpResponse(f'Export for {id} as {fmt}'.encode(), content_type='text/plain')
         if settings.PAGE_DATA_MODE == 'prepared':
-            saved_response = get_response_data(request.path, query_pairs(request.GET))
+            saved_response = get_response_data(request.path_info, query_pairs(request.GET))
             if saved_response is not None:
                 return prepared_response(saved_response)
             raise PageDataError('The VIVO representation is unavailable.')

@@ -162,6 +162,15 @@ class PreparedDataTests(TestCase):
             self.assertContains(response, '/static/css/fonts.css')
             self.assertNotContains(response, '/__prepared_assets/source-sans-pro.ttf')
 
+    def test_saved_pages_accept_deployment_prefix(self) -> None:
+        """
+        Checks saved search and profile routes use paths without the server prefix.
+        """
+        search = self.client.get('/search?q=Example', SCRIPT_NAME='/vivo_on_django')
+        profile = self.client.get('/display/invented-a', SCRIPT_NAME='/vivo_on_django')
+        self.assertContains(search, 'Invented Researcher')
+        self.assertContains(profile, 'Invented overview.')
+
     def test_application_fonts_do_not_require_a_bundle_font(self) -> None:
         """
         Checks that prepared HTML uses application fonts even when its bundle contains no font.
