@@ -545,6 +545,18 @@ class PreparedDataTests(TestCase):
         with self.assertRaisesRegex(PageDataError, 'absent'):
             load_bundle(self.root)
 
+    def test_manifest_errors_identify_missing_and_invalid_files(self) -> None:
+        """
+        Checks a deployment can distinguish a missing manifest from invalid JSON.
+        """
+        manifest_path = self.root / 'manifest.json'
+        manifest_path.unlink()
+        with self.assertRaisesRegex(PageDataError, 'missing or unreadable'):
+            load_bundle(self.root)
+        manifest_path.write_text('{')
+        with self.assertRaisesRegex(PageDataError, 'invalid JSON'):
+            load_bundle(self.root)
+
     def test_file_escape_and_git_checkout(self) -> None:
         """
         Checks bundle files cannot leave the directory or live inside a Git checkout.

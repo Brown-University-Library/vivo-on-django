@@ -166,9 +166,18 @@ def load_bundle(directory: Path) -> PreparedBundle:
     """
     try:
         root = external_path(directory)
-        manifest = object_value(json.loads((root / 'manifest.json').read_bytes()))
-    except (OSError, ValueError, UnicodeError) as exc:
-        raise PageDataError('Prepared manifest is missing, invalid, or inside a Git checkout.') from exc
+    except RecordingError as exc:
+        raise PageDataError('The prepared bundle must be outside a Git checkout.') from exc
+    except OSError as exc:
+        raise PageDataError('The prepared bundle directory is unreadable.') from exc
+    try:
+        manifest_bytes = (root / 'manifest.json').read_bytes()
+    except OSError as exc:
+        raise PageDataError('The prepared manifest is missing or unreadable.') from exc
+    try:
+        manifest = object_value(json.loads(manifest_bytes))
+    except (PageDataError, ValueError, UnicodeError) as exc:
+        raise PageDataError('The prepared manifest contains invalid JSON.') from exc
     if type(manifest.get('format_version')) is not int or manifest.get('format_version') != PAGE_DATA_VERSION:
         raise PageDataError('Unsupported prepared data format version.')
     revision = manifest.get('application_revision')

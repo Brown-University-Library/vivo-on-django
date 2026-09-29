@@ -35,3 +35,27 @@ Start the application with the server's normal process manager and WSGI command.
 Record the Django version, prepared bundle version, browser-comparison report location, and any failed command or request. Keep server paths, hostnames, addresses, credentials, and raw logs outside Git.
 
 The first server comparison should use the browser command's `compare-target` mode. It visits the configured restricted Django address and compares selected pages with a saved public-site baseline. This verifies the deployed Django output while still using saved prepared data. Source integration remains a later step.
+
+### Repeatable checks after a deployment
+
+Run these commands from the Django checkout on the development server. The command reads the private `.env` loaded by Django and prints status without printing source addresses or returned records. With no `--source` option, it makes no service requests.
+
+```console
+uv run ./manage.py check_dev_sources
+uv run ./manage.py check
+```
+
+If the root page reports a missing prepared manifest, set `PREPARED_FIXTURE_DIR` in the server's private `.env` to the separately copied bundle directory. The directory must contain `manifest.json` and its referenced files, remain readable by the Django process, and be outside the Git checkout. Relative values resolve against the Django checkout. Then run `uv run ./manage.py validate_prepared_data` and restart the application; prepared bundles are cached per process. A valid local bundle or a successful `/version/` response does not establish that the server has this bundle.
+
+When moving to live data, set `PAGE_DATA_MODE=live` and configure each needed source in the private `.env`. Check one source at a time from the development server:
+
+```console
+uv run ./manage.py check_dev_sources --source solr
+uv run ./manage.py check_dev_sources --source viz
+uv run ./manage.py check_dev_sources --source vivo --vivo-id EXISTING_RECORD_ID
+uv run ./manage.py check_dev_sources --source books
+```
+
+The Solr check sends one count query. The visualization check reads one graph-availability list. The VIVO check reads one existing record's JSON-LD export and prints its HTTP status and a SHA-256 digest, so the same record can be checked against another configured backend without printing its content. A 404 means that record was not found at the configured backend. The books check reads the active homepage rows and checks the image prefix; it needs the `staging` dependency group for the database driver. Each selected source check exits nonzero on failure. These checks use Django's source client and make read-only requests; they do not switch `PAGE_DATA_MODE` or change `.env`.
+
+After changing `.env`, restart Django and repeat the relevant command. Request `/version/` to confirm which code revision is deployed. Then load the root page and a selected search and profile through the existing access restriction. Compare source-backed results with the public site only after confirming which Solr index, VIVO backend, and visualization service the development process actually uses. The nightly Solr copy may have a different refresh time, and the development VIVO backend may contain different records.
