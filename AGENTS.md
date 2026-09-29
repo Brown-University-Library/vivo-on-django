@@ -31,6 +31,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 - Primary language: Python; framework: Django 5.2.
 - Target runtime: Python 3.12 (`pyproject.toml` requires `>=3.12,<3.13`).
 - Dependency / execution tool: `uv`
+- The only dependency groups in `pyproject.toml` are `local`, `staging`, and `prod`. `local` is for laptop-only tools; `staging` is for the development server; `prod` is for the production server. Do not add a `dev` group: `uv sync` and `uv run` install it by default, including on the development server.
 - The repository root contains this file, `.git/`, `manage.py`, and `pyproject.toml`. The enclosing workspace contains separate repositories and local support files.
 - `GOAL.md` defines current scope. Older plans and route inventories are historical references; they do not require rebuilding unused features or the separate Manager application.
 
@@ -45,6 +46,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 - Run the local Django app tests via: `uv run ./run_tests.py vivo_app -v`.
 - Pass a dotted module, class, or method name for a smaller selection, for example: `uv run ./run_tests.py vivo_app.tests.test_home -v`. The runner's docstring includes examples; `-v` or `--verbose` shows each test's name, docstring, and result.
 - `run_tests.py` initializes Django and uses its configured test runner, including test database setup and cleanup. It uses `config.settings` unless `DJANGO_SETTINGS_MODULE` is already set, runs without interactive prompts, and exits with a nonzero status when tests fail.
+- Keep the full test suite runnable with the application's base dependencies. Playwright belongs in `local`; Pillow is in `local` and `staging` for image comparison checks. Tests may skip only their tool-specific checks when these packages are absent.
 - Run Django management commands via: `uv run ./manage.py THE-COMMAND`.
 - For a standalone helper needing a missing package, use `uv run --no-project --with PACKAGE python SCRIPT ARGS`. Do not add temporary helper dependencies to `pyproject.toml` or install them globally.
 

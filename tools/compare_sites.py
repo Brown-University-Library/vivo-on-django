@@ -14,13 +14,13 @@ from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from threading import Thread
+from typing import TYPE_CHECKING
 from urllib.parse import parse_qsl, urlencode, urlsplit
 
-from PIL import Image, ImageChops, ImageEnhance
-from playwright.sync_api import Browser, Page, Request, Response, Route, sync_playwright
-from playwright.sync_api import Error as BrowserError
-
 from vivo_app.lib.recorded_responses import external_path, json_object
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Browser, Page, Request, Response, Route
 
 
 @dataclass
@@ -45,7 +45,7 @@ class Observations:
     failures: list[str] = field(default_factory=list)
     requests: int = 0
 
-    def route(self, route: Route) -> None:
+    def route(self, route: 'Route') -> None:
         """
         Allows bounded reference loads or requests to the selected local origin only.
 
@@ -59,7 +59,7 @@ class Observations:
         else:
             route.continue_()
 
-    def response(self, response: Response) -> None:
+    def response(self, response: 'Response') -> None:
         """
         Records unsuccessful resource responses.
 
@@ -68,7 +68,7 @@ class Observations:
         if response.status >= 400:
             self.failures.append(f'HTTP {response.status}: {normalize_url(response.url, self.origin)}')
 
-    def failed(self, request: Request) -> None:
+    def failed(self, request: 'Request') -> None:
         """
         Records failed browser requests without request headers or cookies.
 
@@ -180,7 +180,7 @@ def select_cases(cases: list[Case], requested: list[str], failed_from: Path | No
     return [case for case in cases if case.id in selected_ids]
 
 
-def perform_actions(page: Page, actions: list[dict[str, str]]) -> Response | None:
+def perform_actions(page: 'Page', actions: list[dict[str, str]]) -> 'Response | None':
     """
     Performs only the explicitly listed public browser interactions.
 
@@ -209,7 +209,7 @@ def perform_actions(page: Page, actions: list[dict[str, str]]) -> Response | Non
     return response
 
 
-def observe_text(page: Page, selectors: dict[str, str]) -> dict[str, list[str]]:
+def observe_text(page: 'Page', selectors: dict[str, str]) -> dict[str, list[str]]:
     """
     Requires every requested observation to find an element before recording its text.
 
@@ -224,12 +224,14 @@ def observe_text(page: Page, selectors: dict[str, str]) -> dict[str, list[str]]:
     return observations
 
 
-def capture(browser: Browser, case: Case, origin: str, output: Path, local_only: bool) -> dict[str, object]:
+def capture(browser: 'Browser', case: Case, origin: str, output: Path, local_only: bool) -> dict[str, object]:
     """
     Records response details, selected visible text, loaded images, errors, and one viewport screenshot.
 
     Called by: run()
     """
+    from playwright.sync_api import Error as BrowserError
+
     observer = Observations(origin, local_only)
     context = browser.new_context(
         viewport={'width': case.width, 'height': case.height},
@@ -313,6 +315,8 @@ def image_difference(expected: Path, actual: Path, output: Path) -> dict[str, ob
 
     Called by: run(), self_test(), unit tests
     """
+    from PIL import Image, ImageChops, ImageEnhance
+
     with Image.open(expected) as left_image, Image.open(actual) as right_image:
         left, right = left_image.convert('RGB'), right_image.convert('RGB')
         if left.size != right.size:
@@ -445,7 +449,7 @@ class InventedHandler(BaseHTTPRequestHandler):
         self.wfile.write(body.encode())
 
 
-def self_test(browser: Browser, output: Path) -> bool:
+def self_test(browser: 'Browser', output: Path) -> bool:
     """
     Proves browser observations and pixel comparisons catch deliberate changes and remain stable unchanged.
 
@@ -509,6 +513,8 @@ def run(args: argparse.Namespace) -> bool:
 
     Called by: main()
     """
+    from playwright.sync_api import sync_playwright
+
     output = external_path(Path(args.output))
     if output.exists() and any(output.iterdir()):
         raise ValueError('Use a new empty output directory; existing evidence is never overwritten.')

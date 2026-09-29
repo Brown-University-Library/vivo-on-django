@@ -4,9 +4,10 @@ Checks comparison rules with invented observations and images.
 
 import json
 import tempfile
+from importlib.util import find_spec
 from pathlib import Path
+from unittest import skipUnless
 
-from PIL import Image
 from django.test import SimpleTestCase
 
 from tools.compare_sites import Case, compare_snapshots, image_difference, normalize_url, read_cases, select_cases
@@ -59,10 +60,13 @@ class ComparisonTests(SimpleTestCase):
         changed = {**expected, 'images': [{'alt': 'Invented image', 'loaded': False}]}
         self.assertIn('current: missing image', compare_snapshots(expected, changed))
 
+    @skipUnless(find_spec('PIL') is not None, 'Pillow is available in the local and staging dependency groups.')
     def test_pixel_changes_and_size_changes(self) -> None:
         """
         Checks a one-pixel layout change and different image dimensions cannot pass.
         """
+        from PIL import Image
+
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             image = Image.new('RGB', (20, 20), 'white')
