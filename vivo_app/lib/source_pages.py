@@ -734,7 +734,7 @@ def organization_thumbnail(uri: str, mode: str, reader: SourceReader) -> str:
     identifier = uri.rsplit('/', 1)[-1]
     response = response_object(profile_key(identifier), mode, reader)
     docs, _ = documents(response)
-    result = thumbnail_url(docs[0], True) if docs else static('images/brown_logo_small.png')
+    result = thumbnail_url(docs[0], True) if docs else static('images/org_placeholder.png')
     return result
 
 

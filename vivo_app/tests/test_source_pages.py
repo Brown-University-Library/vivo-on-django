@@ -737,6 +737,14 @@ class SourcePageTests(TestCase):
         self.assertEqual(sparse['publications'], [])
         self.assertEqual(sparse['cv_url'], '')
 
+    def test_missing_affiliation_logo_uses_organization_placeholder(self) -> None:
+        """Keeps the profile's affiliation visible when its logo record is absent."""
+        self.responses[profile_key('org-example')] = self.solr_response([], 0)
+        result = profile_data('invented-a', 'live', self.read)
+        sections = result['sections']
+        assert isinstance(sections, list)
+        self.assertIn('org_placeholder.png', sections[0]['html'])
+
     def test_numbered_facet_filter_keeps_search_selection(self) -> None:
         """
         Checks search submissions retain a facet sent as a numbered form field.
