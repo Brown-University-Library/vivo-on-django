@@ -733,7 +733,9 @@ def profile_sections(
     background = '<h3>Background</h3>'
     if education:
         background += '<div class="panel-heading"><h4 class="panel-title">Education and Training</h4></div><div class="panel-body"><table class="table table-hover background__education"><tbody><tr><th>Year</th><th>Degree</th><th>Institution</th></tr>'
-        for row in sorted(education, key=lambda entry: first_text(entry.get('date')), reverse=True):
+        ordered_education = sorted(education, key=lambda entry: first_text(entry.get('date')))
+        ordered_education.reverse()
+        for row in ordered_education:
             school = first_text(row.get('school_name'))
             url = reverse('search').rstrip('/') + '?' + urlencode({'q': 'alumni_of:"' + school + '"'})
             background += (

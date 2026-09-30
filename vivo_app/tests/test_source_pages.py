@@ -247,6 +247,23 @@ class SourcePageTests(TestCase):
         self.assertIn('2001-2003', background)
         self.assertNotIn('<Unsafe>', background)
 
+    def test_background_reverses_education_rows_with_same_year(self) -> None:
+        """
+        Checks degrees in the same year appear in the order shown by Rails.
+        """
+        item: dict[str, object] = {
+            'education': [
+                {'date': '2001', 'degree': 'BS', 'school_name': 'Example University'},
+                {'date': '2001', 'degree': 'MS', 'school_name': 'Example University'},
+                {'date': '2005', 'degree': 'PhD', 'school_name': 'Another University'},
+            ]
+        }
+        background = next(
+            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Background'
+        )
+        self.assertLess(background.index('PhD'), background.index('MS'))
+        self.assertLess(background.index('MS'), background.index('BS'))
+
     def test_research_keeps_source_formatting(self) -> None:
         """
         Checks the Research text keeps paragraphs, emphasis, and web links while discarding active markup.
