@@ -850,6 +850,12 @@ class SourcePageTests(TestCase):
         result = organization_publications_data('org-example', 'live', self.read)
         self.assertEqual(result, 'Id\tFaculty\tTitle\tAuthors\tYear\tType\tCitation\n')
 
+    def test_organization_download_skips_member_missing_from_solr(self) -> None:
+        """Downloads publications from members whose Solr records still exist."""
+        self.responses[member_details_key(['invented-a'])] = self.solr_response([], 0)
+        result = organization_publications_data('org-example', 'live', self.read)
+        self.assertEqual(result, 'Id\tFaculty\tTitle\tAuthors\tYear\tType\tCitation\n')
+
     def test_search_result_without_email_has_no_empty_email_link(self) -> None:
         """Avoids an unusable email control for organizations without an address."""
         key = search_key('Example', 1, [])

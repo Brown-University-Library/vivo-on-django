@@ -1255,8 +1255,8 @@ def organization_publications_data(
         member_response = response_object(member_details_key(batch), mode, reader)
         docs, _ = documents(member_response)
         found = {record_id(doc) for doc in docs}
-        if found != set(batch) or len(docs) != len(batch):
-            raise PageDataError('Solr did not return every organization member.')
+        if not found.issubset(batch) or len(docs) != len(found):
+            raise PageDataError('Solr returned an unrelated organization member.')
         member_docs.extend(docs)
     lines = ['Id\tFaculty\tTitle\tAuthors\tYear\tType\tCitation\n']
     for doc in member_docs:
