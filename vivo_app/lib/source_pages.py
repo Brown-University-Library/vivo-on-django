@@ -745,7 +745,7 @@ def profile_sections(
         ordered_education = sorted(education, key=lambda entry: first_text(entry.get('date')))
         ordered_education.reverse()
         for row in ordered_education:
-            school = first_text(row.get('school_name'))
+            school = first_text(row.get('school_name')).strip()
             url = reverse('search').rstrip('/') + '?' + urlencode({'q': 'alumni_of:"' + school + '"'})
             background += (
                 '<tr class="tableRow"><td>'

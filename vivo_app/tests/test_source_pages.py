@@ -264,6 +264,20 @@ class SourcePageTests(TestCase):
         self.assertLess(background.index('PhD'), background.index('MS'))
         self.assertLess(background.index('MS'), background.index('BS'))
 
+    def test_background_trims_school_names_and_search_links(self) -> None:
+        """
+        Checks a padded school name appears cleanly in both the table and its search link.
+        """
+        item: dict[str, object] = {
+            'education': [{'date': '2001', 'degree': 'PhD', 'school_name': '  Example University  '}]
+        }
+        background = next(
+            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Background'
+        )
+        self.assertIn('q=alumni_of%3A%22Example+University%22', background)
+        self.assertIn('>Example University</a>', background)
+        self.assertNotIn('  Example University  ', background)
+
     def test_research_keeps_source_formatting(self) -> None:
         """
         Checks the Research text keeps paragraphs, emphasis, and web links while discarding active markup.
