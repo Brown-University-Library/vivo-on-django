@@ -760,7 +760,9 @@ class SourcePageTests(TestCase):
         original['response']['numFound'] = 2
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(original).encode())
         result = search_data([('q', 'Example')], 'live', self.read)
-        self.assertEqual(len(result['results']), 1)
+        results = result['results']
+        assert isinstance(results, list)
+        self.assertEqual(len(results), 1)
         self.assertEqual(result['total'], 2)
 
     def test_search_ignores_record_with_unreadable_json(self) -> None:
@@ -772,8 +774,10 @@ class SourcePageTests(TestCase):
         original['response']['numFound'] = 2
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(original).encode())
         result = search_data([('q', 'Example')], 'live', self.read)
-        self.assertEqual(len(result['results']), 1)
-        self.assertEqual(result['results'][0]['name'], 'Invented Researcher')
+        results = result['results']
+        assert isinstance(results, list)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['name'], 'Invented Researcher')
 
     def test_search_json_ignores_other_solr_record_types(self) -> None:
         """Returns supported records from JSON search despite an unrelated document."""
@@ -806,20 +810,20 @@ class SourcePageTests(TestCase):
         source = json.loads(self.responses[key].body)
         item = json.loads(source['response']['docs'][0]['json_txt'][0])
         item['people'] = [
-            {'faculty_uri': f'http://vivo.brown.edu/individual/{identifier}', 'label': identifier}
-            for identifier in ids
+            {'faculty_uri': f'http://vivo.brown.edu/individual/{identifier}', 'label': identifier} for identifier in ids
         ]
         source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
         for start in (0, 100):
             batch = ids[start : start + 100]
             docs = [
-                {'id': f'http://vivo.brown.edu/individual/{identifier}', 'record_type': ['PEOPLE']}
-                for identifier in batch
+                {'id': f'http://vivo.brown.edu/individual/{identifier}', 'record_type': ['PEOPLE']} for identifier in batch
             ]
             self.responses[member_key(batch)] = self.solr_response(docs, len(batch))
         result = organization_data('org-example', 'live', self.read)
-        self.assertEqual(len(result['faculty_positions']), 101)
+        faculty = result['faculty_positions']
+        assert isinstance(faculty, list)
+        self.assertEqual(len(faculty), 101)
 
     def test_large_organization_downloads_member_publications_in_batches(self) -> None:
         """Builds the publication download for more than 100 organization members."""
@@ -828,8 +832,7 @@ class SourcePageTests(TestCase):
         source = json.loads(self.responses[key].body)
         item = json.loads(source['response']['docs'][0]['json_txt'][0])
         item['people'] = [
-            {'faculty_uri': f'http://vivo.brown.edu/individual/{identifier}', 'label': identifier}
-            for identifier in ids
+            {'faculty_uri': f'http://vivo.brown.edu/individual/{identifier}', 'label': identifier} for identifier in ids
         ]
         source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
