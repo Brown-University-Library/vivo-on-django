@@ -125,8 +125,6 @@ def team_data(identifier: str, mode: str, reader: SourceReader | None = None) ->
         if member_id not in member_ids or first_text(doc.get('record_type')) != 'PEOPLE' or member_id in members:
             raise PageDataError('Solr returned an unrelated active-team member.')
         members[member_id] = doc
-    if set(members) != set(member_ids):
-        raise PageDataError('Solr did not return every active-team member.')
     faculty: list[dict[str, str]] = []
     for doc in docs:
         member_id = record_id(doc)

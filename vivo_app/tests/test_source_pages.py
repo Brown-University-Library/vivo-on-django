@@ -1433,6 +1433,20 @@ class SourcePageTests(TestCase):
                 with self.assertRaises(PageDataError):
                     team_data('team-missing', 'live', self.read)
 
+    def test_active_team_skips_member_missing_from_solr(self) -> None:
+        """Shows available team members when an older listed profile has vanished."""
+        ids = ['invented-a', 'invented-b']
+        person = json.loads(self.responses[team_member_key(['invented-a'])].body)['response']['docs'][0]
+        self.responses[team_member_key(ids)] = self.solr_response([person], 1)
+        with TemporaryDirectory() as directory:
+            manifest = Path(directory) / 'teams.json'
+            manifest.write_text(json.dumps({'teams': {'team-example': {'name': 'Invented Team', 'member_ids': ids}}}))
+            with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
+                result = team_data('team-example', 'live', self.read)
+        positions = result['faculty_positions']
+        assert isinstance(positions, list)
+        self.assertEqual(len(positions), 1)
+
     def test_team_member_links_keep_the_deployment_prefix(self) -> None:
         """
         Checks team member links remain inside a mounted Django application.
