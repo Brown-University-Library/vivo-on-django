@@ -1034,6 +1034,7 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
         'id': identifier,
         'name': name,
         'page_title': first_text(item.get('name')) or name,
+        'hidden': item.get('hidden') is True,
         'title': first_text(item.get('title')),
         'email': first_text(item.get('email')),
         'thumbnail': thumbnail_url(doc),

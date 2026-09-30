@@ -15,7 +15,7 @@
     </section></section>
   </div>
   <div class="col-md-9 col-sm-8 col-xs-12" id="section_overview">
-    <h2 class="vcard foaf-person individual_overview hidden-xs">{{ profile.name }}</h2>
+    <h2 class="vcard foaf-person individual_overview hidden-xs">{{ profile.name }}{% if profile.hidden %} [Inactive]{% endif %}</h2>
     <h3 class="individual_overview">{{ profile.title }}</h3>
     {% for section in profile.sections %}
     <div id="tab{{ section.id }}" class="tabFinder{% if section.id != 'Overview' %} panel panel-default{% endif %}">

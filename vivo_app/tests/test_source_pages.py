@@ -217,6 +217,23 @@ class SourcePageTests(TestCase):
         fields = dict(profile_key('invented-a').query)['fl'].split(',')
         self.assertIn('show_visualizations_s', fields)
 
+    def test_hidden_profile_marks_name_inactive(self) -> None:
+        """
+        Checks the public inactive marker appears only for hidden profiles.
+        """
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            visible = self.get_page('/display/invented-a')
+        self.assertNotContains(visible, 'Invented Researcher [Inactive]')
+        key = profile_key('invented-a')
+        response = json.loads(self.responses[key].body)
+        person = json.loads(response['response']['docs'][0]['json_txt'][0])
+        person['hidden'] = True
+        response['response']['docs'][0]['json_txt'] = [json.dumps(person)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            inactive = self.get_page('/display/invented-a')
+        self.assertContains(inactive, 'Invented Researcher [Inactive]')
+
     def test_background_shows_training_rows(self) -> None:
         """
         Checks training appears newest first, with organization and location text safely escaped.
