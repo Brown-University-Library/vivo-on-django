@@ -639,11 +639,13 @@ def advanced_search(request: HttpRequest) -> HttpResponse:
     """
     name_value = request.GET.get('name_t', '')
     title_value = request.GET.get('title_t', '')
+    department_value = request.GET.get('department_t', '')
     name = name_value if isinstance(name_value, str) else ''
     title = title_value if isinstance(title_value, str) else ''
+    department = department_value if isinstance(department_value, str) else ''
     if request.GET.get('search') == 'true':
         try:
-            query = advanced_search_query(title, name)
+            query = advanced_search_query(title, name, department)
         except PageDataError as exc:
             return data_unavailable(exc)
         if query:

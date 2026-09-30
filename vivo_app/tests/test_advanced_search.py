@@ -57,3 +57,17 @@ class AdvancedSearchTests(SimpleTestCase):
         Checks quotes inside entered values remain part of those values.
         """
         self.assertEqual(advanced_search_query('Professor "A"', '  '), 'title_t:"Professor \\"A\\""')
+
+    def test_department_submission_joins_the_fielded_search(self) -> None:
+        """
+        Checks a department supplied in the URL joins the public fielded search.
+        """
+        response = self.client.get(
+            '/search/advanced/',
+            {'title_t': 'Professor', 'department_t': 'Biology', 'name_t': 'Example', 'search': 'true'},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            parse_qs(urlsplit(response['Location']).query),
+            {'q': ['title_t:"Professor" AND department_t:"Biology" AND name_t:"Example"']},
+        )
