@@ -482,12 +482,24 @@ def publication_html(item: dict[str, object]) -> str:
         if external.startswith('https://repository.library.brown.edu/')
         else ('https://doi.org/' + quote(doi, safe='/') if doi else '')
     )
-    if full_text:
-        citation += (
-            ' <div class="no-orphans"><a class="pub-item-tag full-text-link" target="_blank" rel="noopener" href="'
-            + escape(full_text, quote=True)
-            + '">Full Text</a></div>'
-        )
+    pub_med_id = first_text(item.get('pub_med_id'))
+    pub_med_url = 'https://www.ncbi.nlm.nih.gov/pubmed/?term=' + pub_med_id if re.fullmatch(r'\d+', pub_med_id) else ''
+    links = []
+    for label, url in (
+        ('Full Text', full_text),
+        ('PubMed', pub_med_url),
+        ('More Info', external if not full_text and not pub_med_url else ''),
+    ):
+        if url:
+            links.append(
+                '<a class="pub-item-tag full-text-link" target="_blank" rel="noopener" href="'
+                + escape(url, quote=True)
+                + '">'
+                + label
+                + '</a>'
+            )
+    if links:
+        citation += ' <div class="no-orphans">' + ' '.join(links) + '</div>'
     return citation
 
 
@@ -600,7 +612,7 @@ def profile_sections(
             + '">'
             + escape(str(area))
             + '</a>'
-            for area in areas
+            for area in sorted(areas, key=lambda value: str(value).casefold())
         )
         overview += '</div>'
     websites = entries(item, 'on_the_web')

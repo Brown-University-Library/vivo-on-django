@@ -59,6 +59,7 @@ class SourcePageTests(TestCase):
             'email': 'invented@example.invalid',
             'overview': '<p>Invented &amp; tested.</p>',
             'affiliations': [{'uri': 'http://vivo.brown.edu/individual/org-example', 'name': 'Example Department'}],
+            'research_areas': ['liver', 'Excretion', 'absorption'],
             'on_the_web': [{'url': 'https://example.invalid/person', 'text': 'Website'}],
             'contributor_to': [
                 {
@@ -68,6 +69,7 @@ class SourcePageTests(TestCase):
                     'date': '2024-01-01',
                     'published_in': 'Invented Journal',
                     'doi': '10.0000/example',
+                    'pub_med_id': '12345678',
                 }
             ],
             'education': [{'date': '2001', 'degree': 'PhD', 'school_name': 'Example University'}],
@@ -220,6 +222,7 @@ class SourcePageTests(TestCase):
             self.assertContains(filtered, 'Remove filter PEOPLE')
             profile = self.get_page('/display/invented-a')
             self.assertContains(profile, 'Example publication')
+            self.assertContains(profile, 'https://www.ncbi.nlm.nih.gov/pubmed/?term=12345678')
             self.assertContains(profile, 'Example University')
             self.assertContains(profile, 'EXMP 1000')
             self.assertContains(profile, '/source-images/profile-images/567/8/logo.png')
@@ -358,6 +361,32 @@ class SourcePageTests(TestCase):
         """
         markup = publication_html({'title': 'Example work', 'published_in': 'Invented Journal', 'date': '2024'})
         self.assertIn('"Example work." <i>Invented Journal</i>, 2024.', markup)
+
+    def test_publication_links_match_available_source_fields(self) -> None:
+        """
+        Checks DOI and PubMed links appear together, while another safe URL is used only when neither exists.
+        """
+        linked = publication_html(
+            {'doi': '10.0000/example', 'pub_med_id': '12345678', 'url': 'https://example.invalid/item'}
+        )
+        self.assertIn('https://doi.org/10.0000/example', linked)
+        self.assertIn('https://www.ncbi.nlm.nih.gov/pubmed/?term=12345678', linked)
+        self.assertNotIn('More Info', linked)
+        alternate = publication_html({'url': 'https://example.invalid/item'})
+        self.assertIn('More Info', alternate)
+        self.assertIn('https://example.invalid/item', alternate)
+        invalid = publication_html({'pub_med_id': 'bad value'})
+        self.assertNotIn('PubMed', invalid)
+
+    def test_research_areas_use_case_insensitive_order(self) -> None:
+        """
+        Checks the profile displays research areas in the same alphabetical order as Rails.
+        """
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            profile = self.get_page('/display/invented-a')
+        body = profile.content.decode()
+        self.assertLess(body.index('research_areas%7Cabsorption'), body.index('research_areas%7CExcretion'))
+        self.assertLess(body.index('research_areas%7CExcretion'), body.index('research_areas%7Cliver'))
 
     def test_capture_requires_profile_in_search_results(self) -> None:
         """
