@@ -731,7 +731,7 @@ def profile_sections(
             '<div class="panel-body panel-body-collaborators"><table class="table table-hover"><tbody>'
             '<tr><th>Name</th><th>Title</th></tr>'
         )
-        for collaborator in collaborators:
+        for collaborator in sorted(collaborators, key=lambda row: first_text(row.get('name')).casefold()):
             name = first_text(collaborator.get('name'))
             title = first_text(collaborator.get('title'))
             uri = first_text(collaborator.get('uri'))

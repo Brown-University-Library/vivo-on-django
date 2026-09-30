@@ -340,9 +340,10 @@ class SourcePageTests(TestCase):
         person['collaborators'] = [
             {
                 'uri': 'http://vivo.brown.edu/individual/invented-b',
-                'name': 'Invented Colleague',
+                'name': 'Zeta Colleague',
                 'title': 'Example Scientist',
-            }
+            },
+            {'uri': 'http://vivo.brown.edu/individual/invented-c', 'name': 'Alpha Colleague'},
         ]
         response['response']['docs'][0]['json_txt'] = [json.dumps(person)]
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
@@ -355,7 +356,10 @@ class SourcePageTests(TestCase):
         try:
             with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
                 profile = self.client.get('/display/invented-a', SCRIPT_NAME=prefix)
-            self.assertContains(profile, 'Invented Colleague')
+            assert isinstance(profile, HttpResponse)
+            self.assertContains(profile, 'Zeta Colleague')
+            self.assertContains(profile, 'Alpha Colleague')
+            self.assertLess(profile.content.index(b'Alpha Colleague'), profile.content.index(b'Zeta Colleague'))
             self.assertContains(profile, 'Example Scientist')
             self.assertContains(profile, f'href="{prefix}/display/invented-b"')
             self.assertContains(profile, f'href="{prefix}/display/invented-a/viz/collab"')
@@ -363,7 +367,7 @@ class SourcePageTests(TestCase):
             self.responses.pop(visualization_key('collaborators'))
             with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
                 profile_without_graph = self.client.get('/display/invented-a', SCRIPT_NAME=prefix)
-            self.assertContains(profile_without_graph, 'Invented Colleague')
+            self.assertContains(profile_without_graph, 'Zeta Colleague')
             self.assertNotContains(profile_without_graph, 'id="viz_collab"')
         finally:
             set_script_prefix(previous_prefix)
