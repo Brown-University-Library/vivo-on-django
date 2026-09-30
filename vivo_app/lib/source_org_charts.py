@@ -89,7 +89,7 @@ def publication_history_data(
                 raise PageDataError('A chart publication has invalid data.')
             date = first_text(publication.get('date'))
             year = int(date[:4]) if len(date) >= 4 and date[:4].isdigit() else 0
-            if 0 < year <= current_year:
+            if 1900 <= year <= current_year:
                 counts[year] = counts.get(year, 0) + 1
                 all_years.add(year)
         summaries.append((member_id, first_text(person.get('name')), first_text(person.get('title')), counts))

@@ -51,7 +51,7 @@ class OrganizationChartTests(TestCase):
                     'name': 'Invented B',
                     'title': 'Lecturer',
                     'research_areas': ['Area A'],
-                    'contributor_to': [{'date': '2020-01-01'}, {'date': '2999-01-01'}],
+                    'contributor_to': [{'date': '1899-01-01'}, {'date': '2020-01-01'}, {'date': '2999-01-01'}],
                 },
             ),
             (
