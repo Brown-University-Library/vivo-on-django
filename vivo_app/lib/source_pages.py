@@ -7,12 +7,14 @@ import math
 import re
 from collections import Counter
 from collections.abc import Callable
+from datetime import date
 from html import escape
 from urllib.parse import quote, urlencode, urlsplit
 
 from django.conf import settings
 from django.templatetags.static import static
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.html import strip_tags
 
 from vivo_app.lib.prepared_data import PageDataError
@@ -592,6 +594,33 @@ def organization_thumbnail(uri: str, mode: str, reader: SourceReader) -> str:
     return result
 
 
+def profile_date(value: object) -> date | None:
+    """
+    Reads an optional source date for profile rows.
+
+    Called by: profile_year_range(), profile_sections()
+    """
+    text = first_text(value).split('T', 1)[0]
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def profile_year_range(row: dict[str, object]) -> str:
+    """
+    Shows the available start and end years as Rails does.
+
+    Called by: profile_sections()
+    """
+    years: list[str] = []
+    for field in ('start_date', 'end_date'):
+        value = profile_date(row.get(field))
+        if value is not None:
+            years.append('Present' if value.year > timezone.localdate().year else str(value.year))
+    return '-'.join(years)
+
+
 def profile_sections(
     item: dict[str, object], mode: str, reader: SourceReader, publication_count: int, collaborator_visualization_url: str
 ) -> list[dict[str, str]]:
@@ -705,6 +734,31 @@ def profile_sections(
                 + '</a></td></tr>'
             )
         background += '</tbody></table></div>'
+    training = entries(item, 'training')
+    if training:
+        background += (
+            '<div class="panel-heading"><h4 class="panel-title">Postdoctoral/Other Training</h4></div>'
+            '<div class="panel-body panel-body-postdoc"><table class="table table-hover"><tbody>'
+        )
+        for row in sorted(
+            training, key=lambda entry: profile_date(entry.get('start_date')) or date(1900, 1, 1), reverse=True
+        ):
+            organization = ', '.join(
+                first_text(row.get(field)) for field in ('org_name', 'hospital_name', 'specialty_name') if row.get(field)
+            )
+            location = ', '.join(first_text(row.get(field)) for field in ('city', 'state', 'country') if row.get(field))
+            background += (
+                '<tr class="tableRow" role="listitem"><td>'
+                + escape(first_text(row.get('name')))
+                + '</td><td>'
+                + escape(organization)
+                + '</td><td>'
+                + escape(profile_year_range(row))
+                + '</td><td>'
+                + escape(location)
+                + '</td></tr>'
+            )
+        background += '</tbody></table></div>'
     awards = first_text(item.get('awards'))
     if awards:
         background += (
@@ -713,7 +767,7 @@ def profile_sections(
             + render_profile_html(awards)
             + '</div></div>'
         )
-    if education or awards or entries(item, 'training'):
+    if education or awards or training:
         sections.append({'id': 'Background', 'label': 'Background', 'html': background})
     appointments = entries(item, 'appointments')
     collaborators = entries(item, 'collaborators')

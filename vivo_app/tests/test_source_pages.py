@@ -21,6 +21,7 @@ from vivo_app.lib.source_pages import (
     organization_data,
     organization_publications_data,
     profile_data,
+    profile_sections,
     publication_html,
     search_data,
     search_json_data,
@@ -213,6 +214,35 @@ class SourcePageTests(TestCase):
         """
         fields = dict(profile_key('invented-a').query)['fl'].split(',')
         self.assertIn('show_visualizations_s', fields)
+
+    def test_background_shows_training_rows(self) -> None:
+        """
+        Checks training appears newest first, with organization and location text safely escaped.
+        """
+        item: dict[str, object] = {
+            'training': [
+                {'name': 'Earlier training', 'start_date': '2001-01-01', 'end_date': '2003-01-01'},
+                {
+                    'name': 'Later training',
+                    'start_date': '2010-01-01T00:00:00',
+                    'org_name': 'Example University',
+                    'hospital_name': 'Example Hospital',
+                    'city': 'Providence',
+                    'state': '<Unsafe>',
+                },
+                {'name': 'Undated training'},
+            ]
+        }
+        background = next(
+            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Background'
+        )
+        self.assertIn('Postdoctoral/Other Training', background)
+        self.assertLess(background.index('Later training'), background.index('Earlier training'))
+        self.assertLess(background.index('Earlier training'), background.index('Undated training'))
+        self.assertIn('Example University, Example Hospital', background)
+        self.assertIn('2010</td><td>Providence, &lt;Unsafe&gt;', background)
+        self.assertIn('2001-2003', background)
+        self.assertNotIn('<Unsafe>', background)
 
     def test_search_profile_and_images_use_only_invented_responses(self) -> None:
         """
