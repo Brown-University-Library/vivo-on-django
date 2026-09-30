@@ -226,9 +226,7 @@ def selected_highlights(fields: dict[str, object], limit: int = 5) -> list[tuple
         for value in values
         if isinstance(value, str)
     ]
-    terms = list(
-        dict.fromkeys(term.upper() for _, value in hits for term in re.findall(r'<strong>.*?</strong>', value))
-    )
+    terms = list(dict.fromkeys(term.upper() for _, value in hits for term in re.findall(r'<strong>.*?</strong>', value)))
     selected: list[tuple[str, str]] = []
     seen: set[str] = set()
     for term in terms:

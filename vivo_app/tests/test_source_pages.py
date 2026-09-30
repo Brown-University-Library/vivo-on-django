@@ -19,17 +19,17 @@ from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_formats import publication_entries
 from vivo_app.lib.source_graph import visualization_key
 from vivo_app.lib.source_pages import (
+    match_html,
     organization_data,
     organization_publications_data,
-    match_html,
     profile_data,
     profile_sections,
     profile_year_range,
     publication_html,
     publications,
+    safe_match_text,
     search_data,
     search_json_data,
-    safe_match_text,
     selected_highlights,
 )
 from vivo_app.lib.source_requests import (
@@ -331,7 +331,9 @@ class SourcePageTests(TestCase):
         self.assertIsInstance(websites, list)
         if not isinstance(websites, list):
             self.fail('Organization websites were not a list.')
-        self.assertEqual([row['url'] for row in websites], ['https://example.invalid/earlier', 'https://example.invalid/later'])
+        self.assertEqual(
+            [row['url'] for row in websites], ['https://example.invalid/earlier', 'https://example.invalid/later']
+        )
 
     def test_research_keeps_source_formatting(self) -> None:
         """
@@ -782,13 +784,15 @@ class SourcePageTests(TestCase):
             'overview_en': ['<strong>Research</strong> three'],
         }
         matches = selected_highlights(fields, 2)
-        self.assertEqual([value for _, value in matches], ['<strong>Biology</strong> one', '<strong>Research</strong> three'])
+        self.assertEqual(
+            [value for _, value in matches], ['<strong>Biology</strong> one', '<strong>Research</strong> three']
+        )
 
     def test_search_matches_group_fields_with_captions(self) -> None:
         """
         Checks search match details label and join snippets from descriptive fields.
         """
-        doc = {'id': 'http://vivo.brown.edu/individual/invented-a'}
+        doc: dict[str, object] = {'id': 'http://vivo.brown.edu/individual/invented-a'}
         response: dict[str, object] = {
             'highlighting': {
                 'vitroIndividual:http://vivo.brown.edu/individual/invented-a': {
@@ -805,7 +809,9 @@ class SourcePageTests(TestCase):
         """
         Checks match details keep bold terms and render source markup as visible text.
         """
-        value = '<strong>Science</strong> <script>alert(1)</script> Agent Faculty Member Organization or Person at Brown Person'
+        value = (
+            '<strong>Science</strong> <script>alert(1)</script> Agent Faculty Member Organization or Person at Brown Person'
+        )
         cleaned = safe_match_text(value)
         self.assertIn('<strong>Science</strong>', cleaned)
         self.assertIn('&lsaquo;script&rsaquo;', cleaned)
@@ -1091,7 +1097,9 @@ class SourcePageTests(TestCase):
         with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
             result = self.get_page('/display/org-example.json')
         body = json.loads(result.content)
-        self.assertEqual([row['url'] for row in body['web_pages']], ['https://example.invalid/earlier', 'https://example.invalid/later'])
+        self.assertEqual(
+            [row['url'] for row in body['web_pages']], ['https://example.invalid/earlier', 'https://example.invalid/later']
+        )
 
     def test_nested_profile_json_converts_and_sorts_entries(self) -> None:
         """
@@ -1170,7 +1178,9 @@ class SourcePageTests(TestCase):
         }
         doc = {'id': uri, 'record_type': ['PEOPLE'], 'json_txt': [json.dumps(raw)]}
         self.responses[key] = self.solr_response([doc], 1)
-        self.responses[visualization_key('coauthors')] = RecordedResponse(200, (('content-type', 'application/json'),), b'{}')
+        self.responses[visualization_key('coauthors')] = RecordedResponse(
+            200, (('content-type', 'application/json'),), b'{}'
+        )
         with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
             result = self.get_page('/display/invented-nested-rank.json')
         self.assertEqual(result.status_code, 200)
@@ -1213,13 +1223,19 @@ class SourcePageTests(TestCase):
         """
         with TemporaryDirectory() as directory:
             manifest = Path(directory) / 'teams.json'
-            manifest.write_text(json.dumps({'teams': {'team-example': {'name': 'Invented Team', 'member_ids': ['invented-a']}}}))
+            manifest.write_text(
+                json.dumps({'teams': {'team-example': {'name': 'Invented Team', 'member_ids': ['invented-a']}}})
+            )
             previous_prefix = get_script_prefix()
             set_script_prefix('/mounted-app')
             try:
                 with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
                     result = team_data('team-example', 'live', self.read)
-                self.assertEqual(result['faculty_positions'][0]['url'], '/mounted-app/display/invented-a')
+                positions = result['faculty_positions']
+                self.assertIsInstance(positions, list)
+                if not isinstance(positions, list):
+                    self.fail('Team faculty positions were not a list.')
+                self.assertEqual(positions[0]['url'], '/mounted-app/display/invented-a')
                 self.assertEqual(result['visualization_url'], '/mounted-app/display/team-example/viz/collab')
             finally:
                 set_script_prefix(previous_prefix)
