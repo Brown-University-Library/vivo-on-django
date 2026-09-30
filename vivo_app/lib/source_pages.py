@@ -16,7 +16,7 @@ from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 
-from vivo_app.lib.prepared_data import PageDataError
+from vivo_app.lib.prepared_data import MissingRecordError, PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_html import render_profile_html
 from vivo_app.lib.source_requests import (
@@ -1046,7 +1046,7 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
     response = response_object(profile_key(identifier), mode, reader)
     docs, _ = documents(response)
     if not docs:
-        raise PageDataError('The requested profile is absent from Solr.')
+        raise MissingRecordError('The requested profile is absent from Solr.')
     doc = docs[0]
     if first_text(doc.get('record_type')) != 'PEOPLE' or record_id(doc) != identifier:
         raise PageDataError('The requested source record is not a person profile.')
@@ -1163,7 +1163,7 @@ def organization_data(
     response = response_object(profile_key(identifier), mode, reader)
     docs, _ = documents(response)
     if not docs:
-        raise PageDataError('The requested organization is absent from Solr.')
+        raise MissingRecordError('The requested organization is absent from Solr.')
     doc = docs[0]
     if first_text(doc.get('record_type')) != 'ORGANIZATION' or record_id(doc) != identifier:
         raise PageDataError('The requested source record is not an organization.')

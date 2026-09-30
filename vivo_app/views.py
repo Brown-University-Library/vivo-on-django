@@ -32,7 +32,7 @@ from .lib.page_data import (
     get_search_data,
 )
 from .lib.page_rendering import data_unavailable, prepared_response, query_pairs, render_or_stub
-from .lib.prepared_data import PageDataError
+from .lib.prepared_data import MissingRecordError, PageDataError
 from .lib.source_formats import organization_json_data, profile_json_data, raw_record_json_data
 from .lib.source_graph import graph_csv, graph_page_data, graph_subject_data, visualization_graph
 from .lib.source_org_charts import publication_history_csv, publication_history_data, research_areas_data
@@ -320,6 +320,8 @@ def display_show(request, id):
                         'back_to_search': request.session.get('prepared_search_url', reverse('search').rstrip('/')),
                     },
                 )
+    except MissingRecordError:
+        return page_not_found(request)
     except PageDataError as exc:
         return data_unavailable(exc)
     entity_type = get_type_for_id(id)

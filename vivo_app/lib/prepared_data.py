@@ -18,6 +18,10 @@ class PageDataError(ValueError):
     """Identifies unavailable or invalid page data without a fallback."""
 
 
+class MissingRecordError(PageDataError):
+    """Identifies an exact source lookup with no matching public record."""
+
+
 def object_value(value: object) -> dict[str, object]:
     """
     Requires a JSON object.

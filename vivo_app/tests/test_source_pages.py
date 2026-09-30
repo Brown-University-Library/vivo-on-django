@@ -909,6 +909,18 @@ class SourcePageTests(TestCase):
             self.assertEqual(self.get_page('/display/org-example').status_code, 503)
         self.assertEqual(self.get_page('/source-documents/docs/../../private.pdf').status_code, 503)
 
+    def test_absent_person_and_organization_show_not_found(self) -> None:
+        """
+        Checks exact Solr lookups with no record show the public missing-page response.
+        """
+        self.responses[profile_key('invented-absent')] = self.solr_response([], 0)
+        self.responses[profile_key('org-absent')] = self.solr_response([], 0)
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            person = self.get_page('/display/invented-absent')
+            organization = self.get_page('/display/org-absent')
+        self.assertContains(person, '404 - Page Not Found', status_code=404)
+        self.assertContains(organization, '404 - Page Not Found', status_code=404)
+
     def test_publication_title_joins_venue_without_extra_comma(self) -> None:
         """
         Checks source citation punctuation matches the public display format.
