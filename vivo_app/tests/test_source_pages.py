@@ -302,6 +302,26 @@ class SourcePageTests(TestCase):
         self.assertIn('2001-2004', affiliations)
         self.assertNotIn('<Undated license>', affiliations)
 
+    def test_affiliations_text_keeps_source_links(self) -> None:
+        """
+        Checks Affiliations text keeps web links and line breaks without unsafe destinations.
+        """
+        item: dict[str, object] = {
+            'affiliations_text': (
+                '<a href="https://example.invalid/society">Example Society</a><br>'
+                '<a href="javascript:unsafe()">Unsafe destination</a>'
+            )
+        }
+        affiliations = next(
+            section['html']
+            for section in profile_sections(item, 'live', self.read, 0, '')
+            if section['id'] == 'Affiliations'
+        )
+        self.assertIn('<div class="property-list" role="list" displaylimit="5">', affiliations)
+        self.assertIn('<a href="https://example.invalid/society">Example Society</a><br>', affiliations)
+        self.assertIn('Unsafe destination', affiliations)
+        self.assertNotIn('javascript:', affiliations)
+
     def test_search_profile_and_images_use_only_invented_responses(self) -> None:
         """
         Checks a search, person page, affiliation lookup, and both images without network access.

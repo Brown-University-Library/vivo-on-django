@@ -816,8 +816,9 @@ def profile_sections(
     if affiliation_text:
         affiliation_html += (
             '<div class="panel-heading"><h4 class="panel-title">Affiliations</h4></div><div class="panel-body">'
-            + escape(strip_tags(affiliation_text))
-            + '</div>'
+            '<div class="property-list" role="list" displaylimit="5">'
+            + render_profile_html(affiliation_text)
+            + '</div></div>'
         )
     credentials = entries(item, 'credentials')
     if credentials:
