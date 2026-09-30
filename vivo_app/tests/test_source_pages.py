@@ -836,8 +836,8 @@ class SourcePageTests(TestCase):
         ]
         source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        for start in (0, 100):
-            batch = ids[start : start + 100]
+        for start in range(0, len(ids), 20):
+            batch = ids[start : start + 20]
             docs = [
                 {
                     'id': f'http://vivo.brown.edu/individual/{identifier}',
