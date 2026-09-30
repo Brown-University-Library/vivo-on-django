@@ -616,8 +616,12 @@ def profile_year_range(row: dict[str, object]) -> str:
     years: list[str] = []
     for field in ('start_date', 'end_date'):
         value = profile_date(row.get(field))
-        if value is not None:
-            years.append('Present' if value.year > timezone.localdate().year else str(value.year))
+        if value is None:
+            years.append('')
+        elif value.year > timezone.localdate().year:
+            years.append('Present')
+        else:
+            years.append(str(value.year))
     return '-'.join(years)
 
 

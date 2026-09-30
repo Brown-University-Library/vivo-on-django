@@ -22,6 +22,7 @@ from vivo_app.lib.source_pages import (
     organization_publications_data,
     profile_data,
     profile_sections,
+    profile_year_range,
     publication_html,
     search_data,
     search_json_data,
@@ -242,7 +243,7 @@ class SourcePageTests(TestCase):
         self.assertLess(background.index('Earlier training'), background.index('Another undated training'))
         self.assertLess(background.index('Another undated training'), background.index('Undated training'))
         self.assertIn('Example University, Example Hospital', background)
-        self.assertIn('2010</td><td>Providence, &lt;Unsafe&gt;', background)
+        self.assertIn('2010-</td><td>Providence, &lt;Unsafe&gt;', background)
         self.assertIn('2001-2003', background)
         self.assertNotIn('<Unsafe>', background)
 
@@ -302,7 +303,7 @@ class SourcePageTests(TestCase):
         self.assertLess(affiliations.index('Later license'), affiliations.index('Earlier license'))
         self.assertLess(affiliations.index('Earlier license'), affiliations.index('Another undated license'))
         self.assertLess(affiliations.index('Another undated license'), affiliations.index('&lt;Undated license&gt;'))
-        self.assertIn('State board, Psychology</td><td>2015</td><td>#LIC-123', affiliations)
+        self.assertIn('State board, Psychology</td><td>2015-</td><td>#LIC-123', affiliations)
         self.assertIn('2001-2004', affiliations)
         self.assertNotIn('<Undated license>', affiliations)
 
@@ -332,8 +333,17 @@ class SourcePageTests(TestCase):
         self.assertIn('>Example Hospital</a>,', affiliations)
         self.assertNotIn('Unused Organization', affiliations)
         self.assertIn('Department role</span>. <span>Example Division</span>', affiliations)
-        self.assertIn('Older role</span>. <span>2001</span>', affiliations)
+        self.assertIn('Older role</span>. <span>2001-</span>', affiliations)
         self.assertNotIn('q=%22%22', affiliations)
+
+    def test_profile_year_ranges_keep_missing_date_positions(self) -> None:
+        """
+        Checks missing start and end dates retain the separator shown by Rails.
+        """
+        self.assertEqual(profile_year_range({}), '-')
+        self.assertEqual(profile_year_range({'start_date': '2001-01-01'}), '2001-')
+        self.assertEqual(profile_year_range({'end_date': '2005-01-01'}), '-2005')
+        self.assertEqual(profile_year_range({'start_date': 'invalid'}), '-')
 
     def test_affiliations_text_keeps_source_links(self) -> None:
         """
