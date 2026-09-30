@@ -693,6 +693,21 @@ class SourcePageTests(TestCase):
         self.assertEqual(sparse['publications'], [])
         self.assertEqual(sparse['cv_url'], '')
 
+    def test_search_bottom_pagination_links_to_adjacent_pages(self) -> None:
+        """
+        Checks the bottom pagination has the previous and next links shown by Rails.
+        """
+        key = search_key('Example', 1, [])
+        response = json.loads(self.responses[key].body)
+        response['response']['numFound'] = 21
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            first = self.get_page('/search?q=Example')
+            second = self.get_page('/search?q=Example&page=2')
+        self.assertContains(first, '<h2 class="sr-only">Pagination</h2>')
+        self.assertContains(first, '<a href="/search?q=Example&amp;page=2" aria-label="Next page">')
+        self.assertContains(second, '<a href="/search?q=Example" aria-label="Previous page">')
+
     def test_missing_response_and_unsupported_option_do_not_fall_back(self) -> None:
         """
         Checks missing source data and unsupported requests fail without sample content.
