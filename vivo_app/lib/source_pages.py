@@ -849,23 +849,21 @@ def profile_sections(
         affiliation_html += '</tbody></table></div>'
     if appointments:
         affiliation_html += '<div class="panel-heading"><h4 class="panel-title">Appointments</h4></div><div class="panel-body"><table class="table table-hover"><tbody>'
-        for row in appointments:
+        ordered_appointments = sorted(
+            appointments, key=lambda entry: profile_date(entry.get('start_date')) or date(1900, 1, 1)
+        )
+        ordered_appointments.reverse()
+        for row in ordered_appointments:
             name = first_text(row.get('name'))
-            org = first_text(row.get('org_name'))
-            start = first_text(row.get('start_date'))[:4]
-            end = first_text(row.get('end_date'))[:4]
-            url = reverse('search').rstrip('/') + '?' + urlencode({'q': '"' + org + '"'})
-            affiliation_html += (
-                '<tr class="tableRow"><td><span>'
-                + escape(name)
-                + '</span>. <a href="'
-                + escape(url, quote=True)
-                + '">'
-                + escape(org)
-                + '</a>, '
-                + escape(start + ('-' + end if end else ''))
-                + '</td></tr>'
-            )
+            org = first_text(row.get('hospital_name')) or first_text(row.get('org_name'))
+            department = first_text(row.get('department'))
+            affiliation_html += '<tr class="tableRow" role="listitem"><td><span>' + escape(name) + '</span>.'
+            if org:
+                url = reverse('search').rstrip('/') + '?' + urlencode({'q': '"' + org + '"'})
+                affiliation_html += ' <a href="' + escape(url, quote=True) + '">' + escape(org) + '</a>,'
+            if department:
+                affiliation_html += ' <span>' + escape(department) + '</span>'
+            affiliation_html += ' <span>' + escape(profile_year_range(row)) + '</span></td></tr>'
         affiliation_html += '</tbody></table></div>'
     if appointments or affiliation_text or collaborators or credentials:
         sections.append({'id': 'Affiliations', 'label': 'Affiliations', 'html': affiliation_html})

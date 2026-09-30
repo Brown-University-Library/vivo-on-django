@@ -302,6 +302,35 @@ class SourcePageTests(TestCase):
         self.assertIn('2001-2004', affiliations)
         self.assertNotIn('<Undated license>', affiliations)
 
+    def test_appointments_show_hospital_and_department_without_empty_link(self) -> None:
+        """
+        Checks appointment rows prefer the hospital, show departments, and skip links when no organization exists.
+        """
+        item: dict[str, object] = {
+            'appointments': [
+                {'name': 'Older role', 'start_date': '2001-01-01'},
+                {
+                    'name': 'Hospital role',
+                    'hospital_name': 'Example Hospital',
+                    'org_name': 'Unused Organization',
+                    'start_date': '2018-01-01',
+                },
+                {'name': 'Department role', 'department': 'Example Division', 'start_date': '2010-01-01'},
+            ]
+        }
+        affiliations = next(
+            section['html']
+            for section in profile_sections(item, 'live', self.read, 0, '')
+            if section['id'] == 'Affiliations'
+        )
+        self.assertLess(affiliations.index('Hospital role'), affiliations.index('Department role'))
+        self.assertLess(affiliations.index('Department role'), affiliations.index('Older role'))
+        self.assertIn('>Example Hospital</a>,', affiliations)
+        self.assertNotIn('Unused Organization', affiliations)
+        self.assertIn('Department role</span>. <span>Example Division</span>', affiliations)
+        self.assertIn('Older role</span>. <span>2001</span>', affiliations)
+        self.assertNotIn('q=%22%22', affiliations)
+
     def test_affiliations_text_keeps_source_links(self) -> None:
         """
         Checks Affiliations text keeps web links and line breaks without unsafe destinations.
