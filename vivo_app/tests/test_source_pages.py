@@ -983,6 +983,18 @@ class SourcePageTests(TestCase):
         with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
             self.assertEqual(self.get_page('/display/invented-sparse.json').status_code, 503)
 
+    def test_display_raw_json_returns_person_and_organization_records(self) -> None:
+        """
+        Checks raw JSON format returns the source record for both supported display types.
+        """
+        with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
+            person = self.get_page('/display/invented-a?format=json_txt')
+            organization = self.get_page('/display/org-example.json_txt')
+            invalid = self.get_page('/display/invented-a?format=json_txt&extra=1')
+        self.assertEqual(json.loads(person.content)['name'], 'Invented Researcher')
+        self.assertEqual(json.loads(organization.content)['name'], 'Example Department')
+        self.assertEqual(invalid.status_code, 503)
+
     def test_nested_profile_json_converts_and_sorts_entries(self) -> None:
         """
         Checks publication, appointment, training, credential, and collaborator JSON fields.

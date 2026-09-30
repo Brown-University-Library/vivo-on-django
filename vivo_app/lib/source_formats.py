@@ -16,9 +16,32 @@ from vivo_app.lib.source_pages import (
     record_id,
     response_object,
 )
-from vivo_app.lib.source_requests import image_path, profile_export_key, read_source, source_origin
+from vivo_app.lib.source_requests import image_path, profile_export_key, profile_key, read_source, source_origin
 
 FormatReader = Callable[[RequestKey, str], RecordedResponse]
+
+
+def raw_record_json_data(identifier: str, mode: str, reader: FormatReader | None = None) -> dict[str, object]:
+    """
+    Returns the original parsed Solr record for a person or organization.
+
+    Called by: views.display_show(), tests
+    """
+    if reader is None:
+        reader = read_source
+    response = response_object(profile_key(identifier), mode, reader)
+    docs, _ = documents(response)
+    if (
+        not docs
+        or record_id(docs[0]) != identifier
+        or first_text(docs[0].get('record_type'))
+        not in {
+            'PEOPLE',
+            'ORGANIZATION',
+        }
+    ):
+        raise PageDataError('The requested source record is unavailable.')
+    return record_data(docs[0])
 
 
 def dated_entries(raw: dict[str, object], field: str, names: tuple[str, ...]) -> list[dict[str, object]]:
