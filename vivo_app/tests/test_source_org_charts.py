@@ -148,6 +148,17 @@ class OrganizationChartTests(TestCase):
                 _, chart = publication_history_data('team-example', 'live', self.read)
         self.assertEqual(chart['columns'], ['invented-b', 'invented-a'])
 
+    def test_chart_reads_publication_year_after_leading_space(self) -> None:
+        """Counts the year accepted by the public publication parser."""
+        key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
+        response = json.loads(self.responses[key].body)
+        first = json.loads(response['response']['docs'][0]['json_txt'])
+        first['contributor_to'].append({'date': ' 2022-01-01'})
+        response['response']['docs'][0]['json_txt'] = json.dumps(first)
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        _, chart = publication_history_data('org-example', 'live', self.read)
+        self.assertIn('2022', chart['years'])
+
     def test_chart_routes(self) -> None:
         """
         Checks the pages and public JSON and CSV paths use the same source records.

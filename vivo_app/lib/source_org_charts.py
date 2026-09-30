@@ -14,6 +14,7 @@ from vivo_app.lib.source_pages import (
     documents,
     first_text,
     organization_members,
+    publication_year,
     record_data,
     record_id,
     response_object,
@@ -82,9 +83,9 @@ def publication_history_data(
         for publication in publications:
             if not isinstance(publication, dict):
                 raise PageDataError('A chart publication has invalid data.')
-            date = first_text(publication.get('date'))
-            year = int(date[:4]) if len(date) >= 4 and date[:4].isdigit() else 0
-            if 1900 <= year <= current_year:
+            year_text = publication_year(publication)
+            year = int(year_text) if year_text else 0
+            if year and year <= current_year:
                 counts[year] = counts.get(year, 0) + 1
                 all_years.add(year)
         summaries.append((member_id, first_text(person.get('name')), first_text(person.get('title')), counts))
