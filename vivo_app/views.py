@@ -868,7 +868,9 @@ def edit_fast_search(request):
 def page_not_found(request, exception=None, template_name='404.html'):
     """Custom 404 page handler."""
     logger.warning('404 Not Found: %s', request.path, extra={'status_code': 404, 'request': request}, exc_info=exception)
-    return render_or_stub(request, template_name, status=404)
+    return render_or_stub(
+        request, template_name, context={'hero_background_relpath': get_random_background_relpath()}, status=404
+    )
 
 
 def server_error(request, template_name='500.html'):

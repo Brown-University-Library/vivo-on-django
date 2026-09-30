@@ -928,6 +928,8 @@ class SourcePageTests(TestCase):
             organization = self.get_page('/display/org-absent')
         self.assertContains(person, 'Page not found', status_code=404)
         self.assertContains(person, 'href="/search/">searching for a researcher</a>', status_code=404)
+        self.assertContains(person, 'id="search-homepage"', status_code=404)
+        self.assertContains(person, 'name="q"', status_code=404)
         self.assertContains(organization, 'Page not found', status_code=404)
 
     def test_publication_title_joins_venue_without_extra_comma(self) -> None:
