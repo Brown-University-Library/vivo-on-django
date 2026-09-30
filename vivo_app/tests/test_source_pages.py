@@ -286,7 +286,10 @@ class SourcePageTests(TestCase):
         """
         Checks missing source data and unsupported requests fail without sample content.
         """
-        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+        with (
+            patch('vivo_app.lib.source_pages.read_source', side_effect=self.read),
+            patch('vivo_app.lib.source_books.read_source', side_effect=self.read),
+        ):
             self.assertEqual(self.get_page('/search?q=Other').status_code, 503)
             self.assertEqual(self.get_page('/search?q=Example&format=xml').status_code, 503)
             self.assertEqual(self.get_page('/display/other').status_code, 503)
