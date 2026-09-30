@@ -7,7 +7,15 @@ from datetime import date
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_pages import documents, entries, first_text, record_data, record_id, response_object
+from vivo_app.lib.source_pages import (
+    documents,
+    entries,
+    first_text,
+    publication_year,
+    record_data,
+    record_id,
+    response_object,
+)
 from vivo_app.lib.source_requests import image_path, profile_export_key, read_source, source_origin
 
 FormatReader = Callable[[RequestKey, str], RecordedResponse]
@@ -73,9 +81,8 @@ def publication_entries(raw: dict[str, object]) -> list[dict[str, object]]:
     converted: list[dict[str, object]] = []
     for row in entries(raw, 'contributor_to'):
         item = {name: row[name] for name in names if name in row}
-        date_text = first_text(row.get('date'))
-        year = int(date_text[:4]) if len(date_text) >= 4 and date_text[:4].isdigit() else 0
-        item['year'] = year if 1900 <= year <= 2200 else None
+        year = publication_year(row)
+        item['year'] = int(year) if year else None
         item['external_url'] = row.get('url')
         converted.append(item)
     converted.sort(

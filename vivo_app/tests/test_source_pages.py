@@ -977,6 +977,7 @@ class SourcePageTests(TestCase):
             'contributor_to': [
                 {'title': 'Earlier', 'date': '2010-01-01', 'url': 'https://example.invalid/earlier'},
                 {'title': 'Later', 'date': '2024-01-01'},
+                {'title': 'Malformed', 'date': '20201'},
             ],
             'appointments': [
                 {'uri': 'invented-old', 'name': 'Older', 'start_date': '2010-01-01'},
@@ -1012,8 +1013,9 @@ class SourcePageTests(TestCase):
             response = self.get_page('/display/invented-nested.json')
         self.assertEqual(response.status_code, 200)
         body = json.loads(response.content)
-        self.assertEqual([row['title'] for row in body['contributor_to']], ['Later', 'Earlier'])
+        self.assertEqual([row['title'] for row in body['contributor_to']], ['Later', 'Earlier', 'Malformed'])
         self.assertEqual(body['contributor_to'][1]['external_url'], 'https://example.invalid/earlier')
+        self.assertIsNone(body['contributor_to'][2]['year'])
         self.assertEqual(body['appointments'][0]['org_name'], 'Example Hospital')
         self.assertIsNone(body['appointments'][0]['end_date'])
         self.assertEqual([row['id'] for row in body['credentials']], ['invented-credential', 'invented-earlier'])
