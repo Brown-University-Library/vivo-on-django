@@ -458,6 +458,17 @@ def website_icon(url: str) -> str:
     return result
 
 
+def website_rank(value: object) -> int:
+    """
+    Reads the whole-number part of a website's saved rank as Rails does.
+
+    Called by: profile_sections()
+    """
+    text = str(value) if isinstance(value, (int, float, str)) else ''
+    match = re.match(r'\s*[+-]?\d+', text)
+    return int(match.group()) if match else 0
+
+
 def publication_type(item: dict[str, object]) -> tuple[str, str]:
     """
     Turns the citation class into Rails-style filter labels and identifiers.
@@ -685,7 +696,7 @@ def profile_sections(
     websites = entries(item, 'on_the_web')
     if websites:
         overview += '<h4 class="research-areas panel-heading">On the Web</h4><div id="on-the-web-list" class="brown-research-areas-list">'
-        for website in websites:
+        for website in sorted(websites, key=lambda row: website_rank(row.get('rank'))):
             url = safe_url(website.get('url'))
             if url:
                 icon = website_icon(url)

@@ -279,6 +279,25 @@ class SourcePageTests(TestCase):
         self.assertIn('<p>Second paragraph.</p>', research)
         self.assertNotIn('unsafe()', research)
 
+    def test_profile_websites_follow_saved_rank(self) -> None:
+        """
+        Checks website links follow rank, including decimal ranks and ties.
+        """
+        item: dict[str, object] = {
+            'on_the_web': [
+                {'url': 'https://example.invalid/last', 'text': 'Last website', 'rank': '3'},
+                {'url': 'https://example.invalid/first', 'text': 'First website', 'rank': '0.25'},
+                {'url': 'https://example.invalid/tied', 'text': 'Tied website', 'rank': 0},
+                {'url': 'https://example.invalid/middle', 'text': 'Middle website', 'rank': '1'},
+            ]
+        }
+        overview = next(
+            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Overview'
+        )
+        self.assertLess(overview.index('First website'), overview.index('Tied website'))
+        self.assertLess(overview.index('Tied website'), overview.index('Middle website'))
+        self.assertLess(overview.index('Middle website'), overview.index('Last website'))
+
     def test_teaching_overview_keeps_source_formatting(self) -> None:
         """
         Checks Teaching Overview keeps line breaks and bold text without active markup.
