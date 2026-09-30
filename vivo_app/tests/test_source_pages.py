@@ -847,6 +847,18 @@ class SourcePageTests(TestCase):
         result = organization_publications_data('org-example', 'live', self.read)
         self.assertEqual(result, 'Id\tFaculty\tTitle\tAuthors\tYear\tType\tCitation\n')
 
+    def test_search_result_without_email_has_no_empty_email_link(self) -> None:
+        """Avoids an unusable email control for organizations without an address."""
+        key = search_key('Example', 1, [])
+        source = json.loads(self.responses[key].body)
+        org = json.loads(self.responses[profile_key('org-example')].body)['response']['docs'][0]
+        source['response']['docs'] = [org]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            page = self.get_page('/search?q=Example')
+        self.assertNotContains(page, 'href="mailto:"')
+        self.assertContains(page, 'Example Department')
+
     def test_search_form_keeps_selected_filters_for_new_query(self) -> None:
         """
         Checks a new search submitted from a filtered result page retains its filters.
