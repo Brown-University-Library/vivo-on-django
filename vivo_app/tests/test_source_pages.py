@@ -1112,6 +1112,28 @@ class SourcePageTests(TestCase):
         self.assertTrue(body['has_coauthors'])
         self.assertTrue(body['has_collaborators'])
 
+    def test_profile_json_accepts_website_rank_prefix(self) -> None:
+        """
+        Checks a saved website rank with trailing text follows Rails number conversion.
+        """
+        key = profile_export_key('invented-nested-rank')
+        uri = 'http://vivo.brown.edu/individual/invented-nested-rank'
+        raw = {
+            'uri': uri,
+            'on_the_web': [
+                {'rank': '2later', 'url': 'https://example.invalid/later'},
+                {'rank': '1first', 'url': 'https://example.invalid/first'},
+            ],
+        }
+        doc = {'id': uri, 'record_type': ['PEOPLE'], 'json_txt': [json.dumps(raw)]}
+        self.responses[key] = self.solr_response([doc], 1)
+        self.responses[visualization_key('coauthors')] = RecordedResponse(200, (('content-type', 'application/json'),), b'{}')
+        with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
+            result = self.get_page('/display/invented-nested-rank.json')
+        self.assertEqual(result.status_code, 200)
+        body = json.loads(result.content)
+        self.assertEqual([row['rank'] for row in body['on_the_web']], [1, 2])
+
     def test_active_team_uses_external_members_and_solr_profiles(self) -> None:
         """
         Checks a configured active team builds its faculty rows without a team Solr record.

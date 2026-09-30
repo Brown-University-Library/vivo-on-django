@@ -290,12 +290,12 @@ def faculty_item_from_doc(
     item['on_the_web'] = [
         {
             **row,
-            'rank': int(first_text(row.get('rank')) or '0'),
+            'rank': website_rank(row.get('rank')),
             'id': first_text(row.get('uri')),
             'url': first_text(row.get('url')).strip(),
             'text': (first_text(row.get('text')) or first_text(row.get('url'))).strip(),
         }
-        for row in sorted(web_pages, key=lambda row: int(first_text(row.get('rank')) or '0'))
+        for row in sorted(web_pages, key=lambda row: website_rank(row.get('rank')))
     ]
     areas = raw.get('research_areas', [])
     if not isinstance(areas, list) or any(not isinstance(area, str) for area in areas):
