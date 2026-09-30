@@ -298,6 +298,24 @@ class SourcePageTests(TestCase):
         self.assertLess(overview.index('Tied website'), overview.index('Middle website'))
         self.assertLess(overview.index('Middle website'), overview.index('Last website'))
 
+    def test_profile_websites_trim_saved_urls_and_labels(self) -> None:
+        """
+        Checks website URLs and labels lose outer spaces before appearing in a profile.
+        """
+        item: dict[str, object] = {
+            'on_the_web': [
+                {'url': '  https://example.invalid/web  ', 'text': ' Example link  '},
+                {'url': 'https://example.invalid/unnamed'},
+            ]
+        }
+        overview = next(
+            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Overview'
+        )
+        self.assertIn('href="https://example.invalid/web"', overview)
+        self.assertIn('>Example link</a>', overview)
+        self.assertIn('>https://example.invalid/unnamed</a>', overview)
+        self.assertNotIn('href="  https://', overview)
+
     def test_teaching_overview_keeps_source_formatting(self) -> None:
         """
         Checks Teaching Overview keeps line breaks and bold text without active markup.

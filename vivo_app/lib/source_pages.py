@@ -697,15 +697,13 @@ def profile_sections(
     if websites:
         overview += '<h4 class="research-areas panel-heading">On the Web</h4><div id="on-the-web-list" class="brown-research-areas-list">'
         for website in sorted(websites, key=lambda row: website_rank(row.get('rank'))):
-            url = safe_url(website.get('url'))
+            raw_url = website.get('url')
+            url = safe_url(raw_url.strip() if isinstance(raw_url, str) else raw_url)
             if url:
+                label = first_text(website.get('text')).strip() if website.get('text') is not None else url
                 icon = website_icon(url)
                 badge = (
-                    '<img src="'
-                    + escape(icon, quote=True)
-                    + '" width="17" alt="'
-                    + escape(first_text(website.get('text')) or 'Website', quote=True)
-                    + '">'
+                    '<img src="' + escape(icon, quote=True) + '" width="17" alt="' + escape(label, quote=True) + '">'
                     if icon
                     else '<span class="glyphicon glyphicon-link" aria-hidden="true"></span>'
                 )
@@ -715,7 +713,7 @@ def profile_sections(
                     + ' <a href="'
                     + escape(url, quote=True)
                     + '" target="_blank" rel="noopener">'
-                    + escape(first_text(website.get('text')) or 'Website')
+                    + escape(label)
                     + '</a></li>'
                 )
         overview += '</div>'
