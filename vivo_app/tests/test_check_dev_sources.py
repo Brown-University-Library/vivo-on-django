@@ -9,6 +9,7 @@ from unittest.mock import patch
 from django.core.management import call_command
 from django.test import SimpleTestCase, override_settings
 
+from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse
 from vivo_app.management.commands.check_dev_sources import source_check
 
@@ -108,3 +109,30 @@ class CheckDevSourcesTests(SimpleTestCase):
         assert isinstance(digest, str)
         self.assertEqual(len(digest), 64)
         self.assertNotIn('invented record content', json.dumps(result))
+
+    def test_search_check_processes_results_without_printing_them(self) -> None:
+        """
+        Checks the selected query reaches search processing and only a count is reported.
+        """
+        output = io.StringIO()
+        with patch(
+            'vivo_app.management.commands.check_dev_sources.search_data',
+            return_value={'results': [{'name': 'Invented Private Name'}]},
+        ) as search:
+            call_command('check_dev_sources', '--source', 'search', '--search-query', 'invented', stdout=output)
+        report = json.loads(output.getvalue())
+        self.assertEqual(report['sources']['search']['results_on_page'], 1)
+        self.assertNotIn('Invented Private Name', output.getvalue())
+        self.assertNotIn('invented', output.getvalue())
+        search.assert_called_once_with([('q', 'invented')], 'live')
+
+    def test_search_check_reports_parser_failure(self) -> None:
+        """
+        Checks a search processing error produces a safe nonzero report.
+        """
+        with patch(
+            'vivo_app.management.commands.check_dev_sources.search_data',
+            side_effect=PageDataError('Solr did not return search facets.'),
+        ):
+            result = source_check('search', '')
+        self.assertEqual(result, {'status': 'error', 'reason': 'Solr did not return search facets.'})

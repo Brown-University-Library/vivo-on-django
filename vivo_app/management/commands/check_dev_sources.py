@@ -14,10 +14,11 @@ from vivo_app.lib.page_data import selected_mode
 from vivo_app.lib.prepared_data import PageDataError, load_bundle
 from vivo_app.lib.source_books import homepage_books
 from vivo_app.lib.source_graph import visualization_list
+from vivo_app.lib.source_pages import search_data
 from vivo_app.lib.source_requests import read_source, vitro_key
 from vivo_app.lib.source_status import status_data
 
-SOURCES = ('solr', 'viz', 'vivo', 'books')
+SOURCES = ('solr', 'search', 'viz', 'vivo', 'books')
 
 
 def prepared_check() -> dict[str, object]:
@@ -37,7 +38,7 @@ def prepared_check() -> dict[str, object]:
     return result
 
 
-def source_check(name: str, vivo_id: str) -> dict[str, object]:
+def source_check(name: str, vivo_id: str, search_query: str = 'biology') -> dict[str, object]:
     """
     Makes one small read for a named service and keeps returned content private.
 
@@ -47,6 +48,12 @@ def source_check(name: str, vivo_id: str) -> dict[str, object]:
         if name == 'solr':
             status_data('live')
             result: dict[str, object] = {'status': 'ok', 'check': 'searchable record count'}
+        elif name == 'search':
+            search = search_data([('q', search_query)], 'live')
+            results = search.get('results')
+            if not isinstance(results, list):
+                raise PageDataError('Search processing returned no result list.')
+            result = {'status': 'ok', 'check': 'search results and facets', 'results_on_page': len(results)}
         elif name == 'viz':
             visualization_list('coauthors', 'live')
             result = {'status': 'ok', 'check': 'graph availability list'}
@@ -75,12 +82,13 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: CommandParser) -> None:
         """
-        Accepts repeated source names and one optional existing VIVO record ID.
+        Accepts repeated source names, one optional VIVO record ID, and a search term.
 
         Called by: Django management command runner
         """
         parser.add_argument('--source', action='append', choices=SOURCES, default=[])
         parser.add_argument('--vivo-id', default='')
+        parser.add_argument('--search-query', default='biology', help='Term for the search source check (not printed)')
 
     def handle(self, *args: object, **options: object) -> None:
         """
@@ -92,9 +100,11 @@ class Command(BaseCommand):
         source_names = [name for name in requested if isinstance(name, str)] if isinstance(requested, list) else []
         requested_id = options.get('vivo_id')
         vivo_id = requested_id if isinstance(requested_id, str) else ''
+        requested_query = options.get('search_query')
+        search_query = requested_query if isinstance(requested_query, str) else ''
         report: dict[str, object]
         if source_names:
-            sources = {name: source_check(name, vivo_id) for name in dict.fromkeys(source_names)}
+            sources = {name: source_check(name, vivo_id, search_query) for name in dict.fromkeys(source_names)}
             report = {'sources': sources}
             failed = any(value['status'] != 'ok' for value in sources.values())
         else:
