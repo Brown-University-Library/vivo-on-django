@@ -1109,6 +1109,7 @@ class SourcePageTests(TestCase):
                 with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
                     result = team_data('team-example', 'live', self.read)
                 self.assertEqual(result['faculty_positions'][0]['url'], '/mounted-app/display/invented-a')
+                self.assertEqual(result['visualization_url'], '/mounted-app/display/team-example/viz/collab')
             finally:
                 set_script_prefix(previous_prefix)
 
