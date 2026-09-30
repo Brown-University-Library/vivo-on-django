@@ -807,6 +807,23 @@ class SourcePageTests(TestCase):
         self.assertIn('Alpha', publications_data[0]['html'])
         self.assertIn('Zeta', publications_data[1]['html'])
 
+    def test_publication_year_uses_public_site_range(self) -> None:
+        """
+        Checks dates outside the public site's accepted range do not display or outrank valid years.
+        """
+        rows: dict[str, object] = {
+            'contributor_to': [
+                {'type': 'http://vivo.brown.edu/ontology/citation#Article', 'title': 'Too Early', 'date': '1899'},
+                {'type': 'http://vivo.brown.edu/ontology/citation#Article', 'title': 'Current', 'date': '2020-01-01'},
+                {'type': 'http://vivo.brown.edu/ontology/citation#Article', 'title': 'Too Late', 'date': '2201'},
+            ]
+        }
+        publications_data, _ = publications(rows)
+        self.assertIn('Current', publications_data[0]['html'])
+        self.assertIn('2020', publications_data[0]['html'])
+        self.assertNotIn('1899', publications_data[1]['html'])
+        self.assertNotIn('2201', publications_data[2]['html'])
+
     def test_publication_links_match_available_source_fields(self) -> None:
         """
         Checks DOI and PubMed links appear together, while another safe URL is used only when neither exists.

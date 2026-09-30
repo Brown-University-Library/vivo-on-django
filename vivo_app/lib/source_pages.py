@@ -483,6 +483,17 @@ def publication_type(item: dict[str, object]) -> tuple[str, str]:
     return '_' + label.lower().replace(' ', '_'), label
 
 
+def publication_year(item: dict[str, object]) -> str:
+    """
+    Keeps the year range accepted by the public publication model.
+
+    Called by: publication_html(), publication_book_html(), publication_book_section_html(), publication_citation(), publications()
+    """
+    match = re.match(r'^[0-9]{4}(?![0-9])', first_text(item.get('date')).strip())
+    year = match.group() if match else ''
+    return year if year and 1900 <= int(year) <= 2200 else ''
+
+
 def publication_book_html(item: dict[str, object]) -> str:
     """
     Formats a book title, publisher details, and year like the public page.
@@ -501,8 +512,8 @@ def publication_book_html(item: dict[str, object]) -> str:
         value = first_text(item.get(field)).strip()
         if value:
             details.append(escape(value))
-    year = first_text(item.get('date'))[:4]
-    if re.fullmatch(r'\d{4}', year):
+    year = publication_year(item)
+    if year:
         details.append(year)
     if details:
         citation += (' ' if citation else '') + ', '.join(details) + '.'
@@ -528,8 +539,8 @@ def publication_book_section_html(item: dict[str, object]) -> str:
         value = first_text(item.get(field)).strip()
         if value:
             details.append(escape(value))
-    year = first_text(item.get('date'))[:4]
-    if re.fullmatch(r'\d{4}', year):
+    year = publication_year(item)
+    if year:
         details.append(year)
     pages = first_text(item.get('pages')).strip()
     if pages:
@@ -546,7 +557,7 @@ def publication_html(item: dict[str, object]) -> str:
     authors = first_text(item.get('authors')).strip().rstrip(',.')
     title = first_text(item.get('title')).strip().strip('“”"')
     venue = first_text(item.get('published_in')) or first_text(item.get('venue'))
-    year = first_text(item.get('date'))[:4]
+    year = publication_year(item)
     parts = []
     title_text = '"' + escape(title.rstrip('.')) + '." ' if title else ''
     if venue:
@@ -555,7 +566,7 @@ def publication_html(item: dict[str, object]) -> str:
         value = first_text(item.get(field))
         if value:
             parts.append(prefix + escape(value))
-    if re.fullmatch(r'\d{4}', year):
+    if year:
         parts.append(year)
     pages = first_text(item.get('pages'))
     if pages:
@@ -613,8 +624,8 @@ def publication_citation(item: dict[str, object]) -> str:
         value = first_text(item.get(name))
         if value:
             fields.append(prefix + value)
-    year = first_text(item.get('date'))[:4]
-    if re.fullmatch(r'\d{4}', year):
+    year = publication_year(item)
+    if year:
         fields.append(year)
     pages = first_text(item.get('pages'))
     if pages:
@@ -633,7 +644,7 @@ def publications(item: dict[str, object]) -> tuple[list[dict[str, str]], list[di
     raw = entries(item, 'contributor_to')
     raw.sort(
         key=lambda row: (
-            -int(first_text(row.get('date'))[:4]) if first_text(row.get('date'))[:4].isdigit() else 0,
+            -int(publication_year(row) or 0),
             first_text(row.get('title')).strip().lower(),
         )
     )
