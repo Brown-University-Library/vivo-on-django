@@ -784,6 +784,7 @@ class SourcePageTests(TestCase):
         try:
             with patch('vivo_app.lib.source_pages.read_source') as read:
                 response = self.client.get('/search?querytext=Example+Term', SCRIPT_NAME=prefix)
+            assert isinstance(response, HttpResponse)
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response['Location'], prefix + '/search?q=Example+Term')
             read.assert_not_called()
@@ -799,6 +800,7 @@ class SourcePageTests(TestCase):
         set_script_prefix(prefix)
         try:
             response = self.client.get('/people', SCRIPT_NAME=prefix)
+            assert isinstance(response, HttpResponse)
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response['Location'], prefix + '/search?fq=record_type%7CPEOPLE')
         finally:
@@ -813,6 +815,7 @@ class SourcePageTests(TestCase):
         set_script_prefix(prefix)
         try:
             response = self.client.get('/ous', SCRIPT_NAME=prefix)
+            assert isinstance(response, HttpResponse)
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response['Location'], prefix + '/search?fq=record_type%7CORGANIZATION')
         finally:
@@ -827,6 +830,7 @@ class SourcePageTests(TestCase):
         set_script_prefix(prefix)
         try:
             response = self.client.get('/display/', SCRIPT_NAME=prefix)
+            assert isinstance(response, HttpResponse)
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response['Location'], prefix + '/search')
         finally:

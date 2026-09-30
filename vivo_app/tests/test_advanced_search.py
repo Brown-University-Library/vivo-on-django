@@ -66,6 +66,7 @@ class AdvancedSearchTests(SimpleTestCase):
             '/search/advanced/',
             {'title_t': 'Professor', 'department_t': 'Biology', 'name_t': 'Example', 'search': 'true'},
         )
+        assert isinstance(response, HttpResponse)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             parse_qs(urlsplit(response['Location']).query),

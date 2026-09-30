@@ -363,8 +363,7 @@ def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | 
         'remove_query_url': search_url('', 1, filters),
         'selected_filters': selected_filters,
         'form_filters': [
-            {'name': f'fq_{index}', 'value': field + '|' + value}
-            for index, (field, value) in enumerate(filters)
+            {'name': f'fq_{index}', 'value': field + '|' + value} for index, (field, value) in enumerate(filters)
         ],
     }
 
