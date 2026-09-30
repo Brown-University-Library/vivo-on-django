@@ -772,6 +772,26 @@ class SourcePageTests(TestCase):
         self.assertIn('<i>Invented Book</i>. Example Press, 2018.', markup)
         self.assertNotIn('"Invented Book', markup)
 
+    def test_book_section_citation_shows_parent_book(self) -> None:
+        """
+        Checks chapters show the parent book, editor, publisher, year, and pages.
+        """
+        markup = publication_html(
+            {
+                'type': 'http://vivo.brown.edu/ontology/citation#BookSection',
+                'title': 'Invented Chapter',
+                'book': 'Invented Collection',
+                'editors': 'A. Editor',
+                'publisher_label': 'Example Press',
+                'date': '2020',
+                'pages': '10-20',
+            }
+        )
+        self.assertIn(
+            '"Invented Chapter." <i>Invented Collection</i>, edited by A. Editor, Example Press, 2020, pp. 10-20.',
+            markup,
+        )
+
     def test_publication_links_match_available_source_fields(self) -> None:
         """
         Checks DOI and PubMed links appear together, while another safe URL is used only when neither exists.
