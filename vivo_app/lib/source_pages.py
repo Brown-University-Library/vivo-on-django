@@ -1250,12 +1250,14 @@ def organization_publications_data(
     members = organization_members(organization, extra_member_ids or [], mode, reader)
     member_ids = list(dict.fromkeys(record_id({'id': first_text(member.get('faculty_uri'))}) for member in members))
     member_docs: list[dict[str, object]] = []
-    if member_ids:
-        member_response = response_object(member_details_key(member_ids), mode, reader)
-        member_docs, _ = documents(member_response)
-        found = {record_id(doc) for doc in member_docs}
-        if found != set(member_ids) or len(member_docs) != len(member_ids):
+    for start in range(0, len(member_ids), 100):
+        batch = member_ids[start : start + 100]
+        member_response = response_object(member_details_key(batch), mode, reader)
+        docs, _ = documents(member_response)
+        found = {record_id(doc) for doc in docs}
+        if found != set(batch) or len(docs) != len(batch):
             raise PageDataError('Solr did not return every organization member.')
+        member_docs.extend(docs)
     lines = ['Id\tFaculty\tTitle\tAuthors\tYear\tType\tCitation\n']
     for doc in member_docs:
         if first_text(doc.get('record_type')) != 'PEOPLE':
