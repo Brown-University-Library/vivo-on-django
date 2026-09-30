@@ -15,7 +15,6 @@ from django.conf import settings
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.html import strip_tags
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
@@ -1077,7 +1076,7 @@ def organization_data(
         'page_title': name,
         'image': thumbnail_url(doc, True),
         'website_links': websites,
-        'overview_html': '<p>' + escape(strip_tags(overview)) + '</p>' if overview else '',
+        'overview_html': '<p>' + render_profile_html(overview) + '</p>' if overview else '',
         'visualization_url': reverse('visualization_collab', args=[identifier]) if settings.VIZ_ENABLED and members else '',
         'visualization_graph': organization_preview_graph() if settings.VIZ_ENABLED and members else {},
         'administrative_positions': administrative,

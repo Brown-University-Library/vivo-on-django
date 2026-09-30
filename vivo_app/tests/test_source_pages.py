@@ -97,7 +97,7 @@ class SourcePageTests(TestCase):
                 json.dumps(
                     {
                         'name': 'Example Department',
-                        'overview': '<strong>Invented department</strong>',
+                        'overview': '<p><strong>Invented department</strong></p><script>unsafe()</script>',
                         'people': [
                             {
                                 'faculty_uri': person['id'],
@@ -401,6 +401,8 @@ class SourcePageTests(TestCase):
             self.assertEqual(self.get_page('/source-images/profile-images/567/8/logo.png').status_code, 200)
             organization = self.get_page('/display/org-example')
             self.assertContains(organization, 'Invented department')
+            self.assertContains(organization, '<strong>Invented department</strong>')
+            self.assertNotContains(organization, 'unsafe()')
             self.assertContains(organization, 'Researcher, Invented')
             self.assertContains(organization, '/display/org-example/viz/collab')
             self.assertContains(organization, '/source-images/profile-images/123/4/portrait.jpg')
