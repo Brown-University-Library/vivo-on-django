@@ -131,6 +131,7 @@ def version(request: HttpRequest) -> HttpResponse:
         request_started,
         version_text,
     )
+    context['response']['loaded_version'] = version_helper.LOADED_VERSION
     output: str = json.dumps(context, sort_keys=True, indent=2)
     logger.debug('version output, ``%s``', output)
     response = HttpResponse(output.encode('utf-8'), content_type='application/json; charset=utf-8')

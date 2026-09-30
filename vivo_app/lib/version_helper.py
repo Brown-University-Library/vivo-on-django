@@ -141,3 +141,8 @@ class GatherCommitAndBranchData:
         elif head_text:
             branch = 'detached'
         return branch
+
+
+_loaded_gatherer = GatherCommitAndBranchData()
+_loaded_gatherer.gather()
+LOADED_VERSION = f'{_loaded_gatherer.branch} {_loaded_gatherer.commit}'

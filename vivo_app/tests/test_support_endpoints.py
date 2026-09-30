@@ -33,6 +33,7 @@ class ErrorCheckTests(SimpleTestCase):
 
 
 class VersionEndpointTests(SimpleTestCase):
+    @patch('vivo_app.views.version_helper.LOADED_VERSION', 'main loaded123')
     @patch('vivo_app.views.GatherCommitAndBranchData')
     def test_version_returns_standard_response(self, gatherer_class: MagicMock) -> None:
         """
@@ -51,6 +52,7 @@ class VersionEndpointTests(SimpleTestCase):
         self.assertIn('timestamp', payload['request'])
         self.assertEqual(payload['response']['ip'], '127.0.0.1')
         self.assertEqual(payload['response']['version'], 'main abc123')
+        self.assertEqual(payload['response']['loaded_version'], 'main loaded123')
         self.assertNotIn('mount_check', payload['response'])
         self.assertIn('timetaken', payload['response'])
         gatherer.gather.assert_called_once_with()
