@@ -1032,6 +1032,24 @@ class SourcePageTests(TestCase):
         self.assertEqual(body['people'][0]['label'], 'Researcher, Invented')
         self.assertEqual(body['people'][0]['thumbnail_url'], 'http://example.invalid/profile-images/123/4/portrait.jpg')
 
+    def test_organization_json_orders_websites_by_rank(self) -> None:
+        """
+        Checks organization JSON follows the same website order as its page.
+        """
+        key = profile_key('org-example')
+        response = json.loads(self.responses[key].body)
+        item = json.loads(response['response']['docs'][0]['json_txt'][0])
+        item['web_pages'] = [
+            {'rank': '2', 'url': 'https://example.invalid/later'},
+            {'rank': '1', 'url': 'https://example.invalid/earlier'},
+        ]
+        response['response']['docs'][0]['json_txt'] = [json.dumps(item)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
+            result = self.get_page('/display/org-example.json')
+        body = json.loads(result.content)
+        self.assertEqual([row['url'] for row in body['web_pages']], ['https://example.invalid/earlier', 'https://example.invalid/later'])
+
     def test_nested_profile_json_converts_and_sorts_entries(self) -> None:
         """
         Checks publication, appointment, training, credential, and collaborator JSON fields.

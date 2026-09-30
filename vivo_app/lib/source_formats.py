@@ -92,7 +92,7 @@ def organization_json_data(
             }
         )
     web_pages: list[dict[str, object]] = []
-    for row in entries(raw, 'web_pages'):
+    for row in sorted(entries(raw, 'web_pages'), key=lambda value: website_rank(value.get('rank'))):
         url = first_text(row.get('url')).strip()
         web_pages.append(
             {
