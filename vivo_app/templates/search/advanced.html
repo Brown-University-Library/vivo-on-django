@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Researchers @ Brown{% endblock %}
+{% block content %}
+<div class="container-fluid col-sm-12">
+  <div class="row col-lg-12 col-md-12 col-sm-12">
+    <p>&nbsp;</p>
+    <div class="wrapper__back-to-search col-xs-12">
+      <a href="{% url 'search' %}" class="back-to-search"><span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>Back to search</a>
+    </div>
+    <h2>Advanced Search</h2>
+    <form action="{% url 'advanced_search' %}" method="get">
+      <div class="form-group">
+        <label for="name_t">Researcher Name</label>
+        <input class="form-control" id="name_t" name="name_t" type="text" value="{{ name }}" autofocus>
+      </div>
+      <div class="form-group">
+        <label for="title_t">Researcher Title</label>
+        <input class="form-control" id="title_t" name="title_t" type="text" value="{{ title }}">
+      </div>
+      <input type="hidden" name="search" value="true">
+      <button type="submit" class="btn btn-default btn-lg sympl-search">Search</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

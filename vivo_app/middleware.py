@@ -62,6 +62,8 @@ class LocalPageDataMiddleware:
             'version',
             'bot_detect_challenge',
         }
+        if settings.PAGE_DATA_MODE in {'live', 'replay'}:
+            supported.add('advanced_search')
         if (
             settings.PAGE_DATA_MODE in {'prepared', 'replay', 'live'}
             and getattr(view_func, '__module__', '') == 'vivo_app.views'

@@ -17,6 +17,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from .lib import version_helper
+from .lib.advanced_search import advanced_search_query
 from .lib.assets import get_random_background_relpath
 from .lib.bot_detect import SESSION_KEY, verify_token
 from .lib.display import build_display_context, build_publications_context, get_type_for_id
@@ -609,9 +610,24 @@ def search(request):
     return render_or_stub(request, 'search/results.html', context)
 
 
-def advanced_search(request):
-    """Handle advanced search requests."""
-    return render_or_stub(request, 'search/advanced.html')
+def advanced_search(request: HttpRequest) -> HttpResponse:
+    """
+    Shows the public advanced search form or redirects its fielded query.
+
+    Called by: config.urls
+    """
+    name_value = request.GET.get('name_t', '')
+    title_value = request.GET.get('title_t', '')
+    name = name_value if isinstance(name_value, str) else ''
+    title = title_value if isinstance(title_value, str) else ''
+    if request.GET.get('search') == 'true':
+        try:
+            query = advanced_search_query(title, name)
+        except PageDataError as exc:
+            return data_unavailable(exc)
+        if query:
+            return redirect(reverse('search').rstrip('/') + '?' + urlencode({'q': query}))
+    return render(request, 'search/advanced.html', {'name': name, 'title': title})
 
 
 def search_facets(request):

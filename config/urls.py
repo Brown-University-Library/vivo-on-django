@@ -151,6 +151,7 @@ urlpatterns = [
     path('edit/web_link/<str:faculty_id>/delete', vivo_views.web_link_delete, name='web_link_delete'),
     # Search
     path('search', vivo_views.search),
+    path('search/advanced', vivo_views.advanced_search),
     path('search_facets', vivo_views.search_facets),
     path('__prepared_assets/<str:name>', vivo_views.prepared_asset, name='prepared_asset'),
     path('source-images/<path:filename>', vivo_views.source_image, name='source_image'),
