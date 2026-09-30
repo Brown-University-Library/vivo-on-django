@@ -457,6 +457,7 @@ class SourcePageTests(TestCase):
         ):
             search = self.get_page('/search?q=Example')
             self.assertContains(search, 'Invented Researcher')
+            self.assertContains(search, '&copy; 2017')
             self.assertContains(search, '/css/public.css')
             self.assertContains(search, '/css/individual.css')
             self.assertContains(search, '/display/invented-a')
