@@ -1212,7 +1212,7 @@ def organization_data(
             'url': reverse('display_show_public', args=[member_id]),
             'image': portraits.get(member_id, static('images/vivo_blank_profile.jpg')),
         }
-        if first_text(member.get('general_position')).endswith('#FacultyAdministrativePosition'):
+        if first_text(member.get('general_position')) == 'http://vivoweb.org/ontology/core#FacultyAdministrativePosition':
             administrative.append(row)
         else:
             faculty.append(row)

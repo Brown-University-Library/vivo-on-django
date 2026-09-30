@@ -753,6 +753,20 @@ class SourcePageTests(TestCase):
         assert isinstance(sections, list)
         self.assertIn('org_placeholder.png', sections[0]['html'])
 
+    def test_organization_uses_exact_administrative_role(self) -> None:
+        """Keeps lookalike role identifiers in the ordinary faculty group."""
+        key = profile_key('org-example')
+        source = json.loads(self.responses[key].body)
+        item = json.loads(source['response']['docs'][0]['json_txt'][0])
+        item['people'][0]['general_position'] = 'http://example.invalid/other#FacultyAdministrativePosition'
+        source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = organization_data('org-example', 'live', self.read)
+        self.assertEqual(result['administrative_positions'], [])
+        faculty = result['faculty_positions']
+        assert isinstance(faculty, list)
+        self.assertEqual(len(faculty), 1)
+
     def test_numbered_facet_filter_keeps_search_selection(self) -> None:
         """
         Checks search submissions retain a facet sent as a numbered form field.
