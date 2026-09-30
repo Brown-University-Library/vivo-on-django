@@ -362,6 +362,10 @@ def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | 
         'next_url': search_url(query, page + 1, filters) if page * 20 < total else '',
         'remove_query_url': search_url('', 1, filters),
         'selected_filters': selected_filters,
+        'form_filters': [
+            {'name': f'fq_{index}', 'value': field + '|' + value}
+            for index, (field, value) in enumerate(filters)
+        ],
     }
 
 

@@ -751,6 +751,14 @@ class SourcePageTests(TestCase):
             response = self.get_page('/search?q=Example&fq_0=record_type%7CPEOPLE')
         self.assertContains(response, 'Remove filter PEOPLE')
 
+    def test_search_form_keeps_selected_filters_for_new_query(self) -> None:
+        """
+        Checks a new search submitted from a filtered result page retains its filters.
+        """
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            response = self.get_page('/search?q=Example&fq=record_type%7CPEOPLE')
+        self.assertContains(response, 'name="fq_0" value="record_type|PEOPLE"')
+
     def test_search_bottom_pagination_links_to_adjacent_pages(self) -> None:
         """
         Checks the bottom pagination has the previous and next links shown by Rails.

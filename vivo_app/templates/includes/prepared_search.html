@@ -5,6 +5,7 @@
       <div class="form-group"><label class="sr-only" for="query_top">Search query</label><input autocomplete="off" name="q" id="query_top" title="Search query" value="{{ query }}" accesskey="q" placeholder="Find an expert..." class="form-control query" type="text"></div>
       <button type="submit" class="btn btn-default sympl-search hidden-xs"><span class="glyphicon glyphicon-search" aria-hidden="true"></span><span>Search</span></button>
       <button type="submit" class="btn btn-default btn-block sympl-search hidden-sm hidden-md hidden-lg"><span class="glyphicon glyphicon-search" aria-hidden="true"></span><span>Search</span></button>
+      {% for filter in form_filters %}<input type="hidden" name="{{ filter.name }}" value="{{ filter.value }}">{% endfor %}
     </form>
   </div>
 </nav>
