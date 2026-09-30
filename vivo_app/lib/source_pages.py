@@ -270,6 +270,7 @@ def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | 
         result: dict[str, object] = {
             'id': identifier,
             'name': name,
+            'schema_type': 'http://schema.org/Person' if kind == 'PEOPLE' else 'http://schema.org/Organization',
             'title': title[:47] + '...' if len(title) > 50 else title,
             'email': first_text(item.get('email')),
             'url': reverse('display_show_public', args=[identifier]),
