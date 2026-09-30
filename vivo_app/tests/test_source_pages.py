@@ -763,6 +763,18 @@ class SourcePageTests(TestCase):
         self.assertEqual(len(result['results']), 1)
         self.assertEqual(result['total'], 2)
 
+    def test_search_ignores_record_with_unreadable_json(self) -> None:
+        """Keeps readable records when one search document has broken JSON."""
+        key = search_key('Example', 1, [])
+        original = json.loads(self.responses[key].body)
+        bad = dict(original['response']['docs'][0], json_txt=['{invalid'])
+        original['response']['docs'].insert(0, bad)
+        original['response']['numFound'] = 2
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(original).encode())
+        result = search_data([('q', 'Example')], 'live', self.read)
+        self.assertEqual(len(result['results']), 1)
+        self.assertEqual(result['results'][0]['name'], 'Invented Researcher')
+
     def test_search_form_keeps_selected_filters_for_new_query(self) -> None:
         """
         Checks a new search submitted from a filtered result page retains its filters.
