@@ -259,6 +259,20 @@ class SourcePageTests(TestCase):
         self.assertIn('<p>Second paragraph.</p>', research)
         self.assertNotIn('unsafe()', research)
 
+    def test_teaching_overview_keeps_source_formatting(self) -> None:
+        """
+        Checks Teaching Overview keeps line breaks and bold text without active markup.
+        """
+        item: dict[str, object] = {
+            'teaching_overview': '<p><strong>Courses taught:<br>Example Biology</strong></p><script>unsafe()</script>'
+        }
+        teaching = next(
+            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Teaching'
+        )
+        self.assertIn('<div class="property-list" role="list" displaylimit="5">', teaching)
+        self.assertIn('<p><strong>Courses taught:<br>Example Biology</strong></p>', teaching)
+        self.assertNotIn('unsafe()', teaching)
+
     def test_affiliations_show_credentials(self) -> None:
         """
         Checks credentials appear newest first, with missing fields and source text handled safely.

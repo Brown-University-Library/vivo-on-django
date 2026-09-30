@@ -877,8 +877,9 @@ def profile_sections(
         if teaching_overview:
             teaching_html += (
                 '<div class="panel-heading"><h4 class="panel-title">Teaching Overview</h4></div><div class="panel-body">'
-                + escape(strip_tags(teaching_overview))
-                + '</div>'
+                '<div class="property-list" role="list" displaylimit="5">'
+                + render_profile_html(teaching_overview)
+                + '</div></div>'
             )
         if teaching:
             teaching_html += '<div class="panel-heading"><h4 class="panel-title">Teaching</h4></div><div class="panel-body"><table class="table table-hover"><tbody>'
