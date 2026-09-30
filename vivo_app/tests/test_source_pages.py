@@ -752,6 +752,22 @@ class SourcePageTests(TestCase):
         self.assertContains(first, '<a href="/search?q=Example&amp;page=2" aria-label="Next page">')
         self.assertContains(second, '<a href="/search?q=Example" aria-label="Previous page">')
 
+    def test_old_search_term_redirects_without_source_request(self) -> None:
+        """
+        Checks an old querytext URL redirects to the mounted search route.
+        """
+        prefix = '/mounted-app'
+        previous_prefix = get_script_prefix()
+        set_script_prefix(prefix)
+        try:
+            with patch('vivo_app.lib.source_pages.read_source') as read:
+                response = self.client.get('/search?querytext=Example+Term', SCRIPT_NAME=prefix)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response['Location'], prefix + '/search?q=Example+Term')
+            read.assert_not_called()
+        finally:
+            set_script_prefix(previous_prefix)
+
     def test_search_result_identifies_people_and_organizations(self) -> None:
         """
         Checks search cards identify their record types in the page markup.

@@ -606,6 +606,9 @@ def web_link_delete(request, faculty_id):
 # Search
 def search(request):
     """Handle search requests."""
+    if 'querytext' in request.GET:
+        destination = reverse('search').rstrip('/') + '?' + urlencode({'q': request.GET['querytext']})
+        return redirect(destination)
     try:
         if request.GET.get('format') == 'json':
             if settings.PAGE_DATA_MODE in {'live', 'replay'}:
