@@ -3,6 +3,8 @@ Checks organization charts with made-up Solr responses and no network access.
 """
 
 import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from django.http import HttpResponse
@@ -131,6 +133,20 @@ class OrganizationChartTests(TestCase):
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
         _, chart = publication_history_data('org-example', 'live', self.read)
         self.assertEqual(chart['columns'], ['invented-a', 'invented-b'])
+
+    def test_team_chart_uses_solr_member_order(self) -> None:
+        """Keeps the order in which the source returns team faculty records."""
+        source = json.loads(self.responses[chart_member_key(['invented-a', 'invented-b', 'invented-c'])].body)
+        docs = source['response']['docs'][:2]
+        self.responses[chart_member_key(['invented-a', 'invented-b'])] = self.response(list(reversed(docs)))
+        with TemporaryDirectory() as directory:
+            manifest = Path(directory) / 'teams.json'
+            manifest.write_text(
+                json.dumps({'teams': {'team-example': {'name': 'Invented Team', 'member_ids': ['invented-a', 'invented-b']}}})
+            )
+            with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
+                _, chart = publication_history_data('team-example', 'live', self.read)
+        self.assertEqual(chart['columns'], ['invented-b', 'invented-a'])
 
     def test_chart_routes(self) -> None:
         """

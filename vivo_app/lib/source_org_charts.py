@@ -34,7 +34,6 @@ def organization_chart_members(
         reader = read_source
     if identifier.startswith('team-'):
         name, member_ids = team_definition(identifier)
-        team = True
     else:
         response = response_object(profile_key(identifier), mode, reader)
         docs, _ = documents(response)
@@ -45,7 +44,6 @@ def organization_chart_members(
         extras = custom_organization_members(identifier, mode, reader)
         members = organization_members(organization, extras, mode, reader)
         member_ids = list(dict.fromkeys(record_id({'id': first_text(row.get('faculty_uri'))}) for row in members))
-        team = False
     if not name or len(member_ids) > 500:
         raise PageDataError('The chart organization has no usable member list.')
     found: dict[str, tuple[dict[str, object], str]] = {}
@@ -60,8 +58,7 @@ def organization_chart_members(
             if member_id not in batch or first_text(doc.get('record_type')) != 'PEOPLE' or member_id in found:
                 raise PageDataError('Solr returned an unrelated chart member.')
             found[member_id] = (record_data(doc), first_text(doc.get('display_name_s')))
-    ordered_ids = [member_id for member_id in member_ids if member_id in found] if team else list(found)
-    result = [(member_id, found[member_id][0], found[member_id][1]) for member_id in ordered_ids]
+    result = [(member_id, person, display) for member_id, (person, display) in found.items()]
     return name, result
 
 
