@@ -22,10 +22,12 @@ def vivo_globals(request: HttpRequest) -> dict[str, object]:
     contact_us_url: str = contact_template.replace('{LINK}', page_link) if contact_template else ''
 
     local_page_data = settings.PAGE_DATA_MODE in {'prepared', 'replay'}
+    source_page_styles = settings.PAGE_DATA_MODE in {'prepared', 'replay', 'live'}
     context: dict[str, object] = {
         'manager_url': manager_url,
         'google_analytics_key': '' if local_page_data else analytics_key,
         'local_page_data': local_page_data,
+        'source_page_styles': source_page_styles,
         'notice_banner': notice_banner_value,
         'contact_us_url': contact_us_url,
     }

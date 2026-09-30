@@ -21,13 +21,13 @@
     {% endif %}
 
     <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
-    {% if local_page_data %}<link rel="stylesheet" href="{% static 'css/bootstrap-theme.css' %}">{% endif %}
+    {% if source_page_styles %}<link rel="stylesheet" href="{% static 'css/bootstrap-theme.css' %}">{% endif %}
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
-    {% if not local_page_data %}<link rel="stylesheet" href="{% static 'css/bootstrap-theme.css' %}">{% endif %}
+    {% if not source_page_styles %}<link rel="stylesheet" href="{% static 'css/bootstrap-theme.css' %}">{% endif %}
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    {% if local_page_data %}
+    {% if source_page_styles %}
     <link rel="stylesheet" href="{% static 'css/individual.css' %}">
     <link rel="stylesheet" href="{% static 'css/public.css' %}">
     {% endif %}
@@ -35,7 +35,7 @@
     {% block extra_css %}{% endblock %}
     {% block head_extra %}{% endblock %}
 </head>
-<body class="no-logo fae {% if local_page_data %}prepared-data{% endif %} {% block body_class %}{% endblock %}">
+<body class="no-logo fae {% if source_page_styles %}prepared-data{% endif %} {% block body_class %}{% endblock %}">
 <header id="branding" role="banner">
     <div class="header">
         <div class="hgroup">
