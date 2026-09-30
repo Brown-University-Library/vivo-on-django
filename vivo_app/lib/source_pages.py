@@ -819,6 +819,33 @@ def profile_sections(
             + escape(strip_tags(affiliation_text))
             + '</div>'
         )
+    credentials = entries(item, 'credentials')
+    if credentials:
+        affiliation_html += (
+            '<div class="panel-heading"><h4 class="panel-title">Credentials/Licenses</h4></div>'
+            '<div class="panel-body panel-body-credentials"><table class="table table-hover"><tbody>'
+        )
+        for row in sorted(
+            credentials, key=lambda entry: profile_date(entry.get('start_date')) or date(1900, 1, 1), reverse=True
+        ):
+            grantor = ', '.join(
+                value[:1].upper() + value[1:]
+                for field in ('grantor_name', 'specialty_name')
+                if (value := first_text(row.get(field)))
+            )
+            number = first_text(row.get('number'))
+            affiliation_html += (
+                '<tr class="tableRow" role="listitem"><td>'
+                + escape(first_text(row.get('name')))
+                + '</td><td>'
+                + escape(grantor)
+                + '</td><td>'
+                + escape(profile_year_range(row))
+                + '</td><td>'
+                + escape('#' + number if number else '')
+                + '</td></tr>'
+            )
+        affiliation_html += '</tbody></table></div>'
     if appointments:
         affiliation_html += '<div class="panel-heading"><h4 class="panel-title">Appointments</h4></div><div class="panel-body"><table class="table table-hover"><tbody>'
         for row in appointments:
@@ -839,7 +866,7 @@ def profile_sections(
                 + '</td></tr>'
             )
         affiliation_html += '</tbody></table></div>'
-    if appointments or affiliation_text or collaborators or entries(item, 'credentials'):
+    if appointments or affiliation_text or collaborators or credentials:
         sections.append({'id': 'Affiliations', 'label': 'Affiliations', 'html': affiliation_html})
     teaching = item.get('teacher_for', [])
     if not isinstance(teaching, list) or any(not isinstance(course, str) for course in teaching):

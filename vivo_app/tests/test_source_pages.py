@@ -244,6 +244,35 @@ class SourcePageTests(TestCase):
         self.assertIn('2001-2003', background)
         self.assertNotIn('<Unsafe>', background)
 
+    def test_affiliations_show_credentials(self) -> None:
+        """
+        Checks credentials appear newest first, with missing fields and source text handled safely.
+        """
+        item: dict[str, object] = {
+            'credentials': [
+                {'name': 'Earlier license', 'start_date': '2001-01-01', 'end_date': '2004-01-01'},
+                {
+                    'name': 'Later license',
+                    'start_date': '2015-01-01',
+                    'grantor_name': 'state board',
+                    'specialty_name': 'psychology',
+                    'number': 'LIC-123',
+                },
+                {'name': '<Undated license>'},
+            ]
+        }
+        affiliations = next(
+            section['html']
+            for section in profile_sections(item, 'live', self.read, 0, '')
+            if section['id'] == 'Affiliations'
+        )
+        self.assertIn('Credentials/Licenses', affiliations)
+        self.assertLess(affiliations.index('Later license'), affiliations.index('Earlier license'))
+        self.assertLess(affiliations.index('Earlier license'), affiliations.index('&lt;Undated license&gt;'))
+        self.assertIn('State board, Psychology</td><td>2015</td><td>#LIC-123', affiliations)
+        self.assertIn('2001-2004', affiliations)
+        self.assertNotIn('<Undated license>', affiliations)
+
     def test_search_profile_and_images_use_only_invented_responses(self) -> None:
         """
         Checks a search, person page, affiliation lookup, and both images without network access.
