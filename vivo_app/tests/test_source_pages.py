@@ -74,6 +74,7 @@ class SourcePageTests(TestCase):
                 }
             ],
             'education': [{'date': '2001', 'degree': 'PhD', 'school_name': 'Example University'}],
+            'awards': '<ul><li>Example <a href="https://example.invalid/award">Award</a></li></ul>',
             'appointments': [{'name': 'Editor', 'org_name': 'Example Journal', 'start_date': '2020-01-01'}],
             'teacher_for': ['EXMP 1000 - Example Course'],
             'cv': [{'cv_link': 'http://example.invalid/docs/i/invented_cv.pdf?dt=1'}],
@@ -236,6 +237,7 @@ class SourcePageTests(TestCase):
             self.assertContains(profile, 'Example publication')
             self.assertContains(profile, 'https://www.ncbi.nlm.nih.gov/pubmed/?term=12345678')
             self.assertContains(profile, 'Example University')
+            self.assertContains(profile, '<a href="https://example.invalid/award">Award</a>')
             self.assertContains(profile, 'EXMP 1000')
             self.assertContains(profile, '/source-images/profile-images/567/8/logo.png')
             self.assertContains(profile, '/source-documents/docs/i/invented_cv.pdf?dt=1')

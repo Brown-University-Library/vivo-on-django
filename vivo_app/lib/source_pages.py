@@ -17,6 +17,7 @@ from django.utils.html import strip_tags
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
+from vivo_app.lib.source_html import render_profile_html
 from vivo_app.lib.source_requests import (
     FACETS,
     FACET_TITLES,
@@ -707,9 +708,10 @@ def profile_sections(
     awards = first_text(item.get('awards'))
     if awards:
         background += (
-            '<div class="panel-heading"><h4 class="panel-title">Honors and Awards</h4></div><div class="panel-body">'
-            + escape(strip_tags(awards))
-            + '</div>'
+            '<div class="panel-heading"><h4 class="panel-title">Honors and Awards</h4></div>'
+            '<div class="panel-body"><div class="property-list" role="list" displaylimit="5">'
+            + render_profile_html(awards)
+            + '</div></div>'
         )
     if education or awards or entries(item, 'training'):
         sections.append({'id': 'Background', 'label': 'Background', 'html': background})
