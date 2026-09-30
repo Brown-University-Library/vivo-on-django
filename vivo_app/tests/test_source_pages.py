@@ -58,7 +58,7 @@ class SourcePageTests(TestCase):
             'name': 'Invented Researcher',
             'title': 'Example Professor',
             'email': 'invented@example.invalid',
-            'overview': '<p>Invented &amp; tested.</p>',
+            'overview': '<p>Invented &amp; tested. <a href="https://example.invalid/lab">Example lab</a></p>',
             'affiliations': [{'uri': 'http://vivo.brown.edu/individual/org-example', 'name': 'Example Department'}],
             'research_areas': ['liver', 'Excretion', 'absorption'],
             'on_the_web': [{'url': 'https://example.invalid/person', 'text': 'Website'}],
@@ -237,6 +237,7 @@ class SourcePageTests(TestCase):
             self.assertContains(profile, 'Example publication')
             self.assertContains(profile, 'https://www.ncbi.nlm.nih.gov/pubmed/?term=12345678')
             self.assertContains(profile, 'Example University')
+            self.assertContains(profile, '<a href="https://example.invalid/lab">Example lab</a>')
             self.assertContains(profile, '<a href="https://example.invalid/award">Award</a>')
             self.assertContains(profile, 'EXMP 1000')
             self.assertContains(profile, '/source-images/profile-images/567/8/logo.png')

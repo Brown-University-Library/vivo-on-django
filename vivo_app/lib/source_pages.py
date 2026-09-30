@@ -601,7 +601,7 @@ def profile_sections(
     Called by: profile_data()
     """
     sections: list[dict[str, str]] = []
-    overview = '<h3>Overview</h3><p>' + escape(strip_tags(first_text(item.get('overview')))) + '</p>'
+    overview = '<h3>Overview</h3><p>' + render_profile_html(first_text(item.get('overview'))) + '</p>'
     affiliations = entries(item, 'affiliations')
     if affiliations:
         overview += (
