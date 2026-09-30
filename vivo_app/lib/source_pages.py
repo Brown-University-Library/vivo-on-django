@@ -120,7 +120,7 @@ def thumbnail_url(doc: dict[str, object], organization: bool = False) -> str:
     Called by: search_data(), profile_data(), organization_thumbnail()
     """
     path = image_path(doc.get('thumbnail_file_path_s'))
-    fallback = 'images/brown_logo_small.png' if organization else 'images/vivo_blank_profile.jpg'
+    fallback = 'images/org_placeholder.png' if organization else 'images/vivo_blank_profile.jpg'
     result = reverse('source_image', kwargs={'filename': path.lstrip('/')}) if path else static(fallback)
     return result
 
