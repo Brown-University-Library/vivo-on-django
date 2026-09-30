@@ -796,6 +796,20 @@ class SourcePageTests(TestCase):
         finally:
             set_script_prefix(previous_prefix)
 
+    def test_organization_entry_redirects_to_filtered_search(self) -> None:
+        """
+        Checks the organization entry link opens the Organization-filtered search.
+        """
+        prefix = '/mounted-app'
+        previous_prefix = get_script_prefix()
+        set_script_prefix(prefix)
+        try:
+            response = self.client.get('/ous', SCRIPT_NAME=prefix)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response['Location'], prefix + '/search?fq=record_type%7CORGANIZATION')
+        finally:
+            set_script_prefix(previous_prefix)
+
     def test_search_result_identifies_people_and_organizations(self) -> None:
         """
         Checks search cards identify their record types in the page markup.

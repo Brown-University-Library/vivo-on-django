@@ -764,6 +764,9 @@ def people(request):
 
 def organizations(request):
     """Legacy organizations listing."""
+    if settings.PAGE_DATA_MODE in {'live', 'replay'}:
+        destination = reverse('search').rstrip('/') + '?' + urlencode({'fq': 'record_type|ORGANIZATION'})
+        return redirect(destination)
     try:
         saved_response = get_response_data(request.path_info, query_pairs(request.GET))
         if saved_response is not None:
