@@ -1227,7 +1227,11 @@ def organization_data(
         'id': identifier,
         'name': name,
         'page_title': name,
-        'image': thumbnail_url(doc, True),
+        'image': (
+            thumbnail_url(doc, True)
+            if image_path(doc.get('thumbnail_file_path_s'))
+            else static('images/org_placeholder_noborder.png')
+        ),
         'website_links': websites,
         'overview_html': '<p>' + render_profile_html(overview) + '</p>' if overview else '',
         'visualization_url': reverse('visualization_collab', args=[identifier]) if settings.VIZ_ENABLED and members else '',

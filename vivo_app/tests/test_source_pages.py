@@ -767,6 +767,17 @@ class SourcePageTests(TestCase):
         assert isinstance(faculty, list)
         self.assertEqual(len(faculty), 1)
 
+    def test_organization_without_logo_uses_borderless_placeholder(self) -> None:
+        """Matches the organization page's plain default image."""
+        key = profile_key('org-example')
+        source = json.loads(self.responses[key].body)
+        source['response']['docs'][0].pop('thumbnail_file_path_s')
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = organization_data('org-example', 'live', self.read)
+        image = result['image']
+        assert isinstance(image, str)
+        self.assertIn('org_placeholder_noborder.png', image)
+
     def test_numbered_facet_filter_keeps_search_selection(self) -> None:
         """
         Checks search submissions retain a facet sent as a numbered form field.
