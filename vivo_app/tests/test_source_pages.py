@@ -751,6 +751,18 @@ class SourcePageTests(TestCase):
             response = self.get_page('/search?q=Example&fq_0=record_type%7CPEOPLE')
         self.assertContains(response, 'Remove filter PEOPLE')
 
+    def test_search_ignores_other_solr_record_types(self) -> None:
+        """Keeps visible results when Solr also returns an unrelated record type."""
+        key = search_key('Example', 1, [])
+        original = json.loads(self.responses[key].body)
+        other = dict(original['response']['docs'][0], record_type=['DOCUMENT'])
+        original['response']['docs'].insert(0, other)
+        original['response']['numFound'] = 2
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(original).encode())
+        result = search_data([('q', 'Example')], 'live', self.read)
+        self.assertEqual(len(result['results']), 1)
+        self.assertEqual(result['total'], 2)
+
     def test_search_form_keeps_selected_filters_for_new_query(self) -> None:
         """
         Checks a new search submitted from a filtered result page retains its filters.
