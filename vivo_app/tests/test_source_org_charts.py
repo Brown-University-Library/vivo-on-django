@@ -142,7 +142,9 @@ class OrganizationChartTests(TestCase):
         with TemporaryDirectory() as directory:
             manifest = Path(directory) / 'teams.json'
             manifest.write_text(
-                json.dumps({'teams': {'team-example': {'name': 'Invented Team', 'member_ids': ['invented-a', 'invented-b']}}})
+                json.dumps(
+                    {'teams': {'team-example': {'name': 'Invented Team', 'member_ids': ['invented-a', 'invented-b']}}}
+                )
             )
             with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
                 _, chart = publication_history_data('team-example', 'live', self.read)
@@ -157,7 +159,10 @@ class OrganizationChartTests(TestCase):
         response['response']['docs'][0]['json_txt'] = json.dumps(first)
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
         _, chart = publication_history_data('org-example', 'live', self.read)
-        self.assertIn('2022', chart['years'])
+        years = chart['years']
+        if not isinstance(years, list):
+            self.fail('Chart years should be a list.')
+        self.assertIn('2022', years)
 
     def test_chart_routes(self) -> None:
         """
