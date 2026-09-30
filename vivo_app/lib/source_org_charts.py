@@ -60,9 +60,7 @@ def organization_chart_members(
             if member_id not in batch or first_text(doc.get('record_type')) != 'PEOPLE' or member_id in found:
                 raise PageDataError('Solr returned an unrelated chart member.')
             found[member_id] = (record_data(doc), first_text(doc.get('display_name_s')))
-    if set(found) != set(member_ids):
-        raise PageDataError('Solr did not return every chart member.')
-    ordered_ids = member_ids if team else list(found)
+    ordered_ids = [member_id for member_id in member_ids if member_id in found] if team else list(found)
     result = [(member_id, found[member_id][0], found[member_id][1]) for member_id in ordered_ids]
     return name, result
 

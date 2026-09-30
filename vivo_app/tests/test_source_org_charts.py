@@ -122,6 +122,16 @@ class OrganizationChartTests(TestCase):
         self.assertEqual([node['nodeName'] for node in nodes[1] if isinstance(node, dict)], ['Area A'])
         self.assertEqual(len(links), 2)
 
+    def test_chart_skips_listed_member_missing_from_solr(self) -> None:
+        """Uses available members when a listed person has no Solr record."""
+        key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
+        response = json.loads(self.responses[key].body)
+        response['response']['docs'] = response['response']['docs'][:2]
+        response['response']['numFound'] = 2
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        _, chart = publication_history_data('org-example', 'live', self.read)
+        self.assertEqual(chart['columns'], ['invented-a', 'invented-b'])
+
     def test_chart_routes(self) -> None:
         """
         Checks the pages and public JSON and CSV paths use the same source records.
