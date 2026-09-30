@@ -35,6 +35,7 @@
       <h2 class="visible-print">Results</h2>
       <div class="row results-row col-lg-12 col-md-12 col-sm-12 col-xs-12">
         {% for item in results %}
+        <div class="clearfix visible-sm-block visible-xs-block"></div>
         <article class="col-lg-4 col-md-4 col-sm-12 col-xs-12 expert-results" data-result-id="{{ item.id }}">
           <div class="gap30"></div>
           <section itemscope itemtype="{{ item.schema_type }}" class="vcard person prepared-result-intro" role="region"><section class="share-contact" role="region"><div class="share-contact--bottom"></div><div class="results__photo" id="photo-{{ item.id }}"><a href="{{ item.url }}"><img src="{{ item.thumbnail }}" alt="Profile picture of {{ item.name }}" class="img-circle" ></a></div>
