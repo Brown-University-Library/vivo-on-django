@@ -11,6 +11,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
+from django.urls import get_script_prefix, set_script_prefix
 
 from tools.source_capture import CapturingReader
 from vivo_app.lib.prepared_data import PageDataError
@@ -244,6 +245,35 @@ class SourcePageTests(TestCase):
             document = self.get_page(redirect['Location'])
             self.assertEqual(document['Content-Type'], 'application/pdf')
             self.assertTrue(document.content.startswith(b'%PDF-'))
+
+    def test_live_search_links_keep_the_deployment_prefix(self) -> None:
+        """
+        Checks search links, profile images, and JSON destinations stay inside a mounted Django application.
+        """
+        prefix = '/mounted-app'
+        previous_prefix = get_script_prefix()
+        set_script_prefix(prefix)
+        try:
+            with (
+                patch('vivo_app.lib.source_pages.read_source', side_effect=self.read),
+                patch('vivo_app.views.read_source', side_effect=self.read),
+            ):
+                search = self.client.get('/search?q=Example', SCRIPT_NAME=prefix)
+                self.assertContains(search, f'action="{prefix}/search/"')
+                self.assertContains(search, f'href="{prefix}/search/advanced/"')
+                self.assertContains(search, f'href="{prefix}/display/invented-a"')
+                self.assertContains(search, f'href="{prefix}/search?q=Example')
+                self.assertContains(search, f'src="{prefix}/source-images/profile-images/123/4/portrait.jpg"')
+                image = self.client.get('/source-images/profile-images/123/4/portrait.jpg', SCRIPT_NAME=prefix)
+                assert isinstance(image, HttpResponse)
+                self.assertEqual(image.status_code, 200)
+                self.assertEqual(image.content, b'invented-portrait')
+                response = self.client.get('/search?q=Example&format=json', SCRIPT_NAME=prefix)
+                assert isinstance(response, HttpResponse)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(json.loads(response.content)[0]['uri'], f'http://testserver{prefix}/display/invented-a')
+        finally:
+            set_script_prefix(previous_prefix)
 
     def test_varied_search_and_sparse_profile_states(self) -> None:
         """

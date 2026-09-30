@@ -12,6 +12,7 @@ from urllib.parse import quote, urlencode, urlsplit
 
 from django.conf import settings
 from django.templatetags.static import static
+from django.urls import reverse
 from django.utils.html import strip_tags
 
 from vivo_app.lib.prepared_data import PageDataError
@@ -120,7 +121,7 @@ def thumbnail_url(doc: dict[str, object], organization: bool = False) -> str:
     """
     path = image_path(doc.get('thumbnail_file_path_s'))
     fallback = 'images/brown_logo_small.png' if organization else 'images/vivo_blank_profile.jpg'
-    result = '/source-images' + path if path else static(fallback)
+    result = reverse('source_image', kwargs={'filename': path.lstrip('/')}) if path else static(fallback)
     return result
 
 
@@ -156,7 +157,7 @@ def search_url(query: str, page: int, filters: list[tuple[str, str]]) -> str:
     params.extend(('fq', field + '|' + value) for field, value in filters)
     if page != 1:
         params.append(('page', str(page)))
-    return '/search' + ('?' + urlencode(params) if params else '')
+    return reverse('search').rstrip('/') + ('?' + urlencode(params) if params else '')
 
 
 def facet_data(response: dict[str, object], query: str, filters: list[tuple[str, str]]) -> list[dict[str, object]]:
@@ -246,13 +247,13 @@ def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | 
             'name': name,
             'title': title[:47] + '...' if len(title) > 50 else title,
             'email': first_text(item.get('email')),
-            'url': '/display/' + identifier,
+            'url': reverse('display_show_public', args=[identifier]),
             'thumbnail': thumbnail_url(doc, kind == 'ORGANIZATION'),
         }
         matches = match_html(response, doc)
         if matches:
             result['matches_html'] = matches
-            result['matches_url'] = '/display/' + identifier + '#All'
+            result['matches_url'] = reverse('display_show_public', args=[identifier]) + '#All'
         results.append(result)
     page_count = math.ceil(total / 20)
     if page_count <= 10:

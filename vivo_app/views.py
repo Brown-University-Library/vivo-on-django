@@ -592,7 +592,7 @@ def search(request):
             if settings.PAGE_DATA_MODE in {'live', 'replay'}:
                 pairs = [(key, value) for key, value in query_pairs(request.GET) if key != 'format']
                 return JsonResponse(
-                    search_json_data(pairs, settings.PAGE_DATA_MODE, request.build_absolute_uri('/')), safe=False
+                    search_json_data(pairs, settings.PAGE_DATA_MODE, request.build_absolute_uri(reverse('home'))), safe=False
                 )
             saved_response = get_response_data(request.path_info, query_pairs(request.GET))
             if saved_response is not None:
