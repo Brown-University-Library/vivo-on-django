@@ -1096,6 +1096,22 @@ class SourcePageTests(TestCase):
                 with self.assertRaises(PageDataError):
                     team_data('team-missing', 'live', self.read)
 
+    def test_team_member_links_keep_the_deployment_prefix(self) -> None:
+        """
+        Checks team member links remain inside a mounted Django application.
+        """
+        with TemporaryDirectory() as directory:
+            manifest = Path(directory) / 'teams.json'
+            manifest.write_text(json.dumps({'teams': {'team-example': {'name': 'Invented Team', 'member_ids': ['invented-a']}}}))
+            previous_prefix = get_script_prefix()
+            set_script_prefix('/mounted-app')
+            try:
+                with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
+                    result = team_data('team-example', 'live', self.read)
+                self.assertEqual(result['faculty_positions'][0]['url'], '/mounted-app/display/invented-a')
+            finally:
+                set_script_prefix(previous_prefix)
+
     def test_custom_organization_adds_configured_members(self) -> None:
         """
         Checks a fixed custom member appears on the page and in its publication export.

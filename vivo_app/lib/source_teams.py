@@ -8,6 +8,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.templatetags.static import static
+from django.urls import reverse
 from django.utils.html import escape
 
 from vivo_app.lib.prepared_data import PageDataError
@@ -134,7 +135,7 @@ def team_data(identifier: str, mode: str, reader: SourceReader | None = None) ->
             {
                 'name': first_text(doc.get('display_name_s')) or first_text(item.get('name')),
                 'title': first_text(item.get('title')),
-                'url': '/display/' + member_id,
+                'url': reverse('display_show_public', args=[member_id]),
                 'image': thumbnail_url(doc),
             }
         )
