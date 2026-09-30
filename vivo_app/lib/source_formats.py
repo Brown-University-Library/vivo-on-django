@@ -176,6 +176,7 @@ def publication_entries(raw: dict[str, object]) -> list[dict[str, object]]:
     converted: list[dict[str, object]] = []
     for row in entries(raw, 'contributor_to'):
         item = {name: row[name] for name in names if name in row}
+        item['title'] = first_text(row.get('title'))
         year = publication_year(row)
         item['year'] = int(year) if year else None
         item['external_url'] = row.get('url')

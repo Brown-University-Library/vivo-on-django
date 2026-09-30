@@ -16,6 +16,7 @@ from django.urls import get_script_prefix, set_script_prefix
 from tools.source_capture import CapturingReader
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
+from vivo_app.lib.source_formats import publication_entries
 from vivo_app.lib.source_graph import visualization_key
 from vivo_app.lib.source_pages import (
     organization_data,
@@ -1133,6 +1134,13 @@ class SourcePageTests(TestCase):
         self.assertEqual(result.status_code, 200)
         body = json.loads(result.content)
         self.assertEqual([row['rank'] for row in body['on_the_web']], [1, 2])
+
+    def test_profile_json_publication_without_title_has_empty_title(self) -> None:
+        """
+        Checks an untitled publication uses the empty title supplied by Rails.
+        """
+        rows: dict[str, object] = {'contributor_to': [{'date': '2024'}]}
+        self.assertEqual(publication_entries(rows)[0]['title'], '')
 
     def test_active_team_uses_external_members_and_solr_profiles(self) -> None:
         """
