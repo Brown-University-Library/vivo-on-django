@@ -634,7 +634,11 @@ class SourcePageTests(TestCase):
         self.responses[profile_key('invented-sparse')] = self.solr_response([sparse_doc], 1)
         empty = search_data([('q', 'none')], 'live', self.read)
         self.assertEqual(empty['results'], [])
-        self.assertEqual(empty['start'], 0)
+        self.assertEqual(empty['start'], 1)
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            empty_page = self.get_page('/search?q=none')
+        self.assertContains(empty_page, '<span id="search-page-start">1</span>')
+        self.assertContains(empty_page, '<span id="search-page-end">0</span>')
         later = search_data([('q', 'Example'), ('page', '2')], 'live', self.read)
         self.assertEqual((later['start'], later['end']), (21, 21))
         pagination = later['pagination']

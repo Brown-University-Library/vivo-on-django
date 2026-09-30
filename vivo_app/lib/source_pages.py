@@ -305,7 +305,7 @@ def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | 
         'page': page,
         'page_size': 20,
         'total': total,
-        'start': (page - 1) * 20 + 1 if total else 0,
+        'start': (page - 1) * 20 + 1,
         'end': min(page * 20, total),
         'results': results,
         'facets': facet_data(response, query, filters),
