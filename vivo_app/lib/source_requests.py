@@ -104,7 +104,7 @@ def profile_key(identifier: str) -> RequestKey:
         '/select',
         (
             ('q', query),
-            ('fl', 'id,record_type,thumbnail_file_path_s,json_txt,display_name_s'),
+            ('fl', 'id,record_type,thumbnail_file_path_s,json_txt,display_name_s,show_visualizations_s'),
             ('rows', '1'),
             ('wt', 'json'),
         ),

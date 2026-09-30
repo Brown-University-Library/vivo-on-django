@@ -206,6 +206,13 @@ class SourcePageTests(TestCase):
         assert isinstance(response, HttpResponse)
         return response
 
+    def test_profile_lookup_requests_visualization_setting(self) -> None:
+        """
+        Checks Solr is asked for the field that controls the coauthor link.
+        """
+        fields = dict(profile_key('invented-a').query)['fl'].split(',')
+        self.assertIn('show_visualizations_s', fields)
+
     def test_search_profile_and_images_use_only_invented_responses(self) -> None:
         """
         Checks a search, person page, affiliation lookup, and both images without network access.
