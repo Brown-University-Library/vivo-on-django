@@ -782,6 +782,20 @@ class SourcePageTests(TestCase):
         finally:
             set_script_prefix(previous_prefix)
 
+    def test_people_entry_redirects_to_filtered_search(self) -> None:
+        """
+        Checks the people entry link opens the People-filtered search.
+        """
+        prefix = '/mounted-app'
+        previous_prefix = get_script_prefix()
+        set_script_prefix(prefix)
+        try:
+            response = self.client.get('/people', SCRIPT_NAME=prefix)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response['Location'], prefix + '/search?fq=record_type%7CPEOPLE')
+        finally:
+            set_script_prefix(previous_prefix)
+
     def test_search_result_identifies_people_and_organizations(self) -> None:
         """
         Checks search cards identify their record types in the page markup.
