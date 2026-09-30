@@ -29,6 +29,7 @@ from vivo_app.lib.source_pages import (
     publications,
     search_data,
     search_json_data,
+    safe_match_text,
     selected_highlights,
 )
 from vivo_app.lib.source_requests import (
@@ -799,6 +800,17 @@ class SourcePageTests(TestCase):
         markup = match_html(response, doc)
         self.assertIn('<p>Department: <strong>Biology</strong> one, <strong>Biology</strong> two</p>', markup)
         self.assertIn('<p>Research areas: <strong>Science</strong> lab</p>', markup)
+
+    def test_search_matches_display_markup_and_remove_source_label(self) -> None:
+        """
+        Checks match details keep bold terms and render source markup as visible text.
+        """
+        value = '<strong>Science</strong> <script>alert(1)</script> Agent Faculty Member Organization or Person at Brown Person'
+        cleaned = safe_match_text(value)
+        self.assertIn('<strong>Science</strong>', cleaned)
+        self.assertIn('&lsaquo;script&rsaquo;', cleaned)
+        self.assertNotIn('<script>', cleaned)
+        self.assertNotIn('Agent Faculty Member Organization or Person at Brown Person', cleaned)
 
     def test_missing_response_and_unsupported_option_do_not_fall_back(self) -> None:
         """

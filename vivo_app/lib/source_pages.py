@@ -248,6 +248,18 @@ def selected_highlights(fields: dict[str, object], limit: int = 5) -> list[tuple
     return selected
 
 
+def safe_match_text(value: str) -> str:
+    """
+    Shows source markup as text while preserving Solr's bold match markers.
+
+    Called by: match_html(), tests
+    """
+    cleaned = value.replace('Agent Faculty Member Organization or Person at Brown Person', '')
+    result = escape(cleaned).replace('&#x27;', '&#39;')
+    result = result.replace('&lt;strong&gt;', '<strong>').replace('&lt;/strong&gt;', '</strong>')
+    return result.replace('&lt;', '&lsaquo;').replace('&gt;', '&rsaquo;')
+
+
 def match_html(response: dict[str, object], doc: dict[str, object]) -> str:
     """
     Shows a small escaped preview when Solr highlights a result.
@@ -272,12 +284,12 @@ def match_html(response: dict[str, object], doc: dict[str, object]) -> str:
         if values:
             joined = ', '.join(values).replace('<p>', '').replace('</p>', '').replace('\u00a0', ' ')
             joined = re.sub(r'\s{2,}', ' ', joined)
-            safe_value = escape(joined).replace('&lt;strong&gt;', '<strong>').replace('&lt;/strong&gt;', '</strong>')
+            safe_value = safe_match_text(joined)
             paragraphs.append('<p>' + caption + ': ' + safe_value + '</p>')
     caption_fields = {field for field, _ in captions}
     for field, value in selected:
         if field not in caption_fields:
-            safe_value = escape(value).replace('&lt;strong&gt;', '<strong>').replace('&lt;/strong&gt;', '</strong>')
+            safe_value = safe_match_text(value)
             paragraphs.append('<p>' + safe_value + '</p>')
     return ''.join(paragraphs)
 
