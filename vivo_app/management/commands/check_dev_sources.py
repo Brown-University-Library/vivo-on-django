@@ -14,11 +14,11 @@ from vivo_app.lib.page_data import selected_mode
 from vivo_app.lib.prepared_data import PageDataError, load_bundle
 from vivo_app.lib.source_books import homepage_books
 from vivo_app.lib.source_graph import visualization_list
-from vivo_app.lib.source_pages import search_data
+from vivo_app.lib.source_pages import facet_values_data, search_data
 from vivo_app.lib.source_requests import read_source, vitro_key
 from vivo_app.lib.source_status import status_data
 
-SOURCES = ('solr', 'search', 'viz', 'vivo', 'books')
+SOURCES = ('solr', 'search', 'search-facets', 'viz', 'vivo', 'books')
 
 
 def prepared_check() -> dict[str, object]:
@@ -40,7 +40,7 @@ def prepared_check() -> dict[str, object]:
 
 def source_check(name: str, vivo_id: str, search_query: str = 'biology') -> dict[str, object]:
     """
-    Makes one small read for a named service and keeps returned content private.
+    Checks a named source with read-only requests and keeps returned content private.
 
     Called by: Command.handle()
     """
@@ -54,6 +54,24 @@ def source_check(name: str, vivo_id: str, search_query: str = 'biology') -> dict
             if not isinstance(results, list):
                 raise PageDataError('Search processing returned no result list.')
             result = {'status': 'ok', 'check': 'search results and facets', 'results_on_page': len(results)}
+        elif name == 'search-facets':
+            search = search_data([('q', search_query)], 'live')
+            facets = search.get('facets')
+            if not isinstance(facets, list):
+                raise PageDataError('Search processing returned no facet list.')
+            affiliation = next(
+                (facet for facet in facets if isinstance(facet, dict) and facet.get('name') == 'affiliations'), None
+            )
+            shown = affiliation.get('values') if isinstance(affiliation, dict) else []
+            if not isinstance(shown, list):
+                raise PageDataError('Search processing returned an invalid affiliation facet.')
+            full = facet_values_data([('q', search_query), ('f_name', 'affiliations')], 'live')
+            result = {
+                'status': 'ok' if len(full) >= len(shown) else 'error',
+                'check': 'affiliation values shown and returned by the full facet request',
+                'shown_values': len(shown),
+                'full_values': len(full),
+            }
         elif name == 'viz':
             visualization_list('coauthors', 'live')
             result = {'status': 'ok', 'check': 'graph availability list'}

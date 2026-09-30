@@ -136,3 +136,28 @@ class CheckDevSourcesTests(SimpleTestCase):
         ):
             result = source_check('search', '')
         self.assertEqual(result, {'status': 'error', 'reason': 'Solr did not return search facets.'})
+
+    def test_full_search_facet_check_reports_counts_without_values(self) -> None:
+        """
+        Checks the full facet read reports only counts and detects a shorter response.
+        """
+        search_result = {
+            'facets': [{'name': 'affiliations', 'values': [{'text': 'Invented Private Name'} for _ in range(10)]}]
+        }
+        with (
+            patch('vivo_app.management.commands.check_dev_sources.search_data', return_value=search_result),
+            patch('vivo_app.management.commands.check_dev_sources.facet_values_data') as full,
+        ):
+            full.return_value = [{'text': 'Invented Private Name'} for _ in range(12)]
+            output = io.StringIO()
+            call_command('check_dev_sources', '--source', 'search-facets', '--search-query', 'invented', stdout=output)
+            report = json.loads(output.getvalue())['sources']['search-facets']
+            self.assertEqual((report['status'], report['shown_values'], report['full_values']), ('ok', 10, 12))
+            self.assertNotIn('Invented Private Name', output.getvalue())
+            full.assert_called_with([('q', 'invented'), ('f_name', 'affiliations')], 'live')
+            full.return_value = []
+            output = io.StringIO()
+            with self.assertRaises(SystemExit):
+                call_command('check_dev_sources', '--source', 'search-facets', stdout=output)
+            report = json.loads(output.getvalue())['sources']['search-facets']
+            self.assertEqual((report['status'], report['shown_values'], report['full_values']), ('error', 10, 0))
