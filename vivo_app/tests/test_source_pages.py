@@ -275,6 +275,25 @@ class SourcePageTests(TestCase):
         finally:
             set_script_prefix(previous_prefix)
 
+    def test_live_profile_and_organization_links_keep_the_deployment_prefix(self) -> None:
+        """
+        Checks person and organization links stay inside a mounted Django application.
+        """
+        prefix = '/mounted-app'
+        previous_prefix = get_script_prefix()
+        set_script_prefix(prefix)
+        try:
+            with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+                profile = self.client.get('/display/invented-a', SCRIPT_NAME=prefix)
+                self.assertContains(profile, f'href="{prefix}/display/org-example"')
+                self.assertContains(profile, f'href="{prefix}/search?q=%22Example+Journal%22"')
+                self.assertContains(profile, f'href="{prefix}/search" class="back-to-search"')
+                organization = self.client.get('/display/org-example', SCRIPT_NAME=prefix)
+                self.assertContains(organization, f'href="{prefix}/display/invented-a"')
+                self.assertContains(organization, f'href="{prefix}/display/org-example/viz/collab"')
+        finally:
+            set_script_prefix(previous_prefix)
+
     def test_varied_search_and_sparse_profile_states(self) -> None:
         """
         Checks empty results, later pages, repeated filters, and a person with no optional fields.

@@ -582,8 +582,8 @@ def profile_sections(
                     + escape(image, quote=True)
                     + '" alt="'
                     + escape(name, quote=True)
-                    + ' logo" width="36"> <a href="/display/'
-                    + escape(identifier, quote=True)
+                    + ' logo" width="36"> <a href="'
+                    + escape(reverse('display_show_public', args=[identifier]), quote=True)
                     + '">'
                     + escape(name)
                     + '</a></li>'
@@ -593,7 +593,9 @@ def profile_sections(
     if isinstance(areas, list) and areas:
         overview += '<h4 class="research-areas panel-heading">Research Areas</h4><div class="brown-research-areas-list">'
         overview += ' &nbsp;|&nbsp; '.join(
-            '<a href="/search?'
+            '<a href="'
+            + escape(reverse('search').rstrip('/'), quote=True)
+            + '?'
             + escape(urlencode({'fq': 'research_areas|' + str(area)}), quote=True)
             + '">'
             + escape(str(area))
@@ -692,7 +694,7 @@ def profile_sections(
             org = first_text(row.get('org_name'))
             start = first_text(row.get('start_date'))[:4]
             end = first_text(row.get('end_date'))[:4]
-            url = '/search?' + urlencode({'q': '"' + org + '"'})
+            url = reverse('search').rstrip('/') + '?' + urlencode({'q': '"' + org + '"'})
             affiliation_html += (
                 '<tr class="tableRow"><td><span>'
                 + escape(name)
@@ -869,7 +871,7 @@ def organization_data(
         row = {
             'name': first_text(member.get('label')),
             'title': first_text(member.get('specific_position')),
-            'url': '/display/' + member_id,
+            'url': reverse('display_show_public', args=[member_id]),
             'image': portraits.get(member_id, static('images/vivo_blank_profile.jpg')),
         }
         if first_text(member.get('general_position')).endswith('#FacultyAdministrativePosition'):
@@ -889,7 +891,7 @@ def organization_data(
         'image': thumbnail_url(doc, True),
         'website_links': websites,
         'overview_html': '<p>' + escape(strip_tags(overview)) + '</p>' if overview else '',
-        'visualization_url': f'/display/{identifier}/viz/collab' if settings.VIZ_ENABLED and members else '',
+        'visualization_url': reverse('visualization_collab', args=[identifier]) if settings.VIZ_ENABLED and members else '',
         'visualization_graph': organization_preview_graph() if settings.VIZ_ENABLED and members else {},
         'administrative_positions': administrative,
         'faculty_positions': faculty,

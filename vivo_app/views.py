@@ -296,7 +296,7 @@ def display_show(request, id):
                     'display/show.html',
                     {
                         'profile': profile_data,
-                        'back_to_search': request.session.get('prepared_search_url', '/search'),
+                        'back_to_search': request.session.get('prepared_search_url', reverse('search').rstrip('/')),
                     },
                 )
     except PageDataError as exc:
