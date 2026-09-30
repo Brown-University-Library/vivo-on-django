@@ -799,6 +799,28 @@ class SourcePageTests(TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['vivo_id'], 'invented-a')
 
+    def test_large_organization_loads_member_portraits_in_batches(self) -> None:
+        """Renders an organization whose member list exceeds one Solr request."""
+        ids = [f'invented-{number:03d}' for number in range(101)]
+        key = profile_key('org-example')
+        source = json.loads(self.responses[key].body)
+        item = json.loads(source['response']['docs'][0]['json_txt'][0])
+        item['people'] = [
+            {'faculty_uri': f'http://vivo.brown.edu/individual/{identifier}', 'label': identifier}
+            for identifier in ids
+        ]
+        source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        for start in (0, 100):
+            batch = ids[start : start + 100]
+            docs = [
+                {'id': f'http://vivo.brown.edu/individual/{identifier}', 'record_type': ['PEOPLE']}
+                for identifier in batch
+            ]
+            self.responses[member_key(batch)] = self.solr_response(docs, len(batch))
+        result = organization_data('org-example', 'live', self.read)
+        self.assertEqual(len(result['faculty_positions']), 101)
+
     def test_search_form_keeps_selected_filters_for_new_query(self) -> None:
         """
         Checks a new search submitted from a filtered result page retains its filters.

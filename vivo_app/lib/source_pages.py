@@ -1187,12 +1187,13 @@ def organization_data(
         member_ids.append(record_id({'id': uri}))
     identifiers = sorted(set(member_ids))
     portraits: dict[str, str] = {}
-    if identifiers:
-        member_response = response_object(member_key(identifiers), mode, reader)
+    for start in range(0, len(identifiers), 100):
+        batch = identifiers[start : start + 100]
+        member_response = response_object(member_key(batch), mode, reader)
         member_docs, _ = documents(member_response)
         for member_doc in member_docs:
             member_id = record_id(member_doc)
-            if member_id not in identifiers or first_text(member_doc.get('record_type')) != 'PEOPLE':
+            if member_id not in batch or first_text(member_doc.get('record_type')) != 'PEOPLE':
                 raise PageDataError('Solr returned an unrelated organization member.')
             portraits[member_id] = thumbnail_url(member_doc)
     administrative: list[dict[str, str]] = []
