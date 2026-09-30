@@ -1122,7 +1122,7 @@ class SourcePageTests(TestCase):
         raw = {
             'uri': uri,
             'on_the_web': [
-                {'rank': '2later', 'url': 'https://example.invalid/later'},
+                {'rank': '2later', 'url': 'https://example.invalid/later', 'source_only_field': 'private value'},
                 {'rank': '1first', 'url': 'https://example.invalid/first'},
             ],
         }
@@ -1134,6 +1134,7 @@ class SourcePageTests(TestCase):
         self.assertEqual(result.status_code, 200)
         body = json.loads(result.content)
         self.assertEqual([row['rank'] for row in body['on_the_web']], [1, 2])
+        self.assertNotIn('source_only_field', body['on_the_web'][1])
 
     def test_profile_json_publication_without_title_has_empty_title(self) -> None:
         """

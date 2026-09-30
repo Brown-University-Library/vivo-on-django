@@ -290,7 +290,7 @@ def faculty_item_from_doc(
     web_pages = entries(raw, 'on_the_web')
     item['on_the_web'] = [
         {
-            **row,
+            **{name: row[name] for name in ('uri',) if name in row},
             'rank': website_rank(row.get('rank')),
             'id': first_text(row.get('uri')),
             'url': first_text(row.get('url')).strip(),
