@@ -757,6 +757,21 @@ class SourcePageTests(TestCase):
         markup = publication_html({'title': 'Example work', 'published_in': 'Invented Journal', 'date': '2024'})
         self.assertIn('"Example work." <i>Invented Journal</i>, 2024.', markup)
 
+    def test_book_citation_shows_italic_title_and_publisher(self) -> None:
+        """
+        Checks books include the publisher rather than article-style title quotes.
+        """
+        markup = publication_html(
+            {
+                'type': 'http://vivo.brown.edu/ontology/citation#Book',
+                'title': 'Invented Book',
+                'publisher_label': 'Example Press',
+                'date': '2018',
+            }
+        )
+        self.assertIn('<i>Invented Book</i>. Example Press, 2018.', markup)
+        self.assertNotIn('"Invented Book', markup)
+
     def test_publication_links_match_available_source_fields(self) -> None:
         """
         Checks DOI and PubMed links appear together, while another safe URL is used only when neither exists.

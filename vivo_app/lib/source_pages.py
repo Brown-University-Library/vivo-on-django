@@ -483,6 +483,32 @@ def publication_type(item: dict[str, object]) -> tuple[str, str]:
     return '_' + label.lower().replace(' ', '_'), label
 
 
+def publication_book_html(item: dict[str, object]) -> str:
+    """
+    Formats a book title, publisher details, and year like the public page.
+
+    Called by: publication_html()
+    """
+    title = first_text(item.get('title')).strip().strip('“”"')
+    book = first_text(item.get('book')).strip()
+    title_parts = [part for part in (title, book) if part]
+    citation = '<i>' + escape(' '.join(title_parts)) + '</i>.' if title_parts else ''
+    details = []
+    editors = first_text(item.get('editors')).strip()
+    if editors:
+        details.append('edited by ' + escape(editors))
+    for field in ('location_label', 'publisher_label'):
+        value = first_text(item.get(field)).strip()
+        if value:
+            details.append(escape(value))
+    year = first_text(item.get('date'))[:4]
+    if re.fullmatch(r'\d{4}', year):
+        details.append(year)
+    if details:
+        citation += (' ' if citation else '') + ', '.join(details) + '.'
+    return citation
+
+
 def publication_html(item: dict[str, object]) -> str:
     """
     Formats one citation with escaped text and vetted outgoing links.
@@ -506,12 +532,12 @@ def publication_html(item: dict[str, object]) -> str:
     pages = first_text(item.get('pages'))
     if pages:
         parts.append('pp. ' + escape(pages))
-    citation = (
-        ('<span class="listDateTime">' + escape(authors) + '. </span>' if authors else '')
-        + title_text
-        + ', '.join(parts)
-        + '.'
+    citation_body = (
+        publication_book_html(item)
+        if first_text(item.get('type')).endswith('#Book')
+        else title_text + ', '.join(parts) + '.'
     )
+    citation = ('<span class="listDateTime">' + escape(authors) + '. </span>' if authors else '') + citation_body
     doi = first_text(item.get('doi'))
     external = safe_url(item.get('url'))
     full_text = (
