@@ -22,4 +22,5 @@ class ScriptPrefixTests(TestCase):
         assert isinstance(response, HttpResponse)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Welcome to Researchers@Brown')
+        self.assertContains(response, 'Manage your profile')
         source.assert_called_once_with('live')
