@@ -213,6 +213,41 @@ def facet_data(response: dict[str, object], query: str, filters: list[tuple[str,
     return facets
 
 
+def selected_highlights(fields: dict[str, object], limit: int = 5) -> list[tuple[str, str]]:
+    """
+    Chooses distinct search terms before filling the remaining match slots.
+
+    Called by: match_html(), tests
+    """
+    hits = [
+        (field, value.strip())
+        for field, values in fields.items()
+        if isinstance(values, list)
+        for value in values
+        if isinstance(value, str)
+    ]
+    terms = list(
+        dict.fromkeys(term.upper() for _, value in hits for term in re.findall(r'<strong>.*?</strong>', value))
+    )
+    selected: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for term in terms:
+        for hit in hits:
+            if term in hit[1].upper() and hit[1] not in seen:
+                selected.append(hit)
+                seen.add(hit[1])
+                break
+        if len(selected) >= limit:
+            break
+    for hit in hits:
+        if len(selected) >= limit:
+            break
+        if hit[1] not in seen:
+            selected.append(hit)
+            seen.add(hit[1])
+    return selected
+
+
 def match_html(response: dict[str, object], doc: dict[str, object]) -> str:
     """
     Shows a small escaped preview when Solr highlights a result.
@@ -222,25 +257,12 @@ def match_html(response: dict[str, object], doc: dict[str, object]) -> str:
     all_highlights = response.get('highlighting')
     identifier = first_text(doc.get('id'))
     fields = all_highlights.get('vitroIndividual:' + identifier) if isinstance(all_highlights, dict) else None
-    snippets: list[str] = []
-    if isinstance(fields, dict):
-        for field in (
-            'department_t',
-            'research_areas_en',
-            'affiliations_en',
-            'overview_en',
-            'ALLTEXT',
-            'email_s',
-            'short_id_s',
-        ):
-            values = fields.get(field)
-            if isinstance(values, list):
-                snippets.extend(value for value in values if isinstance(value, str))
-    if not snippets:
+    if not isinstance(fields, dict):
         return ''
-    selected = snippets[:5]
+    selected = selected_highlights(fields)
     safe = [
-        escape(value).replace('&lt;strong&gt;', '<strong>').replace('&lt;/strong&gt;', '</strong>') for value in selected
+        escape(value).replace('&lt;strong&gt;', '<strong>').replace('&lt;/strong&gt;', '</strong>')
+        for _, value in selected
     ]
     return ''.join('<p>' + value + '</p>' for value in safe)
 

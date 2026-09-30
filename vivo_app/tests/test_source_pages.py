@@ -28,6 +28,7 @@ from vivo_app.lib.source_pages import (
     publications,
     search_data,
     search_json_data,
+    selected_highlights,
 )
 from vivo_app.lib.source_requests import (
     community_research_members_key,
@@ -769,6 +770,17 @@ class SourcePageTests(TestCase):
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
             organization_page = self.get_page('/search?q=Example')
         self.assertContains(organization_page, 'itemscope itemtype="http://schema.org/Organization"')
+
+    def test_search_matches_cover_distinct_terms_before_repeats(self) -> None:
+        """
+        Checks matching terms from later source fields appear before repeated first-term snippets.
+        """
+        fields: dict[str, object] = {
+            'department_t': ['<strong>Biology</strong> one', '<strong>Biology</strong> two'],
+            'overview_en': ['<strong>Research</strong> three'],
+        }
+        matches = selected_highlights(fields, 2)
+        self.assertEqual([value for _, value in matches], ['<strong>Biology</strong> one', '<strong>Research</strong> three'])
 
     def test_missing_response_and_unsupported_option_do_not_fall_back(self) -> None:
         """
