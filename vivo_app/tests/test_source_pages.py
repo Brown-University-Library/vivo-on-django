@@ -307,6 +307,7 @@ class SourcePageTests(TestCase):
                 profile = self.client.get('/display/invented-a', SCRIPT_NAME=prefix)
                 self.assertContains(profile, f'href="{prefix}/display/org-example"')
                 self.assertContains(profile, f'href="{prefix}/search?q=%22Example+Journal%22"')
+                self.assertContains(profile, f'href="{prefix}/search?q=alumni_of%3A%22Example+University%22"')
                 self.assertContains(profile, f'href="{prefix}/search" class="back-to-search"')
                 self.assertContains(profile, f'href="{prefix}/source-documents/docs/i/invented_cv.pdf?dt=1"')
                 self.assertContains(profile, f'href="{prefix}/display/invented-a/viz/coauthor"')
