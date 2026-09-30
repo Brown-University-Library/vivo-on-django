@@ -635,11 +635,11 @@ def publication_citation(item: dict[str, object]) -> str:
     return text.rstrip(' ,.') + '.'
 
 
-def publications(item: dict[str, object]) -> tuple[list[dict[str, str]], list[dict[str, object]]]:
+def ordered_publication_rows(item: dict[str, object]) -> list[dict[str, object]]:
     """
-    Sorts source publications and builds the matching type-filter counts.
+    Orders source publications by valid year and trimmed title.
 
-    Called by: profile_data()
+    Called by: publications(), organization_publications_data()
     """
     raw = entries(item, 'contributor_to')
     raw.sort(
@@ -648,6 +648,16 @@ def publications(item: dict[str, object]) -> tuple[list[dict[str, str]], list[di
             first_text(row.get('title')).strip().lower(),
         )
     )
+    return raw
+
+
+def publications(item: dict[str, object]) -> tuple[list[dict[str, str]], list[dict[str, object]]]:
+    """
+    Sorts source publications and builds the matching type-filter counts.
+
+    Called by: profile_data()
+    """
+    raw = ordered_publication_rows(item)
     result: list[dict[str, str]] = []
     labels: dict[str, str] = {}
     for row in raw:
@@ -1193,13 +1203,7 @@ def organization_publications_data(
         if first_text(doc.get('record_type')) != 'PEOPLE':
             raise PageDataError('Solr returned an unrelated organization member.')
         person = record_data(doc)
-        publications_data = entries(person, 'contributor_to')
-        publications_data.sort(
-            key=lambda row: (
-                -int(first_text(row.get('date'))[:4]) if first_text(row.get('date'))[:4].isdigit() else 0,
-                first_text(row.get('title')).lower(),
-            )
-        )
+        publications_data = ordered_publication_rows(person)
         for publication in publications_data:
             _, kind = publication_type(publication)
             fields = (
@@ -1207,7 +1211,7 @@ def organization_publications_data(
                 first_text(person.get('name')),
                 first_text(publication.get('title')),
                 first_text(publication.get('authors')),
-                first_text(publication.get('date'))[:4],
+                publication_year(publication),
                 kind,
                 publication_citation(publication),
             )

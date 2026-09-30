@@ -919,6 +919,24 @@ class SourcePageTests(TestCase):
         with self.assertRaises(PageDataError):
             organization_publications_data('org-example', 'live', self.read)
 
+    def test_organization_publications_tsv_orders_titles_and_valid_years(self) -> None:
+        """
+        Checks organization downloads follow the same publication order and year rules as profiles.
+        """
+        key = member_details_key(['invented-a'])
+        response = json.loads(self.responses[key].body)
+        person = json.loads(response['response']['docs'][0]['json_txt'][0])
+        person['contributor_to'] = [
+            {'type': 'http://vivo.brown.edu/ontology/citation#Article', 'title': ' Zeta', 'date': '2020'},
+            {'type': 'http://vivo.brown.edu/ontology/citation#Article', 'title': 'Alpha', 'date': '2020'},
+            {'type': 'http://vivo.brown.edu/ontology/citation#Article', 'title': 'Old', 'date': '1899'},
+        ]
+        response['response']['docs'][0]['json_txt'] = [json.dumps(person)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        body = organization_publications_data('org-example', 'live', self.read)
+        self.assertLess(body.index('\tAlpha\t'), body.index('\t Zeta\t'))
+        self.assertIn('\tOld\t\t\tArticle\t', body)
+
     def test_sparse_profile_json_uses_graph_availability(self) -> None:
         """
         Checks profile JSON combines one person record with a graph-availability list.
