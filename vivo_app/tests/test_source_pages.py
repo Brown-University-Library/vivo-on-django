@@ -775,6 +775,18 @@ class SourcePageTests(TestCase):
         self.assertEqual(len(result['results']), 1)
         self.assertEqual(result['results'][0]['name'], 'Invented Researcher')
 
+    def test_search_json_ignores_other_solr_record_types(self) -> None:
+        """Returns supported records from JSON search despite an unrelated document."""
+        key = search_key('Example', 1, [])
+        original = json.loads(self.responses[key].body)
+        other = dict(original['response']['docs'][0], record_type=['DOCUMENT'])
+        original['response']['docs'].insert(0, other)
+        original['response']['numFound'] = 2
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(original).encode())
+        result = search_json_data([('q', 'Example')], 'live', 'https://example.invalid', self.read)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['vivo_id'], 'invented-a')
+
     def test_search_form_keeps_selected_filters_for_new_query(self) -> None:
         """
         Checks a new search submitted from a filtered result page retains its filters.

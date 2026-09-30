@@ -389,7 +389,7 @@ def search_json_data(
     for doc in docs:
         kind = first_text(doc.get('record_type'))
         if kind not in {'PEOPLE', 'ORGANIZATION'}:
-            raise PageDataError('Solr returned an unsupported record type.')
+            continue
         item = record_data(doc)
         identifier = record_id(doc)
         name = first_text(doc.get('display_name_s')) or first_text(item.get('name'))
