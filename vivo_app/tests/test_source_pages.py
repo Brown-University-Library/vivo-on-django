@@ -268,15 +268,28 @@ class SourcePageTests(TestCase):
         """
         Checks a padded school name appears cleanly in both the table and its search link.
         """
-        item: dict[str, object] = {
-            'education': [{'date': '2001', 'degree': 'PhD', 'school_name': '  Example University  '}]
-        }
+        item: dict[str, object] = {'education': [{'date': '2001', 'degree': 'PhD', 'school_name': '  Example University  '}]}
         background = next(
             section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Background'
         )
         self.assertIn('q=alumni_of%3A%22Example+University%22', background)
         self.assertIn('>Example University</a>', background)
         self.assertNotIn('  Example University  ', background)
+
+    def test_organization_trims_website_urls_and_labels(self) -> None:
+        """
+        Checks organization website links have the same trimmed values as Rails.
+        """
+        key = profile_key('org-example')
+        response = json.loads(self.responses[key].body)
+        item = json.loads(response['response']['docs'][0]['json_txt'][0])
+        item['web_pages'] = [{'url': '  https://example.invalid/department  ', 'text': '  Department website  '}]
+        response['response']['docs'][0]['json_txt'] = [json.dumps(item)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        organization = organization_data('org-example', 'live', self.read)
+        self.assertEqual(
+            organization['website_links'], [{'url': 'https://example.invalid/department', 'label': 'Department website'}]
+        )
 
     def test_research_keeps_source_formatting(self) -> None:
         """

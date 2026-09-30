@@ -1077,9 +1077,10 @@ def organization_data(
             faculty.append(row)
     websites: list[dict[str, str]] = []
     for website in entries(item, 'web_pages'):
-        url = safe_url(website.get('url'))
+        raw_url = website.get('url')
+        url = safe_url(raw_url.strip() if isinstance(raw_url, str) else raw_url)
         if url:
-            websites.append({'url': url, 'label': first_text(website.get('text')) or url})
+            websites.append({'url': url, 'label': first_text(website.get('text')).strip() or url})
     overview = first_text(item.get('overview'))
     return {
         'id': identifier,
