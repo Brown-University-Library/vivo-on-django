@@ -286,11 +286,18 @@ class SourcePageTests(TestCase):
         previous_prefix = get_script_prefix()
         set_script_prefix(prefix)
         try:
-            with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            with (
+                patch('vivo_app.lib.source_pages.read_source', side_effect=self.read),
+                patch('vivo_app.views.read_source', side_effect=self.read),
+            ):
                 profile = self.client.get('/display/invented-a', SCRIPT_NAME=prefix)
                 self.assertContains(profile, f'href="{prefix}/display/org-example"')
                 self.assertContains(profile, f'href="{prefix}/search?q=%22Example+Journal%22"')
                 self.assertContains(profile, f'href="{prefix}/search" class="back-to-search"')
+                self.assertContains(profile, f'href="{prefix}/source-documents/docs/i/invented_cv.pdf?dt=1"')
+                document_redirect = self.client.get('/source-documents/docs/i/invented_cv.pdf', SCRIPT_NAME=prefix)
+                assert isinstance(document_redirect, HttpResponse)
+                self.assertEqual(document_redirect['Location'], f'{prefix}/source-documents/docs/i/invented_cv.pdf?dt=1')
                 organization = self.client.get('/display/org-example', SCRIPT_NAME=prefix)
                 self.assertContains(organization, f'href="{prefix}/display/invented-a"')
                 self.assertContains(organization, f'href="{prefix}/display/org-example/viz/collab"')

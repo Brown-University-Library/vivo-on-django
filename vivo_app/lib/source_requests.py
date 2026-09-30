@@ -8,6 +8,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit
 
 import httpx2
 from django.conf import settings
+from django.urls import reverse
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RecordingError, RequestKey, load_recordings
@@ -319,7 +320,9 @@ def local_document_url(url: str) -> str:
     if settings.DOCUMENTS_URL:
         try:
             key = document_key_from_url(url)
-            result = '/source-documents' + key.path + ('?' + urlencode(key.query) if key.query else '')
+            result = reverse('source_document', kwargs={'filename': key.path.lstrip('/')})
+            if key.query:
+                result += '?' + urlencode(key.query)
         except PageDataError:
             pass
     return result

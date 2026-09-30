@@ -88,7 +88,7 @@ def source_document(request: HttpRequest, filename: str) -> HttpResponse:
         if result.status in {301, 302}:
             location = headers.get('location', '')
             target = document_key_from_url(location)
-            redirect_url = '/source-documents' + target.path
+            redirect_url = reverse('source_document', kwargs={'filename': target.path.lstrip('/')})
             if target.query:
                 redirect_url += '?' + urlencode(target.query)
             return HttpResponse(status=result.status, headers={'Location': redirect_url})
