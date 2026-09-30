@@ -708,7 +708,7 @@ def profile_sections(
         '<div class="panel-heading"><h4 class="panel-title">'
         + label
         + '</h4></div><div class="panel-body"><div class="property-list">'
-        + escape(strip_tags(first_text(item.get(field))))
+        + render_profile_html(first_text(item.get(field)))
         + '</div></div>'
         for field, label in research_fields
         if first_text(item.get(field))

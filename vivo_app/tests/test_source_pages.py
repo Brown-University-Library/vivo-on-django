@@ -244,6 +244,21 @@ class SourcePageTests(TestCase):
         self.assertIn('2001-2003', background)
         self.assertNotIn('<Unsafe>', background)
 
+    def test_research_keeps_source_formatting(self) -> None:
+        """
+        Checks the Research text keeps paragraphs, emphasis, and web links while discarding active markup.
+        """
+        item: dict[str, object] = {
+            'research_overview': '<p>Studies <em>RNA</em> at the <a href="https://example.invalid/lab">lab</a>.</p>',
+            'research_statement': '<p>Second paragraph.</p><script>unsafe()</script>',
+        }
+        research = next(
+            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Research'
+        )
+        self.assertIn('<p>Studies <em>RNA</em> at the <a href="https://example.invalid/lab">lab</a>.</p>', research)
+        self.assertIn('<p>Second paragraph.</p>', research)
+        self.assertNotIn('unsafe()', research)
+
     def test_affiliations_show_credentials(self) -> None:
         """
         Checks credentials appear newest first, with missing fields and source text handled safely.
