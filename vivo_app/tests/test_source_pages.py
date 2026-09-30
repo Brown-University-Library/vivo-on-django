@@ -745,6 +745,14 @@ class SourcePageTests(TestCase):
         assert isinstance(sections, list)
         self.assertIn('org_placeholder.png', sections[0]['html'])
 
+    def test_affiliation_logo_request_failure_keeps_profile_visible(self) -> None:
+        """Uses the placeholder if the optional affiliation lookup fails."""
+        self.responses.pop(profile_key('org-example'))
+        result = profile_data('invented-a', 'live', self.read)
+        sections = result['sections']
+        assert isinstance(sections, list)
+        self.assertIn('org_placeholder.png', sections[0]['html'])
+
     def test_numbered_facet_filter_keeps_search_selection(self) -> None:
         """
         Checks search submissions retain a facet sent as a numbered form field.

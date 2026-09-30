@@ -732,9 +732,14 @@ def organization_thumbnail(uri: str, mode: str, reader: SourceReader) -> str:
     Called by: profile_sections()
     """
     identifier = uri.rsplit('/', 1)[-1]
-    response = response_object(profile_key(identifier), mode, reader)
-    docs, _ = documents(response)
-    result = thumbnail_url(docs[0], True) if docs else static('images/org_placeholder.png')
+    result = static('images/org_placeholder.png')
+    try:
+        response = response_object(profile_key(identifier), mode, reader)
+        docs, _ = documents(response)
+        if docs:
+            result = thumbnail_url(docs[0], True)
+    except PageDataError:
+        pass
     return result
 
 
