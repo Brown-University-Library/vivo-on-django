@@ -634,7 +634,7 @@ def publications(item: dict[str, object]) -> tuple[list[dict[str, str]], list[di
     raw.sort(
         key=lambda row: (
             -int(first_text(row.get('date'))[:4]) if first_text(row.get('date'))[:4].isdigit() else 0,
-            first_text(row.get('title')).lower(),
+            first_text(row.get('title')).strip().lower(),
         )
     )
     result: list[dict[str, str]] = []

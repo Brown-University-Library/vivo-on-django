@@ -24,6 +24,7 @@ from vivo_app.lib.source_pages import (
     profile_sections,
     profile_year_range,
     publication_html,
+    publications,
     search_data,
     search_json_data,
 )
@@ -791,6 +792,20 @@ class SourcePageTests(TestCase):
             '"Invented Chapter." <i>Invented Collection</i>, edited by A. Editor, Example Press, 2020, pp. 10-20.',
             markup,
         )
+
+    def test_publications_sort_titles_without_outer_spaces(self) -> None:
+        """
+        Checks same-year publication titles are ordered after trimming outer spaces.
+        """
+        rows: dict[str, object] = {
+            'contributor_to': [
+                {'type': 'http://vivo.brown.edu/ontology/citation#Article', 'title': ' Zeta', 'date': '2020'},
+                {'type': 'http://vivo.brown.edu/ontology/citation#Article', 'title': 'Alpha', 'date': '2020'},
+            ]
+        }
+        publications_data, _ = publications(rows)
+        self.assertIn('Alpha', publications_data[0]['html'])
+        self.assertIn('Zeta', publications_data[1]['html'])
 
     def test_publication_links_match_available_source_fields(self) -> None:
         """
