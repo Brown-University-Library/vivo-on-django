@@ -621,6 +621,17 @@ def profile_year_range(row: dict[str, object]) -> str:
     return '-'.join(years)
 
 
+def profile_entries_newest_first(rows: list[dict[str, object]]) -> list[dict[str, object]]:
+    """
+    Orders dated profile rows like Rails, including rows with equal dates.
+
+    Called by: profile_sections()
+    """
+    ordered = sorted(rows, key=lambda row: profile_date(row.get('start_date')) or date(1900, 1, 1))
+    ordered.reverse()
+    return ordered
+
+
 def profile_sections(
     item: dict[str, object], mode: str, reader: SourceReader, publication_count: int, collaborator_visualization_url: str
 ) -> list[dict[str, str]]:
@@ -740,9 +751,7 @@ def profile_sections(
             '<div class="panel-heading"><h4 class="panel-title">Postdoctoral/Other Training</h4></div>'
             '<div class="panel-body panel-body-postdoc"><table class="table table-hover"><tbody>'
         )
-        for row in sorted(
-            training, key=lambda entry: profile_date(entry.get('start_date')) or date(1900, 1, 1), reverse=True
-        ):
+        for row in profile_entries_newest_first(training):
             organization = ', '.join(
                 first_text(row.get(field)) for field in ('org_name', 'hospital_name', 'specialty_name') if row.get(field)
             )
@@ -826,9 +835,7 @@ def profile_sections(
             '<div class="panel-heading"><h4 class="panel-title">Credentials/Licenses</h4></div>'
             '<div class="panel-body panel-body-credentials"><table class="table table-hover"><tbody>'
         )
-        for row in sorted(
-            credentials, key=lambda entry: profile_date(entry.get('start_date')) or date(1900, 1, 1), reverse=True
-        ):
+        for row in profile_entries_newest_first(credentials):
             grantor = ', '.join(
                 value[:1].upper() + value[1:]
                 for field in ('grantor_name', 'specialty_name')
@@ -849,11 +856,7 @@ def profile_sections(
         affiliation_html += '</tbody></table></div>'
     if appointments:
         affiliation_html += '<div class="panel-heading"><h4 class="panel-title">Appointments</h4></div><div class="panel-body"><table class="table table-hover"><tbody>'
-        ordered_appointments = sorted(
-            appointments, key=lambda entry: profile_date(entry.get('start_date')) or date(1900, 1, 1)
-        )
-        ordered_appointments.reverse()
-        for row in ordered_appointments:
+        for row in profile_entries_newest_first(appointments):
             name = first_text(row.get('name'))
             org = first_text(row.get('hospital_name')) or first_text(row.get('org_name'))
             department = first_text(row.get('department'))

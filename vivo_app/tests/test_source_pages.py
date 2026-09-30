@@ -231,6 +231,7 @@ class SourcePageTests(TestCase):
                     'state': '<Unsafe>',
                 },
                 {'name': 'Undated training'},
+                {'name': 'Another undated training'},
             ]
         }
         background = next(
@@ -238,7 +239,8 @@ class SourcePageTests(TestCase):
         )
         self.assertIn('Postdoctoral/Other Training', background)
         self.assertLess(background.index('Later training'), background.index('Earlier training'))
-        self.assertLess(background.index('Earlier training'), background.index('Undated training'))
+        self.assertLess(background.index('Earlier training'), background.index('Another undated training'))
+        self.assertLess(background.index('Another undated training'), background.index('Undated training'))
         self.assertIn('Example University, Example Hospital', background)
         self.assertIn('2010</td><td>Providence, &lt;Unsafe&gt;', background)
         self.assertIn('2001-2003', background)
@@ -288,6 +290,7 @@ class SourcePageTests(TestCase):
                     'number': 'LIC-123',
                 },
                 {'name': '<Undated license>'},
+                {'name': 'Another undated license'},
             ]
         }
         affiliations = next(
@@ -297,7 +300,8 @@ class SourcePageTests(TestCase):
         )
         self.assertIn('Credentials/Licenses', affiliations)
         self.assertLess(affiliations.index('Later license'), affiliations.index('Earlier license'))
-        self.assertLess(affiliations.index('Earlier license'), affiliations.index('&lt;Undated license&gt;'))
+        self.assertLess(affiliations.index('Earlier license'), affiliations.index('Another undated license'))
+        self.assertLess(affiliations.index('Another undated license'), affiliations.index('&lt;Undated license&gt;'))
         self.assertIn('State board, Psychology</td><td>2015</td><td>#LIC-123', affiliations)
         self.assertIn('2001-2004', affiliations)
         self.assertNotIn('<Undated license>', affiliations)
