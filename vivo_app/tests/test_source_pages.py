@@ -44,6 +44,7 @@ from vivo_app.lib.source_teams import custom_organization_members, team_data
     SOLR_URL='http://example.invalid/solr/example',
     IMAGES_URL='http://example.invalid',
     DOCUMENTS_URL='https://example.invalid',
+    VIZ_ENABLED=True,
 )
 class SourcePageTests(TestCase):
     """Exercises source parsing, rendering, images, and explicit failures."""
@@ -82,6 +83,7 @@ class SourcePageTests(TestCase):
             'record_type': ['PEOPLE'],
             'json_txt': [json.dumps(person)],
             'display_name_s': 'Invented Researcher',
+            'show_visualizations_s': 'true',
             'thumbnail_file_path_s': '/file/n1234/portrait.jpg',
         }
         organization_doc = {
@@ -141,6 +143,9 @@ class SourcePageTests(TestCase):
                 'Example', 1, [('record_type', 'PEOPLE'), ('affiliations', 'Example Department')]
             ): self.solr_response([person_doc], 1, facets),
             profile_key('invented-a'): self.solr_response([person_doc], 1),
+            visualization_key('coauthors'): RecordedResponse(
+                200, (('content-type', 'application/json'),), json.dumps({person['id']: True}).encode()
+            ),
             profile_key('org-example'): self.solr_response([organization_doc], 1),
             member_key(['invented-a']): self.solr_response([person_doc], 1),
             member_details_key(['invented-a']): self.solr_response([person_doc], 1),
@@ -227,6 +232,8 @@ class SourcePageTests(TestCase):
             self.assertContains(profile, 'EXMP 1000')
             self.assertContains(profile, '/source-images/profile-images/567/8/logo.png')
             self.assertContains(profile, '/source-documents/docs/i/invented_cv.pdf?dt=1')
+            self.assertContains(profile, 'id="viz_coauthor"')
+            self.assertContains(profile, 'href="/display/invented-a/viz/coauthor"')
             picture = self.get_page('/source-images/profile-images/123/4/portrait.jpg')
             self.assertEqual(picture.content, b'invented-portrait')
             self.assertEqual(picture['Content-Type'], 'image/jpeg')
@@ -295,6 +302,7 @@ class SourcePageTests(TestCase):
                 self.assertContains(profile, f'href="{prefix}/search?q=%22Example+Journal%22"')
                 self.assertContains(profile, f'href="{prefix}/search" class="back-to-search"')
                 self.assertContains(profile, f'href="{prefix}/source-documents/docs/i/invented_cv.pdf?dt=1"')
+                self.assertContains(profile, f'href="{prefix}/display/invented-a/viz/coauthor"')
                 document_redirect = self.client.get('/source-documents/docs/i/invented_cv.pdf', SCRIPT_NAME=prefix)
                 assert isinstance(document_redirect, HttpResponse)
                 self.assertEqual(document_redirect['Location'], f'{prefix}/source-documents/docs/i/invented_cv.pdf?dt=1')
@@ -303,6 +311,17 @@ class SourcePageTests(TestCase):
                 self.assertContains(organization, f'href="{prefix}/display/org-example/viz/collab"')
         finally:
             set_script_prefix(previous_prefix)
+
+    def test_profile_still_loads_when_coauthor_list_is_unavailable(self) -> None:
+        """
+        Checks the optional visualization link disappears without hiding the profile.
+        """
+        self.responses.pop(visualization_key('coauthors'))
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            profile = self.get_page('/display/invented-a')
+        self.assertEqual(profile.status_code, 200)
+        self.assertContains(profile, 'Invented Researcher')
+        self.assertNotContains(profile, 'id="viz_coauthor"')
 
     def test_live_search_offers_more_facets_when_an_eleventh_value_exists(self) -> None:
         """

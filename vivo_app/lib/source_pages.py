@@ -789,6 +789,16 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
     if not name:
         raise PageDataError('The source profile has no display name.')
     publications_data, publication_filters = publications(item)
+    coauthor_visualization_url = ''
+    if settings.VIZ_ENABLED and publications_data and first_text(doc.get('show_visualizations_s')) == 'true':
+        from vivo_app.lib.source_graph import visualization_list
+
+        try:
+            available_coauthors = visualization_list('coauthors', mode, reader)
+            if first_text(doc.get('id')) in available_coauthors:
+                coauthor_visualization_url = reverse('visualization_coauthor', args=[identifier])
+        except PageDataError:
+            pass
     cv_entries = entries(item, 'cv')
     cv_url = safe_url(cv_entries[0].get('cv_link')) if cv_entries else ''
     return {
@@ -801,6 +811,7 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
         'sections': profile_sections(item, mode, reader, len(publications_data)),
         'publications': publications_data,
         'publication_filters': publication_filters,
+        'coauthor_visualization_url': coauthor_visualization_url,
         'cv_url': local_document_url(cv_url) if cv_url else '',
     }
 

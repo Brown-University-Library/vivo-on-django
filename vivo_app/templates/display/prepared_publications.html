@@ -1,4 +1,6 @@
-<h3 class="prepared-publications-heading">Publications</h3>
+<h3 class="prepared-publications-heading">Publications
+  {% if profile.coauthor_visualization_url %}<a id="viz_coauthor" class="btn btn-default" style="float:right;" href="{{ profile.coauthor_visualization_url }}" target="_blank" rel="noopener" title="Visualize coauthors network">Visualize it <i class="glyphicon glyphicon-signal" style="color:rgb(232, 217, 139);" aria-hidden="true"></i></a>{% endif %}
+</h3>
 <div class="panel-body">
   <div class="btn-group" role="group" aria-label="Filter publications by type">
     {% if profile.publication_filters|length > 1 %}<button type="button" class="btn btn-default active btn-filter-pub" id="btn-for_all" data-publication-type="all" aria-pressed="true">View All ({{ profile.publications|length }})</button>{% endif %}
