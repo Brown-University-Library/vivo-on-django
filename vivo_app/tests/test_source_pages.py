@@ -297,6 +297,45 @@ class SourcePageTests(TestCase):
         finally:
             set_script_prefix(previous_prefix)
 
+    def test_live_search_offers_more_facets_when_an_eleventh_value_exists(self) -> None:
+        """
+        Checks ten values stay visible and the full local facet response supplies the dialog.
+        """
+        values = [entry for number in range(1, 12) for entry in (f'Area {number:02}', 12 - number)]
+        search = search_key('Example', 1, [])
+        full = search_key('Example', 1, [], -1)
+        for key in (search, full):
+            response = json.loads(self.responses[key].body)
+            response['facet_counts']['facet_fields']['affiliations'] = values
+            self.responses[key] = RecordedResponse(
+                200, (('content-type', 'application/json'),), json.dumps(response).encode()
+            )
+        prefix = '/mounted-app'
+        previous_prefix = get_script_prefix()
+        set_script_prefix(prefix)
+        try:
+            with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+                page = self.client.get('/search?q=Example', SCRIPT_NAME=prefix)
+                self.assertContains(page, 'Area 10')
+                self.assertNotContains(page, 'Area 11')
+                self.assertContains(page, 'modal_form_affiliations')
+                self.assertContains(page, f'data-facet-url="{prefix}/search_facets?q=Example&amp;f_name=affiliations"')
+                details = self.client.get('/search_facets?q=Example&f_name=affiliations', SCRIPT_NAME=prefix)
+                assert isinstance(details, HttpResponse)
+                rows = json.loads(details.content)
+                self.assertEqual(len(rows), 11)
+                self.assertEqual(rows[-1]['text'], 'Area 11')
+                self.assertEqual(rows[-1]['add_url'], f'{prefix}/search?q=Example&fq=affiliations%7CArea+11')
+                response = json.loads(self.responses[search].body)
+                response['facet_counts']['facet_fields']['affiliations'] = values[:-2]
+                self.responses[search] = RecordedResponse(
+                    200, (('content-type', 'application/json'),), json.dumps(response).encode()
+                )
+                ten_values = self.client.get('/search?q=Example', SCRIPT_NAME=prefix)
+                self.assertNotContains(ten_values, 'modal_form_affiliations')
+        finally:
+            set_script_prefix(previous_prefix)
+
     def test_varied_search_and_sparse_profile_states(self) -> None:
         """
         Checks empty results, later pages, repeated filters, and a person with no optional fields.

@@ -23,13 +23,17 @@
 
   function prepareFacet(dialog) {
     var name = dialog.dataset.facetName;
+    var facetUrl = dialog.dataset.facetUrl;
     var values = JSON.parse(document.getElementById('facet-data-' + name).textContent);
     var input = dialog.querySelector('input');
     var list = dialog.querySelector('.modal-body ul');
+    var loadStatus = dialog.querySelector('.facet-load-status');
     var controls = dialog.querySelectorAll('[data-facet-action]');
     var page = 1;
     var sort = 'count';
     var pageCount = 1;
+    var loaded = !facetUrl;
+    var loading = false;
 
     function render() {
       var query = input.value.toUpperCase();
@@ -72,8 +76,36 @@
       });
     });
     input.addEventListener('input', function () { page = 1; render(); });
-    window.jQuery(dialog).on('shown.bs.modal', function () { render(); input.focus(); });
-    render();
+    window.jQuery(dialog).on('shown.bs.modal', function () {
+      input.focus();
+      if (loaded) { render(); return; }
+      if (loading) return;
+      loading = true;
+      loadStatus.textContent = 'Loading...';
+      window.fetch(facetUrl, { credentials: 'same-origin' })
+        .then(function (response) {
+          if (!response.ok) throw new Error('Facet request failed');
+          return response.json();
+        })
+        .then(function (rows) {
+          if (!Array.isArray(rows)) throw new Error('Invalid facet response');
+          values = rows.map(function (item) {
+            if (!item || typeof item.text !== 'string' || !Number.isInteger(item.count) ||
+                typeof item.add_url !== 'string' ||
+                (item.remove_url !== null && typeof item.remove_url !== 'string')) {
+              throw new Error('Invalid facet value');
+            }
+            return { text: item.text, count: item.count, selected: item.remove_url !== null,
+              url: item.remove_url || item.add_url };
+          });
+          loaded = true;
+          loadStatus.textContent = '';
+          render();
+        })
+        .catch(function () { loadStatus.textContent = 'Could not retrieve facet information. Reopen to try again.'; })
+        .finally(function () { loading = false; });
+    });
+    if (loaded) render();
   }
 
   function preparePreview(link, index) {

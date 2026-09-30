@@ -53,7 +53,7 @@
         <div class="panel-heading"><h3 class="facetLabel">{{ facet.title }}</h3></div>
         <div class="panel-body"><ul class="list-unstyled">
         {% for value in facet.values %}<li><span>{% if value.selected %}{{ value.text }} <a href="{{ value.url }}"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span><span class="sr-only">Remove facet {{ value.text }}</span></a>{% else %}<a href="{{ value.url }}">{{ value.text }}</a>{% endif %}</span> <div class="no-orphans">(<span> <span class="categoryCount">{{ value.count }}</span> </span>)</div></li>{% endfor %}
-        </ul>{% if facet.more_values %}{% include "search/facet_dialog.html" %}{% endif %}</div>
+        </ul>{% if facet.has_more or facet.more_values %}{% include "search/facet_dialog.html" %}{% endif %}</div>
       {% endfor %}</div></div>
     </aside>{% endif %}
   </div>

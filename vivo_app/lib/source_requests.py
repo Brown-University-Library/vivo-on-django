@@ -52,13 +52,13 @@ def quoted(value: str) -> str:
     return result
 
 
-def search_key(query: str, page: int, filters: list[tuple[str, str]], facet_limit: int = 10) -> RequestKey:
+def search_key(query: str, page: int, filters: list[tuple[str, str]], facet_limit: int = 11) -> RequestKey:
     """
     Builds one bounded Solr search with the same main fields and ranking as Rails.
 
     Called by: source_pages.search_data(), source_pages.facet_values_data(), tests
     """
-    if page < 1 or page > 1000 or len(query) > 300 or len(filters) > 12 or facet_limit not in {10, -1}:
+    if page < 1 or page > 1000 or len(query) > 300 or len(filters) > 12 or facet_limit not in {11, -1}:
         raise PageDataError('The requested search is outside the supported limits.')
     pairs = [
         ('q', query or '*'),

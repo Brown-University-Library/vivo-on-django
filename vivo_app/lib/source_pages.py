@@ -160,6 +160,18 @@ def search_url(query: str, page: int, filters: list[tuple[str, str]]) -> str:
     return reverse('search').rstrip('/') + ('?' + urlencode(params) if params else '')
 
 
+def search_facet_url(query: str, filters: list[tuple[str, str]], field: str) -> str:
+    """
+    Builds the local URL that retrieves every value of one search facet.
+
+    Called by: facet_data()
+    """
+    params = [('q', query)] if query else []
+    params.extend(('fq', name + '|' + value) for name, value in filters)
+    params.append(('f_name', field))
+    return reverse('search_facets').rstrip('/') + '?' + urlencode(params)
+
+
 def facet_data(response: dict[str, object], query: str, filters: list[tuple[str, str]]) -> list[dict[str, object]]:
     """
     Converts Solr's alternating facet values and counts to local links.
@@ -184,7 +196,18 @@ def facet_data(response: dict[str, object], query: str, filters: list[tuple[str,
             next_filters = [item for item in filters if item != (field, label)] if selected else [*filters, (field, label)]
             values.append({'text': label, 'count': count, 'selected': selected, 'url': search_url(query, 1, next_filters)})
         if values:
-            facets.append({'name': field, 'title': title, 'values': values, 'more_values': []})
+            visible = values[:10] + [value for value in values[10:] if value['selected']]
+            has_more = len(values) > 10
+            facets.append(
+                {
+                    'name': field,
+                    'title': title,
+                    'values': visible,
+                    'has_more': has_more,
+                    'more_url': search_facet_url(query, filters, field) if has_more else '',
+                    'more_values': [],
+                }
+            )
     return facets
 
 
