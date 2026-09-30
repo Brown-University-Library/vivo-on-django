@@ -309,6 +309,26 @@ class SourcePageTests(TestCase):
             organization['website_links'], [{'url': 'https://example.invalid/department', 'label': 'Department website'}]
         )
 
+    def test_organization_websites_follow_saved_rank(self) -> None:
+        """
+        Checks organization website links appear in their saved rank order.
+        """
+        key = profile_key('org-example')
+        response = json.loads(self.responses[key].body)
+        item = json.loads(response['response']['docs'][0]['json_txt'][0])
+        item['web_pages'] = [
+            {'rank': '2', 'url': 'https://example.invalid/later'},
+            {'rank': '1', 'url': 'https://example.invalid/earlier'},
+        ]
+        response['response']['docs'][0]['json_txt'] = [json.dumps(item)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        organization = organization_data('org-example', 'live', self.read)
+        websites = organization['website_links']
+        self.assertIsInstance(websites, list)
+        if not isinstance(websites, list):
+            self.fail('Organization websites were not a list.')
+        self.assertEqual([row['url'] for row in websites], ['https://example.invalid/earlier', 'https://example.invalid/later'])
+
     def test_research_keeps_source_formatting(self) -> None:
         """
         Checks the Research text keeps paragraphs, emphasis, and web links while discarding active markup.
