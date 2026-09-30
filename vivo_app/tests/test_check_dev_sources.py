@@ -11,6 +11,7 @@ from django.test import SimpleTestCase, override_settings
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse
+from vivo_app.lib.source_requests import profile_key, read_source
 from vivo_app.management.commands.check_dev_sources import source_check
 
 
@@ -136,6 +137,39 @@ class CheckDevSourcesTests(SimpleTestCase):
         ):
             result = source_check('search', '')
         self.assertEqual(result, {'status': 'error', 'reason': 'Solr did not return search facets.'})
+
+    def test_profile_check_reports_collaborator_count_without_record_content(self) -> None:
+        """
+        Checks the profile probe reports source availability without names or record JSON.
+        """
+        uri = 'http://vivo.brown.edu/individual/invented-a'
+        document = {
+            'id': uri,
+            'record_type': ['PEOPLE'],
+            'show_visualizations_s': 'true',
+            'json_txt': [json.dumps({'collaborators': [{'name': 'Invented Private Name'}]})],
+        }
+        response = {'responseHeader': {'status': 0}, 'response': {'numFound': 1, 'docs': [document]}}
+        with (
+            patch('vivo_app.management.commands.check_dev_sources.response_object', return_value=response) as source,
+            patch('vivo_app.management.commands.check_dev_sources.visualization_list', return_value={uri: True}) as graphs,
+        ):
+            result = source_check('profile', 'invented-a')
+        self.assertEqual(result['collaborators'], 1)
+        self.assertTrue(result['profile_visualizations_enabled'])
+        self.assertTrue(result['collaborator_graph_available'])
+        self.assertNotIn('Invented Private Name', json.dumps(result))
+        source.assert_called_once_with(profile_key('invented-a'), 'live', read_source)
+        graphs.assert_called_once_with('collaborators', 'live')
+
+    def test_profile_check_requires_an_id(self) -> None:
+        """
+        Checks the profile probe does not query Solr without an explicit identifier.
+        """
+        with patch('vivo_app.management.commands.check_dev_sources.response_object') as source:
+            result = source_check('profile', '')
+        self.assertEqual(result['status'], 'error')
+        source.assert_not_called()
 
     def test_full_search_facet_check_reports_counts_without_values(self) -> None:
         """

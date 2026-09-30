@@ -330,6 +330,44 @@ class SourcePageTests(TestCase):
         self.assertContains(profile, 'Invented Researcher')
         self.assertNotContains(profile, 'id="viz_coauthor"')
 
+    def test_affiliations_show_collaborators_and_available_graph(self) -> None:
+        """
+        Checks collaborator names, local links, and graph availability on a person page.
+        """
+        key = profile_key('invented-a')
+        response = json.loads(self.responses[key].body)
+        person = json.loads(response['response']['docs'][0]['json_txt'][0])
+        person['collaborators'] = [
+            {
+                'uri': 'http://vivo.brown.edu/individual/invented-b',
+                'name': 'Invented Colleague',
+                'title': 'Example Scientist',
+            }
+        ]
+        response['response']['docs'][0]['json_txt'] = [json.dumps(person)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        self.responses[visualization_key('collaborators')] = RecordedResponse(
+            200, (('content-type', 'application/json'),), json.dumps({person['id']: True}).encode()
+        )
+        prefix = '/mounted-app'
+        previous_prefix = get_script_prefix()
+        set_script_prefix(prefix)
+        try:
+            with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+                profile = self.client.get('/display/invented-a', SCRIPT_NAME=prefix)
+            self.assertContains(profile, 'Invented Colleague')
+            self.assertContains(profile, 'Example Scientist')
+            self.assertContains(profile, f'href="{prefix}/display/invented-b"')
+            self.assertContains(profile, f'href="{prefix}/display/invented-a/viz/collab"')
+            self.assertContains(profile, 'id="viz_collab"')
+            self.responses.pop(visualization_key('collaborators'))
+            with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+                profile_without_graph = self.client.get('/display/invented-a', SCRIPT_NAME=prefix)
+            self.assertContains(profile_without_graph, 'Invented Colleague')
+            self.assertNotContains(profile_without_graph, 'id="viz_collab"')
+        finally:
+            set_script_prefix(previous_prefix)
+
     def test_live_search_offers_more_facets_when_an_eleventh_value_exists(self) -> None:
         """
         Checks ten values stay visible and the full local facet response supplies the dialog.

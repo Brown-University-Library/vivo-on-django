@@ -14,11 +14,20 @@ from vivo_app.lib.page_data import selected_mode
 from vivo_app.lib.prepared_data import PageDataError, load_bundle
 from vivo_app.lib.source_books import homepage_books
 from vivo_app.lib.source_graph import visualization_list
-from vivo_app.lib.source_pages import facet_values_data, search_data
-from vivo_app.lib.source_requests import read_source, vitro_key
+from vivo_app.lib.source_pages import (
+    documents,
+    entries,
+    facet_values_data,
+    first_text,
+    record_data,
+    record_id,
+    response_object,
+    search_data,
+)
+from vivo_app.lib.source_requests import profile_key, read_source, vitro_key
 from vivo_app.lib.source_status import status_data
 
-SOURCES = ('solr', 'search', 'search-facets', 'viz', 'vivo', 'books')
+SOURCES = ('solr', 'search', 'search-facets', 'profile', 'viz', 'vivo', 'books')
 
 
 def prepared_check() -> dict[str, object]:
@@ -71,6 +80,27 @@ def source_check(name: str, vivo_id: str, search_query: str = 'biology') -> dict
                 'check': 'affiliation values shown and returned by the full facet request',
                 'shown_values': len(shown),
                 'full_values': len(full),
+            }
+        elif name == 'profile':
+            if not vivo_id:
+                raise PageDataError('Supply --vivo-id to check one person profile.')
+            response = response_object(profile_key(vivo_id), 'live', read_source)
+            docs, _ = documents(response)
+            if not docs or record_id(docs[0]) != vivo_id or first_text(docs[0].get('record_type')) != 'PEOPLE':
+                raise PageDataError('The requested source record is not a person profile.')
+            collaborators = entries(record_data(docs[0]), 'collaborators')
+            enabled = first_text(docs[0].get('show_visualizations_s')) == 'true'
+            graph_available = False
+            if collaborators and enabled:
+                graphs = visualization_list('collaborators', 'live')
+                graph_available = first_text(docs[0].get('id')) in graphs
+            result = {
+                'status': 'ok',
+                'check': 'person profile collaborator source',
+                'collaborators': len(collaborators),
+                'profile_visualizations_enabled': enabled,
+                'django_visualizations_enabled': settings.VIZ_ENABLED,
+                'collaborator_graph_available': graph_available,
             }
         elif name == 'viz':
             visualization_list('coauthors', 'live')

@@ -592,7 +592,7 @@ def organization_thumbnail(uri: str, mode: str, reader: SourceReader) -> str:
 
 
 def profile_sections(
-    item: dict[str, object], mode: str, reader: SourceReader, publication_count: int
+    item: dict[str, object], mode: str, reader: SourceReader, publication_count: int, collaborator_visualization_url: str
 ) -> list[dict[str, str]]:
     """
     Builds the visible profile sections from its source fields and lookups.
@@ -714,8 +714,49 @@ def profile_sections(
     if education or awards or entries(item, 'training'):
         sections.append({'id': 'Background', 'label': 'Background', 'html': background})
     appointments = entries(item, 'appointments')
+    collaborators = entries(item, 'collaborators')
     affiliation_text = first_text(item.get('affiliations_text'))
-    affiliation_html = '<h3>Affiliations</h3>'
+    affiliation_html = '<h3>Affiliations'
+    if collaborator_visualization_url:
+        affiliation_html += (
+            '<a id="viz_collab" class="btn btn-default" style="float:right;" href="'
+            + escape(collaborator_visualization_url, quote=True)
+            + '" target="_blank" rel="noopener" title="Visualize collaborators network">Visualize it '
+            '<i class="glyphicon glyphicon-signal" style="color:rgb(232, 217, 139);" aria-hidden="true"></i></a>'
+        )
+    affiliation_html += '</h3>'
+    if collaborators:
+        affiliation_html += (
+            '<div class="panel-heading"><h4 id="relatedBy-Authorship" class="panel-title">Collaborators</h4></div>'
+            '<div class="panel-body panel-body-collaborators"><table class="table table-hover"><tbody>'
+            '<tr><th>Name</th><th>Title</th></tr>'
+        )
+        for collaborator in collaborators:
+            name = first_text(collaborator.get('name'))
+            title = first_text(collaborator.get('title'))
+            uri = first_text(collaborator.get('uri'))
+            identifier = (
+                uri.removeprefix('http://vivo.brown.edu/individual/')
+                if uri.startswith('http://vivo.brown.edu/individual/')
+                else ''
+            )
+            display_name = escape(name)
+            if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', identifier):
+                display_name = (
+                    '<a href="'
+                    + escape(reverse('display_show_public', args=[identifier]), quote=True)
+                    + '">'
+                    + display_name
+                    + '</a>'
+                )
+            affiliation_html += (
+                '<tr class="tableRow" role="listitem"><td><span class="listDateTime">'
+                + display_name
+                + '</span></td><td><span class="listDateTime">'
+                + escape(title)
+                + '</span></td></tr>'
+            )
+        affiliation_html += '</tbody></table></div>'
     if affiliation_text:
         affiliation_html += (
             '<div class="panel-heading"><h4 class="panel-title">Affiliations</h4></div><div class="panel-body">'
@@ -742,7 +783,7 @@ def profile_sections(
                 + '</td></tr>'
             )
         affiliation_html += '</tbody></table></div>'
-    if appointments or affiliation_text or entries(item, 'collaborators') or entries(item, 'credentials'):
+    if appointments or affiliation_text or collaborators or entries(item, 'credentials'):
         sections.append({'id': 'Affiliations', 'label': 'Affiliations', 'html': affiliation_html})
     teaching = item.get('teacher_for', [])
     if not isinstance(teaching, list) or any(not isinstance(course, str) for course in teaching):
@@ -790,6 +831,7 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
         raise PageDataError('The source profile has no display name.')
     publications_data, publication_filters = publications(item)
     coauthor_visualization_url = ''
+    collaborator_visualization_url = ''
     if settings.VIZ_ENABLED and publications_data and first_text(doc.get('show_visualizations_s')) == 'true':
         from vivo_app.lib.source_graph import visualization_list
 
@@ -797,6 +839,15 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
             available_coauthors = visualization_list('coauthors', mode, reader)
             if first_text(doc.get('id')) in available_coauthors:
                 coauthor_visualization_url = reverse('visualization_coauthor', args=[identifier])
+        except PageDataError:
+            pass
+    if settings.VIZ_ENABLED and entries(item, 'collaborators') and first_text(doc.get('show_visualizations_s')) == 'true':
+        from vivo_app.lib.source_graph import visualization_list
+
+        try:
+            available_collaborators = visualization_list('collaborators', mode, reader)
+            if first_text(doc.get('id')) in available_collaborators:
+                collaborator_visualization_url = reverse('visualization_collab', args=[identifier])
         except PageDataError:
             pass
     cv_entries = entries(item, 'cv')
@@ -808,7 +859,7 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
         'title': first_text(item.get('title')),
         'email': first_text(item.get('email')),
         'thumbnail': thumbnail_url(doc),
-        'sections': profile_sections(item, mode, reader, len(publications_data)),
+        'sections': profile_sections(item, mode, reader, len(publications_data), collaborator_visualization_url),
         'publications': publications_data,
         'publication_filters': publication_filters,
         'coauthor_visualization_url': coauthor_visualization_url,
