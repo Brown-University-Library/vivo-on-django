@@ -810,6 +810,20 @@ class SourcePageTests(TestCase):
         finally:
             set_script_prefix(previous_prefix)
 
+    def test_display_entry_redirects_to_search(self) -> None:
+        """
+        Checks an empty display path redirects to search inside the mounted app.
+        """
+        prefix = '/mounted-app'
+        previous_prefix = get_script_prefix()
+        set_script_prefix(prefix)
+        try:
+            response = self.client.get('/display/', SCRIPT_NAME=prefix)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response['Location'], prefix + '/search')
+        finally:
+            set_script_prefix(previous_prefix)
+
     def test_search_result_identifies_people_and_organizations(self) -> None:
         """
         Checks search cards identify their record types in the page markup.

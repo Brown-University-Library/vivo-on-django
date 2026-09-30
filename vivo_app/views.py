@@ -266,6 +266,8 @@ def home_brown_classic(request, name=None):
 # Display functionality
 def display_index(request):
     """Display index page."""
+    if settings.PAGE_DATA_MODE in {'live', 'replay'}:
+        return redirect(reverse('search').rstrip('/'))
     return render_or_stub(request, 'display/index.html')
 
 
