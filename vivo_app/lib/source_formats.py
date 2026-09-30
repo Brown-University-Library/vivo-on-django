@@ -11,12 +11,14 @@ from vivo_app.lib.source_pages import (
     documents,
     entries,
     first_text,
+    organization_members,
     publication_year,
     record_data,
     record_id,
     response_object,
+    website_rank,
 )
-from vivo_app.lib.source_requests import image_path, profile_export_key, profile_key, read_source, source_origin
+from vivo_app.lib.source_requests import image_path, member_key, profile_export_key, profile_key, read_source, source_origin
 
 FormatReader = Callable[[RequestKey, str], RecordedResponse]
 
@@ -42,6 +44,76 @@ def raw_record_json_data(identifier: str, mode: str, reader: FormatReader | None
     ):
         raise PageDataError('The requested source record is unavailable.')
     return record_data(docs[0])
+
+
+def organization_json_data(
+    identifier: str, mode: str, reader: FormatReader | None = None, extra_member_ids: list[str] | None = None
+) -> dict[str, object]:
+    """
+    Converts an organization record and its member portraits for public JSON.
+
+    Called by: views.display_show(), tests
+    """
+    if reader is None:
+        reader = read_source
+    response = response_object(profile_key(identifier), mode, reader)
+    docs, _ = documents(response)
+    if not docs or record_id(docs[0]) != identifier or first_text(docs[0].get('record_type')) != 'ORGANIZATION':
+        raise PageDataError('The requested source record is not an organization.')
+    doc = docs[0]
+    raw = record_data(doc)
+    uri = first_text(raw.get('uri')) or first_text(doc.get('id'))
+    path = image_path(doc.get('thumbnail_file_path_s'))
+    members = organization_members(raw, extra_member_ids or [], mode, reader)
+    ids = list(dict.fromkeys(record_id({'id': first_text(row.get('faculty_uri'))}) for row in members))
+    portraits: dict[str, str] = {}
+    if ids:
+        member_response = response_object(member_key(ids), mode, reader)
+        member_docs, _ = documents(member_response)
+        for member_doc in member_docs:
+            member_id = record_id(member_doc)
+            if member_id not in ids or first_text(member_doc.get('record_type')) != 'PEOPLE':
+                raise PageDataError('Solr returned an unrelated organization member.')
+            member_path = image_path(member_doc.get('thumbnail_file_path_s'))
+            if member_path:
+                portraits[member_id] = source_origin('images') + member_path
+    people: list[dict[str, object]] = []
+    for row in sorted(members, key=lambda item: first_text(item.get('label')).upper()):
+        faculty_uri = first_text(row.get('faculty_uri'))
+        member_id = record_id({'id': faculty_uri})
+        people.append(
+            {
+                'id': faculty_uri,
+                'faculty_uri': faculty_uri,
+                'label': first_text(row.get('label')),
+                'general_position': first_text(row.get('general_position')),
+                'specific_position': first_text(row.get('specific_position')),
+                'thumbnail_url': portraits.get(member_id, 'person_placeholder.jpg'),
+            }
+        )
+    web_pages: list[dict[str, object]] = []
+    for row in entries(raw, 'web_pages'):
+        url = first_text(row.get('url')).strip()
+        web_pages.append(
+            {
+                'id': first_text(row.get('uri')),
+                'uri': first_text(row.get('uri')),
+                'rank': website_rank(row.get('rank')),
+                'url': url,
+                'text': (first_text(row.get('text')) or url).strip(),
+            }
+        )
+    return {
+        'id': uri,
+        'record_type': first_text(raw.get('record_type')) or 'ORGANIZATION',
+        'uri': uri,
+        'name': first_text(raw.get('name')),
+        'overview': first_text(raw.get('overview')),
+        'thumbnail': source_origin('images') + path if path else None,
+        'people': people,
+        'web_pages': web_pages,
+        'faculty': [],
+    }
 
 
 def dated_entries(raw: dict[str, object], field: str, names: tuple[str, ...]) -> list[dict[str, object]]:

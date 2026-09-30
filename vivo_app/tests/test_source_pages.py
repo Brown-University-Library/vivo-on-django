@@ -995,6 +995,23 @@ class SourcePageTests(TestCase):
         self.assertEqual(json.loads(organization.content)['name'], 'Example Department')
         self.assertEqual(invalid.status_code, 503)
 
+    def test_organization_json_contains_websites_and_members(self) -> None:
+        """
+        Checks organization JSON includes the public fields and member portraits.
+        """
+        with (
+            patch('vivo_app.lib.source_formats.read_source', side_effect=self.read),
+            patch('vivo_app.lib.source_teams.read_source', side_effect=self.read),
+        ):
+            response = self.get_page('/display/org-example?format=json')
+        self.assertEqual(response.status_code, 200)
+        body = json.loads(response.content)
+        self.assertEqual(body['record_type'], 'ORGANIZATION')
+        self.assertEqual(body['name'], 'Example Department')
+        self.assertEqual(body['web_pages'][0]['text'], 'Department website')
+        self.assertEqual(body['people'][0]['label'], 'Researcher, Invented')
+        self.assertEqual(body['people'][0]['thumbnail_url'], 'http://example.invalid/profile-images/123/4/portrait.jpg')
+
     def test_nested_profile_json_converts_and_sorts_entries(self) -> None:
         """
         Checks publication, appointment, training, credential, and collaborator JSON fields.

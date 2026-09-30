@@ -463,7 +463,7 @@ def website_rank(value: object) -> int:
     """
     Reads the whole-number part of a website's saved rank as Rails does.
 
-    Called by: profile_sections()
+    Called by: profile_sections(), source_formats.organization_json_data()
     """
     text = str(value) if isinstance(value, (int, float, str)) else ''
     match = re.match(r'\s*[+-]?\d+', text)

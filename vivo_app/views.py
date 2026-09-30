@@ -33,7 +33,7 @@ from .lib.page_data import (
 )
 from .lib.page_rendering import data_unavailable, prepared_response, query_pairs, render_or_stub
 from .lib.prepared_data import PageDataError
-from .lib.source_formats import profile_json_data, raw_record_json_data
+from .lib.source_formats import organization_json_data, profile_json_data, raw_record_json_data
 from .lib.source_graph import graph_csv, graph_page_data, graph_subject_data, visualization_graph
 from .lib.source_org_charts import publication_history_csv, publication_history_data, research_areas_data
 from .lib.source_pages import facet_values_data, organization_publications_data, search_json_data
@@ -290,7 +290,16 @@ def display_show(request, id):
             if settings.PAGE_DATA_MODE in {'live', 'replay'}:
                 if any(key != 'format' or value != 'json' for key, value in query_pairs(request.GET)):
                     raise PageDataError('Profile JSON query options are unsupported.')
-                return JsonResponse(profile_json_data(id.removesuffix('.json'), settings.PAGE_DATA_MODE))
+                identifier = id.removesuffix('.json')
+                if identifier.startswith('org-'):
+                    return JsonResponse(
+                        organization_json_data(
+                            identifier,
+                            settings.PAGE_DATA_MODE,
+                            extra_member_ids=custom_organization_members(identifier, settings.PAGE_DATA_MODE),
+                        )
+                    )
+                return JsonResponse(profile_json_data(identifier, settings.PAGE_DATA_MODE))
             saved_response = get_response_data(request.path_info, query_pairs(request.GET))
             if saved_response is not None:
                 return prepared_response(saved_response)
