@@ -133,7 +133,7 @@ def search_inputs(pairs: list[tuple[str, str]]) -> tuple[str, int, list[tuple[st
 
     Called by: search_data()
     """
-    if any(key not in {'q', 'page', 'fq'} for key, _ in pairs):
+    if any(key not in {'q', 'page', 'fq'} and re.fullmatch(r'fq_[0-9]+', key) is None for key, _ in pairs):
         raise PageDataError('This live search option has not been implemented.')
     queries = [value for key, value in pairs if key == 'q']
     pages = [value for key, value in pairs if key == 'page']
@@ -141,7 +141,7 @@ def search_inputs(pairs: list[tuple[str, str]]) -> tuple[str, int, list[tuple[st
         raise PageDataError('The requested search query or page is invalid.')
     filters: list[tuple[str, str]] = []
     for key, value in pairs:
-        if key == 'fq':
+        if key == 'fq' or re.fullmatch(r'fq_[0-9]+', key):
             field, separator, text = value.partition('|')
             if not separator or field not in FACETS or not text:
                 raise PageDataError('The requested search filter is unsupported.')

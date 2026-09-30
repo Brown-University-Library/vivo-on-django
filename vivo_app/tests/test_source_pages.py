@@ -737,6 +737,20 @@ class SourcePageTests(TestCase):
         self.assertEqual(sparse['publications'], [])
         self.assertEqual(sparse['cv_url'], '')
 
+    def test_numbered_facet_filter_keeps_search_selection(self) -> None:
+        """
+        Checks search submissions retain a facet sent as a numbered form field.
+        """
+        result = search_data([('q', 'Example'), ('fq_0', 'record_type|PEOPLE')], 'live', self.read)
+        selected = result['selected_filters']
+        self.assertIsInstance(selected, list)
+        if not isinstance(selected, list):
+            self.fail('Selected filters were not a list.')
+        self.assertEqual(selected[0]['value'], 'PEOPLE')
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            response = self.get_page('/search?q=Example&fq_0=record_type%7CPEOPLE')
+        self.assertContains(response, 'Remove filter PEOPLE')
+
     def test_search_bottom_pagination_links_to_adjacent_pages(self) -> None:
         """
         Checks the bottom pagination has the previous and next links shown by Rails.
