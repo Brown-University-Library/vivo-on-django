@@ -21,6 +21,7 @@ from vivo_app.lib.source_graph import visualization_key
 from vivo_app.lib.source_pages import (
     organization_data,
     organization_publications_data,
+    match_html,
     profile_data,
     profile_sections,
     profile_year_range,
@@ -781,6 +782,23 @@ class SourcePageTests(TestCase):
         }
         matches = selected_highlights(fields, 2)
         self.assertEqual([value for _, value in matches], ['<strong>Biology</strong> one', '<strong>Research</strong> three'])
+
+    def test_search_matches_group_fields_with_captions(self) -> None:
+        """
+        Checks search match details label and join snippets from descriptive fields.
+        """
+        doc = {'id': 'http://vivo.brown.edu/individual/invented-a'}
+        response: dict[str, object] = {
+            'highlighting': {
+                'vitroIndividual:http://vivo.brown.edu/individual/invented-a': {
+                    'department_t': ['<strong>Biology</strong> one', '<strong>Biology</strong> two'],
+                    'research_areas_en': ['<p><strong>Science</strong> lab</p>'],
+                }
+            }
+        }
+        markup = match_html(response, doc)
+        self.assertIn('<p>Department: <strong>Biology</strong> one, <strong>Biology</strong> two</p>', markup)
+        self.assertIn('<p>Research areas: <strong>Science</strong> lab</p>', markup)
 
     def test_missing_response_and_unsupported_option_do_not_fall_back(self) -> None:
         """

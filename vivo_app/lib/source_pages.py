@@ -260,11 +260,26 @@ def match_html(response: dict[str, object], doc: dict[str, object]) -> str:
     if not isinstance(fields, dict):
         return ''
     selected = selected_highlights(fields)
-    safe = [
-        escape(value).replace('&lt;strong&gt;', '<strong>').replace('&lt;/strong&gt;', '</strong>')
-        for _, value in selected
-    ]
-    return ''.join('<p>' + value + '</p>' for value in safe)
+    captions = (
+        ('department_t', 'Department'),
+        ('research_areas_en', 'Research areas'),
+        ('affiliations_en', 'Affiliations'),
+        ('overview_en', 'Overview'),
+    )
+    paragraphs: list[str] = []
+    for field, caption in captions:
+        values = [value for name, value in selected if name == field]
+        if values:
+            joined = ', '.join(values).replace('<p>', '').replace('</p>', '').replace('\u00a0', ' ')
+            joined = re.sub(r'\s{2,}', ' ', joined)
+            safe_value = escape(joined).replace('&lt;strong&gt;', '<strong>').replace('&lt;/strong&gt;', '</strong>')
+            paragraphs.append('<p>' + caption + ': ' + safe_value + '</p>')
+    caption_fields = {field for field, _ in captions}
+    for field, value in selected:
+        if field not in caption_fields:
+            safe_value = escape(value).replace('&lt;strong&gt;', '<strong>').replace('&lt;/strong&gt;', '</strong>')
+            paragraphs.append('<p>' + safe_value + '</p>')
+    return ''.join(paragraphs)
 
 
 def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | None = None) -> dict[str, object]:
