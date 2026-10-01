@@ -771,7 +771,7 @@ def profile_year_range(row: dict[str, object]) -> str:
             years.append('Present')
         else:
             years.append(str(value.year))
-    return '-'.join(years)
+    return '-'.join(year for year in years if year)
 
 
 def profile_entries_newest_first(rows: list[dict[str, object]]) -> list[dict[str, object]]:
