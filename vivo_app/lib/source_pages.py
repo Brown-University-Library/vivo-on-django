@@ -310,9 +310,9 @@ def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | 
             continue
         try:
             item = record_data(doc)
+            identifier = record_id(doc)
         except PageDataError:
             continue
-        identifier = record_id(doc)
         name = first_text(doc.get('display_name_s')) or first_text(item.get('name'))
         title = first_text(item.get('title'))
         if not name:
@@ -392,9 +392,9 @@ def search_json_data(
             continue
         try:
             item = record_data(doc)
+            identifier = record_id(doc)
         except PageDataError:
             continue
-        identifier = record_id(doc)
         name = first_text(doc.get('display_name_s')) or first_text(item.get('name'))
         if not name:
             continue

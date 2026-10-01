@@ -859,6 +859,26 @@ class SourcePageTests(TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['vivo_id'], 'invented-a')
 
+    def test_search_ignores_record_with_unusable_identifier(self) -> None:
+        """
+        Checks one unsupported result identifier does not hide the other search results.
+        """
+        key = search_key('Example', 1, [])
+        source = json.loads(self.responses[key].body)
+        bad = dict(source['response']['docs'][0], id='http://vivo.brown.edu/individual/invalid id')
+        source['response']['docs'].insert(0, bad)
+        source['response']['numFound'] = 2
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        html = search_data([('q', 'Example')], 'live', self.read)
+        structured = search_json_data([('q', 'Example')], 'live', 'https://example.invalid', self.read)
+        results = html['results']
+        if not isinstance(results, list):
+            self.fail('Search results should be a list.')
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['id'], 'invented-a')
+        self.assertEqual(len(structured), 1)
+        self.assertEqual(structured[0]['vivo_id'], 'invented-a')
+
     def test_search_keeps_named_records_when_another_has_no_name(self) -> None:
         """
         Checks a nameless source record does not hide usable search results.
