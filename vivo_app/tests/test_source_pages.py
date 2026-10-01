@@ -777,6 +777,23 @@ class SourcePageTests(TestCase):
         self.assertIn('org_placeholder.png', sections[0]['html'])
         self.assertNotIn('wrong.png', sections[0]['html'])
 
+    def test_unusable_affiliations_do_not_leave_an_empty_heading(self) -> None:
+        """
+        Checks malformed affiliation links do not leave an empty profile section.
+        """
+        key = profile_key('invented-a')
+        source = json.loads(self.responses[key].body)
+        person = json.loads(source['response']['docs'][0]['json_txt'][0])
+        person['affiliations'] = [{'uri': 'http://vivo.brown.edu/individual/invalid id', 'name': 'Example Unit'}]
+        source['response']['docs'][0]['json_txt'] = [json.dumps(person)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = profile_data('invented-a', 'live', self.read)
+        sections = result['sections']
+        if not isinstance(sections, list):
+            self.fail('Profile sections should be a list.')
+        self.assertNotIn('Brown Affiliations', sections[0]['html'])
+        self.assertIn('Invented', sections[0]['html'])
+
     def test_affiliation_logo_request_failure_keeps_profile_visible(self) -> None:
         """Uses the placeholder if the optional affiliation lookup fails."""
         self.responses.pop(profile_key('org-example'))

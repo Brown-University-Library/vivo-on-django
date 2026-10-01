@@ -806,7 +806,12 @@ def profile_sections(
     """
     sections: list[dict[str, str]] = []
     overview = '<h3>Overview</h3><p>' + render_profile_html(first_text(item.get('overview'))) + '</p>'
-    affiliations = entries(item, 'affiliations')
+    affiliations = [
+        row
+        for row in entries(item, 'affiliations')
+        if first_text(row.get('name'))
+        and re.fullmatch(r'http://vivo\.brown\.edu/individual/[A-Za-z0-9_-]{1,80}', first_text(row.get('uri')))
+    ]
     if affiliations:
         overview += (
             '<h4 class="brown-affiliations panel-heading">Brown Affiliations</h4><ul class="brown-affiliations-list">'
@@ -814,20 +819,19 @@ def profile_sections(
         for affiliation in sorted(affiliations, key=lambda row: first_text(row.get('name')).lower()):
             uri = first_text(affiliation.get('uri'))
             name = first_text(affiliation.get('name'))
-            if uri.startswith('http://vivo.brown.edu/individual/') and name:
-                identifier = uri.rsplit('/', 1)[-1]
-                image = organization_thumbnail(uri, mode, reader)
-                overview += (
-                    '<li><img src="'
-                    + escape(image, quote=True)
-                    + '" alt="'
-                    + escape(name, quote=True)
-                    + ' logo" width="36"> <a href="'
-                    + escape(reverse('display_show_public', args=[identifier]), quote=True)
-                    + '">'
-                    + escape(name)
-                    + '</a></li>'
-                )
+            identifier = uri.rsplit('/', 1)[-1]
+            image = organization_thumbnail(uri, mode, reader)
+            overview += (
+                '<li><img src="'
+                + escape(image, quote=True)
+                + '" alt="'
+                + escape(name, quote=True)
+                + ' logo" width="36"> <a href="'
+                + escape(reverse('display_show_public', args=[identifier]), quote=True)
+                + '">'
+                + escape(name)
+                + '</a></li>'
+            )
         overview += '</ul>'
     areas = item.get('research_areas', [])
     if isinstance(areas, list) and all(isinstance(area, str) for area in areas) and areas:
