@@ -1174,6 +1174,21 @@ class SourcePageTests(TestCase):
         self.assertIn('Alpha', publications_data[0]['html'])
         self.assertIn('Zeta', publications_data[1]['html'])
 
+    def test_publications_keep_unknown_citation_types(self) -> None:
+        """
+        Checks an unrecognized citation type remains visible as Other.
+        """
+        rows: dict[str, object] = {
+            'contributor_to': [
+                {'title': 'Missing type', 'date': '2020'},
+                {'type': 'https://example.invalid/citation#Book', 'title': 'Unknown book', 'date': '2019'},
+            ]
+        }
+        result, filters = publications(rows)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(filters, [{'id': '', 'label': 'Other', 'count': 2}])
+        self.assertIn('"Unknown book."', result[1]['html'])
+
     def test_publication_year_uses_public_site_range(self) -> None:
         """
         Checks dates outside the public site's accepted range do not display or outrank valid years.

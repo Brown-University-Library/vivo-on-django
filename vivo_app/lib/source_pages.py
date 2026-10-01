@@ -532,10 +532,12 @@ def publication_type(item: dict[str, object]) -> tuple[str, str]:
 
     Called by: publications()
     """
-    raw = first_text(item.get('type')).rsplit('#', 1)[-1]
-    if not re.fullmatch(r'[A-Za-z]+', raw):
-        raise PageDataError('A publication has an unsupported type.')
-    label = 'Other' if raw == 'Citation' else re.sub(r'(?<!^)(?=[A-Z])', ' ', raw)
+    prefix = 'http://vivo.brown.edu/ontology/citation#'
+    raw = first_text(item.get('type'))
+    if not raw.startswith(prefix) or re.fullmatch(r'[A-Za-z]+', raw.removeprefix(prefix)) is None:
+        return '', 'Other'
+    kind = raw.removeprefix(prefix)
+    label = 'Other' if kind == 'Citation' else re.sub(r'(?<!^)(?=[A-Z])', ' ', kind)
     return '_' + label.lower().replace(' ', '_'), label
 
 
@@ -627,10 +629,10 @@ def publication_html(item: dict[str, object]) -> str:
     pages = first_text(item.get('pages'))
     if pages:
         parts.append('pp. ' + escape(pages))
-    kind = first_text(item.get('type'))
-    if kind.endswith('#Book'):
+    kind, _ = publication_type(item)
+    if kind == '_book':
         citation_body = publication_book_html(item)
-    elif kind.endswith('#BookSection'):
+    elif kind == '_book_section':
         citation_body = publication_book_section_html(item)
     else:
         citation_body = title_text + ', '.join(parts) + '.'
