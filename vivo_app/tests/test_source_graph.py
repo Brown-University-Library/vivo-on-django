@@ -246,6 +246,25 @@ class CustomGraphTests(TestCase):
         ):
             visualization_graph('collaborators', 'team-example', 'replay', self.read)
 
+    def test_unusable_collaborator_does_not_hide_team_graph(self) -> None:
+        """
+        Checks one missing collaborator address does not hide the other graph links.
+        """
+        self.root['collaborators'] = [
+            {'name': 'Unknown Person'},
+            {'uri': 'http://vivo.brown.edu/individual/invented-neighbor', 'name': 'Invented Neighbor'},
+        ]
+        self.responses[graph_root_key(['invented-root'])] = self.solr_response([('invented-root', self.root)])
+        with patch('vivo_app.lib.source_graph.team_definition', return_value=('Example Team', ['invented-root'])):
+            value = visualization_graph('collaborators', 'team-example', 'live', self.read)
+        graph = value['graph']
+        if not isinstance(graph, dict):
+            self.fail('The collaboration graph should be a mapping.')
+        links = graph['links']
+        if not isinstance(links, list):
+            self.fail('The collaboration links should be a list.')
+        self.assertEqual(len(links), 2)
+
     def test_team_graph_uses_members_still_present_in_solr(self) -> None:
         """
         Checks a missing team profile does not hide the remaining graph.

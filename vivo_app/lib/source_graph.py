@@ -169,7 +169,7 @@ def add_custom_collaborators(
     for collaborator in entries(person, 'collaborators'):
         uri = first_text(collaborator.get('uri'))
         if not uri or any(ord(character) < 32 for character in uri):
-            raise PageDataError('A collaborator has an invalid identifier.')
+            continue
         add_custom_node(
             nodes,
             uri,
