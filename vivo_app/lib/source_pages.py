@@ -316,7 +316,7 @@ def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | 
         name = first_text(doc.get('display_name_s')) or first_text(item.get('name'))
         title = first_text(item.get('title'))
         if not name:
-            raise PageDataError('A Solr result is missing its display name.')
+            continue
         result: dict[str, object] = {
             'id': identifier,
             'name': name,
@@ -397,7 +397,7 @@ def search_json_data(
         identifier = record_id(doc)
         name = first_text(doc.get('display_name_s')) or first_text(item.get('name'))
         if not name:
-            raise PageDataError('A Solr result is missing its display name.')
+            continue
         raw_highlights = (
             highlighting.get('vitroIndividual:' + first_text(doc.get('id'))) if isinstance(highlighting, dict) else None
         )

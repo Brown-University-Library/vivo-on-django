@@ -844,6 +844,28 @@ class SourcePageTests(TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['vivo_id'], 'invented-a')
 
+    def test_search_keeps_named_records_when_another_has_no_name(self) -> None:
+        """
+        Checks a nameless source record does not hide usable search results.
+        """
+        key = search_key('Example', 1, [])
+        source = json.loads(self.responses[key].body)
+        unnamed = dict(source['response']['docs'][0])
+        unnamed['id'] = 'http://vivo.brown.edu/individual/invented-unnamed'
+        unnamed.pop('display_name_s', None)
+        unnamed['json_txt'] = [json.dumps({'title': 'Unnamed source record'})]
+        source['response']['docs'].insert(0, unnamed)
+        source['response']['numFound'] = 2
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        html = search_data([('q', 'Example')], 'live', self.read)
+        structured = search_json_data([('q', 'Example')], 'live', 'https://example.invalid', self.read)
+        results = html['results']
+        if not isinstance(results, list):
+            self.fail('Search results should be a list.')
+        self.assertEqual(len(results), 1)
+        self.assertEqual(len(structured), 1)
+        self.assertEqual(structured[0]['vivo_id'], 'invented-a')
+
     def test_large_organization_loads_member_portraits_in_batches(self) -> None:
         """Renders an organization whose member list exceeds one Solr request."""
         ids = [f'invented-{number:03d}' for number in range(101)]
