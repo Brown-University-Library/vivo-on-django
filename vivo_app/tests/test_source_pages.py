@@ -1331,7 +1331,27 @@ class SourcePageTests(TestCase):
         self.assertEqual(body['research_areas'], [])
         self.responses.pop(visualization_key('coauthors'))
         with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
-            self.assertEqual(self.get_page('/display/invented-sparse.json').status_code, 503)
+            response = self.get_page('/display/invented-sparse.json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content)['has_coauthors'], False)
+
+    def test_profile_json_survives_missing_collaborator_list(self) -> None:
+        """
+        Checks optional graph-list failure leaves collaborator details available.
+        """
+        key = profile_export_key('invented-a')
+        doc = json.loads(self.responses[profile_key('invented-a')].body)['response']['docs'][0]
+        person = json.loads(doc['json_txt'][0])
+        person['uri'] = person['id']
+        person['collaborators'] = [{'uri': 'http://vivo.brown.edu/individual/invented-b', 'name': 'Colleague'}]
+        doc['json_txt'] = [json.dumps(person)]
+        self.responses[key] = self.solr_response([doc], 1)
+        with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
+            response = self.get_page('/display/invented-a.json')
+        self.assertEqual(response.status_code, 200)
+        body = json.loads(response.content)
+        self.assertEqual(len(body['collaborators']), 1)
+        self.assertEqual(body['has_collaborators'], False)
 
     def test_display_raw_json_returns_person_and_organization_records(self) -> None:
         """

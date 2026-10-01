@@ -202,10 +202,16 @@ def profile_json_data(identifier: str, mode: str, reader: FormatReader | None = 
         raise PageDataError('The requested source record is not a person.')
     from vivo_app.lib.source_graph import visualization_list
 
-    coauthors = visualization_list('coauthors', mode, reader)
-    collaborators = (
-        visualization_list('collaborators', mode, reader) if entries(record_data(docs[0]), 'collaborators') else {}
-    )
+    try:
+        coauthors = visualization_list('coauthors', mode, reader)
+    except PageDataError:
+        coauthors = {}
+    collaborators = {}
+    if entries(record_data(docs[0]), 'collaborators'):
+        try:
+            collaborators = visualization_list('collaborators', mode, reader)
+        except PageDataError:
+            pass
     return faculty_item_from_doc(docs[0], coauthors, collaborators)
 
 
