@@ -745,6 +745,8 @@ def organization_thumbnail(uri: str, mode: str, reader: SourceReader) -> str:
         response = response_object(profile_key(identifier), mode, reader)
         docs, _ = documents(response)
         if docs:
+            if record_id(docs[0]) != identifier or first_text(docs[0].get('record_type')) != 'ORGANIZATION':
+                raise PageDataError('Solr returned an unrelated affiliation logo.')
             result = thumbnail_url(docs[0], True)
     except PageDataError:
         if mode == 'replay':
