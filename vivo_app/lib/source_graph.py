@@ -14,7 +14,15 @@ from collections.abc import Callable
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_formats import faculty_item_from_doc
-from vivo_app.lib.source_pages import documents, entries, first_text, organization_members, record_data, record_id, response_object
+from vivo_app.lib.source_pages import (
+    documents,
+    entries,
+    first_text,
+    organization_members,
+    record_data,
+    record_id,
+    response_object,
+)
 from vivo_app.lib.source_requests import graph_root_key, member_details_key, profile_key, read_source
 from vivo_app.lib.source_teams import CUSTOM_ORGANIZATION_IDS, custom_organization_members, team_definition
 
@@ -99,8 +107,7 @@ def custom_graph_members(identifier: str, mode: str, reader: GraphReader) -> tup
         item = record_data(docs[0])
         name = first_text(item.get('name'))
         members = [
-            record_id({'id': first_text(row.get('faculty_uri'))})
-            for row in organization_members(item, [], mode, reader)
+            record_id({'id': first_text(row.get('faculty_uri'))}) for row in organization_members(item, [], mode, reader)
         ]
         members.extend(custom_organization_members(identifier, mode, reader))
     result = list(dict.fromkeys(members))
@@ -382,17 +389,20 @@ def graph_page_data(
     positions: dict[str, tuple[float, float]] = {}
     unique_nodes = distinct_graph_nodes(source_nodes)
     for index, node in enumerate(unique_nodes):
+        node_id = node.get('id')
+        if not isinstance(node_id, str):
+            raise PageDataError('The visualization graph has an invalid node.')
         angle = 2 * math.pi * index / max(len(unique_nodes), 1)
         x, y = 440 + 300 * math.cos(angle), 350 + 270 * math.sin(angle)
-        positions[node['id']] = (x, y)
+        positions[node_id] = (x, y)
         nodes.append(
             {
-                'id': node['id'],
+                'id': node_id,
                 'name': node.get('name', ''),
                 'x': x,
                 'y': y,
                 'color': '#8f2d2d'
-                if node['id'] in {identifier, 'http://vivo.brown.edu/individual/' + identifier}
+                if node_id in {identifier, 'http://vivo.brown.edu/individual/' + identifier}
                 else '#597c99',
             }
         )

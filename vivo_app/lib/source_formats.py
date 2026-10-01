@@ -316,7 +316,9 @@ def faculty_item_from_doc(
         {'label': area, 'rabid': None, 'vivo_id': '', 'id': ''} for area in sorted(areas, key=str.lower)
     ]
     courses = raw.get('teacher_for', [])
-    courses = [course for course in courses if isinstance(course, str) and course.strip()] if isinstance(courses, list) else []
+    courses = (
+        [course for course in courses if isinstance(course, str) and course.strip()] if isinstance(courses, list) else []
+    )
     item['teacher_for'] = sorted(courses, key=str.lower)
     item['contributor_to'] = publication_entries(raw)
     item['appointments'] = dated_entries(

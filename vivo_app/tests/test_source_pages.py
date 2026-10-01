@@ -20,6 +20,7 @@ from vivo_app.lib.source_formats import faculty_item_from_doc, organization_json
 from vivo_app.lib.source_graph import visualization_key
 from vivo_app.lib.source_pages import (
     entries,
+    facet_values_data,
     match_html,
     organization_data,
     organization_publications_data,
@@ -853,7 +854,11 @@ class SourcePageTests(TestCase):
         person['uri'] = person['id']
         doc['json_txt'] = [json.dumps(person)]
         result = faculty_item_from_doc(doc, {}, {})
-        self.assertEqual([area['label'] for area in result['research_areas']], ['Genomics'])
+        areas = result['research_areas']
+        if not isinstance(areas, list) or not areas or not isinstance(areas[0], dict):
+            self.fail('Structured research areas should be a nonempty list.')
+        self.assertEqual(areas[0]['label'], 'Genomics')
+        self.assertEqual(len(areas), 1)
 
     def test_profile_keeps_valid_courses_beside_invalid_entries(self) -> None:
         """
@@ -886,7 +891,10 @@ class SourcePageTests(TestCase):
         person['on_the_web'] = [{'url': 'https://example.invalid/person', 'text': '  '}]
         person_doc['json_txt'] = [json.dumps(person)]
         structured_person = faculty_item_from_doc(person_doc, {}, {})
-        self.assertEqual(structured_person['on_the_web'][0]['text'], 'https://example.invalid/person')
+        person_websites = structured_person['on_the_web']
+        if not isinstance(person_websites, list) or not person_websites or not isinstance(person_websites[0], dict):
+            self.fail('Structured person websites should be a nonempty list.')
+        self.assertEqual(person_websites[0]['text'], 'https://example.invalid/person')
 
         key = profile_key('org-example')
         source = json.loads(self.responses[key].body)
@@ -895,7 +903,10 @@ class SourcePageTests(TestCase):
         source['response']['docs'][0]['json_txt'] = [json.dumps(organization)]
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
         structured_org = organization_json_data('org-example', 'live', self.read)
-        self.assertEqual(structured_org['web_pages'][0]['text'], 'https://example.invalid/department')
+        org_websites = structured_org['web_pages']
+        if not isinstance(org_websites, list) or not org_websites or not isinstance(org_websites[0], dict):
+            self.fail('Structured organization websites should be a nonempty list.')
+        self.assertEqual(org_websites[0]['text'], 'https://example.invalid/department')
 
     def test_affiliation_logo_request_failure_keeps_profile_visible(self) -> None:
         """Uses the placeholder if the optional affiliation lookup fails."""
@@ -995,6 +1006,30 @@ class SourcePageTests(TestCase):
         if not isinstance(selected, list):
             self.fail('Selected search filters should be a list.')
         self.assertEqual([row['value'] for row in selected], ['PEOPLE'])
+
+    def test_one_invalid_facet_value_does_not_hide_search_results(self) -> None:
+        """
+        Checks search and the full facet dialog keep usable values beside a malformed pair.
+        """
+        for key in (search_key('Example', 1, []), search_key('Example', 1, [], -1)):
+            source = json.loads(self.responses[key].body)
+            source['facet_counts']['facet_fields']['affiliations'] = [
+                'Example Department',
+                1,
+                'Broken value',
+                -1,
+                'Another Unit',
+                2,
+            ]
+            self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = search_data([('q', 'Example')], 'live', self.read)
+        facets = result['facets']
+        if not isinstance(facets, list):
+            self.fail('Search facets should be a list.')
+        affiliation = next(facet for facet in facets if facet['name'] == 'affiliations')
+        self.assertEqual([value['text'] for value in affiliation['values']], ['Example Department', 'Another Unit'])
+        all_values = facet_values_data([('q', 'Example'), ('f_name', 'affiliations')], 'live', self.read)
+        self.assertEqual([value['text'] for value in all_values], ['Example Department', 'Another Unit'])
 
     def test_search_ignores_other_solr_record_types(self) -> None:
         """Keeps visible results when Solr also returns an unrelated record type."""
@@ -1549,9 +1584,9 @@ class SourcePageTests(TestCase):
         sections = html['sections']
         if not isinstance(sections, list):
             self.fail('Profile sections should be a list.')
-        self.assertNotIn('Teaching', [section['id'] for section in sections])
+        self.assertIn('Teaching', [section['id'] for section in sections])
         structured = faculty_item_from_doc(doc, {}, {})
-        self.assertEqual(structured['teacher_for'], [])
+        self.assertEqual(structured['teacher_for'], ['Valid course'])
 
     def test_invalid_optional_record_array_does_not_hide_profile(self) -> None:
         """
@@ -1836,7 +1871,7 @@ class SourcePageTests(TestCase):
         self.assertEqual([row['degree'] for row in body['education']], ['Second', 'First'])
         self.assertEqual(body['education'][1]['school_name'], 'Example School')
         self.assertEqual(body['on_the_web'][0]['url'], 'https://example.invalid/')
-        self.assertEqual(body['on_the_web'][0]['text'], '')
+        self.assertEqual(body['on_the_web'][0]['text'], 'https://example.invalid/')
         self.assertTrue(body['has_coauthors'])
         self.assertTrue(body['has_collaborators'])
 

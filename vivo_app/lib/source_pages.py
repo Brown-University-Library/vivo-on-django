@@ -194,7 +194,7 @@ def facet_data(response: dict[str, object], query: str, filters: list[tuple[str,
         for index in range(0, len(raw), 2):
             label, count = raw[index : index + 2]
             if not isinstance(label, str) or type(count) is not int or count < 0:
-                raise PageDataError('Solr returned an invalid facet value.')
+                continue
             selected = (field, label) in filters
             next_filters = [item for item in filters if item != (field, label)] if selected else [*filters, (field, label)]
             values.append({'text': label, 'count': count, 'selected': selected, 'url': search_url(query, 1, next_filters)})
@@ -454,7 +454,7 @@ def facet_values_data(
     for index in range(0, len(raw), 2):
         label, count = raw[index : index + 2]
         if not isinstance(label, str) or type(count) is not int or count < 0:
-            raise PageDataError('Solr returned an invalid facet value.')
+            continue
         selected = (names[0], label) in filters
         remaining = [item for item in filters if item != (names[0], label)]
         result.append(
@@ -1050,7 +1050,9 @@ def profile_sections(
     if appointments or affiliation_text or collaborators or credentials:
         sections.append({'id': 'Affiliations', 'label': 'Affiliations', 'html': affiliation_html})
     teaching = item.get('teacher_for', [])
-    teaching = [course for course in teaching if isinstance(course, str) and course.strip()] if isinstance(teaching, list) else []
+    teaching = (
+        [course for course in teaching if isinstance(course, str) and course.strip()] if isinstance(teaching, list) else []
+    )
     teaching_overview = first_text(item.get('teaching_overview'))
     if teaching or teaching_overview:
         teaching_html = '<h3>Teaching</h3>'

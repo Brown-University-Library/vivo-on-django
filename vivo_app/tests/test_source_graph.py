@@ -108,7 +108,7 @@ class SourceGraphTests(TestCase):
         """
         Checks repeated graph nodes use one display point and the available group.
         """
-        value = {
+        value: dict[str, object] = {
             'graph': {
                 'nodes': [
                     {'id': 'invented-a', 'name': 'Invented A', 'group': None},
@@ -130,7 +130,7 @@ class SourceGraphTests(TestCase):
         """
         Checks repeated directed links form one displayed edge and CSV row.
         """
-        value = {
+        value: dict[str, object] = {
             'data': {
                 'nodes': [{'id': 'invented-a', 'name': 'Invented A'}, {'id': 'invented-b', 'name': 'Invented B'}],
                 'links': [
