@@ -768,6 +768,14 @@ class SourcePageTests(TestCase):
         assert isinstance(sections, list)
         self.assertIn('org_placeholder.png', sections[0]['html'])
 
+    def test_replay_reports_missing_affiliation_logo_response(self) -> None:
+        """
+        Checks replay reports a missing recorded affiliation lookup.
+        """
+        self.responses.pop(profile_key('org-example'))
+        with self.assertRaises(PageDataError):
+            profile_data('invented-a', 'replay', self.read_replay)
+
     def test_organization_uses_exact_administrative_role(self) -> None:
         """Keeps lookalike role identifiers in the ordinary faculty group."""
         key = profile_key('org-example')

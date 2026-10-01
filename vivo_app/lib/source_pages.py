@@ -747,7 +747,8 @@ def organization_thumbnail(uri: str, mode: str, reader: SourceReader) -> str:
         if docs:
             result = thumbnail_url(docs[0], True)
     except PageDataError:
-        pass
+        if mode == 'replay':
+            raise
     return result
 
 
