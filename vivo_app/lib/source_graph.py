@@ -14,7 +14,7 @@ from collections.abc import Callable
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_formats import faculty_item_from_doc
-from vivo_app.lib.source_pages import documents, entries, first_text, record_data, record_id, response_object
+from vivo_app.lib.source_pages import documents, entries, first_text, organization_members, record_data, record_id, response_object
 from vivo_app.lib.source_requests import graph_root_key, member_details_key, profile_key, read_source
 from vivo_app.lib.source_teams import CUSTOM_ORGANIZATION_IDS, custom_organization_members, team_definition
 
@@ -98,7 +98,10 @@ def custom_graph_members(identifier: str, mode: str, reader: GraphReader) -> tup
             raise PageDataError('The custom collaboration organization is unavailable.')
         item = record_data(docs[0])
         name = first_text(item.get('name'))
-        members = [record_id({'id': first_text(row.get('faculty_uri'))}) for row in entries(item, 'people')]
+        members = [
+            record_id({'id': first_text(row.get('faculty_uri'))})
+            for row in organization_members(item, [], mode, reader)
+        ]
         members.extend(custom_organization_members(identifier, mode, reader))
     result = list(dict.fromkeys(members))
     if not name or not result or len(result) > 500:

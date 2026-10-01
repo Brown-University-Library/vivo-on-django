@@ -377,6 +377,38 @@ class CustomGraphTests(TestCase):
         with self.assertRaisesRegex(PageDataError, 'organization is unavailable'):
             custom_graph_members(identifier, 'live', self.read)
 
+    def test_specialized_graph_keeps_members_with_valid_addresses(self) -> None:
+        """
+        Checks one unusable member address does not hide a specialized graph.
+        """
+        identifier = 'org-brown-univ-dept124'
+        profile = {
+            'responseHeader': {'status': 0},
+            'response': {
+                'numFound': 1,
+                'docs': [
+                    {
+                        'id': 'http://vivo.brown.edu/individual/' + identifier,
+                        'record_type': 'ORGANIZATION',
+                        'json_txt': json.dumps(
+                            {
+                                'name': 'Invented Institute',
+                                'people': [
+                                    {'faculty_uri': 'invalid address'},
+                                    {'faculty_uri': 'http://vivo.brown.edu/individual/invented-root'},
+                                ],
+                            }
+                        ),
+                    }
+                ],
+            },
+        }
+        self.responses[profile_key(identifier)] = RecordedResponse(200, (), json.dumps(profile).encode())
+        with patch('vivo_app.lib.source_graph.custom_organization_members', return_value=[]):
+            name, members = custom_graph_members(identifier, 'live', self.read)
+        self.assertEqual(name, 'Invented Institute')
+        self.assertEqual(members, ['invented-root'])
+
     def test_custom_graph_capture_replays_exact_member_requests(self) -> None:
         """
         Checks the bounded capture keeps all Solr responses needed by replay.
