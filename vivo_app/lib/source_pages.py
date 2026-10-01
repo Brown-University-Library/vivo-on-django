@@ -854,7 +854,7 @@ def profile_sections(
             raw_url = website.get('url')
             url = safe_url(raw_url.strip() if isinstance(raw_url, str) else raw_url)
             if url:
-                label = first_text(website.get('text')).strip() if website.get('text') is not None else url
+                label = first_text(website.get('text')).strip() or url
                 icon = website_icon(url)
                 badge = (
                     '<img src="' + escape(icon, quote=True) + '" width="17" alt="' + escape(label, quote=True) + '">'
