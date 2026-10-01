@@ -1027,7 +1027,7 @@ def profile_sections(
         sections.append({'id': 'Affiliations', 'label': 'Affiliations', 'html': affiliation_html})
     teaching = item.get('teacher_for', [])
     if not isinstance(teaching, list) or any(not isinstance(course, str) for course in teaching):
-        raise PageDataError('A Solr profile contains invalid teaching data.')
+        teaching = []
     teaching_overview = first_text(item.get('teaching_overview'))
     if teaching or teaching_overview:
         teaching_html = '<h3>Teaching</h3>'

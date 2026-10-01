@@ -1274,6 +1274,26 @@ class SourcePageTests(TestCase):
         structured = faculty_item_from_doc(doc, {}, {})
         self.assertEqual(structured['research_areas'], [])
 
+    def test_profile_keeps_other_content_when_teaching_is_invalid(self) -> None:
+        """
+        Checks malformed optional course data does not hide HTML or profile JSON.
+        """
+        key = profile_key('invented-a')
+        response = json.loads(self.responses[key].body)
+        doc = response['response']['docs'][0]
+        person = json.loads(doc['json_txt'][0])
+        person['uri'] = person['id']
+        person['teacher_for'] = ['Valid course', 42]
+        doc['json_txt'] = [json.dumps(person)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        html = profile_data('invented-a', 'live', self.read)
+        sections = html['sections']
+        if not isinstance(sections, list):
+            self.fail('Profile sections should be a list.')
+        self.assertNotIn('Teaching', [section['id'] for section in sections])
+        structured = faculty_item_from_doc(doc, {}, {})
+        self.assertEqual(structured['teacher_for'], [])
+
     def test_capture_requires_profile_in_search_results(self) -> None:
         """
         Checks capture rejects an unrelated profile before writing any files.

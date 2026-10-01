@@ -313,7 +313,7 @@ def faculty_item_from_doc(
     ]
     courses = raw.get('teacher_for', [])
     if not isinstance(courses, list) or any(not isinstance(course, str) for course in courses):
-        raise PageDataError('The source profile has invalid teaching data.')
+        courses = []
     item['teacher_for'] = sorted(courses, key=str.lower)
     item['contributor_to'] = publication_entries(raw)
     item['appointments'] = dated_entries(
