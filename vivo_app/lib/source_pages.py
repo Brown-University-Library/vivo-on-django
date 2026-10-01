@@ -477,7 +477,7 @@ def entries(item: dict[str, object], name: str) -> list[dict[str, object]]:
     """
     raw = item.get(name, [])
     if not isinstance(raw, list) or any(not isinstance(value, dict) for value in raw):
-        raise PageDataError(f'A Solr profile contains invalid {name} data.')
+        return []
     return list(raw)
 
 

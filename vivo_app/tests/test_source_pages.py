@@ -19,6 +19,7 @@ from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_formats import faculty_item_from_doc, organization_json_data, profile_json_data, publication_entries
 from vivo_app.lib.source_graph import visualization_key
 from vivo_app.lib.source_pages import (
+    entries,
     match_html,
     organization_data,
     organization_publications_data,
@@ -1313,6 +1314,22 @@ class SourcePageTests(TestCase):
         self.assertNotIn('Teaching', [section['id'] for section in sections])
         structured = faculty_item_from_doc(doc, {}, {})
         self.assertEqual(structured['teacher_for'], [])
+
+    def test_invalid_optional_record_array_does_not_hide_profile(self) -> None:
+        """
+        Checks an unreadable optional record array leaves other profile sections available.
+        """
+        self.assertEqual(entries({'on_the_web': 'invalid'}, 'on_the_web'), [])
+        self.assertEqual(entries({'on_the_web': [{'url': 'https://example.invalid'}, 42]}, 'on_the_web'), [])
+        key = profile_key('invented-a')
+        response = json.loads(self.responses[key].body)
+        doc = response['response']['docs'][0]
+        person = json.loads(doc['json_txt'][0])
+        person['on_the_web'] = [{'url': 'https://example.invalid'}, 42]
+        doc['json_txt'] = [json.dumps(person)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        profile = profile_data('invented-a', 'live', self.read)
+        self.assertEqual(profile['name'], 'Invented Researcher')
 
     def test_capture_requires_profile_in_search_results(self) -> None:
         """
