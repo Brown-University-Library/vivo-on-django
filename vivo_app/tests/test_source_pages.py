@@ -1557,6 +1557,21 @@ class SourcePageTests(TestCase):
         self.assertLess(body.index('\tAlpha\t'), body.index('\t Zeta\t'))
         self.assertIn('\tOld\t\t\tArticle\t', body)
 
+    def test_organization_publications_tsv_keeps_each_record_on_one_line(self) -> None:
+        """
+        Checks source tabs and line breaks cannot split a publication download row.
+        """
+        key = member_details_key(['invented-a'])
+        source = json.loads(self.responses[key].body)
+        person = json.loads(source['response']['docs'][0]['json_txt'][0])
+        person['contributor_to'][0]['title'] = 'Example\tpublication\ncontinued'
+        source['response']['docs'][0]['json_txt'] = [json.dumps(person)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        lines = organization_publications_data('org-example', 'live', self.read).splitlines()
+        self.assertEqual(len(lines), 2)
+        self.assertEqual(len(lines[1].split('\t')), 7)
+        self.assertIn('Example publication continued', lines[1])
+
     def test_sparse_profile_json_uses_graph_availability(self) -> None:
         """
         Checks profile JSON combines one person record with a graph-availability list.

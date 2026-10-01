@@ -699,6 +699,15 @@ def publication_citation(item: dict[str, object]) -> str:
     return text.rstrip(' ,.') + '.'
 
 
+def tsv_field(value: str) -> str:
+    """
+    Keeps source line breaks and tabs inside one download column.
+
+    Called by: organization_publications_data()
+    """
+    return re.sub(r'[\t\r\n]+', ' ', value)
+
+
 def ordered_publication_rows(item: dict[str, object]) -> list[dict[str, object]]:
     """
     Orders source publications by valid year and trimmed title.
@@ -1307,5 +1316,5 @@ def organization_publications_data(
                 kind,
                 publication_citation(publication),
             )
-            lines.append('\t'.join(fields) + '\n')
+            lines.append('\t'.join(tsv_field(field) for field in fields) + '\n')
     return ''.join(lines)
