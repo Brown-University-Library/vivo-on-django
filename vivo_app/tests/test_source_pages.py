@@ -872,6 +872,20 @@ class SourcePageTests(TestCase):
             self.fail('Faculty positions should be a list.')
         self.assertEqual([row['name'] for row in faculty], ['Researcher, Invented'])
 
+    def test_organization_rejects_repeated_member_documents(self) -> None:
+        """
+        Checks repeated Solr member records cannot silently replace a portrait.
+        """
+        key = member_key(['invented-a'])
+        source = json.loads(self.responses[key].body)
+        source['response']['docs'].append(dict(source['response']['docs'][0]))
+        source['response']['numFound'] = 2
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        with self.assertRaises(PageDataError):
+            organization_data('org-example', 'live', self.read)
+        with self.assertRaises(PageDataError):
+            organization_json_data('org-example', 'live', self.read)
+
     def test_organization_without_logo_uses_borderless_placeholder(self) -> None:
         """Matches the organization page's plain default image."""
         key = profile_key('org-example')
