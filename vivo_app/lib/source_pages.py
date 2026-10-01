@@ -122,7 +122,7 @@ def thumbnail_url(doc: dict[str, object], organization: bool = False) -> str:
     Called by: search_data(), profile_data(), organization_thumbnail()
     """
     path = image_path(doc.get('thumbnail_file_path_s'))
-    fallback = 'images/org_placeholder.png' if organization else 'images/vivo_blank_profile.jpg'
+    fallback = 'images/org_placeholder.png' if organization else 'images/person_placeholder.jpg'
     result = reverse('source_image', kwargs={'filename': path.lstrip('/')}) if path else static(fallback)
     return result
 
@@ -1212,7 +1212,7 @@ def organization_data(
             'name': first_text(member.get('label')),
             'title': first_text(member.get('specific_position')),
             'url': reverse('display_show_public', args=[member_id]),
-            'image': portraits.get(member_id, static('images/vivo_blank_profile.jpg')),
+            'image': portraits.get(member_id, static('images/person_placeholder.jpg')),
         }
         if first_text(member.get('general_position')) == 'http://vivoweb.org/ontology/core#FacultyAdministrativePosition':
             administrative.append(row)

@@ -31,6 +31,7 @@ from vivo_app.lib.source_pages import (
     search_data,
     search_json_data,
     selected_highlights,
+    thumbnail_url,
 )
 from vivo_app.lib.source_requests import (
     community_research_members_key,
@@ -942,6 +943,12 @@ class SourcePageTests(TestCase):
         self.responses[member_details_key(['invented-a'])] = self.solr_response([], 0)
         result = organization_publications_data('org-example', 'live', self.read)
         self.assertEqual(result, 'Id\tFaculty\tTitle\tAuthors\tYear\tType\tCitation\n')
+
+    def test_person_without_portrait_uses_public_placeholder(self) -> None:
+        """
+        Checks a missing person portrait uses the same image as the Rails profile.
+        """
+        self.assertEqual(thumbnail_url({}), '/static/images/person_placeholder.jpg')
 
     def test_search_result_without_email_has_no_empty_email_link(self) -> None:
         """Avoids an unusable email control for organizations without an address."""
