@@ -1265,6 +1265,14 @@ class SourcePageTests(TestCase):
         invalid = publication_html({'pub_med_id': 'bad value'})
         self.assertNotIn('PubMed', invalid)
 
+    def test_repository_root_link_is_full_text(self) -> None:
+        """
+        Checks the repository root is treated as a full-text link when supplied by a citation.
+        """
+        markup = publication_html({'url': 'https://repository.library.brown.edu'})
+        self.assertIn('Full Text', markup)
+        self.assertNotIn('More Info', markup)
+
     def test_research_areas_use_case_insensitive_order(self) -> None:
         """
         Checks the profile displays research areas in the same alphabetical order as Rails.

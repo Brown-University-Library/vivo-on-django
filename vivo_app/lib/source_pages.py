@@ -641,7 +641,7 @@ def publication_html(item: dict[str, object]) -> str:
     external = safe_url(item.get('url'))
     full_text = (
         external
-        if external.startswith('https://repository.library.brown.edu/')
+        if external.startswith('https://repository.library.brown.edu/') or external == 'https://repository.library.brown.edu'
         else ('https://doi.org/' + quote(doi, safe='/') if doi else '')
     )
     pub_med_id = first_text(item.get('pub_med_id'))
