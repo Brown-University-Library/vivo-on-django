@@ -1490,7 +1490,10 @@ class SourcePageTests(TestCase):
         Checks an unreadable optional record array leaves other profile sections available.
         """
         self.assertEqual(entries({'on_the_web': 'invalid'}, 'on_the_web'), [])
-        self.assertEqual(entries({'on_the_web': [{'url': 'https://example.invalid'}, 42]}, 'on_the_web'), [])
+        self.assertEqual(
+            entries({'on_the_web': [{'url': 'https://example.invalid'}, 42]}, 'on_the_web'),
+            [{'url': 'https://example.invalid'}],
+        )
         key = profile_key('invented-a')
         response = json.loads(self.responses[key].body)
         doc = response['response']['docs'][0]
@@ -1500,6 +1503,10 @@ class SourcePageTests(TestCase):
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
         profile = profile_data('invented-a', 'live', self.read)
         self.assertEqual(profile['name'], 'Invented Researcher')
+        sections = profile['sections']
+        if not isinstance(sections, list):
+            self.fail('Profile sections should be a list.')
+        self.assertIn('https://example.invalid', sections[0]['html'])
 
     def test_capture_requires_profile_in_search_results(self) -> None:
         """

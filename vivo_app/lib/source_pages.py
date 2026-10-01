@@ -476,9 +476,9 @@ def entries(item: dict[str, object], name: str) -> list[dict[str, object]]:
     Called by: profile_data(), publications(), profile_sections()
     """
     raw = item.get(name, [])
-    if not isinstance(raw, list) or any(not isinstance(value, dict) for value in raw):
+    if not isinstance(raw, list):
         return []
-    return list(raw)
+    return [value for value in raw if isinstance(value, dict)]
 
 
 def safe_url(value: object) -> str:
