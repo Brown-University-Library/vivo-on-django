@@ -794,6 +794,22 @@ class SourcePageTests(TestCase):
         self.assertNotIn('Brown Affiliations', sections[0]['html'])
         self.assertIn('Invented', sections[0]['html'])
 
+    def test_unusable_website_links_do_not_leave_an_empty_heading(self) -> None:
+        """
+        Checks a profile with no usable website links omits the empty heading.
+        """
+        key = profile_key('invented-a')
+        source = json.loads(self.responses[key].body)
+        person = json.loads(source['response']['docs'][0]['json_txt'][0])
+        person['on_the_web'] = [{'url': 'not a web address', 'text': 'Example'}]
+        source['response']['docs'][0]['json_txt'] = [json.dumps(person)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = profile_data('invented-a', 'live', self.read)
+        sections = result['sections']
+        if not isinstance(sections, list):
+            self.fail('Profile sections should be a list.')
+        self.assertNotIn('On the Web', sections[0]['html'])
+
     def test_affiliation_logo_request_failure_keeps_profile_visible(self) -> None:
         """Uses the placeholder if the optional affiliation lookup fails."""
         self.responses.pop(profile_key('org-example'))

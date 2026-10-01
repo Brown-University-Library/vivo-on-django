@@ -847,7 +847,7 @@ def profile_sections(
             for area in sorted(areas, key=lambda value: str(value).casefold())
         )
         overview += '</div>'
-    websites = entries(item, 'on_the_web')
+    websites = [row for row in entries(item, 'on_the_web') if safe_url(first_text(row.get('url')).strip())]
     if websites:
         overview += '<h4 class="research-areas panel-heading">On the Web</h4><div id="on-the-web-list" class="brown-research-areas-list">'
         for website in sorted(websites, key=lambda row: website_rank(row.get('rank'))):
