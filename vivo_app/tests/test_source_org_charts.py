@@ -124,6 +124,19 @@ class OrganizationChartTests(TestCase):
         self.assertEqual([node['nodeName'] for node in nodes[1] if isinstance(node, dict)], ['Area A'])
         self.assertEqual(len(links), 2)
 
+    def test_publication_csv_follows_its_header_column_order(self) -> None:
+        """
+        Checks CSV rows follow the named columns even when source keys are reordered.
+        """
+        chart = {
+            'columns': ['invented-a', 'invented-b'],
+            'matrix': [{'invented-b': 2, 'total': 3, 'year': 2020, 'invented-a': 1}],
+        }
+        self.assertEqual(
+            publication_history_csv(chart),
+            'year,year_total,invented-a,invented-b\n2020,3,1,2',
+        )
+
     def test_chart_skips_listed_member_missing_from_solr(self) -> None:
         """Uses available members when a listed person has no Solr record."""
         key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])

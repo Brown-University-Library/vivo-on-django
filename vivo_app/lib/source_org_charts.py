@@ -121,7 +121,7 @@ def publication_history_csv(value: dict[str, object]) -> str:
     """
     columns = value.get('columns')
     matrix = value.get('matrix')
-    if not isinstance(columns, list) or not isinstance(matrix, list):
+    if not isinstance(columns, list) or any(not isinstance(column, str) for column in columns) or not isinstance(matrix, list):
         raise PageDataError('The publication chart is invalid.')
     output = io.StringIO()
     writer = csv.writer(output, lineterminator='\n')
@@ -129,7 +129,7 @@ def publication_history_csv(value: dict[str, object]) -> str:
     for row in matrix:
         if not isinstance(row, dict):
             raise PageDataError('A publication chart year is invalid.')
-        writer.writerow(list(row.values()))
+        writer.writerow([row.get('year', ''), row.get('total', ''), *(row.get(column, '') for column in columns)])
     return output.getvalue().removesuffix('\n')
 
 
