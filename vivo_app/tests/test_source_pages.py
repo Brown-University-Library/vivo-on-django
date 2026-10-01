@@ -1249,6 +1249,20 @@ class SourcePageTests(TestCase):
         self.assertNotIn('1899', publications_data[1]['html'])
         self.assertNotIn('2201', publications_data[2]['html'])
 
+    def test_publication_year_accepts_numeric_source_dates(self) -> None:
+        """
+        Checks numeric dates use the same year conversion as the Rails model.
+        """
+        rows: dict[str, object] = {
+            'contributor_to': [
+                {'type': 'http://vivo.brown.edu/ontology/citation#Article', 'title': 'Numeric date', 'date': 2021},
+                {'type': 'http://vivo.brown.edu/ontology/citation#Article', 'title': 'Padded date', 'date': '02020'},
+            ]
+        }
+        result, _ = publications(rows)
+        self.assertIn('2021', result[0]['html'])
+        self.assertIn('2020', result[1]['html'])
+
     def test_publication_links_match_available_source_fields(self) -> None:
         """
         Checks DOI and PubMed links appear together, while another safe URL is used only when neither exists.

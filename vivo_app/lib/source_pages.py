@@ -547,9 +547,11 @@ def publication_year(item: dict[str, object]) -> str:
 
     Called by: publication_html(), publication_book_html(), publication_book_section_html(), publication_citation(), publications()
     """
-    match = re.match(r'^[0-9]{4}(?![0-9])', first_text(item.get('date')).strip())
-    year = match.group() if match else ''
-    return year if year and 1900 <= int(year) <= 2200 else ''
+    value = item.get('date')
+    text = str(value) if isinstance(value, (str, int)) and not isinstance(value, bool) else ''
+    match = re.match(r'\s*[+-]?\d+', text)
+    year = int(match.group()) if match else 0
+    return str(year) if 1900 <= year <= 2200 else ''
 
 
 def publication_book_html(item: dict[str, object]) -> str:
