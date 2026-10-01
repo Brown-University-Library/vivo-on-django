@@ -1081,7 +1081,8 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
             if first_text(doc.get('id')) in available_coauthors:
                 coauthor_visualization_url = reverse('visualization_coauthor', args=[identifier])
         except PageDataError:
-            pass
+            if mode == 'replay':
+                raise
     if settings.VIZ_ENABLED and entries(item, 'collaborators') and first_text(doc.get('show_visualizations_s')) == 'true':
         from vivo_app.lib.source_graph import visualization_list
 
@@ -1090,7 +1091,8 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
             if first_text(doc.get('id')) in available_collaborators:
                 collaborator_visualization_url = reverse('visualization_collab', args=[identifier])
         except PageDataError:
-            pass
+            if mode == 'replay':
+                raise
     cv_entries = entries(item, 'cv')
     cv_url = safe_url(cv_entries[0].get('cv_link')) if cv_entries else ''
     return {

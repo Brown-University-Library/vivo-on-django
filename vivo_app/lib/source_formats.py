@@ -205,13 +205,16 @@ def profile_json_data(identifier: str, mode: str, reader: FormatReader | None = 
     try:
         coauthors = visualization_list('coauthors', mode, reader)
     except PageDataError:
+        if mode == 'replay':
+            raise
         coauthors = {}
     collaborators = {}
     if entries(record_data(docs[0]), 'collaborators'):
         try:
             collaborators = visualization_list('collaborators', mode, reader)
         except PageDataError:
-            pass
+            if mode == 'replay':
+                raise
     return faculty_item_from_doc(docs[0], coauthors, collaborators)
 
 

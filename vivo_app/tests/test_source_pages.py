@@ -16,7 +16,7 @@ from django.urls import get_script_prefix, set_script_prefix
 from tools.source_capture import CapturingReader
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_formats import faculty_item_from_doc, organization_json_data, publication_entries
+from vivo_app.lib.source_formats import faculty_item_from_doc, organization_json_data, profile_json_data, publication_entries
 from vivo_app.lib.source_graph import visualization_key
 from vivo_app.lib.source_pages import (
     match_html,
@@ -201,6 +201,17 @@ class SourcePageTests(TestCase):
         Called by: test methods through the source modules
         """
         self.assertEqual(mode, 'live')
+        if key not in self.responses:
+            raise PageDataError('No invented response matches this request.')
+        return self.responses[key]
+
+    def read_replay(self, key: RequestKey, mode: str) -> RecordedResponse:
+        """
+        Reads the same exact responses while checking replay failures.
+
+        Called by: test_profile_still_loads_when_coauthor_list_is_unavailable(), test_sparse_profile_json_uses_graph_availability()
+        """
+        self.assertEqual(mode, 'replay')
         if key not in self.responses:
             raise PageDataError('No invented response matches this request.')
         return self.responses[key]
@@ -613,6 +624,8 @@ class SourcePageTests(TestCase):
         self.assertEqual(profile.status_code, 200)
         self.assertContains(profile, 'Invented Researcher')
         self.assertNotContains(profile, 'id="viz_coauthor"')
+        with self.assertRaises(PageDataError):
+            profile_data('invented-a', 'replay', self.read_replay)
 
     def test_affiliations_show_collaborators_and_available_graph(self) -> None:
         """
@@ -1418,6 +1431,8 @@ class SourcePageTests(TestCase):
             response = self.get_page('/display/invented-sparse.json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content)['has_coauthors'], False)
+        with self.assertRaises(PageDataError):
+            profile_json_data('invented-sparse', 'replay', self.read_replay)
 
     def test_profile_json_survives_missing_collaborator_list(self) -> None:
         """
