@@ -86,9 +86,9 @@ def homepage_books(mode: str, reader: BookReader | None = None) -> dict[str, obj
     covers: list[dict[str, str]] = []
     for row in rows:
         if not isinstance(row, dict):
-            raise PageDataError('The homepage book response contains an invalid row.')
-        identifier, title, filename = row.get('shortID'), row.get('title'), row.get('image')
-        first, last = row.get('firstname'), row.get('lastname')
+            continue
+        identifier, title, filename = row.get('shortID'), row.get('title') or '', row.get('image')
+        first, last = row.get('firstname') or '', row.get('lastname') or ''
         if (
             not isinstance(identifier, str)
             or re.fullmatch(r'[A-Za-z0-9_-]{1,80}', identifier) is None
@@ -99,7 +99,7 @@ def homepage_books(mode: str, reader: BookReader | None = None) -> dict[str, obj
             or not isinstance(first, str)
             or not isinstance(last, str)
         ):
-            raise PageDataError('The homepage book response contains an invalid row.')
+            continue
         covers.append(
             {
                 'author_url': reverse('display_show', args=[identifier]),

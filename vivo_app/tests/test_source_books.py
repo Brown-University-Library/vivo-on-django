@@ -94,6 +94,22 @@ class SourceBookTests(TestCase):
         ):
             homepage_books('replay', lambda key, mode: RecordedResponse(200, (), b'[]'))
 
+    def test_unusable_book_row_does_not_hide_other_covers(self) -> None:
+        """
+        Checks incomplete optional text and an unusable image leave valid covers visible.
+        """
+        rows = json.loads(self.response.body)
+        rows[0]['firstname'] = None
+        rows[0]['lastname'] = None
+        rows[1]['image'] = None
+        self.response = RecordedResponse(200, (), json.dumps(rows).encode())
+        result = homepage_books('replay', self.read)
+        pages = result['book_covers_paginated']
+        if not isinstance(pages, list):
+            self.fail('Book pages should be a list.')
+        self.assertEqual(sum(len(page) for page in pages), 4)
+        self.assertEqual(pages[0][0]['author_name'], '')
+
     def test_live_dispatch_accepts_only_the_book_query(self) -> None:
         """
         Checks the source reader rejects other database query names.
