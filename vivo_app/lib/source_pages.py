@@ -1049,8 +1049,7 @@ def profile_sections(
     if appointments or affiliation_text or collaborators or credentials:
         sections.append({'id': 'Affiliations', 'label': 'Affiliations', 'html': affiliation_html})
     teaching = item.get('teacher_for', [])
-    if not isinstance(teaching, list) or any(not isinstance(course, str) for course in teaching):
-        teaching = []
+    teaching = [course for course in teaching if isinstance(course, str) and course.strip()] if isinstance(teaching, list) else []
     teaching_overview = first_text(item.get('teaching_overview'))
     if teaching or teaching_overview:
         teaching_html = '<h3>Teaching</h3>'

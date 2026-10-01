@@ -855,6 +855,27 @@ class SourcePageTests(TestCase):
         result = faculty_item_from_doc(doc, {}, {})
         self.assertEqual([area['label'] for area in result['research_areas']], ['Genomics'])
 
+    def test_profile_keeps_valid_courses_beside_invalid_entries(self) -> None:
+        """
+        Checks readable courses remain in HTML and JSON beside malformed entries.
+        """
+        key = profile_key('invented-a')
+        source = json.loads(self.responses[key].body)
+        doc = source['response']['docs'][0]
+        person = json.loads(doc['json_txt'][0])
+        person['teacher_for'] = ['EXMP 1000 - Example Course', None, '']
+        person['uri'] = person['id']
+        doc['json_txt'] = [json.dumps(person)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        profile = profile_data('invented-a', 'live', self.read)
+        sections = profile['sections']
+        if not isinstance(sections, list):
+            self.fail('Profile sections should be a list.')
+        teaching = next(section['html'] for section in sections if section['id'] == 'Teaching')
+        self.assertEqual(teaching.count('EXMP 1000'), 1)
+        structured = faculty_item_from_doc(doc, {}, {})
+        self.assertEqual(structured['teacher_for'], ['EXMP 1000 - Example Course'])
+
     def test_affiliation_logo_request_failure_keeps_profile_visible(self) -> None:
         """Uses the placeholder if the optional affiliation lookup fails."""
         self.responses.pop(profile_key('org-example'))
