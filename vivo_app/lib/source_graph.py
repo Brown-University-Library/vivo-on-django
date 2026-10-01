@@ -302,9 +302,7 @@ def graph_csv(value: dict[str, object], kind: str) -> str:
     links = graph.get('links')
     if not isinstance(nodes, list) or not isinstance(links, list):
         raise PageDataError('The visualization graph is invalid.')
-    if any(not isinstance(node, dict) or not isinstance(node.get('id'), str) for node in nodes):
-        raise PageDataError('The visualization graph has an invalid node.')
-    by_id = {node['id']: node for node in nodes if isinstance(node, dict)}
+    by_id = {node['id']: node for node in distinct_graph_nodes(nodes)}
     if not links:
         return ''
     output = io.StringIO()
@@ -327,6 +325,25 @@ def graph_csv(value: dict[str, object], kind: str) -> str:
     return output.getvalue()
 
 
+def distinct_graph_nodes(value: list[object]) -> list[dict[str, object]]:
+    """
+    Keeps one graph node per identifier, retaining the first available group.
+
+    Called by: graph_csv(), graph_page_data()
+    """
+    nodes: dict[str, dict[str, object]] = {}
+    for item in value:
+        if not isinstance(item, dict) or not isinstance(item.get('id'), str):
+            raise PageDataError('The visualization graph has an invalid node.')
+        identifier = item['id']
+        current = nodes.get(identifier)
+        if current is None:
+            nodes[identifier] = dict(item)
+        elif not current.get('group') and item.get('group'):
+            current['group'] = item['group']
+    return list(nodes.values())
+
+
 def graph_page_data(
     value: dict[str, object], kind: str, identifier: str, subject: dict[str, str] | None = None
 ) -> dict[str, object]:
@@ -344,10 +361,9 @@ def graph_page_data(
         raise PageDataError('The visualization graph is invalid.')
     nodes: list[dict[str, object]] = []
     positions: dict[str, tuple[float, float]] = {}
-    for index, node in enumerate(source_nodes):
-        if not isinstance(node, dict) or not isinstance(node.get('id'), str):
-            raise PageDataError('The visualization graph has an invalid node.')
-        angle = 2 * math.pi * index / max(len(source_nodes), 1)
+    unique_nodes = distinct_graph_nodes(source_nodes)
+    for index, node in enumerate(unique_nodes):
+        angle = 2 * math.pi * index / max(len(unique_nodes), 1)
         x, y = 440 + 300 * math.cos(angle), 350 + 270 * math.sin(angle)
         positions[node['id']] = (x, y)
         nodes.append(

@@ -13,7 +13,14 @@ from django.test import TestCase, override_settings
 from tools.source_capture import capture_custom_graph
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_graph import custom_graph_members, custom_graph_records, graph_csv, visualization_graph, visualization_key
+from vivo_app.lib.source_graph import (
+    custom_graph_members,
+    custom_graph_records,
+    graph_csv,
+    graph_page_data,
+    visualization_graph,
+    visualization_key,
+)
 from vivo_app.lib.source_requests import graph_root_key, member_details_key, profile_key
 
 
@@ -96,6 +103,28 @@ class SourceGraphTests(TestCase):
             visualization_key('collaborators', '../private')
         with self.assertRaises(PageDataError):
             visualization_graph('collaborators', 'team-example', 'replay', self.read)
+
+    def test_graph_download_and_page_merge_repeated_nodes(self) -> None:
+        """
+        Checks repeated graph nodes use one display point and the available group.
+        """
+        value = {
+            'graph': {
+                'nodes': [
+                    {'id': 'invented-a', 'name': 'Invented A', 'group': None},
+                    {'id': 'invented-a', 'name': 'Invented A', 'group': 'Example Unit'},
+                    {'id': 'invented-b', 'name': 'Invented B'},
+                ],
+                'links': [{'source': 'invented-a', 'target': 'invented-b', 'weight': 1}],
+            }
+        }
+        csv_text = graph_csv(value, 'collaborators')
+        self.assertIn('invented-a,Invented A,Example Unit,invented-b,1', csv_text)
+        page = graph_page_data(value, 'collaborators', 'invented-a')
+        nodes = page['nodes']
+        if not isinstance(nodes, list):
+            self.fail('Graph page nodes should be a list.')
+        self.assertEqual(len(nodes), 2)
 
     def test_network_page_and_downloads_use_graph_data(self) -> None:
         """
