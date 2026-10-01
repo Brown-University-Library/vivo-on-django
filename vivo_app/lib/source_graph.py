@@ -303,14 +303,13 @@ def graph_csv(value: dict[str, object], kind: str) -> str:
     if not isinstance(nodes, list) or not isinstance(links, list):
         raise PageDataError('The visualization graph is invalid.')
     by_id = {node['id']: node for node in distinct_graph_nodes(nodes)}
-    if not links:
+    unique_links = distinct_graph_links(links)
+    if not unique_links:
         return ''
     output = io.StringIO()
     writer = csv.writer(output, lineterminator='\n')
     writer.writerow(['id', 'name', 'info', 'collab_with', 'count'])
-    for link in links:
-        if not isinstance(link, dict):
-            raise PageDataError('The visualization graph has an invalid link.')
+    for link in unique_links:
         source_id, target_id = link.get('source'), link.get('target')
         if not isinstance(source_id, str) or not isinstance(target_id, str):
             raise PageDataError('The visualization graph has an invalid link.')
@@ -342,6 +341,26 @@ def distinct_graph_nodes(value: list[object]) -> list[dict[str, object]]:
         elif not current.get('group') and item.get('group'):
             current['group'] = item['group']
     return list(nodes.values())
+
+
+def distinct_graph_links(value: list[object]) -> list[dict[str, object]]:
+    """
+    Keeps one link per directed pair and counts repeated links as Rails does.
+
+    Called by: graph_csv(), graph_page_data()
+    """
+    links: dict[tuple[str, str], dict[str, object]] = {}
+    for item in value:
+        if not isinstance(item, dict) or not isinstance(item.get('source'), str) or not isinstance(item.get('target'), str):
+            raise PageDataError('The visualization graph has an invalid link.')
+        pair = (item['source'], item['target'])
+        current = links.get(pair)
+        if current is None:
+            links[pair] = dict(item)
+        else:
+            weight = current.get('weight')
+            current['weight'] = (weight if type(weight) is int else 0) + 1
+    return list(links.values())
 
 
 def graph_page_data(
@@ -378,9 +397,7 @@ def graph_page_data(
             }
         )
     links: list[dict[str, float]] = []
-    for link in source_links:
-        if not isinstance(link, dict):
-            raise PageDataError('The visualization graph has an invalid link.')
+    for link in distinct_graph_links(source_links):
         source_id, target_id = link.get('source'), link.get('target')
         if not isinstance(source_id, str) or not isinstance(target_id, str):
             raise PageDataError('The visualization graph has an invalid link.')

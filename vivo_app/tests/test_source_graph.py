@@ -126,6 +126,28 @@ class SourceGraphTests(TestCase):
             self.fail('Graph page nodes should be a list.')
         self.assertEqual(len(nodes), 2)
 
+    def test_graph_download_and_page_merge_repeated_links(self) -> None:
+        """
+        Checks repeated directed links form one displayed edge and CSV row.
+        """
+        value = {
+            'data': {
+                'nodes': [{'id': 'invented-a', 'name': 'Invented A'}, {'id': 'invented-b', 'name': 'Invented B'}],
+                'links': [
+                    {'source': 'invented-a', 'target': 'invented-b', 'weight': 3},
+                    {'source': 'invented-a', 'target': 'invented-b', 'weight': 1},
+                ],
+            }
+        }
+        rows = graph_csv(value, 'coauthors').splitlines()
+        self.assertEqual(len(rows), 2)
+        self.assertTrue(rows[1].endswith(',4'))
+        page = graph_page_data(value, 'coauthors', 'invented-a')
+        links = page['links']
+        if not isinstance(links, list):
+            self.fail('Graph page links should be a list.')
+        self.assertEqual(len(links), 1)
+
     def test_network_page_and_downloads_use_graph_data(self) -> None:
         """
         Checks both network pages and CSV downloads use the matching graph family.
