@@ -876,6 +876,27 @@ class SourcePageTests(TestCase):
         structured = faculty_item_from_doc(doc, {}, {})
         self.assertEqual(structured['teacher_for'], ['EXMP 1000 - Example Course'])
 
+    def test_profile_and_organization_json_label_blank_websites(self) -> None:
+        """
+        Checks structured website links use their address when the label is blank.
+        """
+        person_doc = json.loads(self.responses[profile_key('invented-a')].body)['response']['docs'][0]
+        person = json.loads(person_doc['json_txt'][0])
+        person['uri'] = person['id']
+        person['on_the_web'] = [{'url': 'https://example.invalid/person', 'text': '  '}]
+        person_doc['json_txt'] = [json.dumps(person)]
+        structured_person = faculty_item_from_doc(person_doc, {}, {})
+        self.assertEqual(structured_person['on_the_web'][0]['text'], 'https://example.invalid/person')
+
+        key = profile_key('org-example')
+        source = json.loads(self.responses[key].body)
+        organization = json.loads(source['response']['docs'][0]['json_txt'][0])
+        organization['web_pages'] = [{'url': 'https://example.invalid/department', 'text': '  '}]
+        source['response']['docs'][0]['json_txt'] = [json.dumps(organization)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        structured_org = organization_json_data('org-example', 'live', self.read)
+        self.assertEqual(structured_org['web_pages'][0]['text'], 'https://example.invalid/department')
+
     def test_affiliation_logo_request_failure_keeps_profile_visible(self) -> None:
         """Uses the placeholder if the optional affiliation lookup fails."""
         self.responses.pop(profile_key('org-example'))

@@ -103,7 +103,7 @@ def organization_json_data(
                 'uri': first_text(row.get('uri')),
                 'rank': website_rank(row.get('rank')),
                 'url': url,
-                'text': (first_text(row.get('text')) or url).strip(),
+                'text': first_text(row.get('text')).strip() or url,
             }
         )
     return {
@@ -306,7 +306,7 @@ def faculty_item_from_doc(
             'rank': website_rank(row.get('rank')),
             'id': first_text(row.get('uri')),
             'url': first_text(row.get('url')).strip(),
-            'text': (first_text(row.get('text')) or first_text(row.get('url'))).strip(),
+            'text': first_text(row.get('text')).strip() or first_text(row.get('url')).strip(),
         }
         for row in sorted(web_pages, key=lambda row: website_rank(row.get('rank')))
     ]
