@@ -77,12 +77,10 @@ def publication_history_data(
     all_years: set[int] = set()
     for member_id, person, _ in members:
         publications = person.get('contributor_to')
-        if not isinstance(publications, list) or not publications:
+        if not isinstance(publications, list) or not publications or any(not isinstance(row, dict) for row in publications):
             continue
         counts: dict[int, int] = {}
         for publication in publications:
-            if not isinstance(publication, dict):
-                raise PageDataError('A chart publication has invalid data.')
             year_text = publication_year(publication)
             year = int(year_text) if year_text else 0
             if year and year <= current_year:

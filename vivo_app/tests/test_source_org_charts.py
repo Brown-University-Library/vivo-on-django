@@ -181,6 +181,19 @@ class OrganizationChartTests(TestCase):
         self.assertEqual(len(nodes[0]), 3)
         self.assertEqual(nodes[1], [])
 
+    def test_publication_chart_keeps_other_members_when_one_list_is_invalid(self) -> None:
+        """
+        Checks invalid optional publications do not hide other member counts.
+        """
+        key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
+        response = json.loads(self.responses[key].body)
+        first = json.loads(response['response']['docs'][0]['json_txt'])
+        first['contributor_to'].append('invalid row')
+        response['response']['docs'][0]['json_txt'] = json.dumps(first)
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        _, chart = publication_history_data('org-example', 'live', self.read)
+        self.assertEqual(chart['columns'], ['invented-b'])
+
     def test_chart_routes(self) -> None:
         """
         Checks the pages and public JSON and CSV paths use the same source records.
