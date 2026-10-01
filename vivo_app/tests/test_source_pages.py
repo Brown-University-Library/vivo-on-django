@@ -16,7 +16,7 @@ from django.urls import get_script_prefix, set_script_prefix
 from tools.source_capture import CapturingReader
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_formats import publication_entries
+from vivo_app.lib.source_formats import organization_json_data, publication_entries
 from vivo_app.lib.source_graph import visualization_key
 from vivo_app.lib.source_pages import (
     match_html,
@@ -865,6 +865,30 @@ class SourcePageTests(TestCase):
         faculty = result['faculty_positions']
         assert isinstance(faculty, list)
         self.assertEqual(len(faculty), 101)
+
+    def test_large_organization_json_loads_member_portraits_in_batches(self) -> None:
+        """
+        Checks organization JSON loads portraits for more than 100 members.
+        """
+        ids = [f'invented-{number:03d}' for number in range(101)]
+        key = profile_key('org-example')
+        source = json.loads(self.responses[key].body)
+        item = json.loads(source['response']['docs'][0]['json_txt'][0])
+        item['people'] = [
+            {'faculty_uri': f'http://vivo.brown.edu/individual/{identifier}', 'label': identifier} for identifier in ids
+        ]
+        source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        for start in (0, 100):
+            batch = ids[start : start + 100]
+            docs = [
+                {'id': f'http://vivo.brown.edu/individual/{identifier}', 'record_type': ['PEOPLE']} for identifier in batch
+            ]
+            self.responses[member_key(batch)] = self.solr_response(docs, len(batch))
+        result = organization_json_data('org-example', 'live', self.read)
+        people = result['people']
+        assert isinstance(people, list)
+        self.assertEqual(len(people), 101)
 
     def test_large_organization_downloads_member_publications_in_batches(self) -> None:
         """Builds the publication download for more than 100 organization members."""

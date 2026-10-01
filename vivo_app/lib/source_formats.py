@@ -67,12 +67,13 @@ def organization_json_data(
     members = organization_members(raw, extra_member_ids or [], mode, reader)
     ids = list(dict.fromkeys(record_id({'id': first_text(row.get('faculty_uri'))}) for row in members))
     portraits: dict[str, str] = {}
-    if ids:
-        member_response = response_object(member_key(ids), mode, reader)
+    for start in range(0, len(ids), 100):
+        batch = ids[start : start + 100]
+        member_response = response_object(member_key(batch), mode, reader)
         member_docs, _ = documents(member_response)
         for member_doc in member_docs:
             member_id = record_id(member_doc)
-            if member_id not in ids or first_text(member_doc.get('record_type')) != 'PEOPLE':
+            if member_id not in batch or first_text(member_doc.get('record_type')) != 'PEOPLE':
                 raise PageDataError('Solr returned an unrelated organization member.')
             member_path = image_path(member_doc.get('thumbnail_file_path_s'))
             if member_path:
