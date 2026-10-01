@@ -311,8 +311,7 @@ def faculty_item_from_doc(
         for row in sorted(web_pages, key=lambda row: website_rank(row.get('rank')))
     ]
     areas = raw.get('research_areas', [])
-    if not isinstance(areas, list) or any(not isinstance(area, str) for area in areas):
-        areas = []
+    areas = [area for area in areas if isinstance(area, str) and area.strip()] if isinstance(areas, list) else []
     item['research_areas'] = [
         {'label': area, 'rabid': None, 'vivo_id': '', 'id': ''} for area in sorted(areas, key=str.lower)
     ]

@@ -843,6 +843,18 @@ class SourcePageTests(TestCase):
         self.assertIn('>Genomics</a>', sections[0]['html'])
         self.assertEqual(sections[0]['html'].count('fq=research_areas%7C'), 1)
 
+    def test_profile_json_keeps_named_research_areas_beside_invalid_entries(self) -> None:
+        """
+        Checks structured profiles keep valid research areas from a mixed source list.
+        """
+        doc = json.loads(self.responses[profile_key('invented-a')].body)['response']['docs'][0]
+        person = json.loads(doc['json_txt'][0])
+        person['research_areas'] = ['Genomics', None, '']
+        person['uri'] = person['id']
+        doc['json_txt'] = [json.dumps(person)]
+        result = faculty_item_from_doc(doc, {}, {})
+        self.assertEqual([area['label'] for area in result['research_areas']], ['Genomics'])
+
     def test_affiliation_logo_request_failure_keeps_profile_visible(self) -> None:
         """Uses the placeholder if the optional affiliation lookup fails."""
         self.responses.pop(profile_key('org-example'))
