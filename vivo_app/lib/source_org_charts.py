@@ -121,7 +121,11 @@ def publication_history_csv(value: dict[str, object]) -> str:
     """
     columns = value.get('columns')
     matrix = value.get('matrix')
-    if not isinstance(columns, list) or any(not isinstance(column, str) for column in columns) or not isinstance(matrix, list):
+    if (
+        not isinstance(columns, list)
+        or any(not isinstance(column, str) for column in columns)
+        or not isinstance(matrix, list)
+    ):
         raise PageDataError('The publication chart is invalid.')
     output = io.StringIO()
     writer = csv.writer(output, lineterminator='\n')
@@ -145,7 +149,7 @@ def research_areas_data(identifier: str, mode: str, reader: SourceReader | None 
         raw = person.get('research_areas')
         if raw is None:
             raw = []
-        areas = [area for area in raw if isinstance(area, str)] if isinstance(raw, list) else []
+        areas = [area for area in raw if isinstance(area, str) and area.strip()] if isinstance(raw, list) else []
         areas_by_member.append(sorted(areas, key=str.lower))
     counts = Counter(area for areas in areas_by_member for area in areas)
     shared = sorted((area for area, count in counts.items() if count > 1), key=lambda area: -counts[area])

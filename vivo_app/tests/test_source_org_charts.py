@@ -137,6 +137,23 @@ class OrganizationChartTests(TestCase):
             'year,year_total,invented-a,invented-b\n2020,3,1,2',
         )
 
+    def test_research_chart_omits_blank_area_names(self) -> None:
+        """
+        Checks two empty research-area values cannot become a shared chart node.
+        """
+        key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
+        source = json.loads(self.responses[key].body)
+        for doc in source['response']['docs'][:2]:
+            person = json.loads(doc['json_txt'])
+            person['research_areas'].append('')
+            doc['json_txt'] = json.dumps(person)
+        self.responses[key] = self.response(source['response']['docs'])
+        _, result = research_areas_data('org-example', 'live', self.read)
+        groups = result['nodes']
+        if not isinstance(groups, list) or not isinstance(groups[1], list):
+            self.fail('Research chart nodes should contain an area list.')
+        self.assertEqual([node['nodeName'] for node in groups[1]], ['Area A'])
+
     def test_chart_skips_listed_member_missing_from_solr(self) -> None:
         """Uses available members when a listed person has no Solr record."""
         key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])

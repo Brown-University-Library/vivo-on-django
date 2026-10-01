@@ -826,6 +826,23 @@ class SourcePageTests(TestCase):
             self.fail('Profile sections should be a list.')
         self.assertIn('>https://example.invalid/profile</a>', sections[0]['html'])
 
+    def test_profile_keeps_named_research_areas_beside_blank_entries(self) -> None:
+        """
+        Checks blank and malformed area entries do not hide usable research links.
+        """
+        key = profile_key('invented-a')
+        source = json.loads(self.responses[key].body)
+        person = json.loads(source['response']['docs'][0]['json_txt'][0])
+        person['research_areas'] = ['Genomics', '', None]
+        source['response']['docs'][0]['json_txt'] = [json.dumps(person)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = profile_data('invented-a', 'live', self.read)
+        sections = result['sections']
+        if not isinstance(sections, list):
+            self.fail('Profile sections should be a list.')
+        self.assertIn('>Genomics</a>', sections[0]['html'])
+        self.assertEqual(sections[0]['html'].count('fq=research_areas%7C'), 1)
+
     def test_affiliation_logo_request_failure_keeps_profile_visible(self) -> None:
         """Uses the placeholder if the optional affiliation lookup fails."""
         self.responses.pop(profile_key('org-example'))

@@ -842,8 +842,9 @@ def profile_sections(
                 + '</a></li>'
             )
         overview += '</ul>'
-    areas = item.get('research_areas', [])
-    if isinstance(areas, list) and all(isinstance(area, str) for area in areas) and areas:
+    raw_areas = item.get('research_areas', [])
+    areas = [area for area in raw_areas if isinstance(area, str) and area.strip()] if isinstance(raw_areas, list) else []
+    if areas:
         overview += '<h4 class="research-areas panel-heading">Research Areas</h4><div class="brown-research-areas-list">'
         overview += ' &nbsp;|&nbsp; '.join(
             '<a href="'
@@ -1144,9 +1145,7 @@ def organization_members(
     members = [
         member
         for member in entries(item, 'people')
-        if re.fullmatch(
-            r'http://vivo\.brown\.edu/individual/[A-Za-z0-9_-]{1,80}', first_text(member.get('faculty_uri'))
-        )
+        if re.fullmatch(r'http://vivo\.brown\.edu/individual/[A-Za-z0-9_-]{1,80}', first_text(member.get('faculty_uri')))
     ]
     known = {record_id({'id': first_text(member.get('faculty_uri'))}) for member in members}
     if extra_member_ids:
