@@ -147,9 +147,8 @@ def research_areas_data(identifier: str, mode: str, reader: SourceReader | None 
         raw = person.get('research_areas')
         if raw is None:
             raw = []
-        if not isinstance(raw, list) or any(not isinstance(area, str) for area in raw):
-            raise PageDataError('A chart research-area list is invalid.')
-        areas_by_member.append(sorted(raw, key=str.lower))
+        areas = [area for area in raw if isinstance(area, str)] if isinstance(raw, list) else []
+        areas_by_member.append(sorted(areas, key=str.lower))
     counts = Counter(area for areas in areas_by_member for area in areas)
     shared = sorted((area for area, count in counts.items() if count > 1), key=lambda area: -counts[area])
     areas_to_ids = {area: len(members) + index + 1 for index, area in enumerate(shared)}

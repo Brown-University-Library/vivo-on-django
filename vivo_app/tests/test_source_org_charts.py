@@ -164,6 +164,23 @@ class OrganizationChartTests(TestCase):
             self.fail('Chart years should be a list.')
         self.assertIn('2022', years)
 
+    def test_research_chart_keeps_other_members_when_one_area_list_is_invalid(self) -> None:
+        """
+        Checks malformed optional research areas do not hide the organization chart.
+        """
+        key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
+        response = json.loads(self.responses[key].body)
+        first = json.loads(response['response']['docs'][0]['json_txt'])
+        first['research_areas'] = 'unreadable list'
+        response['response']['docs'][0]['json_txt'] = json.dumps(first)
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        _, chart = research_areas_data('org-example', 'live', self.read)
+        nodes = chart['nodes']
+        if not isinstance(nodes, list):
+            self.fail('Research chart nodes should be a list.')
+        self.assertEqual(len(nodes[0]), 3)
+        self.assertEqual(nodes[1], [])
+
     def test_chart_routes(self) -> None:
         """
         Checks the pages and public JSON and CSV paths use the same source records.
