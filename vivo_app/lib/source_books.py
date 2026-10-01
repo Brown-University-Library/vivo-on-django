@@ -19,7 +19,7 @@ from vivo_app.lib.source_requests import read_source
 BOOKS_KEY = RequestKey('book_db', '/book_covers/active')
 BOOKS_QUERY = (
     'SELECT jacket_id, firstname, lastname, shortID, title, pub_date, image '
-    "FROM book_covers WHERE active = 'y' ORDER BY pub_date DESC LIMIT 501"
+    "FROM book_covers WHERE active = 'y' ORDER BY pub_date DESC"
 )
 BookReader = Callable[[RequestKey, str], RecordedResponse]
 
@@ -56,8 +56,6 @@ def book_rows_response() -> RecordedResponse:
             rows = cursor.fetchall()
     except pymysql.MySQLError as exc:
         raise PageDataError('The homepage book database request failed.') from exc
-    if len(rows) > 500:
-        raise PageDataError('The homepage has more active books than the supported limit.')
     body = json.dumps(rows, ensure_ascii=False, default=str).encode('utf-8')
     return RecordedResponse(200, (('content-type', 'application/json'),), body)
 
@@ -75,7 +73,7 @@ def homepage_books(mode: str, reader: BookReader | None = None) -> dict[str, obj
         rows: object = json.loads(response.body)
     except (ValueError, UnicodeError) as exc:
         raise PageDataError('The homepage book response is invalid.') from exc
-    if not isinstance(rows, list) or len(rows) > 500:
+    if not isinstance(rows, list):
         raise PageDataError('The homepage book response is invalid.')
     image_base = settings.BOOK_COVER_BASE_PATH.rstrip('/')
     parsed = urlsplit(image_base)

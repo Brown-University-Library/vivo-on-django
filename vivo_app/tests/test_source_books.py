@@ -110,6 +110,20 @@ class SourceBookTests(TestCase):
         self.assertEqual(sum(len(page) for page in pages), 4)
         self.assertEqual(pages[0][0]['author_name'], '')
 
+    def test_homepage_keeps_more_than_five_hundred_active_books(self) -> None:
+        """
+        Checks a growing book table remains available without an arbitrary row cutoff.
+        """
+        rows = json.loads(self.response.body)
+        expanded = [dict(rows[0], jacket_id=index, shortID=f'invented-{index}') for index in range(501)]
+        self.response = RecordedResponse(200, (), json.dumps(expanded).encode())
+        result = homepage_books('replay', self.read)
+        pages = result['book_covers_paginated']
+        if not isinstance(pages, list):
+            self.fail('Book pages should be a list.')
+        self.assertEqual(len(pages), 126)
+        self.assertEqual(len(pages[-1]), 1)
+
     def test_live_dispatch_accepts_only_the_book_query(self) -> None:
         """
         Checks the source reader rejects other database query names.
