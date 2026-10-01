@@ -856,6 +856,22 @@ class SourcePageTests(TestCase):
         assert isinstance(faculty, list)
         self.assertEqual(len(faculty), 1)
 
+    def test_organization_keeps_valid_members_when_one_uri_is_unusable(self) -> None:
+        """
+        Checks an invalid member address does not hide the other organization members.
+        """
+        key = profile_key('org-example')
+        source = json.loads(self.responses[key].body)
+        organization = json.loads(source['response']['docs'][0]['json_txt'][0])
+        organization['people'].append({'faculty_uri': 'invalid person address', 'label': 'Other Person'})
+        source['response']['docs'][0]['json_txt'] = [json.dumps(organization)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = organization_data('org-example', 'live', self.read)
+        faculty = result['faculty_positions']
+        if not isinstance(faculty, list):
+            self.fail('Faculty positions should be a list.')
+        self.assertEqual([row['name'] for row in faculty], ['Researcher, Invented'])
+
     def test_organization_without_logo_uses_borderless_placeholder(self) -> None:
         """Matches the organization page's plain default image."""
         key = profile_key('org-example')

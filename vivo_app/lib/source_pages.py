@@ -1132,7 +1132,13 @@ def organization_members(
 
     Called by: organization_data(), organization_publications_data()
     """
-    members = entries(item, 'people')
+    members = [
+        member
+        for member in entries(item, 'people')
+        if re.fullmatch(
+            r'http://vivo\.brown\.edu/individual/[A-Za-z0-9_-]{1,80}', first_text(member.get('faculty_uri'))
+        )
+    ]
     known = {record_id({'id': first_text(member.get('faculty_uri'))}) for member in members}
     if extra_member_ids:
         response = response_object(team_member_key(extra_member_ids), mode, reader)
