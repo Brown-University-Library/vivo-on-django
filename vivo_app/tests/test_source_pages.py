@@ -1265,6 +1265,13 @@ class SourcePageTests(TestCase):
         invalid = publication_html({'pub_med_id': 'bad value'})
         self.assertNotIn('PubMed', invalid)
 
+    def test_pubmed_link_accepts_alphanumeric_identifiers(self) -> None:
+        """
+        Checks a valid source identifier with letters still gets a PubMed link.
+        """
+        markup = publication_html({'pub_med_id': 'PMC12345'})
+        self.assertIn('https://www.ncbi.nlm.nih.gov/pubmed/?term=PMC12345', markup)
+
     def test_repository_root_link_is_full_text(self) -> None:
         """
         Checks the repository root is treated as a full-text link when supplied by a citation.

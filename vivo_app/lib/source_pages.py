@@ -645,7 +645,11 @@ def publication_html(item: dict[str, object]) -> str:
         else ('https://doi.org/' + quote(doi, safe='/') if doi else '')
     )
     pub_med_id = first_text(item.get('pub_med_id'))
-    pub_med_url = 'https://www.ncbi.nlm.nih.gov/pubmed/?term=' + pub_med_id if re.fullmatch(r'\d+', pub_med_id) else ''
+    pub_med_url = (
+        'https://www.ncbi.nlm.nih.gov/pubmed/?term=' + quote(pub_med_id, safe='')
+        if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', pub_med_id)
+        else ''
+    )
     links = []
     for label, url in (
         ('Full Text', full_text),
