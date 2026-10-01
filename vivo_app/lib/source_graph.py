@@ -94,7 +94,7 @@ def custom_graph_members(identifier: str, mode: str, reader: GraphReader) -> tup
     else:
         response = response_object(profile_key(identifier), mode, reader)
         docs, _ = documents(response)
-        if not docs or first_text(docs[0].get('record_type')) != 'ORGANIZATION':
+        if not docs or record_id(docs[0]) != identifier or first_text(docs[0].get('record_type')) != 'ORGANIZATION':
             raise PageDataError('The custom collaboration organization is unavailable.')
         item = record_data(docs[0])
         name = first_text(item.get('name'))

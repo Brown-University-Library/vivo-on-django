@@ -13,7 +13,7 @@ from django.test import TestCase, override_settings
 from tools.source_capture import capture_custom_graph
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_graph import custom_graph_records, graph_csv, visualization_graph, visualization_key
+from vivo_app.lib.source_graph import custom_graph_members, custom_graph_records, graph_csv, visualization_graph, visualization_key
 from vivo_app.lib.source_requests import graph_root_key, member_details_key, profile_key
 
 
@@ -354,6 +354,28 @@ class CustomGraphTests(TestCase):
         assert isinstance(nodes, list)
         self.assertEqual(nodes[0]['group'], 'Invented Institute')
         self.assertNotIn('http://vivo.brown.edu/individual/invented-missing', {node['id'] for node in nodes})
+
+    def test_specialized_graph_rejects_an_unrelated_organization(self) -> None:
+        """
+        Checks an unrelated organization cannot supply a specialized graph's members.
+        """
+        identifier = 'org-brown-univ-dept124'
+        other = {
+            'responseHeader': {'status': 0},
+            'response': {
+                'numFound': 1,
+                'docs': [
+                    {
+                        'id': 'http://vivo.brown.edu/individual/org-other',
+                        'record_type': 'ORGANIZATION',
+                        'json_txt': json.dumps({'name': 'Other Organization', 'people': []}),
+                    }
+                ],
+            },
+        }
+        self.responses[profile_key(identifier)] = RecordedResponse(200, (), json.dumps(other).encode())
+        with self.assertRaisesRegex(PageDataError, 'organization is unavailable'):
+            custom_graph_members(identifier, 'live', self.read)
 
     def test_custom_graph_capture_replays_exact_member_requests(self) -> None:
         """
