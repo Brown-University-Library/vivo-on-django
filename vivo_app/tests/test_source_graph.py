@@ -246,6 +246,24 @@ class CustomGraphTests(TestCase):
         ):
             visualization_graph('collaborators', 'team-example', 'replay', self.read)
 
+    def test_team_graph_uses_members_still_present_in_solr(self) -> None:
+        """
+        Checks a missing team profile does not hide the remaining graph.
+        """
+        self.responses[graph_root_key(['invented-root', 'invented-missing'])] = self.responses.pop(
+            graph_root_key(['invented-root'])
+        )
+        with patch(
+            'vivo_app.lib.source_graph.team_definition',
+            return_value=('Example Team', ['invented-root', 'invented-missing']),
+        ):
+            result = visualization_graph('collaborators', 'team-example', 'replay', self.read)
+        graph = result['graph']
+        assert isinstance(graph, dict)
+        nodes = graph['nodes']
+        assert isinstance(nodes, list)
+        self.assertEqual(nodes[0]['name'], 'Invented Root')
+
     def test_missing_availability_list_fails_replay(self) -> None:
         """Requires the production availability list used by nested faculty fields."""
         self.responses.pop(visualization_key('coauthors'))

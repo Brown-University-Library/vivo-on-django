@@ -199,7 +199,7 @@ def custom_collaboration_graph(identifier: str, mode: str, reader: GraphReader) 
     Called by: visualization_graph()
     """
     name, member_ids = custom_graph_members(identifier, mode, reader)
-    roots = custom_graph_records(member_ids, mode, reader, identifier.startswith('team-'), full=True)
+    roots = custom_graph_records(member_ids, mode, reader, False, full=True)
     member_ids = [member_id for member_id in member_ids if member_id in roots]
     if not member_ids:
         raise PageDataError('The custom collaboration organization has no available member records.')
