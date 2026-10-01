@@ -145,7 +145,8 @@ def search_inputs(pairs: list[tuple[str, str]]) -> tuple[str, int, list[tuple[st
             field, separator, text = value.partition('|')
             if not separator or field not in FACETS or not text:
                 raise PageDataError('The requested search filter is unsupported.')
-            filters.append((field, text))
+            if (field, text) not in filters:
+                filters.append((field, text))
     return (queries[0] if queries else ''), (int(pages[0]) if pages else 1), filters
 
 

@@ -982,6 +982,20 @@ class SourcePageTests(TestCase):
             response = self.get_page('/search?q=Example&fq_0=record_type%7CPEOPLE')
         self.assertContains(response, 'Remove filter PEOPLE')
 
+    def test_repeated_facet_filter_appears_once(self) -> None:
+        """
+        Checks a repeated facet from two form fields creates one search selection.
+        """
+        result = search_data(
+            [('q', 'Example'), ('fq', 'record_type|PEOPLE'), ('fq_0', 'record_type|PEOPLE')],
+            'live',
+            self.read,
+        )
+        selected = result['selected_filters']
+        if not isinstance(selected, list):
+            self.fail('Selected search filters should be a list.')
+        self.assertEqual([row['value'] for row in selected], ['PEOPLE'])
+
     def test_search_ignores_other_solr_record_types(self) -> None:
         """Keeps visible results when Solr also returns an unrelated record type."""
         key = search_key('Example', 1, [])
