@@ -307,7 +307,7 @@ def faculty_item_from_doc(
     ]
     areas = raw.get('research_areas', [])
     if not isinstance(areas, list) or any(not isinstance(area, str) for area in areas):
-        raise PageDataError('The source profile has invalid research areas.')
+        areas = []
     item['research_areas'] = [
         {'label': area, 'rabid': None, 'vivo_id': '', 'id': ''} for area in sorted(areas, key=str.lower)
     ]

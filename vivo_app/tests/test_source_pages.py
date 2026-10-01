@@ -16,7 +16,7 @@ from django.urls import get_script_prefix, set_script_prefix
 from tools.source_capture import CapturingReader
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_formats import organization_json_data, publication_entries
+from vivo_app.lib.source_formats import faculty_item_from_doc, organization_json_data, publication_entries
 from vivo_app.lib.source_graph import visualization_key
 from vivo_app.lib.source_pages import (
     match_html,
@@ -1253,6 +1253,26 @@ class SourcePageTests(TestCase):
         body = profile.content.decode()
         self.assertLess(body.index('research_areas%7Cabsorption'), body.index('research_areas%7CExcretion'))
         self.assertLess(body.index('research_areas%7CExcretion'), body.index('research_areas%7Cliver'))
+
+    def test_profile_keeps_other_content_when_research_areas_are_invalid(self) -> None:
+        """
+        Checks malformed optional research areas do not hide HTML or profile JSON.
+        """
+        key = profile_key('invented-a')
+        response = json.loads(self.responses[key].body)
+        doc = response['response']['docs'][0]
+        person = json.loads(doc['json_txt'][0])
+        person['uri'] = person['id']
+        person['research_areas'] = 'invalid list'
+        doc['json_txt'] = [json.dumps(person)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        html = profile_data('invented-a', 'live', self.read)
+        sections = html['sections']
+        if not isinstance(sections, list):
+            self.fail('Profile sections should be a list.')
+        self.assertNotIn('Research Areas', sections[0]['html'])
+        structured = faculty_item_from_doc(doc, {}, {})
+        self.assertEqual(structured['research_areas'], [])
 
     def test_capture_requires_profile_in_search_results(self) -> None:
         """

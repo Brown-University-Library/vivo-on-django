@@ -821,7 +821,7 @@ def profile_sections(
                 )
         overview += '</ul>'
     areas = item.get('research_areas', [])
-    if isinstance(areas, list) and areas:
+    if isinstance(areas, list) and all(isinstance(area, str) for area in areas) and areas:
         overview += '<h4 class="research-areas panel-heading">Research Areas</h4><div class="brown-research-areas-list">'
         overview += ' &nbsp;|&nbsp; '.join(
             '<a href="'
