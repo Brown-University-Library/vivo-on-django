@@ -4,6 +4,8 @@ Initialized October 3, 2026 from the approved [endpoint scope](public_endpoint_s
 
 ## First actions
 
+**Current work:** [batch-001](current_batch.md) contains thirty person-profile improvements under S07. All thirty changes are implemented and checked locally; the application commit `9b9b739` is pushed. The owner deploys next. All deployed comparisons remain pending. Saved-citation checks leave 39 existing text differences for review; first determine which occur on the primary profile URL.
+
 - [ ] Reconcile existing discovery cases and local, pushed, deployed, and comparison evidence. Preserve existing case IDs; record exact bindings in `../../current_urls.local.md`, outside the project repository.
 - [ ] Identify any batch already awaiting deployment or evaluation and finish its planned checks before selecting new work.
 - [ ] Split the scope entries below into individual URLs, formats, and meaningful variations. Select one URL to finish first, and prepare at most thirty specific changes and their post-deployment checks.
@@ -18,7 +20,7 @@ Each `S` entry covers one row of the settled scope table. Keep its required beha
 - [ ] **S04 — GET `/search?querytext={query}`.** Preserve the older query parameter by redirecting to the current search URL. Status: not evaluated in this checklist. Next: reconcile existing evidence and define the remaining deployed checks.
 - [ ] **S05 — GET `/search/advanced` and submissions with `search=true`, `name_t`, `title_t`, `department_t`.** Form and redirect to a fielded search. Retain the department parameter even though it was absent from the inspected form. Status: not evaluated in this checklist. Next: reconcile existing evidence and define the remaining deployed checks.
 - [ ] **S06 — GET `/search_facets` with search parameters and `f_name`.** Supporting JSON for More dialogs. Status: not evaluated in this checklist. Next: reconcile existing evidence and define the remaining deployed checks.
-- [ ] **S07 — GET `/display/{person_id}`.** Profile sections, conditional controls, publication filtering, links, and search return. Status: not evaluated in this checklist. Next: reconcile existing evidence and define the remaining deployed checks.
+- [ ] **S07 — GET `/display/{person_id}`.** Profile sections, conditional controls, publication filtering, links, and search return. Status: batch-001 implements thirty improvements for P01 with P04/P07 variation checks; locally checked and pushed, awaiting owner deployment. Next: verify the loaded revision and perform the comparisons in [current_batch.md](current_batch.md). Keep S07 pending until all required variations pass.
 - [ ] **S08 — GET `/display/{organization_id}`.** Organization content, conditional role groups, member links, and portraits. Status: not evaluated in this checklist. Next: reconcile existing evidence and define the remaining deployed checks.
 - [ ] **S09 — GET `/display/{person_id}.json`.** Profile JSON. Status: not evaluated in this checklist. Next: reconcile existing evidence and define the remaining deployed checks.
 - [ ] **S10 — GET `/display/{organization_id}/publications.tsv`.** Organization publication download. Status: not evaluated in this checklist. Next: reconcile existing evidence and define the remaining deployed checks.
