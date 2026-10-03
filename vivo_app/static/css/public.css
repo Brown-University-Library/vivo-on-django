@@ -2273,4 +2273,5 @@ td.citation-data.pub-item {
 .prepared-match-tooltip strong { color: blue; background-color: #F5F2EC; }
 
 .prepared-data #wrapper-content { min-height: 0; }
-#section_overview #tabPublications > h3 { padding-bottom: 21px; }
+#section_overview #tabPublications > h3,
+#section_overview #tabAffiliations > h3 { padding-bottom: 21px; }
