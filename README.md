@@ -15,7 +15,7 @@ This readme will be updated as the project progresses, until it becomes simply a
 - [Tests](#tests)
 - [Primary dependencies](#primary-dependencies)
 
-[GOAL.md](GOAL.md) defines the scope and success criteria. The running public Rails site is the reference for pages, search and browsing, record displays, downloads, visualizations, query parameters, redirects, and supporting assets. Historical route lists and earlier prototypes help identify what to inspect; only functionality confirmed to be in use belongs in the conversion.
+[GOAL.md](WORKPLAN_STUFF/GOAL.md) defines the scope and success criteria. Start with [WORKPLAN_STUFF/workplan.md](WORKPLAN_STUFF/workplan.md) for the current work sequence and the pending and completed checklists. The running public Rails site is the reference for pages, search and browsing, record displays, downloads, visualizations, query parameters, redirects, and supporting assets. Historical route lists and earlier prototypes help identify what to inspect; only functionality confirmed to be in use belongs in the conversion.
 
 The work preserves links to separate services where the public site uses them. It excludes rebuilding the separate Manager application, unused Manager features in the Rails source, the VIVO back end, and related data-management systems. Redesigns and new features are also outside the conversion's scope.
 

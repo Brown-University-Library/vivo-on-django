@@ -27,13 +27,13 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 
 ## Project basics
 
-- Purpose: reproduce the existing public Researchers@Brown Rails application's URLs, behavior, and appearance in Django, as defined in `GOAL.md`.
+- Purpose: reproduce the existing public Researchers@Brown Rails application's URLs, behavior, and appearance in Django, as defined in `WORKPLAN_STUFF/GOAL.md`.
 - Primary language: Python; framework: Django 5.2.
 - Target runtime: Python 3.12 (`pyproject.toml` requires `>=3.12,<3.13`).
 - Dependency / execution tool: `uv`
 - The only dependency groups in `pyproject.toml` are `local`, `staging`, and `prod`. `local` is for laptop-only tools; `staging` is for the development server; `prod` is for the production server. Do not add a `dev` group: `uv sync` and `uv run` install it by default, including on the development server.
 - The repository root contains this file, `.git/`, `manage.py`, and `pyproject.toml`. The enclosing workspace contains separate repositories and local support files.
-- `GOAL.md` defines current scope. Older plans and route inventories are historical references; they do not require rebuilding unused features or the separate Manager application.
+- `WORKPLAN_STUFF/GOAL.md` defines current scope. Older plans and route inventories are historical references; they do not require rebuilding unused features or the separate Manager application.
 
 
 ## How to run code
@@ -245,11 +245,11 @@ When implementing a change (especially from an issue/task):
 
 ### Scope and reference material
 
-- Start with `GOAL.md`. The running public Rails application is the reference for required behavior and appearance; historical routes and prototype tests alone do not establish current requirements.
-- `codex-plan.md`, `OLD_gpt5_conversion_plan.md`, `OLD_windsurf_conversion_plan.md`, and `docs/routes_mapping.md` describe earlier, broader work. Follow `GOAL.md` when they disagree.
+- Start with `WORKPLAN_STUFF/workplan.md` for the active workflow and checklists, then `WORKPLAN_STUFF/GOAL.md` for scope. The running public Rails application is the reference for required behavior and appearance; historical routes and prototype tests alone do not establish current requirements.
+- `codex-plan.md`, `OLD_gpt5_conversion_plan.md`, `OLD_windsurf_conversion_plan.md`, and `docs/routes_mapping.md` describe earlier, broader work. Follow `WORKPLAN_STUFF/GOAL.md` when they disagree.
 - When the enclosing workspace is available, `../stuff_README.md` locates its materials. `../vivo-on-rails/` contains Rails source for comparison, including `config/routes.rb`, controllers, views, and assets.
 - `../rab_primary_url_paths.md` and `../apache_log_analysis.md` contain historical URL evidence. `../REPORT__previous_work.md`, `../REPORT__consolidation.md`, and `../previous_work/` supply local background. Review privately; do not copy raw records or operational details into tracked files.
-- These adjacent files are not part of a standalone checkout. Some background links in `GOAL.md` refer to filenames that currently live in the enclosing workspace.
+- These adjacent files are not part of a standalone checkout. Background links in `WORKPLAN_STUFF/GOAL.md` point to files in the enclosing workspace.
 
 ### Code locations
 
