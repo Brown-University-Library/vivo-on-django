@@ -33,6 +33,7 @@ from .lib.page_data import (
 )
 from .lib.page_rendering import data_unavailable, prepared_response, query_pairs, render_or_stub
 from .lib.prepared_data import MissingRecordError, PageDataError
+from .lib.profile_navigation import profile_search_return
 from .lib.source_formats import organization_json_data, profile_json_data, raw_record_json_data
 from .lib.source_graph import graph_csv, graph_page_data, graph_subject_data, visualization_graph
 from .lib.source_org_charts import publication_history_csv, publication_history_data, research_areas_data
@@ -317,7 +318,7 @@ def display_show(request, id):
                     'display/show.html',
                     {
                         'profile': profile_data,
-                        'back_to_search': request.session.get('prepared_search_url', reverse('search').rstrip('/')),
+                        'back_to_search': profile_search_return(request),
                     },
                 )
     except MissingRecordError:

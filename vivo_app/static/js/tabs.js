@@ -28,8 +28,14 @@
   }
 
   function setActive(btns, activeBtn) {
-    btns.forEach(function (b) { b.classList.remove('active'); });
-    if (activeBtn) activeBtn.classList.add('active');
+    btns.forEach(function (b) {
+      b.classList.remove('active');
+      b.removeAttribute('aria-current');
+    });
+    if (activeBtn) {
+      activeBtn.classList.add('active');
+      activeBtn.setAttribute('aria-current', 'true');
+    }
   }
 
   ready(function () {

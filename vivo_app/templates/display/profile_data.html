@@ -5,10 +5,10 @@
   <div class="col-md-3 col-sm-4 col-xs-12" id="people-left-panel">
     <section id="individual-intro" class="vcard person" aria-label="Profile contact and sections"><section class="share-contact">
       <div id="photo-wrapper"><img src="{{ profile.thumbnail }}" alt="Faculty Picture" class="img-circle" width="175"></div>
-      <h2 class="hidden-sm hidden-md hidden-lg">{{ profile.name }}</h2>
+      <h2 class="hidden-sm hidden-md hidden-lg">{{ profile.name }}{% if profile.hidden %} [Inactive]{% endif %}</h2>
       <div class="emailsContainer">{% if profile.email %}<a href="mailto:{{ profile.email }}" title="Email {{ profile.email }}"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span><span class="sr-only">Email {{ profile.email }}</span></a>{% endif %}</div>
       <nav id="tabButtons" class="btn-group-vertical" aria-label="Profile sections">
-        {% for section in profile.sections %}<a id="tab{{ section.id }}Btn" class="btn btn-default{% if forloop.first %} active{% endif %}" href="#{{ section.id }}" title="{{ section.label }}"><span class="glyphicon glyphicon-{% if section.id == 'Overview' %}tag{% elif section.id == 'Publications' %}file{% elif section.id == 'Research' %}eye-open{% elif section.id == 'Background' %}education{% elif section.id == 'Affiliations' %}tower{% else %}leaf{% endif %}" aria-hidden="true"></span> {{ section.label }}</a>{% endfor %}
+        {% for section in profile.sections %}<a id="tab{{ section.id }}Btn" class="btn btn-default{% if forloop.first %} active{% endif %}" href="#{{ section.id }}" title="{{ section.label }}" aria-controls="tab{{ section.id }}"{% if forloop.first %} aria-current="true"{% endif %}><span class="glyphicon glyphicon-{% if section.id == 'Overview' %}tag{% elif section.id == 'Publications' %}file{% elif section.id == 'Research' %}eye-open{% elif section.id == 'Background' %}education{% elif section.id == 'Affiliations' %}tower{% else %}leaf{% endif %}" aria-hidden="true"></span> {{ section.label }}</a>{% endfor %}
         {% if profile.sections|length > 1 %}<a id="tabAllBtn" class="btn btn-default" href="#All" title="View All"><span class="glyphicon glyphicon-globe" aria-hidden="true"></span> View All</a>{% endif %}
         {% if profile.cv_url %}<a class="btn btn-default" href="{{ profile.cv_url }}" target="_blank" rel="noopener" title="Curriculum Vitae">Curriculum Vitae [PDF]</a>{% endif %}
       </nav>
@@ -18,7 +18,7 @@
     <h2 class="vcard foaf-person individual_overview hidden-xs">{{ profile.name }}{% if profile.hidden %} [Inactive]{% endif %}</h2>
     <h3 class="individual_overview">{{ profile.title }}</h3>
     {% for section in profile.sections %}
-    <div id="tab{{ section.id }}" class="tabFinder{% if section.id != 'Overview' %} panel panel-default{% endif %}">
+    <div id="tab{{ section.id }}" class="tabFinder{% if section.id != 'Overview' %} panel panel-default{% endif %}"{% if section.id != 'Overview' %} style="display:none" aria-hidden="true"{% endif %}>
       {% if section.id == 'Publications' and profile.publication_filters %}
         {% include "display/prepared_publications.html" %}
       {% else %}{{ section.html|safe }}{% endif %}

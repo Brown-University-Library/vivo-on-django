@@ -18,7 +18,8 @@ from django.utils import timezone
 
 from vivo_app.lib.prepared_data import MissingRecordError, PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_html import render_profile_html
+from vivo_app.lib.source_citations import citation_append, citation_period, citation_text, citation_title
+from vivo_app.lib.source_html import render_citation_html, render_profile_html
 from vivo_app.lib.source_requests import (
     FACETS,
     FACET_TITLES,
@@ -561,24 +562,21 @@ def publication_book_html(item: dict[str, object]) -> str:
 
     Called by: publication_html()
     """
-    title = first_text(item.get('title')).strip().strip('“”"')
-    book = first_text(item.get('book')).strip()
+    title = citation_text(item.get('title'))
+    book = citation_text(item.get('book'))
     title_parts = [part for part in (title, book) if part]
-    citation = '<i>' + escape(' '.join(title_parts)) + '</i>.' if title_parts else ''
-    details = []
-    editors = first_text(item.get('editors')).strip()
+    citation = '<i>' + render_citation_html(' '.join(title_parts)) + '</i>.' if title_parts else ''
+    editors = citation_text(item.get('editors'))
     if editors:
-        details.append('edited by ' + escape(editors))
+        citation = citation_append(citation, 'edited by ' + render_citation_html(editors))
     for field in ('location_label', 'publisher_label'):
-        value = first_text(item.get(field)).strip()
+        value = citation_text(item.get(field))
         if value:
-            details.append(escape(value))
+            citation = citation_append(citation, render_citation_html(value))
     year = publication_year(item)
     if year:
-        details.append(year)
-    if details:
-        citation += (' ' if citation else '') + ', '.join(details) + '.'
-    return citation
+        citation = citation_append(citation, year, '.')
+    return citation_period(citation)
 
 
 def publication_book_section_html(item: dict[str, object]) -> str:
@@ -587,26 +585,26 @@ def publication_book_section_html(item: dict[str, object]) -> str:
 
     Called by: publication_html()
     """
-    title = first_text(item.get('title')).strip().strip('“”"')
-    book = first_text(item.get('book')).strip()
-    heading = '"' + escape(title.rstrip('.')) + '."' if title else ''
+    heading = citation_title(item.get('title'))
+    book = citation_text(item.get('book'))
     if book:
-        heading += (' ' if heading else '') + '<i>' + escape(book) + '</i>'
-    details = []
-    editors = first_text(item.get('editors')).strip()
+        heading += (' ' if heading else '') + '<i>' + render_citation_html(book) + '</i>'
+    if heading:
+        heading += ','
+    editors = citation_text(item.get('editors'))
     if editors:
-        details.append('edited by ' + escape(editors))
+        heading = citation_append(heading, 'edited by ' + render_citation_html(editors))
     for field in ('location_label', 'publisher_label'):
-        value = first_text(item.get(field)).strip()
+        value = citation_text(item.get(field))
         if value:
-            details.append(escape(value))
+            heading = citation_append(heading, render_citation_html(value))
     year = publication_year(item)
     if year:
-        details.append(year)
-    pages = first_text(item.get('pages')).strip()
+        heading = citation_append(heading, year)
+    pages = citation_text(item.get('pages'))
     if pages:
-        details.append('pp. ' + escape(pages))
-    return heading + (', ' if heading and details else '') + ', '.join(details) + ('.' if heading or details else '')
+        heading = citation_append(heading, 'pp. ' + render_citation_html(pages), '.')
+    return citation_period(heading)
 
 
 def publication_html(item: dict[str, object]) -> str:
@@ -615,39 +613,41 @@ def publication_html(item: dict[str, object]) -> str:
 
     Called by: publications()
     """
-    authors = first_text(item.get('authors')).strip().rstrip(',.')
-    title = first_text(item.get('title')).strip().strip('“”"')
-    venue = first_text(item.get('published_in')) or first_text(item.get('venue'))
+    authors = citation_text(item.get('authors'))
+    venue = first_text(item.get('published_in'))
+    if not venue.strip():
+        venue = first_text(item.get('venue'))
     year = publication_year(item)
-    parts = []
-    title_text = '"' + escape(title.rstrip('.')) + '." ' if title else ''
-    if venue:
-        parts.append('<i>' + escape(venue) + '</i>')
+    citation_body = citation_title(item.get('title'))
+    if venue.strip():
+        citation_body = citation_append(citation_body, '<i>' + render_citation_html(venue) + '</i>')
     for field, prefix in (('volume', 'vol. '), ('issue', 'no. ')):
-        value = first_text(item.get(field))
+        value = citation_text(item.get(field))
         if value:
-            parts.append(prefix + escape(value))
+            citation_body = citation_append(citation_body, prefix + render_citation_html(value))
     if year:
-        parts.append(year)
-    pages = first_text(item.get('pages'))
+        citation_body = citation_append(citation_body, year)
+    pages = citation_text(item.get('pages'))
     if pages:
-        parts.append('pp. ' + escape(pages))
+        citation_body = citation_append(citation_body, 'pp. ' + render_citation_html(pages), '.')
     kind, _ = publication_type(item)
     if kind == '_book':
         citation_body = publication_book_html(item)
     elif kind == '_book_section':
         citation_body = publication_book_section_html(item)
     else:
-        citation_body = title_text + ', '.join(parts) + '.'
-    citation = ('<span class="listDateTime">' + escape(authors) + '. </span>' if authors else '') + citation_body
-    doi = first_text(item.get('doi'))
-    external = safe_url(item.get('url'))
+        citation_body = citation_period(citation_body)
+    citation = (
+        '<span class="listDateTime">' + render_citation_html(citation_period(authors)) + ' </span>' if authors else ''
+    ) + citation_body
+    doi = first_text(item.get('doi')).strip()
+    external = safe_url(first_text(item.get('url')).strip())
     full_text = (
         external
         if external.startswith('https://repository.library.brown.edu/') or external == 'https://repository.library.brown.edu'
         else ('https://doi.org/' + quote(doi, safe='/') if doi else '')
     )
-    pub_med_id = first_text(item.get('pub_med_id'))
+    pub_med_id = first_text(item.get('pub_med_id')).strip()
     pub_med_url = (
         'https://www.ncbi.nlm.nih.gov/pubmed/?term=' + quote(pub_med_id, safe='')
         if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', pub_med_id)
@@ -919,7 +919,7 @@ def profile_sections(
                 + escape(first_text(row.get('degree')))
                 + '</td><td><a href="'
                 + escape(url, quote=True)
-                + '">'
+                + '" title="Find researchers that also graduated from this institution">'
                 + escape(school)
                 + '</a></td></tr>'
             )
@@ -1042,7 +1042,13 @@ def profile_sections(
             affiliation_html += '<tr class="tableRow" role="listitem"><td><span>' + escape(name) + '</span>.'
             if org:
                 url = reverse('search').rstrip('/') + '?' + urlencode({'q': '"' + org + '"'})
-                affiliation_html += ' <a href="' + escape(url, quote=True) + '">' + escape(org) + '</a>,'
+                affiliation_html += (
+                    ' <a href="'
+                    + escape(url, quote=True)
+                    + '" title="Find other researchers at Brown with a relationship to this institution">'
+                    + escape(org)
+                    + '</a>,'
+                )
             if department:
                 affiliation_html += ' <span>' + escape(department) + '</span>'
             affiliation_html += ' <span>' + escape(profile_year_range(row)) + '</span></td></tr>'

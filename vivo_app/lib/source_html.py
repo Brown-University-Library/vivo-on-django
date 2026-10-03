@@ -23,7 +23,7 @@ def safe_profile_link(value: str) -> bool:
 class ProfileHTML(HTMLParser):
     """Builds a small set of safe tags from source profile text."""
 
-    def __init__(self) -> None:
+    def __init__(self, text_tags: set[str] | None = None, allow_links: bool = True) -> None:
         """
         Starts a parser with escaped text and no open tags.
 
@@ -33,6 +33,8 @@ class ProfileHTML(HTMLParser):
         self.parts: list[str] = []
         self.open_tags: list[tuple[str, str]] = []
         self.blocked_depth = 0
+        self.text_tags = TEXT_TAGS if text_tags is None else text_tags
+        self.allow_links = allow_links
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         """
@@ -45,16 +47,16 @@ class ProfileHTML(HTMLParser):
                 self.blocked_depth += 1
         elif tag in BLOCKED_TAGS:
             self.blocked_depth = 1
-        elif tag == 'br':
+        elif tag == 'br' and self.allow_links:
             self.parts.append('<br>')
-        elif tag == 'a':
+        elif tag == 'a' and self.allow_links:
             href = next((value for name, value in attrs if name == 'href' and value is not None), '')
             if safe_profile_link(href):
                 self.parts.append('<a href="' + escape(href, quote=True) + '">')
                 self.open_tags.append((tag, tag))
             else:
                 self.open_tags.append((tag, ''))
-        elif tag in TEXT_TAGS:
+        elif tag in self.text_tags:
             self.parts.append('<' + tag + '>')
             self.open_tags.append((tag, tag))
         else:
@@ -110,3 +112,14 @@ def render_profile_html(raw: str) -> str:
     parser = ProfileHTML()
     parser.feed(raw)
     return parser.html()
+
+
+def render_citation_html(raw: str) -> str:
+    """
+    Preserves inline citation formatting and reads encoded text once.
+
+    Called by: source_citations.citation_title(), source_pages.publication_html(), source_pages.publication_book_html(), source_pages.publication_book_section_html()
+    """
+    parser = ProfileHTML({'i', 'em', 'b', 'strong', 'sub', 'sup'}, allow_links=False)
+    parser.feed(raw)
+    return parser.html().replace('&quot;', '"')

@@ -150,7 +150,8 @@ class PreparedDataTests(TestCase):
             self.assertContains(response, 'Invented Researcher')
             self.assertTemplateUsed(response, 'search/results.html')
             self.assertContains(response, 'aria-current="page"')
-            response = self.get_page('/display/invented-a')
+            response = self.client.get('/display/invented-a', HTTP_REFERER='http://testserver/search?q=Example&page=1')
+            assert isinstance(response, HttpResponse)
             self.assertContains(response, 'Invented overview.')
             self.assertContains(response, 'Invented research.')
             self.assertContains(response, 'tabResearchBtn')
@@ -161,6 +162,9 @@ class PreparedDataTests(TestCase):
             self.assertNotContains(response, 'fonts.googleapis.com')
             self.assertContains(response, '/static/css/fonts.css')
             self.assertNotContains(response, '/__prepared_assets/source-sans-pro.ttf')
+            direct = self.get_page('/display/invented-a')
+            self.assertContains(direct, 'href="/search" class="back-to-search"')
+            self.assertNotContains(direct, '/search?q=Example&amp;page=1')
 
     def test_saved_pages_accept_deployment_prefix(self) -> None:
         """
