@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {% load static %}
+    {% load static asset_urls %}
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -20,16 +20,16 @@
         </script>
     {% endif %}
 
-    <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
-    {% if source_page_styles %}<link rel="stylesheet" href="{% static 'css/bootstrap-theme.css' %}">{% endif %}
-    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
-    {% if not source_page_styles %}<link rel="stylesheet" href="{% static 'css/bootstrap-theme.css' %}">{% endif %}
-    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
-    <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% versioned_static 'css/fonts.css' %}">
+    {% if source_page_styles %}<link rel="stylesheet" href="{% versioned_static 'css/bootstrap-theme.css' %}">{% endif %}
+    <link rel="stylesheet" href="{% versioned_static 'css/bootstrap.css' %}">
+    {% if not source_page_styles %}<link rel="stylesheet" href="{% versioned_static 'css/bootstrap-theme.css' %}">{% endif %}
+    <link rel="stylesheet" href="{% versioned_static 'css/theme.css' %}">
+    <link rel="stylesheet" href="{% versioned_static 'css/homepage.css' %}">
+    <link rel="stylesheet" href="{% versioned_static 'css/style.css' %}">
     {% if source_page_styles %}
-    <link rel="stylesheet" href="{% static 'css/individual.css' %}">
-    <link rel="stylesheet" href="{% static 'css/public.css' %}">
+    <link rel="stylesheet" href="{% versioned_static 'css/individual.css' %}">
+    <link rel="stylesheet" href="{% versioned_static 'css/public.css' %}">
     {% endif %}
     <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     {% block extra_css %}{% endblock %}
@@ -110,8 +110,8 @@
     </div>
 </footer>
 
-<script src="{% static 'js/jquery.js' %}"></script>
-<script src="{% static 'js/bootstrap.js' %}"></script>
+<script src="{% versioned_static 'js/jquery.js' %}"></script>
+<script src="{% versioned_static 'js/bootstrap.js' %}"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

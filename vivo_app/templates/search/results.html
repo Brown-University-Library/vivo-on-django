@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static asset_urls %}
 {% block title %}Researchers @ Brown{% endblock %}
 {% block content %}
 {% include "includes/prepared_search.html" %}
@@ -63,4 +63,4 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}<script src="{% static 'js/search_controls.js' %}"></script>{% endblock %}
+{% block extra_js %}<script src="{% versioned_static 'js/search_controls.js' %}"></script>{% endblock %}

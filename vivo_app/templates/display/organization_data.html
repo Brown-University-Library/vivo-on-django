@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static asset_urls %}
 {% block title %}{{ organization.page_title }}{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/prepared_organization.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% versioned_static 'css/prepared_organization.css' %}">{% endblock %}
 {% block content %}
 {% include "includes/prepared_search.html" %}
 <div class="container org-profile">
