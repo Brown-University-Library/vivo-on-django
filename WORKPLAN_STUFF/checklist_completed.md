@@ -29,7 +29,7 @@ These entries summarize historical evidence in [v1](previous_workplan_artificts/
 
 ## URL cases verified after deployment
 
-No whole URL cases are certified by batch-001. Fifteen individual improvements have deployed evidence, recorded below. Do not equate these results with completion of S07 or owner acceptance.
+No whole URL cases are certified by the current workplan. Individual improvements have deployed evidence, recorded below; the active twenty-URL list remains pending whole-URL comparisons. Do not equate these results with completion of S07 or owner acceptance.
 
 For each completed case, record the original pending ID, stable case ID, safe URL pattern and variation, required checks, deployed revision, comparison date, evidence label, result, and owner acceptance if required. Keep exact URL bindings and identifying observations private. Leave other variations pending. If a regression appears, return the affected case to `checklist_todos.md` and record when and why it was reopened.
 
@@ -39,3 +39,5 @@ Every required URL-pattern endpoint must have visual confirmation against Rails 
 
 - [x] **2026-10-03 — batch-001 citation and link improvements 01, 05, 11–14, 18–20, and 22.** Applicable source variations matched Rails citation text or inline formatting; padded DOI, PubMed, and website links reached the intended articles. Revision `e0cec5a`; cases P08–P15; private evidence label `batch-001-profile-checks`. See the [evaluation report](previous_workplan_artificts/batch_001_evaluation.md) for each result and limitations.
 - [x] **2026-10-03 — batch-001 navigation and section improvements 25–29.** Checked direct-entry search return, actual filtered/paged search return, institution descriptions and search destinations, and active section state through controls, bookmarks, and keyboard use. Revision `e0cec5a`; cases P01 and P08–P12; private evidence label `batch-001-profile-checks`. Whole URL comparisons and owner acceptance remain pending.
+
+- [x] **2026-10-03 — batch-002-01 citation text and inline formatting.** All 278 selected citations across P08–P12 match Rails on deployed revision `2ba9b1f`, including the five previously different collection titles. Private evidence label `batch-002-profile-checks`; see the [evaluation](previous_workplan_artificts/batch_002_evaluation.md). Full desktop/narrow Publications appearance and whole URLs remain pending. Empty-panel and fresh-bookmark outcomes are not counted as fully verified.

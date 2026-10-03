@@ -31,16 +31,20 @@ The thirty-eight scope rows contain grouped endpoints. The existing external dis
 
 ## Current evidence
 
-Revision `e0cec5a`, evaluated October 3, 2026. Evidence label: `batch-001-profile-checks`. See the [batch evaluation](previous_workplan_artificts/batch_001_evaluation.md).
+Revision `2ba9b1f`, evaluated October 3, 2026. See the [second-batch evaluation](previous_workplan_artificts/batch_002_evaluation.md). The prior [first-batch evaluation](previous_workplan_artificts/batch_001_evaluation.md) remains historical evidence.
 
 | Observation | Current result | Limit |
 | --- | --- | --- |
-| Whole URL cases certified in this workplan | 0 | Earlier work remains to be reconciled; this is not a claim that no pages are implemented. |
-| First-batch improvements | 15 deployed verified; 14 lack qualifying examples; 1 before-script check blocked | All thirty passed local tests. These counts are not overall conversion progress. |
-| Publication text on five selected profiles | 273 of 278 citation texts match Rails | Five chapter-collection spacing differences remain; the sample does not establish all publication coverage. |
-| Primary profile section content | All six section states match rendered text | Other section appearance and supporting-link checks remain. |
-| Primary profile appearance | Matched desktop and narrow Overview views checked, with narrow content below the first screen | This is partial visual coverage of the whole case; the other section views remain. |
-| Other demonstrated differences | Sparse-profile View All and empty bookmarked sections differ | Keep those cases pending and plan focused fixes. |
+| Whole URL cases certified in this workplan | 0 | Partial comparisons do not certify a whole URL. |
+| First improvement-count batch | 15 deployed verified; 14 lack qualifying examples; 1 before-script check blocked | Keep these states distinct from local tests. |
+| Second improvement-count batch | 1 functional result verified; 1 partial; 1 still different | Full required visual checks remain pending. |
+| Publication text and inline elements on five selected profiles | 278/278 match Rails | Up from 273/278; this sample does not establish all publication coverage. |
+| First twenty-URL citation baseline | 342/345 texts and 344/345 inline-element sequences match across selected profiles | Expanded sample; its three text differences are fixed locally and await deployment. Keep the prior 278-citation sample separately comparable. |
+| Primary profile completion checks | 3/8 functional passed; 0/12 visual complete, two partial views | Preserve the defined checklist below. |
+| First URL-based batch | 20 distinct URLs: 11 carried forward, 9 added | All remain pending whole-URL completion; see `next_batch.md`. |
+| Current review coverage | Rendered section content, buttons, and citation comparisons on 15 profiles; content comparison on 2 organizations and 1 search | These are partial functional checks. Two information pages are blocked in the browser. Complete desktop/narrow views, links, assets, and interactions remain required. |
+
+Measure the same checks before and after deployment. Use content versions on changed assets to avoid reusing older browser resources; verify the requested version and rendered behavior rather than assuming refresh succeeded. Source count/order differences stay open until explained and checked.
 
 Brave browser access was confirmed by reading the owner's signed-in staging homepage. Use its documented browser controls for ordinary page, interaction, and visual checks. Browser access does not supply absent source variations. The earlier page-source viewing rejection remains in force; do not use another browser to obtain that blocked result. The before-script condition remains pending until a permitted check is available.
 
@@ -75,13 +79,12 @@ Starting results under this explicitly defined checklist: functional checks 3/8 
 
 ## Run the next iteration
 
-1. Codex matches the approved endpoint scope to the existing cases and records which patterns or variations still lack a case. Preserve discovery IDs and keep the private URL bindings outside Git. Do not delay P01's already defined comparisons while reconciling other families.
-2. Codex finishes the twenty P01 checks, preserving each result and the exact loaded revision. Use supported Brave or in-app browser controls for authenticated comparisons. Use response checks for supporting formats and inspect their relevant displayed page or artifact visually as required. Separate changing source data from a demonstrated application difference.
-3. Codex records every planned outcome as passed, different, blocked, unavailable, partial, or not run, with evidence and the next action. An evaluation pass ends when those outcomes are recorded; the URL stays pending until its completion conditions pass. Carry absent citation edge cases forward without repeatedly searching or inventing live examples.
-4. Codex fixes demonstrated differences, preferring to finish P01. A batch may contain fewer than thirty changes. Run the required local checks, commit and push the implementation batch under the established authorization, and tell the owner it is ready to deploy.
-5. The owner deploys and confirms completion. Codex verifies the loaded revision, repeats the same affected checks, and checks relevant previously passing cases for regressions. Keep Rails/Django screenshot pairs close in time and under matching conditions.
-6. Codex reports the prior and current totals, exactly which checks now pass, resolved differences, regressions, and remaining limits. Mark completed URL cases and endpoint patterns separately. Continue with the next case when the current one is complete or a recorded dependency prevents useful progress. Owner acceptance of differences and final site acceptance remain separate decisions.
+1. Codex records the twenty selected URLs, their fixed passing conditions, current evidence, and specific remaining work in [next_batch.md](next_batch.md). Preserve stable case IDs and private URL bindings. Reconcile endpoint coverage while continuing useful work on selected URLs.
+2. Codex reviews each URL and makes as many relevant improvements as reasonably possible, preferring to finish an individual URL. Record per-change expected outcomes in [current_batch.md](current_batch.md). Missing source variations remain pending without repeated searches for examples.
+3. Codex runs required local checks, commits reasonable groups, pushes, and tells the owner the code is ready. The owner deploys and confirms completion.
+4. Codex verifies the loaded revision and each recorded improvement, then records all required checks for the twenty URLs as passed, different, blocked, unavailable, partial, or not run. Compare desktop/narrow views and relevant lower content under matching conditions. Keep source-data differences distinct from application differences.
+5. Codex reports prior/current totals on the same checks, resolved differences, and regressions. Move only whole completed URLs to [checklist_completed.md](checklist_completed.md). Keep unfinished URLs with specific next actions and add pending URLs to refill the next list to twenty. Report how many carry forward and how many are added, then continue the work.
 
 For repeatable supported comparisons, reuse the existing [comparison command and guide](../docs/conversion/browser_comparison.md), which produce structured observations, paired screenshots, and pixel-difference reports. The existing command has limits and does not establish signed-in deployed access on its own. Use documented browser controls where needed. Do not bypass a rejected browser action or copy authentication cookies into helpers.
 
-Implementation update, October 3, 2026: batch-002 addresses the three demonstrated outcomes in [current_batch.md](current_batch.md). The selected saved citation comparison now matches 278/278 texts locally; the broader saved sample has 25 remaining differences, down from 39. These are local results and do not change deployed totals. P01 remains at 3/8 functional checks and 0/12 complete visual checks, with two partial views. The latest browser attempt was blocked by an open extension interface after sign-in; resume its remaining checks when automation is available.
+Implementation update, October 3, 2026: application commits `fc42808` and `48c26cc` contain the checked URL-batch changes. See [current_batch.md](current_batch.md) for the first URL-based implementation pass, its local validation, and the checks required after deployment. Local improvements do not change deployed totals.

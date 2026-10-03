@@ -245,7 +245,7 @@ When implementing a change (especially from an issue/task):
 
 ### Scope and reference material
 
-- Start with `WORKPLAN_STUFF/workplan.md` for the active workflow and checklists, then `WORKPLAN_STUFF/GOAL.md` for scope. The running public Rails application is the reference for required behavior and appearance; historical routes and prototype tests alone do not establish current requirements.
+- Start with `WORKPLAN_STUFF/workplan.md` for the active workflow and checklists, then `WORKPLAN_STUFF/GOAL.md` for scope. `WORKPLAN_STUFF/next_batch.md` selects twenty distinct URLs; make as many relevant improvements as reasonably possible for each, and retain unfinished URLs with specific next actions. The running public Rails application is the reference for required behavior and appearance; historical routes and prototype tests alone do not establish current requirements.
 - `codex-plan.md`, `OLD_gpt5_conversion_plan.md`, `OLD_windsurf_conversion_plan.md`, and `docs/routes_mapping.md` describe earlier, broader work. Follow `WORKPLAN_STUFF/GOAL.md` when they disagree.
 - When the enclosing workspace is available, `../stuff_README.md` locates its materials. `../vivo-on-rails/` contains Rails source for comparison, including `config/routes.rb`, controllers, views, and assets.
 - `../rab_primary_url_paths.md` and `../apache_log_analysis.md` contain historical URL evidence. `../REPORT__previous_work.md`, `../REPORT__consolidation.md`, and `../previous_work/` supply local background. Review privately; do not copy raw records or operational details into tracked files.
