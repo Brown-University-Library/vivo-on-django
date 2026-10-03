@@ -9,6 +9,7 @@ Contents:
 - [Batch workflow](#batch-workflow)
 - [Choose and record changes](#choose-and-record-changes)
 - [Compare and decide completion](#compare-and-decide-completion)
+- [Measure progress after each deployment](#measure-progress-after-each-deployment)
 - [Overall completion](#overall-completion)
 
 ## Files and responsibilities
@@ -21,6 +22,7 @@ Contents:
 | [checklist_todos.md](checklist_todos.md) | Holds pending URL comparisons, differences, remaining integration checks, and final acceptance tasks. |
 | [checklist_completed.md](checklist_completed.md) | Records completed work and its evidence; separates historical local milestones from URLs verified after deployment. |
 | [current_batch.md](current_batch.md) | Records the current URLs by safe route pattern, up to thirty specific changes, local checks, commits, push status, and post-deployment results. |
+| [progress.md](progress.md) | Defines repeatable completion checks, current measured results, and the progress report to produce after each deployment. |
 | `../../current_urls.local.md` | Records the exact Rails and Django URLs being evaluated, keyed to the same case and change IDs. It lives in the outer/stuff directory, outside the project repository. From the repository root its path is `../current_urls.local.md`. If absent in another workspace, create it there before selecting a batch. |
 | [previous_workplan_artificts/](previous_workplan_artificts/) | Preserves [v1](previous_workplan_artificts/PLAN__workplan.md) and [v2](previous_workplan_artificts/PLAN__workplan_v2.md), including the local v2 edits present during this reorganization. These are historical references. |
 
@@ -45,7 +47,7 @@ The separate Manager, unused editing workflows, and VIVO/data-management systems
 3. **Codex commits and pushes the checked batch.** The owner's October 3 workflow instruction authorizes commits and pushes for subsequent implementation batches serving `GOAL.md`. Follow `../AGENTS.md`: review the exact outgoing changes for sensitive information, group related files into focused commits, and use present-tense messages beginning with a verb, at most ten words. Include safe tracking updates for that batch. Preserve unrelated manual edits. This authorization does not ask for a commit of the initial workplan reorganization or authorize issue closure or a public-site traffic switch.
 4. **Codex reports that the batch is pushed.** Record the branch, commit IDs, push result, change count, selected case IDs, local checks, and remaining limits. Tell the owner that it is ready to deploy. If a commit or push fails, record what succeeded and the remaining action; do not describe local commits as pushed.
 5. **The owner runs the deploy script and tells Codex when deployment finishes.** Set the batch to `awaiting deployment` after the push. Keep the current URLs and checks available. Codex resumes deployment-dependent evaluation only after the owner's confirmation; elapsed time or a successful push is not deployment confirmation.
-6. **Codex evaluates every current URL and changed behavior.** Confirm the loaded revision, then compare Rails and deployed Django using each planned check. Include relevant completed URLs when shared code changed. Record per-change and per-case outcomes; a revision check alone does not demonstrate matching behavior.
+6. **Codex evaluates every current URL and changed behavior.** Confirm the loaded revision, then compare Rails and deployed Django using each planned check. Include relevant completed URLs when shared code changed. Record per-change and per-case outcomes; a revision check alone does not demonstrate matching behavior. Finish an evaluation pass when every planned check has a recorded outcome, evidence, and next action. An absent source variation or blocked check stays pending; it does not require repeatedly searching for examples before fixing other demonstrated differences.
 7. **Codex updates the checklists and prepares the next batch.** Move a URL case to `checklist_completed.md` only when its required deployed comparisons pass or the owner explicitly accepts documented differences. Keep blocked, untested, and different cases in `checklist_todos.md`. Use every remaining difference to select the next up-to-thirty changes, preferring to finish the same URL. Preserve a dated safe batch report in `previous_workplan_artificts/` before replacing `current_batch.md`; preserve its exact URL bindings and detailed evidence privately.
 
 ## Choose and record changes
@@ -58,6 +60,8 @@ Use these states consistently: `not evaluated`, `difference found`, `checked loc
 
 ## Compare and decide completion
 
+**Every required URL-pattern endpoint must eventually be confirmed visually against Rails.** This is a completion requirement for each endpoint, not just for one representative page in a family or one implementation batch. Record the endpoint, required variation, page or artifact inspected, comparison state, date, deployed revision, result, and private evidence label. For redirects, data responses, downloads, and assets, visually inspect the relevant destination, displayed response, downloaded document, or consuming page and record how it demonstrates that endpoint. Keep the applicable response and behavior checks as well. A successful status code, matching data, or passing local test does not satisfy visual confirmation by itself.
+
 Use Playwright for rendered pages, controls, navigation, keyboard use, downloads, and matched screenshots. Use `httpx2` for redirects, status, headers, and response formats. Extend the existing [comparison command](../tools/compare_sites.py) and [guide](../docs/conversion/browser_comparison.md) when reusable checks are needed. Use interactive browsing to inspect a difference that existing assertions cannot explain.
 
 Compare Rails and Django close in time. Keep screenshot pairs on the same browser build and environment, with matching viewport, scale, fonts, locale, timezone, and interaction state. Check desktop and narrow layouts and content revealed by scrolling or controls. Keep required failed requests visible. Explain random imagery or changing source data separately; do not hide missing content or widen a tolerance merely to pass. If data cannot be aligned, retain valid structural checks and mark exact content as needing review.
@@ -65,6 +69,16 @@ Compare Rails and Django close in time. Keep screenshot pairs on the same browse
 Run explicit HTTP requests sequentially, waiting at least 0.3 seconds after each response, including redirect hops. Normal browser assets may load concurrently. Stop and record access challenges or unavailable required services. Save upstream responses only when they help reproduce a particular difference or support a useful offline check. Prepared, replay, and live results remain distinct; missing data must not silently select live access or sample content.
 
 Report each current URL's comparison result, each fix's result, remaining differences, blocked checks, and the next action. Count deployed-verified cases separately from local-only cases. A family is complete only after all of its required variations are covered. Reopen a completed case if a later shared change produces a regression. The owner judges final acceptance and proposed intentional differences.
+
+## Measure progress after each deployment
+
+Follow [progress.md](progress.md). Before changing a selected URL, give its required functional and visual checks stable IDs and clear passing conditions. Keep those checks unchanged when comparing successive deployments. Record new requirements separately when source evidence establishes them; explain changes to the total rather than presenting them as regression or improvement.
+
+Report completed URL cases and endpoint patterns, passing functional checks, passing visual checks, open differences, and blocked or unavailable checks separately. Show previous and current results, resolved differences, and regressions. Thirty implemented changes or fifteen verified improvements do not measure the fraction of the conversion completed. The thirty-eight scope rows group multiple endpoints, and the existing discovery cases still need to be matched to those endpoints before reporting an overall percentage.
+
+For each run, retain the date, loaded revision, check definitions, matched comparison conditions, results, and evidence in the outer workspace. Use the same browser for each Rails/Django pair. Save paired screenshots and structured content/link/control observations when the supported tools allow it; record missing captures explicitly. Use the existing comparison tool's reports for supported repeatable checks, and documented browser controls for signed-in interactive checks. Do not copy browser authentication into scripts. A pixel difference requires review; do not widen tolerances just to pass. Manual visual confirmation remains required for every endpoint.
+
+Complete the available checks for one URL, fix its demonstrated differences in a batch of up to thirty changes, commit and push under the established implementation authorization, and wait for the owner's deployment confirmation. Repeat the same checks and affected previously completed cases. Carry unavailable examples and blocked checks forward with a concrete next action. Move to another URL only after completion or a recorded dependency prevents further useful work on the current one.
 
 ## Overall completion
 

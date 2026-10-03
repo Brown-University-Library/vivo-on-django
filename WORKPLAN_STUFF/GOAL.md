@@ -23,5 +23,6 @@ These boundaries supersede earlier plans to give every Rails route a Django equi
 - The required public URLs and their behavior are confirmed and documented, and the Django application supports that agreed scope.
 - Existing public links, user interactions, and connections to supporting services work as expected in the replacement.
 - Functional and visual comparisons, including Playwright checks against the running Rails site, demonstrate that the Django site reproduces its behavior and appearance. Comparisons account for changing data and random homepage imagery; any remaining differences are documented for review.
+- Every required URL-pattern endpoint must eventually be confirmed visually against Rails before it is marked complete. Record the compared state and evidence for each endpoint and its required variations. For redirects, data responses, downloads, and assets, record what was visually inspected, such as the destination page, displayed response, downloaded document, or consuming page; also retain the applicable response and behavior checks.
 
 Background: [PROMPTS.md](../../PROMPTS.md), [REPORT__consolidation.md](../../REPORT__consolidation.md), and [REPORT__previous_work.md](../../REPORT__previous_work.md).
