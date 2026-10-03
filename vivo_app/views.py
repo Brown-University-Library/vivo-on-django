@@ -187,9 +187,13 @@ def home_index(request):
     return render_or_stub(request, 'home/index.html', context)
 
 
-def home_about(request):
-    """Render the about page."""
-    return render_or_stub(request, 'home/about.html')
+def home_about(request: HttpRequest) -> HttpResponse:
+    """
+    Renders the About page with the public site's shared presentation.
+
+    Called by: config.urls urlpatterns
+    """
+    return render_or_stub(request, 'home/about.html', {'source_page_styles': True})
 
 
 def home_faq(request):
@@ -197,9 +201,13 @@ def home_faq(request):
     return render_or_stub(request, 'home/faq.html')
 
 
-def home_help(request):
-    """Render the help page."""
-    return render_or_stub(request, 'home/help.html')
+def home_help(request: HttpRequest) -> HttpResponse:
+    """
+    Renders the Help page with the public site's shared presentation.
+
+    Called by: config.urls urlpatterns
+    """
+    return render_or_stub(request, 'home/help.html', {'source_page_styles': True})
 
 
 def home_history(request):

@@ -56,9 +56,11 @@ urlpatterns = [
     ),
     # Home and static pages
     path('', vivo_views.home_index, name='home'),
-    path('about/', vivo_views.home_about, name='about'),
+    path('about', vivo_views.home_about, name='about'),
+    path('about/', vivo_views.home_about, name='about_slash'),
     path('faq/', vivo_views.home_faq, name='faq'),
-    path('help/', vivo_views.home_help, name='help'),
+    path('help', vivo_views.home_help, name='help'),
+    path('help/', vivo_views.home_help, name='help_slash'),
     path('history/', vivo_views.home_history, name='history'),
     path('publications/', vivo_views.home_publications, name='publications'),
     path('roadmap/', vivo_views.home_roadmap, name='roadmap'),

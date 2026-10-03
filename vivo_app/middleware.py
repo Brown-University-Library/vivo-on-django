@@ -37,6 +37,8 @@ class LocalPageDataMiddleware:
         response = None
         supported = {
             'home_index',
+            'home_about',
+            'home_help',
             'home_status',
             'search',
             'display_show',
