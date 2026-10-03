@@ -46,11 +46,6 @@
     var sections = $all('#section_overview .tabFinder');
     var btns = $all('#tabButtons a[id^="tab"][id$="Btn"]');
 
-    var mapBtnToSection = function (btnId) {
-      if (btnId === 'tabAllBtn') return null; // special case
-      return btnId.replace(/Btn$/, ''); // e.g., tabOverviewBtn -> tabOverview
-    };
-
     function showOnly(sectionId) {
       sections.forEach(function (s) { hide(s); });
       var target = $('#' + sectionId);
@@ -64,9 +59,13 @@
     function activateFromHash() {
       var wanted = window.location.hash.slice(1) || 'Overview';
       var active = btns.find(function (b) { return b.getAttribute('href') === '#' + wanted; });
-      if (!active) active = $('#tabOverviewBtn');
-      if (active && active.id === 'tabAllBtn') showAll();
-      else if (active) showOnly(mapBtnToSection(active.id));
+      var target = sections.find(function (s) { return s.id === 'tab' + wanted; });
+      if (wanted === 'All') showAll();
+      else if (target) showOnly(target.id);
+      else {
+        showOnly('tabOverview');
+        active = $('#tabOverviewBtn');
+      }
       setActive(btns, active);
     }
     activateFromHash();

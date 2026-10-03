@@ -586,8 +586,8 @@ def publication_book_section_html(item: dict[str, object]) -> str:
     Called by: publication_html()
     """
     heading = citation_title(item.get('title'))
-    book = citation_text(item.get('book'))
-    if book:
+    book = first_text(item.get('book'))
+    if book.strip():
         heading += (' ' if heading else '') + '<i>' + render_citation_html(book) + '</i>'
     if heading:
         heading += ','
@@ -1082,6 +1082,22 @@ def profile_sections(
     return sections
 
 
+def profile_panels(sections: list[dict[str, str]]) -> list[dict[str, str]]:
+    """
+    Keeps required empty panels while leaving section buttons conditional on content.
+
+    Called by: profile_data()
+    """
+    by_id = {section['id']: section for section in sections}
+    panels: list[dict[str, str]] = []
+    for name in ('Overview', 'Publications', 'Research', 'Background', 'Affiliations', 'Teaching'):
+        if name in by_id:
+            panels.append(by_id[name])
+        elif name in {'Background', 'Affiliations', 'Teaching'}:
+            panels.append({'id': name, 'label': name, 'html': '<h3>' + name + '</h3>'})
+    return panels
+
+
 def profile_data(identifier: str, mode: str, reader: SourceReader | None = None) -> dict[str, object]:
     """
     Supplies a person profile from one Solr record and required lookups.
@@ -1126,6 +1142,7 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
                 raise
     cv_entries = entries(item, 'cv')
     cv_url = safe_url(cv_entries[0].get('cv_link')) if cv_entries else ''
+    sections = profile_sections(item, mode, reader, len(publications_data), collaborator_visualization_url)
     return {
         'id': identifier,
         'name': name,
@@ -1134,7 +1151,8 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
         'title': first_text(item.get('title')),
         'email': first_text(item.get('email')),
         'thumbnail': thumbnail_url(doc),
-        'sections': profile_sections(item, mode, reader, len(publications_data), collaborator_visualization_url),
+        'sections': sections,
+        'panels': profile_panels(sections),
         'publications': publications_data,
         'publication_filters': publication_filters,
         'coauthor_visualization_url': coauthor_visualization_url,

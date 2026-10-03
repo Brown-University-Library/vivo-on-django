@@ -17,7 +17,7 @@
   <div class="col-md-9 col-sm-8 col-xs-12" id="section_overview">
     <h2 class="vcard foaf-person individual_overview hidden-xs">{{ profile.name }}{% if profile.hidden %} [Inactive]{% endif %}</h2>
     <h3 class="individual_overview">{{ profile.title }}</h3>
-    {% for section in profile.sections %}
+    {% for section in profile.panels|default:profile.sections %}
     <div id="tab{{ section.id }}" class="tabFinder{% if section.id != 'Overview' %} panel panel-default{% endif %}"{% if section.id != 'Overview' %} style="display:none" aria-hidden="true"{% endif %}>
       {% if section.id == 'Publications' and profile.publication_filters %}
         {% include "display/prepared_publications.html" %}

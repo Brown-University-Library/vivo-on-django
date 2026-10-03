@@ -10,14 +10,14 @@ from django.urls import get_script_prefix, set_script_prefix
 from vivo_app.lib.profile_navigation import profile_search_return
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_html import render_citation_html
-from vivo_app.lib.source_pages import profile_sections, publication_html
+from vivo_app.lib.source_pages import profile_panels, profile_sections, publication_html
 
 
 def unused_source(key: RequestKey, mode: str) -> RecordedResponse:
     """
     Fails if a text-only profile comparison unexpectedly requests a source.
 
-    Called by: ProfileBatchTests.test_institution_links_describe_their_searches()
+    Called by: ProfileBatchTests.test_institution_links_describe_their_searches(), test_empty_profile_panels_do_not_add_navigation_buttons()
     """
     raise AssertionError('A text-only profile should not request source data.')
 
@@ -165,6 +165,55 @@ class ProfileBatchTests(SimpleTestCase):
         for field, value, expected in cases:
             with self.subTest(field=field):
                 self.assertIn('href="' + expected + '"', publication_html({field: value}))
+
+    def test_chapter_collection_spacing_and_inline_text_is_preserved(self) -> None:
+        """
+        Checks chapter collection spacing matches the source and empty collections stay absent.
+        """
+        cases = [
+            ('Collection ', '"Chapter." <i>Collection </i>, 2020.'),
+            (' Collection ', '"Chapter." <i> Collection </i>, 2020.'),
+            ('A &amp; <b>Collection</b> ', '"Chapter." <i>A &amp; <b>Collection</b> </i>, 2020.'),
+            ('   ', '"Chapter.", 2020.'),
+        ]
+        for book, expected in cases:
+            with self.subTest(book=book):
+                self.assertEqual(
+                    publication_html(
+                        {
+                            'type': 'http://vivo.brown.edu/ontology/citation#BookSection',
+                            'title': 'Chapter',
+                            'book': book,
+                            'date': '2020',
+                        }
+                    ),
+                    expected,
+                )
+
+    def test_empty_profile_panels_do_not_add_navigation_buttons(self) -> None:
+        """
+        Checks sparse profiles keep empty panels, conditional buttons, and the original panel order.
+        """
+        cases: list[dict[str, object]] = [{}, {'research_overview': 'Example research.'}]
+        for content in cases:
+            with self.subTest(content=content):
+                sections = profile_sections(content, 'live', unused_source, 0, '')
+                panels = profile_panels(sections)
+                profile = {'sections': sections, 'panels': panels}
+                html = render_to_string('display/profile_data.html', {'profile': profile})
+                for name in ('Background', 'Affiliations', 'Teaching'):
+                    self.assertIn('id="tab' + name + '"', html)
+                    self.assertNotIn('id="tab' + name + 'Btn"', html)
+                self.assertNotIn('id="tabPublications"', html)
+                self.assertEqual('id="tabAllBtn"' in html, bool(content))
+                self.assertEqual(
+                    [panel['id'] for panel in panels],
+                    ['Overview'] + (['Research'] if content else []) + ['Background', 'Affiliations', 'Teaching'],
+                )
+        populated = invented_profile()['sections']
+        assert isinstance(populated, list)
+        panels = profile_panels(populated)
+        self.assertEqual(panels[:3], populated)
 
     def test_direct_profile_does_not_reuse_a_stale_search(self) -> None:
         """

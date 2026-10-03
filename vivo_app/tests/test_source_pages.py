@@ -750,6 +750,10 @@ class SourcePageTests(TestCase):
         if not isinstance(sections, list):
             self.fail('Profile sections were not a list.')
         self.assertEqual([section['id'] for section in sections], ['Overview'])
+        panels = sparse['panels']
+        if not isinstance(panels, list):
+            self.fail('Profile panels were not a list.')
+        self.assertEqual([panel['id'] for panel in panels], ['Overview', 'Background', 'Affiliations', 'Teaching'])
         self.assertEqual(sparse['publications'], [])
         self.assertEqual(sparse['cv_url'], '')
 
