@@ -5,7 +5,7 @@ Applies the public citation model's text, quotation, and punctuation rules.
 from vivo_app.lib.source_html import render_citation_html
 
 
-def citation_text(value: object) -> str:
+def citation_text(value: object, *, preserve_spacing: bool = False) -> str:
     """
     Reads text and numeric source citation values without displaying other objects.
 
@@ -13,7 +13,9 @@ def citation_text(value: object) -> str:
     """
     if isinstance(value, list):
         value = value[0] if value else None
-    result = str(value).strip() if isinstance(value, (str, int, float)) and not isinstance(value, bool) else ''
+    result = str(value) if isinstance(value, (str, int, float)) and not isinstance(value, bool) else ''
+    if not preserve_spacing:
+        result = result.strip()
     return result
 
 
@@ -53,7 +55,8 @@ def citation_title(value: object) -> str:
     text = citation_text(value)
     result = ''
     if text:
-        text = text.removeprefix('“').removesuffix('”')
+        ## The reference formatter retains a closing curly quote inside its added straight quotes.
+        text = text.removeprefix('“')
         if not text.startswith('"'):
             text = '"' + text
         if not text.endswith('"'):

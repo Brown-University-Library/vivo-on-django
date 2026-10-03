@@ -63,7 +63,7 @@ def search_key(query: str, page: int, filters: list[tuple[str, str]], facet_limi
         raise PageDataError('The requested search is outside the supported limits.')
     pairs = [
         ('q', query or '*'),
-        ('defType', 'edismax'),
+        ('q.op', 'AND'),
         ('qf', SEARCH_FIELDS),
         ('mm', '2<75%'),
         ('fq', 'record_type:(PEOPLE OR ORGANIZATION)'),

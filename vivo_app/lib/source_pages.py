@@ -562,9 +562,9 @@ def publication_book_html(item: dict[str, object]) -> str:
 
     Called by: publication_html()
     """
-    title = citation_text(item.get('title'))
-    book = citation_text(item.get('book'))
-    title_parts = [part for part in (title, book) if part]
+    title = citation_text(item.get('title'), preserve_spacing=True)
+    book = citation_text(item.get('book'), preserve_spacing=True)
+    title_parts = [part for part in (title, book) if part.strip()]
     citation = '<i>' + render_citation_html(' '.join(title_parts)) + '</i>.' if title_parts else ''
     editors = citation_text(item.get('editors'))
     if editors:
@@ -586,7 +586,7 @@ def publication_book_section_html(item: dict[str, object]) -> str:
     Called by: publication_html()
     """
     heading = citation_title(item.get('title'))
-    book = first_text(item.get('book'))
+    book = citation_text(item.get('book'), preserve_spacing=True)
     if book.strip():
         heading += (' ' if heading else '') + '<i>' + render_citation_html(book) + '</i>'
     if heading:
@@ -792,7 +792,7 @@ def profile_year_range(row: dict[str, object]) -> str:
             years.append('Present')
         else:
             years.append(str(value.year))
-    return '-'.join(year for year in years if year)
+    return '-'.join(years)
 
 
 def profile_entries_newest_first(rows: list[dict[str, object]]) -> list[dict[str, object]]:

@@ -106,10 +106,11 @@ class ProfileBatchTests(SimpleTestCase):
                     'title': '““Nested title””',
                     'book': 'Collection',
                 },
-                '"“Nested title”." <i>Collection</i>.',
+                '"“Nested title””." <i>Collection</i>.',
             ),
             ({'authors': 'A. Writer...', 'title': 'Example'}, '<span class="listDateTime">A. Writer... </span>"Example.".'),
             ({'title': 'Example...'}, '"Example...".'),
+            ({'title': '“Example”'}, '"Example”.".'),
             (
                 {'type': 'http://vivo.brown.edu/ontology/citation#Book', 'title': '"Quoted book"'},
                 '<i>"Quoted book"</i>.',

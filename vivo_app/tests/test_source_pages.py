@@ -279,7 +279,7 @@ class SourcePageTests(TestCase):
         self.assertLess(background.index('Earlier training'), background.index('Another undated training'))
         self.assertLess(background.index('Another undated training'), background.index('Undated training'))
         self.assertIn('Example University, Example Hospital', background)
-        self.assertIn('2010</td><td>Providence, &lt;Unsafe&gt;', background)
+        self.assertIn('2010-</td><td>Providence, &lt;Unsafe&gt;', background)
         self.assertIn('2001-2003', background)
         self.assertNotIn('<Unsafe>', background)
 
@@ -442,7 +442,7 @@ class SourcePageTests(TestCase):
         self.assertLess(affiliations.index('Later license'), affiliations.index('Earlier license'))
         self.assertLess(affiliations.index('Earlier license'), affiliations.index('Another undated license'))
         self.assertLess(affiliations.index('Another undated license'), affiliations.index('&lt;Undated license&gt;'))
-        self.assertIn('State board, Psychology</td><td>2015</td><td>#LIC-123', affiliations)
+        self.assertIn('State board, Psychology</td><td>2015-</td><td>#LIC-123', affiliations)
         self.assertIn('2001-2004', affiliations)
         self.assertNotIn('<Undated license>', affiliations)
 
@@ -472,17 +472,32 @@ class SourcePageTests(TestCase):
         self.assertIn('>Example Hospital</a>,', affiliations)
         self.assertNotIn('Unused Organization', affiliations)
         self.assertIn('Department role</span>. <span>Example Division</span>', affiliations)
-        self.assertIn('Older role</span>. <span>2001</span>', affiliations)
+        self.assertIn('Older role</span>. <span>2001-</span>', affiliations)
         self.assertNotIn('q=%22%22', affiliations)
 
-    def test_profile_year_ranges_omit_missing_dates(self) -> None:
+    def test_search_keeps_reference_parser_defaults_and_all_term_operator(self) -> None:
         """
-        Checks missing dates do not leave an empty side of the year range.
+        Checks ordinary, combined, and empty searches retain reference request options.
         """
-        self.assertEqual(profile_year_range({}), '')
-        self.assertEqual(profile_year_range({'start_date': '2001-01-01'}), '2001')
-        self.assertEqual(profile_year_range({'end_date': '2005-01-01'}), '2005')
-        self.assertEqual(profile_year_range({'start_date': 'invalid'}), '')
+        for query in ('Example', 'Example researcher', '*', ''):
+            with self.subTest(query=query):
+                key = search_key(query, 2, [('record_type', 'PEOPLE')])
+                self.assertIn(('q.op', 'AND'), key.query)
+                self.assertNotIn('defType', dict(key.query))
+                self.assertIn(('start', '20'), key.query)
+                self.assertIn(('fq', 'record_type:"PEOPLE"'), key.query)
+                self.assertIn(('mm', '2<75%'), key.query)
+
+    def test_profile_year_ranges_keep_missing_date_separators(self) -> None:
+        """
+        Checks open and absent date ranges retain the reference separator.
+        """
+        self.assertEqual(profile_year_range({}), '-')
+        self.assertEqual(profile_year_range({'start_date': '2001-01-01'}), '2001-')
+        self.assertEqual(profile_year_range({'end_date': '2005-01-01'}), '-2005')
+        self.assertEqual(profile_year_range({'start_date': 'invalid'}), '-')
+        self.assertEqual(profile_year_range({'start_date': '2001-01-01', 'end_date': '2005-01-01'}), '2001-2005')
+        self.assertEqual(profile_year_range({'start_date': '2001-01-01', 'end_date': '2200-01-01'}), '2001-Present')
 
     def test_affiliations_text_keeps_source_links(self) -> None:
         """
@@ -1450,6 +1465,19 @@ class SourcePageTests(TestCase):
             '"Invented Chapter." <i>Invented Collection</i>, edited by A. Editor, Example Press, 2020, pp. 10-20.',
             markup,
         )
+
+    def test_book_citation_preserves_title_spacing(self) -> None:
+        """
+        Checks book titles retain spaces inside italics while blank values stay absent.
+        """
+        record: dict[str, object] = {'type': 'http://vivo.brown.edu/ontology/citation#Book', 'title': 'Example Book '}
+        self.assertEqual(publication_html(record), '<i>Example Book </i>.')
+        record['title'] = ' '
+        record['book'] = '  '
+        self.assertNotIn('<i>', publication_html(record))
+        record['title'] = ['Example Book ']
+        record['book'] = 'Volume Two '
+        self.assertEqual(publication_html(record), '<i>Example Book  Volume Two </i>.')
 
     def test_publications_sort_titles_without_outer_spaces(self) -> None:
         """
