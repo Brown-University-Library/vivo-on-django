@@ -1,6 +1,6 @@
 # Current batch: twenty URLs
 
-Batch: url-batch-002, October 3, 2026. Follow [workplan.md](workplan.md), [next_batch.md](next_batch.md), and [../AGENTS.md](../AGENTS.md). Twenty URLs carry forward; zero new URLs are added. Exact pairs remain in `../../url_batch_002/urls.json` and `../../current_urls.local.md`, outside Git. The preceding [implementation](previous_workplan_artificts/url_batch_001_current_batch.md) and [deployed evaluation](previous_workplan_artificts/url_batch_001_evaluation.md) are archived.
+Batch: url-batch-003, October 3, 2026. Follow [workplan.md](workplan.md), [next_batch.md](next_batch.md), and [../AGENTS.md](../AGENTS.md). Twenty URLs carry forward; zero new URLs are added. Exact pairs remain in `../../url_batch_003/urls.json` and `../../current_urls.local.md`, outside Git. The preceding [implementation](previous_workplan_artificts/url_batch_002_current_batch.md) and [deployed evaluation](previous_workplan_artificts/url_batch_002_evaluation.md) are archived.
 
 Contents:
 
@@ -11,30 +11,31 @@ Contents:
 
 ## Status
 
-The owner deployed revision `6088911`; the loaded revision matches. Codex checked every preceding implemented outcome. Selected date and citation differences are resolved; all five sparse-profile bookmarks match. Search count/order and one organization member remain different. About and Help display the application's unavailable-page response in source modes.
+The owner deployed revision `98cf271`; the loaded revision matches. Codex checked each preceding change. Profile heading spacing and About/Help rendering/content/appearance pass the selected checks. Bare About still ends at a slash URL in Brave, so its direct path behavior remains pending. Thirty-five publication filter states match. P01 now has four of eight functional and six of twelve visual checks passing. No whole URL is certified yet.
 
-Application commits `2bcfd77` (Affiliations spacing) and `c3c6ecc` (About/Help) contain the locally checked changes. The safe tracking commit follows them. The final handoff reports whether the push succeeds. The owner deploys after that confirmation; Codex then verifies each change below. Whole URLs completed remain zero.
+The changes below repair information destinations needed by ABOUT01, HELP01, and shared navigation. These supporting pages do not add six selected URLs to the twenty-case batch or establish standalone endpoint completion. The final handoff reports the tested commits and confirmed push; the owner deploys after that confirmation.
+
+Application commits `3672e4f` restore information-page content and `eb3e62d` enable public routes in source modes. The safe tracking commit follows them.
 
 ## Changes and deployed checks
 
 | Change ID | Cases and change | Local evidence | Required check after deployment |
 | --- | --- | --- | --- |
-| url-batch-002-01 | All fifteen profiles: match the reference Affiliations heading's twenty-one-pixel bottom padding, correcting an eleven-pixel difference. | Reference computed styles and paired desktop/narrow profile captures establish the difference. Updated CSS also loads in local information-page comparisons. | Compare populated and empty Affiliations, plus View All, at desktop/narrow widths. Recheck the existing Publications heading rule. |
-| url-batch-002-02 | ABOUT01/HELP01: enable the existing static handlers in live, replay, and prepared modes. | Both canonical and slash routes render actual templates in all three modes. An unrelated unconverted page remains unavailable. The local browser uses live mode without contacting a source for these pages. | Open both pages and confirm full content replaces the unavailable-page response; inspect shared assets. |
-| url-batch-002-03 | ABOUT01/HELP01 and shared navigation: use the reference's bare About/Help paths while retaining older slash aliases. | Canonical reverses and both route forms pass; a mounted application retains its prefix. | Follow header/footer and cross-page links, checking direct rendering and application-prefix preservation. |
-| url-batch-002-04 | ABOUT01/HELP01: load the reference presentation styles, match quotation marks and illustration descriptions, and keep the About inclusion-policy FAQ link within the application. | Full local content and heading positions match Rails at 1280×720 and 390×844. Illustrations load. Paired top/lower/footer captures differ by at most 0.07% of pixels. FAQ and Help links preserve a mounted prefix in tests. | Compare full content, illustrations, typography, wrapping, and footer at both sizes. Check the FAQ link and record any still-unconverted destination separately. |
+| url-batch-003-01 | ABOUT01/HELP01 and shared navigation: enable FAQ, History, Roadmap, publication help, Terms of Use, and visualization help in live, replay, and prepared modes. | All six handlers render real templates in each mode without source access. Unrelated unconverted pages remain unavailable. | Follow About/Help and footer links. Confirm all six destinations render full pages, including existing illustrations and shared presentation. |
+| url-batch-003-02 | Use the reference's bare public paths for these six destinations, retaining slash aliases. Keep the Roadmap visualization-help link inside a mounted application. | Canonical reverses, both path forms, and mounted About/Help/Roadmap navigation pass tests. | Follow each actual link; verify expected paths, fragments, and application prefix. Recheck bare About behavior separately. |
+| url-batch-003-03 | Restore reference text, punctuation, lists, headings, anchors, illustrations, and spacing on the six supporting information pages. | Full rendered text matches at desktop/narrow widths. Forty paired screenshot frames match at the measured pixel threshold and were visually inspected. FAQ's twelve in-page links and publication help's six links have targets; sampled clicks reach the final sections. Existing generic sample-illustration text and new-tab link protection are retained. | Repeat complete content and desktop/narrow visual comparisons. Check FAQ and publication-help anchors, Roadmap's link, observed images, and required assets. Record any difference instead of counting local evidence as deployed completion. |
 
 ## Local validation
 
 - Full Django suite: 276 tests pass.
 - Ruff lint and formatting: all four changed Python files pass.
 - Pyright: all four changed Python files pass with zero errors/warnings using the project interpreter, Python 3.12, and basic checking. Pylance is unavailable.
-- About/Help browser comparison: matching rendered text and heading positions at both widths; all observed images load. Inspected paired captures include the full content and footer. This is local evidence, not deployed completion.
-- All sixteen workplan Markdown files and 213 relative links/anchors pass validation; `git diff --check` passes.
-- The temporary local review server is stopped. Private records and screenshots remain outside Git.
+- Six supporting pages: matching rendered text and paired full-content/footer screenshots at 1280×720 and 390×844. Forty measured pairs have no pixels differing by more than twelve color levels. This is local evidence only.
+- All twenty-two Markdown files and 274 relative links/anchors pass validation; twenty distinct selected cases and all thirty-eight pending scope rows remain. `git diff --check` passes.
+- The temporary review server is stopped and viewport overrides are reset. Private records and screenshots remain outside Git.
 
 ## Remaining work
 
-Keep all twenty cases in [next_batch.md](next_batch.md). Profiles still need full link, filter, asset, and visual coverage; P01 now has four of eight functional and four of twelve visual checks passing. Its remaining visual differences are recorded separately from the passing views.
+Keep all twenty cases in [next_batch.md](next_batch.md), with concrete remaining checks. Finish ABOUT01/HELP01 navigation after this deployment. Finish P07's asset and Terms destination checks and repeat any capture that had not settled before assessing whole completion. Continue P01's links, CV, assets, Overview, and long Research/View All comparisons. Other profiles need remaining links, interactions, and full views despite passing selected content/filter checks.
 
-Search count/order and the missing organization member require source alignment evidence; do not force counts, ordering, or membership to match one recorded snapshot. About/Help need deployed checks and still link to other unconverted information pages. The fourteen unavailable historical source variations and the rejected before-script check remain pending. Every required URL-pattern endpoint must eventually be visually confirmed against Rails.
+Search count/order and the missing organization member require source alignment evidence; do not force counts, ordering, or membership to match one recorded snapshot. Other information endpoints need separate deployed evidence. Every required URL-pattern endpoint must eventually be visually confirmed against Rails.

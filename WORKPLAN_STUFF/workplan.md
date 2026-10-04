@@ -33,7 +33,7 @@ Keep real identifiers, exact URLs, private addresses, record contents, screensho
 
 ## Current position and priorities
 
-Latest checkpoint, October 3, 2026: the owner deployed revision `6088911`; [the evaluation](previous_workplan_artificts/url_batch_001_evaluation.md) records every previous change. Selected dates, citations, and sparse bookmarks match. Search/source differences remain. [current_batch.md](current_batch.md) records local About/Help and profile heading fixes; [next_batch.md](next_batch.md) retains twenty previous URLs and adds zero new URLs. P01 now has four functional and four visual completion checks passing.
+Latest checkpoint, October 3, 2026: the owner deployed revision `98cf271`; [the evaluation](previous_workplan_artificts/url_batch_002_evaluation.md) checks every preceding change. Profile heading spacing and About/Help content/appearance match. Bare About direct rendering remains pending. Thirty-five publication filter states match; P01 has four functional and six visual completion checks passing. [current_batch.md](current_batch.md) repairs supporting information destinations; [next_batch.md](next_batch.md) retains twenty previous URLs and adds zero new URLs. Whole URL completion remains pending.
 
 Stage 1 is complete: the approved endpoint scope and the existing external discovery manifest define what to reproduce. The manifest previously recorded 62 specifications; that count does not establish implemented or accepted cases. Selected source-backed pages, exports, graphs, local comparisons, and offline checks already exist. Detailed historical results remain in the archived plans. This reorganization does not rerun or certify those results.
 
