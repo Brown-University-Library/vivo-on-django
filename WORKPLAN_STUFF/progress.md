@@ -31,22 +31,22 @@ The thirty-eight scope rows contain grouped endpoints. The existing external dis
 
 ## Current evidence
 
-Revision `98cf271`, evaluated October 3, 2026. See the [second URL-batch evaluation](previous_workplan_artificts/url_batch_002_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
+Revision `a3bca98`, evaluated October 3, 2026. See the [third URL-batch evaluation](previous_workplan_artificts/url_batch_003_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
 
 | Observation | Current result | Limit |
 | --- | --- | --- |
-| Whole URL cases certified in this workplan | 0 | Partial comparisons do not certify a whole URL. |
+| Whole URL cases certified in this workplan | 1 (P07: 5/5 functional, 10/10 visual) | Partial comparisons do not certify a whole URL. |
 | First improvement-count batch | 15 deployed verified; 14 lack qualifying examples; 1 before-script check blocked | Keep these states distinct from local tests. |
 | Publication text and inline elements on the original five profiles | Previous full comparison: 278/278 match Rails | Preserved evidence; current selected filter checks also compare visible citation text. |
 | Publication filter states | 35/35 match selected control and visible ordered citations | Ten profiles checked with keyboard selection; full visual/link checks remain separate. |
 | Expanded twenty-URL citation sample | Previous full comparison: 345/345 texts and inline-element sequences match | Current filter checks pass; full visual/link checks remain pending. |
 | Profile content and conditional buttons | All 15 selected profiles match the compared section text and button lists | This does not establish full links, interactions, assets, or visual coverage. |
-| Sparse-profile fresh bookmarks | 5/5 match Rails | Five P07 states also have new paired views; whole completion awaits remaining navigation, asset, and settled-capture checks. |
-| Shared asset content versions | Present on profiles and About/Help | All observed information-page illustrations load. Full asset auditing remains pending; two observed P07 fonts could not be exported by the supported tool. |
-| Primary profile completion checks | 4/8 functional passed; 6/12 visual passed | Affiliations joins Background and Teaching as full matches at both sizes. Other views have remaining differences or incomplete inspection. |
+| Sparse-profile fresh bookmarks | 5/5 match Rails | P07 passes all five functional and ten visual criteria after settled capture and asset checks. |
+| Shared asset content versions | Present on profiles and About/Help | All observed information-page illustrations load. P07 asset evidence passes; font delivery and byte comparisons explain the export-tool limitation. Other case audits remain pending. |
+| Primary profile completion checks | 6/8 functional passed; 6/12 visual passed | Affiliations joins Background and Teaching as full matches at both sizes. Other views have remaining differences or incomplete inspection. |
 | Search and organization content | Previously observed count/order and missing-member differences remain open | No fresh full comparison this iteration; source alignment is unconfirmed. |
-| Information pages | About/Help full content/appearance match at both sizes | Bare About still reaches its slash form in Brave. Six supporting destinations are repaired locally and await deployment. |
-| Current URL-based batch | 20 distinct URLs: 20 carried forward, 0 added | All remain pending whole-URL completion; see `next_batch.md`. |
+| Information pages | About/Help full content/appearance match at both sizes | Bare About still reaches its slash form in Brave. Six supporting destinations pass the specified deployed content, route, navigation, anchor, and visual outcomes. |
+| Current URL-based batch | 20 distinct URLs: 19 carried forward, 1 added | P07 leaves the list after completion; FAQ01 is added. See `next_batch.md`. |
 
 Measure the same checks before and after deployment. Use content versions on changed assets to avoid reusing older browser resources; verify the requested version and rendered behavior rather than assuming refresh succeeded. Source count/order differences stay open until explained and checked.
 
@@ -62,8 +62,8 @@ Use P01 as the next case to finish. It has no publications, so publication varia
 | P01-F02 | A profile opened from the referring filtered search returns to that exact search, preserving repeated filters and its page. | Passed after deployment for the tested primary-profile journey. |
 | P01-F03 | Direct entry after an unrelated search returns to default search. | Passed after deployment. |
 | P01-F04 | Keyboard use selects each available section and exposes the expected active state. | Passed on P01 at desktop/narrow widths; each available section and View All exposes the expected panels and selected control. |
-| P01-F05 | Internal content links, including institutions, organizations, and research areas, reach the expected destinations and retain required queries. | Pending complete coverage. |
-| P01-F06 | External content links and the Manager link retain their required destinations; email links expose the expected address without sending mail. | Pending complete coverage; the desktop Manager link is visibly present. |
+| P01-F05 | Internal content links, including institutions, organizations, and research areas, reach the expected destinations and retain required queries. | Passed on `a3bca98`: all seven internal content links reach their expected paths and queries. |
+| P01-F06 | External content links and the Manager link retain their required destinations; email links expose the expected address without sending mail. | Passed on `a3bca98`: external/email hrefs match and the Manager retains its configured destination. |
 | P01-F07 | The linked CV opens the expected document and its required delivery checks pass. | Pending deployed comparison. |
 | P01-F08 | Required images, fonts, styles, and scripts load; relevant browser errors or failed resources are explained. | Pending complete coverage; selected images loaded. |
 | P01-V01 | Desktop Overview matches at 1280×720, including relevant content below the first screen. | Partial: matched initial view checked; complete capture remains. |
@@ -91,4 +91,6 @@ Starting results under this explicitly defined checklist: functional checks 3/8 
 
 For repeatable supported comparisons, reuse the existing [comparison command and guide](../docs/conversion/browser_comparison.md), which produce structured observations, paired screenshots, and pixel-difference reports. The existing command has limits and does not establish signed-in deployed access on its own. Use documented browser controls where needed. Do not bypass a rejected browser action or copy authentication cookies into helpers.
 
-Current results on the same P01 checklist: functional checks 4/8 passed; visual checks 6/12 passed; whole case pending. New local fixes in [current_batch.md](current_batch.md) await deployment and do not change these deployed totals.
+Current results on the same P01 checklist: functional checks 6/8 passed; visual checks 6/12 passed; whole case pending. New profile corrections in [current_batch.md](current_batch.md) await deployment and do not change these deployed totals.
+
+The settled capture method limits native wheel movement to the remaining page height. Excess movement produces elastic overscroll and misleading white bands. Observe completed image loading and record whether long captures actually reach the footer; a fixed frame limit is not full-page evidence.

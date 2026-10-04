@@ -33,15 +33,11 @@ Keep real identifiers, exact URLs, private addresses, record contents, screensho
 
 ## Current position and priorities
 
-Latest checkpoint, October 3, 2026: the owner deployed revision `98cf271`; [the evaluation](previous_workplan_artificts/url_batch_002_evaluation.md) checks every preceding change. Profile heading spacing and About/Help content/appearance match. Bare About direct rendering remains pending. Thirty-five publication filter states match; P01 has four functional and six visual completion checks passing. [current_batch.md](current_batch.md) repairs supporting information destinations; [next_batch.md](next_batch.md) retains twenty previous URLs and adds zero new URLs. Whole URL completion remains pending.
+The owner deployed `a3bca98`. The [third URL-batch evaluation](previous_workplan_artificts/url_batch_003_evaluation.md) verifies every preceding information-page change. P07 completes its fixed five functional and ten visual checks. P01 passes six of eight functional and six of twelve visual checks; its Research text links and research-area spacing still differ and are corrected in the next implementation.
 
-Stage 1 is complete: the approved endpoint scope and the existing external discovery manifest define what to reproduce. The manifest previously recorded 62 specifications; that count does not establish implemented or accepted cases. Selected source-backed pages, exports, graphs, local comparisons, and offline checks already exist. Detailed historical results remain in the archived plans. This reorganization does not rerun or certify those results.
+[Next batch](next_batch.md) contains twenty distinct URLs: nineteen unfinished cases and one added FAQ case. [Current batch](current_batch.md) records two profile corrections and the exact checks required after deployment. Full visual and functional evidence remains required for every endpoint and variation. Search/organization source differences, bare About behavior, and the earlier before-script condition remain unresolved.
 
-Use the current deployed Django application and Rails as the comparison targets. Begin by reconciling existing evidence with the pending checklist, including any already pushed work awaiting deployment or evaluation. Do not restart settled discovery or require a larger offline collection before fixing a demonstrated difference. Verify older statements against the current code and evidence before relying on them.
-
-**Prefer completing an individual URL over implementing one feature across many URLs.** Address that URL's content, interactions, supporting responses, and appearance together. Change shared code when necessary for that URL, then check affected completed URLs for regressions. Choose another URL when the first is complete or a concrete dependency prevents progress; record the reason when moving on.
-
-The separate Manager, unused editing workflows, and VIVO/data-management systems remain excluded. Preserve required external links. Keep the Research Areas download-link correction deferred under [issue #3](https://github.com/birkin/vivo-on-django/issues/3). The previously accepted Django `/version/` and `/error_check/` support URLs are additions, not Rails matching requirements.
+Prefer completing one URL before spreading work across URLs. Change shared code when needed, then check affected completed URLs. Record a concrete dependency when moving to another case before completion. The separate Manager and unused editing workflows remain excluded; preserve required external links. Keep the Research Areas download correction deferred under [issue #3](https://github.com/birkin/vivo-on-django/issues/3).
 
 ## Batch workflow
 

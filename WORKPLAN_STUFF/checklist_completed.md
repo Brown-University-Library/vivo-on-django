@@ -29,7 +29,9 @@ These entries summarize historical evidence in [v1](previous_workplan_artificts/
 
 ## URL cases verified after deployment
 
-No whole URL cases are certified by the current workplan. Individual improvements have deployed evidence, recorded below; the active twenty-URL list remains pending whole-URL comparisons. Do not equate these results with completion of S07 or owner acceptance.
+One whole case is certified under its fixed checks; endpoint families and owner acceptance remain pending.
+
+- [x] **2026-10-03 — P07 sparse profile, revision `a3bca98`.** Five functional and ten visual checks pass: expected controls/content, configured email/Manager destinations, organization navigation, default-search return, required asset evidence, and all five complete desktop/narrow views. The Terms destination now works; font bytes match the bundled files. Private evidence labels `url-batch-003-review` and `url-batch-004-review`. See the [evaluation](previous_workplan_artificts/url_batch_003_evaluation.md). This completes the selected case, not the entire S07 endpoint family.
 
 For each completed case, record the original pending ID, stable case ID, safe URL pattern and variation, required checks, deployed revision, comparison date, evidence label, result, and owner acceptance if required. Keep exact URL bindings and identifying observations private. Leave other variations pending. If a regression appears, return the affected case to `checklist_todos.md` and record when and why it was reopened.
 
@@ -49,3 +51,6 @@ Every required URL-pattern endpoint must have visual confirmation against Rails 
 - [x] **2026-10-03 — url-batch-002-01 profile heading spacing.** All fifteen compared Affiliations headings match reference padding/height on revision `98cf271`. Populated/empty paired views at both sizes confirm the correction; P01-V04 and P01-V10 now pass. Whole URL checks remain pending. See the [evaluation](previous_workplan_artificts/url_batch_002_evaluation.md).
 - [x] **2026-10-03 — url-batch-002-02 and 04 About/Help rendering and appearance.** Both pages render full content and match reference text, illustrations, headings, and inspected desktop/narrow views on revision `98cf271`. Linked destinations and bare About direct route evidence remain pending and are not counted here.
 - [x] **2026-10-03 — Selected publication filter behavior.** Thirty-five selected filter states across ten profiles match reference active controls and ordered visible citations with keyboard selection on revision `98cf271`. Full visual, link, and whole-URL checks remain separate. Private evidence label `url-batch-003-review`.
+
+- [x] **2026-10-03 — url-batch-003-01 through 03 information destinations.** All three specified deployed outcomes pass on `a3bca98`: full pages, bare routes/slash aliases, mounted navigation, restored content and inspected desktop/narrow presentation. Forty supporting-page frame pairs match at the fixed measured threshold. Whole information cases retain their remaining checks. See the [evaluation](previous_workplan_artificts/url_batch_003_evaluation.md).
+- [x] **2026-10-03 — P01 internal and external link checks.** P01-F05 and P01-F06 pass on `a3bca98`; seven internal destinations preserve their paths/queries, and external/email/configured Manager destinations match. Functional total: 6/8. CV delivery and complete asset coverage remain pending.
