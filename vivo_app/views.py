@@ -196,9 +196,13 @@ def home_about(request: HttpRequest) -> HttpResponse:
     return render_or_stub(request, 'home/about.html', {'source_page_styles': True})
 
 
-def home_faq(request):
-    """Render the FAQ page."""
-    return render_or_stub(request, 'home/faq.html')
+def home_faq(request: HttpRequest) -> HttpResponse:
+    """
+    Renders the FAQ page with the public site's shared presentation.
+
+    Called by: config.urls urlpatterns
+    """
+    return render_or_stub(request, 'home/faq.html', {'source_page_styles': True})
 
 
 def home_help(request: HttpRequest) -> HttpResponse:
@@ -210,24 +214,40 @@ def home_help(request: HttpRequest) -> HttpResponse:
     return render_or_stub(request, 'home/help.html', {'source_page_styles': True})
 
 
-def home_history(request):
-    """Render the history page."""
-    return render_or_stub(request, 'home/history.html')
+def home_history(request: HttpRequest) -> HttpResponse:
+    """
+    Renders the history page with the public site's shared presentation.
+
+    Called by: config.urls urlpatterns
+    """
+    return render_or_stub(request, 'home/history.html', {'source_page_styles': True})
 
 
-def home_publications(request):
-    """Render the publications page."""
-    return render_or_stub(request, 'home/publications.html')
+def home_publications(request: HttpRequest) -> HttpResponse:
+    """
+    Renders the publication help page with the public site's shared presentation.
+
+    Called by: config.urls urlpatterns
+    """
+    return render_or_stub(request, 'home/publications.html', {'source_page_styles': True})
 
 
-def home_roadmap(request):
-    """Render the roadmap page."""
-    return render_or_stub(request, 'home/roadmap.html')
+def home_roadmap(request: HttpRequest) -> HttpResponse:
+    """
+    Renders the roadmap page with the public site's shared presentation.
+
+    Called by: config.urls urlpatterns
+    """
+    return render_or_stub(request, 'home/roadmap.html', {'source_page_styles': True})
 
 
-def home_terms(request):
-    """Render the terms of use page."""
-    return render_or_stub(request, 'home/terms.html')
+def home_terms(request: HttpRequest) -> HttpResponse:
+    """
+    Renders the terms of use page with the public site's shared presentation.
+
+    Called by: config.urls urlpatterns
+    """
+    return render_or_stub(request, 'home/terms.html', {'source_page_styles': True})
 
 
 # Additional home/legacy static pages
@@ -235,8 +255,13 @@ def home_brown(request):
     return render_or_stub(request, 'home/brown.html')
 
 
-def home_help_viz(request):
-    return render_or_stub(request, 'home/help_viz.html')
+def home_help_viz(request: HttpRequest) -> HttpResponse:
+    """
+    Renders the visualization help page with the public site's shared presentation.
+
+    Called by: config.urls urlpatterns
+    """
+    return render_or_stub(request, 'home/help_viz.html', {'source_page_styles': True})
 
 
 def home_status(request: HttpRequest) -> HttpResponse:

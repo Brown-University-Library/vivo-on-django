@@ -32,9 +32,10 @@ class StaticPageTests(TestCase):
         """
         Checks public information paths render directly and older slash links still work.
         """
-        for name in ('about', 'help'):
+        for name in ('about', 'help', 'faq', 'history', 'publications', 'roadmap', 'terms', 'help_viz'):
             url = reverse(name)
-            self.assertEqual(url, '/' + name)
+            route = {'terms': 'termsOfUse', 'help_viz': 'help/viz'}.get(name, name)
+            self.assertEqual(url, '/' + route)
             for path in (url, url + '/'):
                 with self.subTest(path=path):
                     response = self.client.get(path)
@@ -45,15 +46,18 @@ class StaticPageTests(TestCase):
 
     def test_information_page_links_keep_the_application_prefix(self) -> None:
         """
-        Checks the inclusion-policy link remains within a mounted application.
+        Checks information-page links remain within a mounted application.
         """
         previous = get_script_prefix()
         set_script_prefix('/mounted-app/')
         try:
             response = self.client.get('/about', SCRIPT_NAME='/mounted-app')
             assert isinstance(response, HttpResponse)
-            self.assertContains(response, 'href="/mounted-app/faq/#who"')
+            self.assertContains(response, 'href="/mounted-app/faq#who"')
             self.assertContains(response, 'href="/mounted-app/help"')
+            response = self.client.get('/roadmap', SCRIPT_NAME='/mounted-app')
+            assert isinstance(response, HttpResponse)
+            self.assertContains(response, 'href="/mounted-app/help/viz"')
         finally:
             set_script_prefix(previous)
 
@@ -68,15 +72,25 @@ class StaticPageTests(TestCase):
         """
         for mode in ('live', 'replay', 'prepared'):
             with self.subTest(mode=mode), override_settings(PAGE_DATA_MODE=mode):
-                for name, heading in (('about', 'About Researchers@Brown'), ('help', 'Researchers@Brown Help')):
-                    for path in ('/' + name, '/' + name + '/'):
+                for name, heading in (
+                    ('about', 'About Researchers@Brown'),
+                    ('help', 'Researchers@Brown Help'),
+                    ('faq', 'Frequently Asked Questions'),
+                    ('history', 'VIVO History and Implementation'),
+                    ('publications', 'Managing Your Publications'),
+                    ('roadmap', 'Improvements and Roadmap'),
+                    ('terms', 'Terms of Use'),
+                    ('help_viz', 'Visualize it!'),
+                ):
+                    route = {'terms': 'termsOfUse', 'help_viz': 'help/viz'}.get(name, name)
+                    for path in ('/' + route, '/' + route + '/'):
                         response = self.client.get(path)
                         assert isinstance(response, HttpResponse)
                         self.assertEqual(response.status_code, 200)
                         self.assertTemplateUsed(response, 'home/' + name + '.html')
                         self.assertContains(response, heading)
                         self.assertContains(response, '/css/public.css?v=')
-                response = self.client.get('/history/')
+                response = self.client.get('/brown/')
                 assert isinstance(response, HttpResponse)
                 self.assertEqual(response.status_code, 503)
 
