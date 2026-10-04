@@ -1091,12 +1091,12 @@ h4.individual_overview {
 .tabFinder > p {
 	margin: 1.2rem 1.2rem 0 1.2rem;
 }
-.tabFinder a {
+#tabOverview.tabFinder a {
 	color: #594036;
 	font-size: 1.5rem;
 	font-weight: 600;
 }
-.tabFinder a:hover {
+#tabOverview.tabFinder a:hover {
 	border-bottom: solid 3px #594036;
 }
 .brown-affiliations-list {
