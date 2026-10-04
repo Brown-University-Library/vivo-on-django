@@ -852,9 +852,9 @@ def profile_sections(
             + escape(reverse('search').rstrip('/'), quote=True)
             + '?'
             + escape(urlencode({'fq': 'research_areas|' + str(area)}), quote=True)
-            + '">'
+            + '"> '
             + escape(str(area))
-            + '</a>'
+            + ' </a>'
             for area in sorted(areas, key=lambda value: str(value).casefold())
         )
         overview += '</div>'

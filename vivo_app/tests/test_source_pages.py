@@ -860,7 +860,7 @@ class SourcePageTests(TestCase):
         sections = result['sections']
         if not isinstance(sections, list):
             self.fail('Profile sections should be a list.')
-        self.assertIn('>Genomics</a>', sections[0]['html'])
+        self.assertIn('> Genomics </a>', sections[0]['html'])
         self.assertEqual(sections[0]['html'].count('fq=research_areas%7C'), 1)
 
     def test_profile_json_keeps_named_research_areas_beside_invalid_entries(self) -> None:
