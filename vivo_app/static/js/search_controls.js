@@ -37,13 +37,13 @@
 
     function render() {
       var query = input.value.toUpperCase();
-      var selected = values.filter(function (item) { return item.text.toUpperCase().includes(query); });
-      selected.sort(function (a, b) {
+      values.sort(function (a, b) {
         if (sort === 'count') return b.count - a.count;
         var left = a.text.toUpperCase();
         var right = b.text.toUpperCase();
         return left < right ? -1 : left > right ? 1 : 0;
       });
+      var selected = values.filter(function (item) { return item.text.toUpperCase().includes(query); });
       pageCount = Math.max(1, Math.ceil(selected.length / 20));
       page = Math.max(1, Math.min(page, pageCount));
       list.replaceChildren();

@@ -10,3 +10,7 @@ body.no-logo.fae {
 #wrapper-content {
     min-height: 50vh;
 }
+
+.facet-load-status:empty {
+    display: none;
+}
