@@ -2,6 +2,10 @@
 Checks PDF delivery for document viewers using made-up document bytes.
 """
 
+from functools import partial
+
+from django.http import HttpResponse, StreamingHttpResponse
+from django.middleware.common import CommonMiddleware
 from django.test import RequestFactory, SimpleTestCase
 
 from vivo_app.lib.source_documents import document_response
@@ -18,6 +22,7 @@ class SourceDocumentTests(SimpleTestCase):
             with self.subTest(method=method):
                 request = getattr(factory, method)('/source-documents/docs/i/invented.pdf')
                 response = document_response(request, body)
+                assert isinstance(response, HttpResponse)
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response['Content-Type'], 'application/pdf')
                 self.assertEqual(response['Accept-Ranges'], 'bytes')
@@ -40,34 +45,61 @@ class SourceDocumentTests(SimpleTestCase):
             with self.subTest(field=field):
                 request = RequestFactory().get('/source-documents/docs/i/invented.pdf', HTTP_RANGE=field)
                 response = document_response(request, body)
+                assert isinstance(response, HttpResponse)
                 self.assertEqual(response.status_code, 206)
                 self.assertEqual(response.content, body[first : last + 1])
                 self.assertEqual(response['Content-Range'], f'bytes {first}-{last}/{len(body)}')
                 self.assertEqual(response['Content-Length'], str(last - first + 1))
 
-    def test_unsatisfied_ranges_report_the_document_length(self) -> None:
+    def test_unsatisfied_ranges_keep_the_reference_error_response(self) -> None:
         """
-        Checks an offset beyond the document and a zero-length suffix return an empty 416 response.
+        Checks offsets beyond the document return the reference HTML error without document metadata.
         """
         body = b'%PDF-1.7 made-up document'
-        for field in ('bytes=999-', 'bytes=999-1000', 'bytes=-0'):
+        for field in ('bytes=999-', 'bytes=999-1000'):
             with self.subTest(field=field):
                 request = RequestFactory().get('/source-documents/docs/i/invented.pdf', HTTP_RANGE=field)
                 response = document_response(request, body)
+                assert isinstance(response, StreamingHttpResponse)
                 self.assertEqual(response.status_code, 416)
-                self.assertEqual(response.content, b'')
-                self.assertEqual(response['Content-Range'], f'bytes */{len(body)}')
-                self.assertEqual(response['Content-Length'], '0')
+                self.assertEqual(response['Content-Type'], 'text/html; charset=iso-8859-1')
+                self.assertFalse(response.is_async)
+                content = b''.join(response)
+                self.assertEqual(len(content), 314)
+                self.assertIn(b'<h1>Requested Range Not Satisfiable</h1>', content)
+                self.assertIn(b'of the selected resource.</p>', content)
+                for header in ('Content-Range', 'Content-Length', 'Accept-Ranges'):
+                    self.assertNotIn(header, response)
+
+    def test_common_middleware_keeps_error_length_absent(self) -> None:
+        """
+        Checks response middleware preserves the reference error's omitted length header.
+        """
+        body = b'%PDF-1.7 made-up document'
+        request = RequestFactory().get('/source-documents/docs/i/invented.pdf', HTTP_RANGE='bytes=999-')
+        response = document_response(request, body)
+        response = CommonMiddleware(partial(document_response, body=body)).process_response(request, response)
+        self.assertEqual(response.status_code, 416)
+        self.assertNotIn('Content-Length', response)
 
     def test_unsupported_or_invalid_ranges_keep_the_complete_document(self) -> None:
         """
         Checks multiple ranges, unknown units, malformed offsets, and oversized integers fall back to a full PDF.
         """
         body = b'%PDF-1.7 made-up document'
-        for field in ('bytes=0-1,4-5', 'items=0-4', 'bytes=-', 'bytes=x-4', 'bytes=8-4', 'bytes=' + '9' * 5000 + '-'):
+        for field in (
+            'bytes=0-1,4-5',
+            'items=0-4',
+            'bytes=-',
+            'bytes=-0',
+            'bytes=x-4',
+            'bytes=8-4',
+            'bytes=' + '9' * 5000 + '-',
+        ):
             with self.subTest(field=field[:40]):
                 request = RequestFactory().get('/source-documents/docs/i/invented.pdf', HTTP_RANGE=field)
                 response = document_response(request, body)
+                assert isinstance(response, HttpResponse)
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.content, body)
                 self.assertNotIn('Content-Range', response)
@@ -85,6 +117,7 @@ class SourceDocumentTests(SimpleTestCase):
         for request in requests:
             with self.subTest(method=request.method):
                 response = document_response(request, body)
+                assert isinstance(response, HttpResponse)
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.content, b'' if request.method == 'HEAD' else body)
                 self.assertEqual(response['Content-Length'], str(len(body)))

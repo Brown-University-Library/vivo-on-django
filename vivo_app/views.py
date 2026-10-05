@@ -10,7 +10,7 @@ from urllib.parse import quote_plus, urlencode
 
 from django.conf import settings
 from django.contrib.sessions.backends.base import SessionBase
-from django.http import Http404, HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse, StreamingHttpResponse
 from django.shortcuts import redirect, render
 from django.templatetags.static import static
 from django.urls import reverse
@@ -75,7 +75,7 @@ def source_image(request: HttpRequest, filename: str) -> HttpResponse:
         return data_unavailable(exc)
 
 
-def source_document(request: HttpRequest, filename: str) -> HttpResponse:
+def source_document(request: HttpRequest, filename: str) -> HttpResponse | StreamingHttpResponse:
     """
     Serves one recorded or live PDF while keeping a source version redirect local.
 
