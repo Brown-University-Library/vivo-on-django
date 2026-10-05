@@ -10,6 +10,7 @@ from unittest.mock import MagicMock, patch
 
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
+from django.urls import get_script_prefix, set_script_prefix
 
 from tools.source_capture import capture_homepage_books
 from vivo_app.lib.prepared_data import PageDataError
@@ -65,7 +66,22 @@ class SourceBookTests(TestCase):
         assert isinstance(pages, list)
         self.assertEqual([len(page) for page in pages], [4, 1])
         self.assertEqual(pages[0][0]['image_url'], '/book-images/invented-0.jpg')
+        self.assertEqual(pages[0][0]['author_url'], '/display/invented-0')
         self.assertEqual(self.requested, [(BOOKS_KEY, 'live'), (BOOKS_KEY, 'replay')])
+
+    def test_book_links_keep_the_application_prefix_without_a_trailing_slash(self) -> None:
+        """
+        Checks author links reach the public display route beneath the application prefix.
+        """
+        previous_prefix = get_script_prefix()
+        set_script_prefix('/mounted-app/')
+        try:
+            data = homepage_books('replay', self.read)
+            pages = data['book_covers_paginated']
+            assert isinstance(pages, list)
+            self.assertEqual(pages[0][0]['author_url'], '/mounted-app/display/invented-0')
+        finally:
+            set_script_prefix(previous_prefix)
 
     def test_replay_homepage_renders_source_books(self) -> None:
         """

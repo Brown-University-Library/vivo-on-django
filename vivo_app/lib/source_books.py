@@ -100,7 +100,7 @@ def homepage_books(mode: str, reader: BookReader | None = None) -> dict[str, obj
             continue
         covers.append(
             {
-                'author_url': reverse('display_show', args=[identifier]),
+                'author_url': reverse('display_show_public', args=[identifier]),
                 'author_name': (first + ' ' + last).strip(),
                 'title': title,
                 'image_url': image_base + '/' + filename,
