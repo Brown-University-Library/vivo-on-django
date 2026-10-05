@@ -67,6 +67,9 @@
         active = $('#tabOverviewBtn');
       }
       setActive(btns, active);
+      if (wanted === 'Overview' && window.location.hash) {
+        history.replaceState(null, '', '#');
+      }
     }
     activateFromHash();
     window.addEventListener('hashchange', activateFromHash);
