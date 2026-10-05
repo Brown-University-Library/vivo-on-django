@@ -68,8 +68,8 @@ def organization_json_data(
     ids = list(dict.fromkeys(record_id({'id': first_text(row.get('faculty_uri'))}) for row in members))
     portraits: dict[str, str] = {}
     seen_ids: set[str] = set()
-    for start in range(0, len(ids), 100):
-        batch = ids[start : start + 100]
+    for start in range(0, len(ids), 20):
+        batch = ids[start : start + 20]
         member_response = response_object(member_key(batch), mode, reader)
         member_docs, _ = documents(member_response)
         for member_doc in member_docs:

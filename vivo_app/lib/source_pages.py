@@ -1249,8 +1249,8 @@ def organization_data(
         member_ids.append(record_id({'id': uri}))
     identifiers = sorted(set(member_ids))
     portraits: dict[str, str] = {}
-    for start in range(0, len(identifiers), 100):
-        batch = identifiers[start : start + 100]
+    for start in range(0, len(identifiers), 20):
+        batch = identifiers[start : start + 20]
         member_response = response_object(member_key(batch), mode, reader)
         member_docs, _ = documents(member_response)
         for member_doc in member_docs:

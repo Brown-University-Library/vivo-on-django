@@ -1172,7 +1172,9 @@ class SourcePageTests(TestCase):
         self.assertEqual(structured[0]['vivo_id'], 'invented-a')
 
     def test_large_organization_loads_member_portraits_in_batches(self) -> None:
-        """Renders an organization whose member list exceeds one Solr request."""
+        """
+        Checks smaller member requests retain every organization member in order.
+        """
         ids = [f'invented-{number:03d}' for number in range(101)]
         key = profile_key('org-example')
         source = json.loads(self.responses[key].body)
@@ -1182,8 +1184,8 @@ class SourcePageTests(TestCase):
         ]
         source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        for start in (0, 100):
-            batch = ids[start : start + 100]
+        for start in range(0, len(ids), 20):
+            batch = ids[start : start + 20]
             docs = [
                 {'id': f'http://vivo.brown.edu/individual/{identifier}', 'record_type': ['PEOPLE']} for identifier in batch
             ]
@@ -1192,10 +1194,11 @@ class SourcePageTests(TestCase):
         faculty = result['faculty_positions']
         assert isinstance(faculty, list)
         self.assertEqual(len(faculty), 101)
+        self.assertEqual([row['name'] for row in faculty], ids)
 
     def test_large_organization_json_loads_member_portraits_in_batches(self) -> None:
         """
-        Checks organization JSON loads portraits for more than 100 members.
+        Checks smaller member requests retain every structured member in order.
         """
         ids = [f'invented-{number:03d}' for number in range(101)]
         key = profile_key('org-example')
@@ -1206,8 +1209,8 @@ class SourcePageTests(TestCase):
         ]
         source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        for start in (0, 100):
-            batch = ids[start : start + 100]
+        for start in range(0, len(ids), 20):
+            batch = ids[start : start + 20]
             docs = [
                 {'id': f'http://vivo.brown.edu/individual/{identifier}', 'record_type': ['PEOPLE']} for identifier in batch
             ]
@@ -1216,6 +1219,7 @@ class SourcePageTests(TestCase):
         people = result['people']
         assert isinstance(people, list)
         self.assertEqual(len(people), 101)
+        self.assertEqual([row['label'] for row in people], ids)
 
     def test_large_organization_downloads_member_publications_in_batches(self) -> None:
         """Builds the publication download for more than 100 organization members."""
