@@ -9,6 +9,9 @@ class StaticPageTests(TestCase):
     """Ensure key static pages render expected content and shared search box."""
 
     def test_static_pages_render_with_shared_search_box(self) -> None:
+        """
+        Checks information pages keep the reference browser title and their own headings.
+        """
         pages = [
             (reverse('about'), 'About Researchers@Brown'),
             (reverse('help'), 'Researchers@Brown Help'),
@@ -25,6 +28,7 @@ class StaticPageTests(TestCase):
                 response = self.client.get(url)
                 assert isinstance(response, HttpResponse)
                 self.assertEqual(response.status_code, 200)
+                self.assertContains(response, '<title>Researchers @ Brown</title>')
                 self.assertContains(response, heading)
                 self.assertContains(response, 'id="sticky-nav"')
 
