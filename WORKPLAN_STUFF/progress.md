@@ -31,11 +31,11 @@ The thirty-eight scope rows contain grouped endpoints. The existing external dis
 
 ## Current evidence
 
-Revision `ee0c95f`, evaluated October 5, 2026. See the [fourth URL-batch evaluation](previous_workplan_artificts/url_batch_004_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
+Revision `11fa230`, evaluated October 5, 2026. See the [fifth URL-batch evaluation](previous_workplan_artificts/url_batch_005_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
 
 | Observation | Current result | Limit |
 | --- | --- | --- |
-| Whole URL cases certified in this workplan | 1 (P07: 5/5 functional, 10/10 visual) | Partial comparisons do not certify a whole URL. |
+| Whole URL cases certified in this workplan | 6 (P01, P04, P07, ABOUT01, HELP01, FAQ01) | Partial comparisons do not certify a whole URL. |
 | First improvement-count batch | 15 deployed verified; 14 lack qualifying examples; 1 before-script check blocked | Keep these states distinct from local tests. |
 | Publication text and inline elements on the original five profiles | Previous full comparison: 278/278 match Rails | Preserved evidence; current selected filter checks also compare visible citation text. |
 | Publication filter states | 35/35 match selected control and visible ordered citations | Ten profiles checked with keyboard selection; full visual/link checks remain separate. |
@@ -43,10 +43,10 @@ Revision `ee0c95f`, evaluated October 5, 2026. See the [fourth URL-batch evaluat
 | Profile content and conditional buttons | All 15 selected profiles match the compared section text and button lists | This does not establish full links, interactions, assets, or visual coverage. |
 | Sparse-profile fresh bookmarks | 5/5 match Rails | P07 passes all five functional and ten visual criteria after settled capture and asset checks. |
 | Shared asset content versions | Present on profiles and About/Help | All observed information-page illustrations load. P07 asset evidence passes; font delivery and byte comparisons explain the export-tool limitation. Other case audits remain pending. |
-| Primary profile completion checks | 7/8 functional passed; 12/12 visual passed | Complete settled section views and assets pass; CV full-document/download/delivery comparison remains pending. New Overview fragment behavior requires deployed confirmation. |
+| Primary profile completion checks | 8/8 functional passed; 12/12 visual passed | Complete CV bytes, all eleven pages, signed-in delivery behavior, Overview navigation and complete section views pass. Other profile variations remain pending. |
 | Search and organization content | Previously observed count/order and missing-member differences remain open | No fresh full comparison this iteration; source alignment is unconfirmed. |
-| Information pages | About/Help full content/appearance match at both sizes | Fresh profile-footer About navigation now stays on its bare route; the earlier observation is not reproduced on this journey. Independent direct-entry coverage remains pending. Six supporting destinations pass the specified deployed content, route, navigation, anchor, and visual outcomes. |
-| Current URL-based batch | 20 distinct URLs: 20 carried forward, 0 added | No additional whole case completes this iteration. See `next_batch.md`. |
+| Information pages | About/Help/FAQ complete their defined functional and visual checks | Both observed About aliases and every FAQ anchor are confirmed. Five supporting pages retain whole-case checks. |
+| Current URL-based batch | 20 distinct URLs: 15 carried forward, 5 added | Five cases complete this review; the new application changes still require deployment. See `next_batch.md`. |
 
 Measure the same checks before and after deployment. Use content versions on changed assets to avoid reusing older browser resources; verify the requested version and rendered behavior rather than assuming refresh succeeded. Source count/order differences stay open until explained and checked.
 
@@ -64,24 +64,24 @@ Use P01 as the next case to finish. It has no publications, so publication varia
 | P01-F04 | Keyboard use selects each available section and exposes the expected active state. | Passed on P01 at desktop/narrow widths; each available section and View All exposes the expected panels and selected control. |
 | P01-F05 | Internal content links, including institutions, organizations, and research areas, reach the expected destinations and retain required queries. | Passed on `a3bca98`: all seven internal content links reach their expected paths and queries. |
 | P01-F06 | External content links and the Manager link retain their required destinations; email links expose the expected address without sending mail. | Passed on `a3bca98`: external/email hrefs match and the Manager retains its configured destination. |
-| P01-F07 | The linked CV opens the expected document and its required delivery checks pass. | Pending deployed comparison. |
-| P01-F08 | Required images, fonts, styles, and scripts load; relevant browser errors or failed resources are explained. | Passed on `ee0c95f`: complete browser image loading, required asset delivery and valid bundled font bytes, with no relevant warnings/errors. Protected-image metadata redirects alone are not failures or delivery proof. |
-| P01-V01 | Desktop Overview matches at 1280×720, including relevant content below the first screen. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
-| P01-V02 | Desktop Research matches at 1280×720. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
-| P01-V03 | Desktop Background matches at 1280×720. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
-| P01-V04 | Desktop Affiliations matches at 1280×720. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
-| P01-V05 | Desktop Teaching matches at 1280×720. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
-| P01-V06 | Desktop View All matches at 1280×720. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
-| P01-V07 | Narrow Overview matches at 390×844, including relevant content below the first screen. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
-| P01-V08 | Narrow Research matches at 390×844. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
-| P01-V09 | Narrow Background matches at 390×844. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
-| P01-V10 | Narrow Affiliations matches at 390×844. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
-| P01-V11 | Narrow Teaching matches at 390×844. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
-| P01-V12 | Narrow View All matches at 390×844. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
+| P01-F07 | The linked CV opens the expected document and its required delivery checks pass. | Passed on `11fa230`: complete matching bytes, all eleven rendered pages, and signed-in delivery checks. |
+| P01-F08 | Required images, fonts, styles, and scripts load; relevant browser errors or failed resources are explained. | Passed on `ee0c95f` and retained on `11fa230`: complete browser image loading, required asset delivery and matching bundled font bytes, with no relevant warnings/errors. Protected-image metadata redirects alone are not failures or delivery proof. |
+| P01-V01 | Desktop Overview matches at 1280×720, including relevant content below the first screen. | Passed on `ee0c95f` and retained on `11fa230`: complete paired content and footer captures match layout. Raw image/pointer differences remain recorded; no tolerance is widened. |
+| P01-V02 | Desktop Research matches at 1280×720. | Passed on `ee0c95f` and retained on `11fa230`: complete paired content and footer captures match layout. Raw image/pointer differences remain recorded; no tolerance is widened. |
+| P01-V03 | Desktop Background matches at 1280×720. | Passed on `ee0c95f` and retained on `11fa230`: complete paired content and footer captures match layout. Raw image/pointer differences remain recorded; no tolerance is widened. |
+| P01-V04 | Desktop Affiliations matches at 1280×720. | Passed on `ee0c95f` and retained on `11fa230`: complete paired content and footer captures match layout. Raw image/pointer differences remain recorded; no tolerance is widened. |
+| P01-V05 | Desktop Teaching matches at 1280×720. | Passed on `ee0c95f` and retained on `11fa230`: complete paired content and footer captures match layout. Raw image/pointer differences remain recorded; no tolerance is widened. |
+| P01-V06 | Desktop View All matches at 1280×720. | Passed on `ee0c95f` and retained on `11fa230`: complete paired content and footer captures match layout. Raw image/pointer differences remain recorded; no tolerance is widened. |
+| P01-V07 | Narrow Overview matches at 390×844, including relevant content below the first screen. | Passed on `ee0c95f` and retained on `11fa230`: complete paired content and footer captures match layout. Raw image/pointer differences remain recorded; no tolerance is widened. |
+| P01-V08 | Narrow Research matches at 390×844. | Passed on `ee0c95f` and retained on `11fa230`: complete paired content and footer captures match layout. Raw image/pointer differences remain recorded; no tolerance is widened. |
+| P01-V09 | Narrow Background matches at 390×844. | Passed on `ee0c95f` and retained on `11fa230`: complete paired content and footer captures match layout. Raw image/pointer differences remain recorded; no tolerance is widened. |
+| P01-V10 | Narrow Affiliations matches at 390×844. | Passed on `ee0c95f` and retained on `11fa230`: complete paired content and footer captures match layout. Raw image/pointer differences remain recorded; no tolerance is widened. |
+| P01-V11 | Narrow Teaching matches at 390×844. | Passed on `ee0c95f` and retained on `11fa230`: complete paired content and footer captures match layout. Raw image/pointer differences remain recorded; no tolerance is widened. |
+| P01-V12 | Narrow View All matches at 390×844. | Passed on `ee0c95f` and retained on `11fa230`: complete paired content and footer captures match layout. Raw image/pointer differences remain recorded; no tolerance is widened. |
 
 Starting results under this explicitly defined checklist: functional checks 3/8 passed; visual checks 0/12 complete, with two partial views; whole case pending. These stricter whole-case criteria do not erase the observed Overview matches or change the fifteen verified batch improvements. They expose what remains before calling the URL complete.
 
-P04 now has fixed conditions in the private evidence record: five original functional checks and ten visual checks. All ten visual checks pass on `ee0c95f`; F01 content/controls and F02 settled bookmark panels pass. F03 retains the Overview fragment difference; F04 configuration and F05 remaining external destinations remain partial. The two institution destinations add P04-F06, which passes decoded-query and actual-navigation checks. Functional results are therefore 2/5 on the original set, plus 1/1 newly enumerated requirement; whole case pending. Do not count completed asset/navigation subsets as complete F04/F05 checks.
+P04 preserves five original functional and ten visual conditions, plus the separately added institution requirement. On `11fa230`, all five original functional, all ten visual, and the added requirement pass. The configured Manager value is echoed consistently on homepage/profile; local environment differences are not deployed failure evidence. The whole selected case completes. About/Help/FAQ each pass four defined functional and two complete visual checks. These newly explicit information-page denominators do not imply an increase on an older undefined count.
 
 ## Run the next iteration
 
@@ -93,6 +93,6 @@ P04 now has fixed conditions in the private evidence record: five original funct
 
 For repeatable supported comparisons, reuse the existing [comparison command and guide](../docs/conversion/browser_comparison.md), which produce structured observations, paired screenshots, and pixel-difference reports. The existing command has limits and does not establish signed-in deployed access on its own. Use documented browser controls where needed. Do not bypass a rejected browser action or copy authentication cookies into helpers.
 
-Current results on the same P01 checklist: functional checks 7/8 passed; visual checks 12/12 passed; whole case pending. New PDF delivery and Overview fragment corrections in [current_batch.md](current_batch.md) await deployment and do not change these deployed totals.
+Current results on the same P01 checklist: functional checks 8/8 passed; visual checks 12/12 passed; whole case complete. The five search/homepage outcomes in [current_batch.md](current_batch.md) are checked locally and await deployment; they do not add deployed passes.
 
 The settled capture method limits native wheel movement to the remaining page height. Excess movement produces elastic overscroll and misleading white bands. Observe completed image loading and record whether long captures actually reach the footer; a fixed frame limit is not full-page evidence.

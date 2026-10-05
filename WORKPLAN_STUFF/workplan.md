@@ -33,9 +33,9 @@ Keep real identifiers, exact URLs, private addresses, record contents, screensho
 
 ## Current position and priorities
 
-The owner deployed `ee0c95f`. The [fourth URL-batch evaluation](previous_workplan_artificts/url_batch_004_evaluation.md) verifies both preceding profile corrections. P07 remains the one completed whole case. P01 passes seven of eight functional and all twelve visual checks; full CV/download/delivery comparison remains pending. P04 has ten passing visual checks and a remaining Overview fragment difference.
+The owner deployed `11fa230`. The [fifth URL-batch evaluation](previous_workplan_artificts/url_batch_005_evaluation.md) confirms both preceding PDF and Overview corrections. Five cases complete: P01, P04, ABOUT01, HELP01, and FAQ01. Together with P07, six whole cases are recorded; endpoint families and owner acceptance remain pending.
 
-[Next batch](next_batch.md) contains twenty carried-forward URLs and no additions. [Current batch](current_batch.md) records PDF range delivery and Overview fragment corrections, with their required deployed checks. Full functional and visual evidence remains required for every endpoint and variation. Source alignment remains unresolved. Fresh profile-footer About navigation does not reproduce the earlier slash observation; independent direct-entry coverage and the earlier before-script condition remain pending.
+[Next batch](next_batch.md) contains fifteen carried-forward URLs and five additions. [Current batch](current_batch.md) records five search/homepage outcomes in two application commits, with local checks and required deployed confirmation. Source count/order and membership differences remain unresolved. Both observed direct-entry About routes now render matching content; the earlier before-script condition remains separate and pending.
 
 Prefer completing one URL before spreading work across URLs. Change shared code when needed, then check affected completed URLs. Record a concrete dependency when moving to another case before completion. The separate Manager and unused editing workflows remain excluded; preserve required external links. Keep the Research Areas download correction deferred under [issue #3](https://github.com/birkin/vivo-on-django/issues/3).
 
