@@ -2,9 +2,9 @@
 
 Started October 3, 2026. Follow [workplan.md](workplan.md) and [GOAL.md](GOAL.md). This record defines how Codex and the owner measure successive deployed comparisons. It does not certify historical work or owner acceptance. Exact URLs, records, screenshots, and detailed results stay in the outer workspace.
 
-**Estimated URL-case completion: 20.8% — 16 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
+**Estimated URL-case completion: 22.1% — 17 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
 
-Snapshot: October 5, 2026 at 14:10 America/New_York, verification checkpoint. Completion is 16/77 (20.8%); the provisional denominator is unchanged. E01 completes after the layout correction on loaded `95a4f65`. P08 confirms five functional and fourteen visual criteria; the document error-response difference remains for review. Institution fallback passes; illustration delivery and the remote collected-file command remain pending. The fixed run cutoff is October 6, 2026 at 08:00 America/New_York (12:00 UTC).
+Snapshot: October 5, 2026 at 14:54 America/New_York, verification checkpoint. Completion is 17/77 (22.1%); the provisional denominator is unchanged. P10 completes five functional and fourteen visual conditions on loaded `5dd7b1b`; O02 replaces its slot. P08 and P09 retain the shared document error-response difference. Institution illustration delivery and the remote collected-file command remain pending. The fixed run cutoff is October 6, 2026 at 08:00 America/New_York (12:00 UTC).
 
 Contents:
 
@@ -32,15 +32,15 @@ Keep separate totals for:
 
 Use stable IDs for scope rows, URL cases, and individual checks. Scope IDs and discovery case IDs are different fields; some use the same letters and numbers. Before each implementation batch, fix the selected case's passing conditions. Preserve them across deployments. Record newly discovered requirements and changes to the number of checks separately. Do not report one percentage combining local tests, implemented fixes, deployed behavior, and visual coverage.
 
-The thirty-eight scope rows contain grouped endpoints. For the provisional estimate, [url_completion_inventory.md](url_completion_inventory.md) combines sixty-two original discovery specifications with twenty later case names, then merges five known aliases, yielding seventy-seven named cases. The sixteen completed cases have whole-case evidence in `checklist_completed.md`; all other entries remain pending. The additions include eight publication-profile cases and seven additional information pages after alias reconciliation. This is a useful rough URL-case measure while the remaining interaction and format entries are reconciled with scope, not a precise estimate of engineering time. Do not count screenshots, fragments, commits or individual fixes as additional completed cases.
+The thirty-eight scope rows contain grouped endpoints. For the provisional estimate, [url_completion_inventory.md](url_completion_inventory.md) combines sixty-two original discovery specifications with twenty later case names, then merges five known aliases, yielding seventy-seven named cases. The seventeen completed cases have whole-case evidence in `checklist_completed.md`; all other entries remain pending. The additions include eight publication-profile cases and seven additional information pages after alias reconciliation. This is a useful rough URL-case measure while the remaining interaction and format entries are reconciled with scope, not a precise estimate of engineering time. Do not count screenshots, fragments, commits or individual fixes as additional completed cases.
 
 ## Current evidence
 
-Current daily-run evidence includes loaded `95a4f65`, evaluated October 5, 2026; preceding evidence remains on `88fb8e4`. See the [seventh URL-batch evaluation](previous_workplan_artificts/url_batch_007_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
+Current daily-run evidence includes loaded `5dd7b1b`, evaluated October 5, 2026; preceding evidence remains on `88fb8e4`. See the [seventh URL-batch evaluation](previous_workplan_artificts/url_batch_007_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
 
 | Observation | Current result | Limit |
 | --- | --- | --- |
-| Whole URL cases certified in this workplan | 16 (P01, P03, P04, P07, ABOUT01, HELP01, FAQ01, ADVANCED01, EMPTY01, O04, TERMS01, HISTORY01, HELP_VIZ01, ROADMAP01, PUBLICATIONS01, E01) | Partial comparisons do not certify a whole URL. |
+| Whole URL cases certified in this workplan | 17 (P01, P03, P04, P07, ABOUT01, HELP01, FAQ01, ADVANCED01, EMPTY01, O04, TERMS01, HISTORY01, HELP_VIZ01, ROADMAP01, PUBLICATIONS01, E01, P10) | Partial comparisons do not certify a whole URL. |
 | First improvement-count batch | 15 deployed verified; 14 lack qualifying examples; 1 before-script check blocked | Keep these states distinct from local tests. |
 | Publication text and inline elements on the original five profiles | Previous full comparison: 278/278 match Rails | Preserved evidence; current selected filter checks also compare visible citation text. |
 | Publication filter states | 35/35 match selected control and visible ordered citations | Ten profiles checked with keyboard selection; full visual/link checks remain separate. |
@@ -63,6 +63,8 @@ Measure the same checks before and after deployment. Use content versions on cha
 
 Brave browser access was confirmed by reading the owner's signed-in staging homepage. Use its documented browser controls for ordinary page, interaction, and visual checks. Browser access does not supply absent source variations. The earlier page-source viewing rejection remains in force; do not use another browser to obtain that blocked result. The before-script condition remains pending until a permitted check is available.
 
+P10 passes all five functional and fourteen complete visual conditions on `5dd7b1b`. Its section content, publication filters, controls, bookmarks, return navigation, destinations and assets agree. Full graph cases remain separate; two identical external publisher errors limit publisher availability rather than the compared destination behavior.
+
 ## Six-hour snapshots
 
 During active improvement work, use `America/New_York` boundaries at 00:00, 06:00, 12:00 and 18:00. Update at the first suitable checkpoint after a boundary; do not interrupt a browser interaction just to hit an exact minute. Also update at daily start, resumption and final handoff. If several boundaries pass during an interruption, write one honest current snapshot when work resumes rather than invent historical results. No separate scheduled task runs while the chat is idle.
@@ -76,8 +78,8 @@ During active improvement work, use `America/New_York` boundaries at 00:00, 06:0
 | --- | --- | --- | --- |
 | October 5, 2026 — workflow update | 15 / 77 | 19.5% | Existing whole-case evidence through `88fb8e4`; `f40c0dd` requires verification. Inventory v1 is provisional; no new deployed checks run during this update. |
 | October 5, 2026 at 12:43 America/New_York — daily start | 15 / 77 | 19.5% | Denominator unchanged. Loaded `aae7a67` includes pending changes; per-change checks begin. No new whole case passes at start. |
-
 | October 5, 2026 at 14:10 America/New_York — verification checkpoint | 16 / 77 | 20.8% | E01 completes on `95a4f65`; denominator unchanged. P08 retains the document error-response review. Next scheduled boundary remains 18:00 local. |
+| October 5, 2026 — 14:54 verification checkpoint | 17 / 77 | 22.1% | P10 completes on loaded `5dd7b1b`; O02 replaces its slot. No denominator change; P08/P09 document response difference remains. |
 
 The estimate can decrease when scope gains required cases or a regression reopens a case. Explain that change instead of hiding it. A later estimate of work remaining may be added separately with its basis and uncertainty; it must not replace or silently change this measured fraction. Complete endpoint coverage, integration checks and owner acceptance remain separate requirements even if all currently named cases pass.
 
