@@ -4,7 +4,7 @@ Started October 3, 2026. Follow [workplan.md](workplan.md) and [GOAL.md](GOAL.md
 
 **Estimated URL-case completion: 19.5% — 15 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
 
-Snapshot: October 5, 2026, using the existing recorded deployed evidence through `88fb8e4`. Application/tracking changes pushed at `f40c0dd` still require deployed verification; this workflow update adds no deployed passes. Refresh this snapshot at start/resumption, roughly every six hours while an improvement run is active, and at its final handoff.
+Snapshot: October 5, 2026 at 12:43 America/New_York, daily-run start. Completion remains 15/77 (19.5%); the provisional denominator is unchanged. Retained whole-case evidence runs through `88fb8e4`. Loaded revision `aae7a67` includes the pending application and workflow changes; those changes still require individual verification. The fixed run cutoff is October 6, 2026 at 08:00 America/New_York (12:00 UTC).
 
 Contents:
 
@@ -74,6 +74,7 @@ During active improvement work, use `America/New_York` boundaries at 00:00, 06:0
 | Snapshot | Completed / known cases | Estimated completion | Verified evidence / remaining limit |
 | --- | --- | --- | --- |
 | October 5, 2026 — workflow update | 15 / 77 | 19.5% | Existing whole-case evidence through `88fb8e4`; `f40c0dd` requires verification. Inventory v1 is provisional; no new deployed checks run during this update. |
+| October 5, 2026 at 12:43 America/New_York — daily start | 15 / 77 | 19.5% | Denominator unchanged. Loaded `aae7a67` includes pending changes; per-change checks begin. No new whole case passes at start. |
 
 The estimate can decrease when scope gains required cases or a regression reopens a case. Explain that change instead of hiding it. A later estimate of work remaining may be added separately with its basis and uncertainty; it must not replace or silently change this measured fraction. Complete endpoint coverage, integration checks and owner acceptance remain separate requirements even if all currently named cases pass.
 

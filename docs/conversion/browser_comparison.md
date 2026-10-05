@@ -47,6 +47,8 @@ Any changed pixel or observation requires review and produces exit code 1. Missi
 
 For interactive browser captures, verify the selected tab after opening a linked document. Set its requested viewport after navigation and confirm the actual screenshot bitmap dimensions. Begin complete-page coverage at scroll position zero, record each subsequent scroll position, and continue through the footer with overlapping frames. Resizing can retain an earlier scroll position or affect another selected tab. A viewport setting or DOM size alone does not establish the screenshot size or complete coverage. Exclude incorrect captures and repeat them before counting visual checks as passed.
 
+When measuring page movement, inspect the scrolling element actually used by the page. Some retained layouts scroll the body while `window.scrollY` and the document root remain zero. Record body movement and the footer position too; require complete footer coverage and exclude repeated frames. Responsive headers can change height during scrolling; retain that state instead of treating it as unexplained page loss.
+
 For animated dialogs, confirm the intended dialog's title, selected control and settled values before saving a result. Wait for the previous dialog to close before opening another. Preserve source-data differences separately from sorting or spacing results; a corrected control does not establish matching counts or whole-page completion.
 
 ## Current limits
