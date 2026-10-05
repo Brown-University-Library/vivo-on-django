@@ -2,6 +2,7 @@
 Builds and reads the upstream requests for a search-to-profile journey.
 """
 
+import logging
 import re
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit
@@ -39,6 +40,7 @@ COMMUNITY_RESEARCH_AREAS = (
 )
 MAX_RESPONSE_BYTES = 3_000_000
 MAX_DOCUMENT_BYTES = 10_000_000
+logger = logging.getLogger(__name__)
 
 
 def quoted(value: str) -> str:
@@ -404,5 +406,14 @@ def read_source(key: RequestKey, mode: str) -> RecordedResponse:
     limit = MAX_DOCUMENT_BYTES if key.service == 'documents' else MAX_RESPONSE_BYTES
     allowed_status = {200, 301, 302} if key.service == 'documents' else ({200, 404} if key.service == 'vitro' else {200})
     if result.status not in allowed_status or len(result.body) > limit:
+        logger.warning(
+            'source_response_unusable: service, ``%s``; mode, ``%s``; status, ``%s``; '
+            'query_bytes, ``%s``; response_bytes, ``%s``',
+            key.service,
+            mode,
+            result.status,
+            len(urlencode(key.query).encode('ascii')),
+            len(result.body),
+        )
         raise PageDataError(f'{key.service} source returned an unusable response.')
     return result
