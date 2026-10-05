@@ -31,11 +31,11 @@ The thirty-eight scope rows contain grouped endpoints. The existing external dis
 
 ## Current evidence
 
-Revision `11fa230`, evaluated October 5, 2026. See the [fifth URL-batch evaluation](previous_workplan_artificts/url_batch_005_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
+Revision `dedf2c8`, evaluated October 5, 2026. See the [sixth URL-batch evaluation](previous_workplan_artificts/url_batch_006_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
 
 | Observation | Current result | Limit |
 | --- | --- | --- |
-| Whole URL cases certified in this workplan | 6 (P01, P04, P07, ABOUT01, HELP01, FAQ01) | Partial comparisons do not certify a whole URL. |
+| Whole URL cases certified in this workplan | 9 (P01, P04, P07, ABOUT01, HELP01, FAQ01, ADVANCED01, EMPTY01, O04) | Partial comparisons do not certify a whole URL. |
 | First improvement-count batch | 15 deployed verified; 14 lack qualifying examples; 1 before-script check blocked | Keep these states distinct from local tests. |
 | Publication text and inline elements on the original five profiles | Previous full comparison: 278/278 match Rails | Preserved evidence; current selected filter checks also compare visible citation text. |
 | Publication filter states | 35/35 match selected control and visible ordered citations | Ten profiles checked with keyboard selection; full visual/link checks remain separate. |
@@ -44,9 +44,12 @@ Revision `11fa230`, evaluated October 5, 2026. See the [fifth URL-batch evaluati
 | Sparse-profile fresh bookmarks | 5/5 match Rails | P07 passes all five functional and ten visual criteria after settled capture and asset checks. |
 | Shared asset content versions | Present on profiles and About/Help | All observed information-page illustrations load. P07 asset evidence passes; font delivery and byte comparisons explain the export-tool limitation. Other case audits remain pending. |
 | Primary profile completion checks | 8/8 functional passed; 12/12 visual passed | Complete CV bytes, all eleven pages, signed-in delivery behavior, Overview navigation and complete section views pass. Other profile variations remain pending. |
-| Search and organization content | Previously observed count/order and missing-member differences remain open | No fresh full comparison this iteration; source alignment is unconfirmed. |
+| Search and organization content | Previously observed count/order and missing-member differences remain open | Fresh complete desktop/narrow baselines inspected; source alignment is unconfirmed. |
 | Information pages | About/Help/FAQ complete their defined functional and visual checks | Both observed About aliases and every FAQ anchor are confirmed. Five supporting pages retain whole-case checks. |
-| Current URL-based batch | 20 distinct URLs: 15 carried forward, 5 added | Five cases complete this review; the new application changes still require deployment. See `next_batch.md`. |
+| Search/homepage deployment outcomes | 4/5 complete; long-title HTML passes but JSON is pending | Supporting JSON requires permitted signed-in confirmation. |
+| Newly completed cases | ADVANCED01, EMPTY01 and O04 each pass 4/4 functional and 2/2 visual checks | These criteria are now explicit; they do not imply an increase on an earlier undefined denominator. |
+| Fresh preceding-batch baseline | 20 URLs, 40 desktop/narrow pairs, 289 frames through all footers | Profile coverage is Overview only; other states remain pending. |
+| Current URL-based batch | 20 distinct URLs: 17 carried forward, 3 added | Three cases complete this review; two expanded-filter corrections await deployment. See `next_batch.md`. |
 
 Measure the same checks before and after deployment. Use content versions on changed assets to avoid reusing older browser resources; verify the requested version and rendered behavior rather than assuming refresh succeeded. Source count/order differences stay open until explained and checked.
 
@@ -93,6 +96,6 @@ P04 preserves five original functional and ten visual conditions, plus the separ
 
 For repeatable supported comparisons, reuse the existing [comparison command and guide](../docs/conversion/browser_comparison.md), which produce structured observations, paired screenshots, and pixel-difference reports. The existing command has limits and does not establish signed-in deployed access on its own. Use documented browser controls where needed. Do not bypass a rejected browser action or copy authentication cookies into helpers.
 
-Current results on the same P01 checklist: functional checks 8/8 passed; visual checks 12/12 passed; whole case complete. The five search/homepage outcomes in [current_batch.md](current_batch.md) are checked locally and await deployment; they do not add deployed passes.
+Current results on the same P01 checklist: functional checks 8/8 passed; visual checks 12/12 passed; whole case complete. Four preceding search/homepage outcomes pass on `dedf2c8`; the fifth passes HTML but its JSON portion is pending. The two new expanded-filter corrections in [current_batch.md](current_batch.md) are checked locally and await deployment; they do not add deployed passes.
 
 The settled capture method limits native wheel movement to the remaining page height. Excess movement produces elastic overscroll and misleading white bands. Observe completed image loading and record whether long captures actually reach the footer; a fixed frame limit is not full-page evidence.
