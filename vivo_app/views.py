@@ -79,7 +79,7 @@ def source_document(request: HttpRequest, filename: str) -> HttpResponse | Strea
     """
     Serves one recorded or live PDF while keeping a source version redirect local.
 
-    Called by: config.urls
+    Called by: config.urls, prepared_document()
     """
     try:
         if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
@@ -713,18 +713,21 @@ def search_facets(request):
     return JsonResponse({'facets': {}})
 
 
-def prepared_document(request: HttpRequest, filename: str) -> HttpResponse:
+def prepared_document(request: HttpRequest, filename: str) -> HttpResponse | StreamingHttpResponse:
     """
-    Serves a document only when its exact request exists in the selected bundle.
+    Serves the original document path from the selected live, replay or saved source.
 
     Called by: config.urls
     """
     try:
-        entry = get_response_data(request.path_info, query_pairs(request.GET))
-        if entry is None:
-            raise Http404('Prepared document is unavailable.')
-        response = prepared_response(entry)
-        response['X-Content-Type-Options'] = 'nosniff'
+        if settings.PAGE_DATA_MODE in {'live', 'replay'}:
+            response = source_document(request, 'docs/' + filename)
+        else:
+            entry = get_response_data(request.path_info, query_pairs(request.GET))
+            if entry is None:
+                raise Http404('Prepared document is unavailable.')
+            response = prepared_response(entry)
+            response['X-Content-Type-Options'] = 'nosniff'
     except PageDataError as exc:
         response = data_unavailable(exc)
     return response
