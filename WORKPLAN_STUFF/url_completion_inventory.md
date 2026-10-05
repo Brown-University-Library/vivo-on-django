@@ -1,6 +1,6 @@
 # Inventory for the estimated URL-case completion percentage
 
-Inventory v1, October 5, 2026: **17 of 77 known cases complete — 22.1%.** See [progress.md](progress.md) for the current snapshot and six-hour update procedure. This inventory counts named URL cases with their required behavior; it is a provisional estimate, not a count of every distinct HTTP URL string or a percentage of engineering time.
+Inventory v1, October 5, 2026: **19 of 77 known cases complete — 24.7%.** See [progress.md](progress.md) for the current snapshot and six-hour update procedure. This inventory counts named URL cases with their required behavior; it is a provisional estimate, not a count of every distinct HTTP URL string or a percentage of engineering time.
 
 The initial denominator combines 62 case specifications in the private discovery manifest, plus 20 later case names in private batch lists and the completed checklist, minus five aliases. The net additions are eight publication-profile cases and seven information pages. No private URL, record identifier or source response is copied here. The existing evidence in [checklist_completed.md](checklist_completed.md) supplies the completed states. Other rows remain pending even when partial or local evidence exists.
 
@@ -60,8 +60,8 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | P05 | Pending |
 | P06 | Pending |
 | P07 | Complete |
-| P08 | Pending |
-| P09 | Pending |
+| P08 | Complete |
+| P09 | Complete |
 | P10 | Complete |
 | P11 | Pending |
 | P12 | Pending |

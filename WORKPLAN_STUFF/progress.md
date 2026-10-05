@@ -2,9 +2,9 @@
 
 Started October 3, 2026. Follow [workplan.md](workplan.md) and [GOAL.md](GOAL.md). This record defines how Codex and the owner measure successive deployed comparisons. It does not certify historical work or owner acceptance. Exact URLs, records, screenshots, and detailed results stay in the outer workspace.
 
-**Estimated URL-case completion: 22.1% — 17 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
+**Estimated URL-case completion: 24.7% — 19 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
 
-Snapshot: October 5, 2026 at 15:48 America/New_York, resumption. Completion remains 17/77 (22.1%); no new whole case or denominator change since the pause. Loaded `fd6d0a8c` is confirmed; no release awaits initial deployment confirmation. P11 retains its completed visual evidence and unfinished functional checks. P08/P09 remain linked to SD01. Next action: finish P11 excluded search-return and interrupted navigation checks, then remaining document/link/asset checks. Original cutoff remains October 6 at 08:00 America/New_York (12:00 UTC).
+Snapshot: October 5, 2026 at 16:17 America/New_York, document correction verified. Completion advances to 19/77 (24.7%); P08/P09 complete and the provisional denominator stays unchanged. Loaded `9140ef0` is confirmed before and after comparisons; every release change is accounted for. SD01 resolves, with completed P01/P03 delivery regressions passing. P11 retains all visual evidence and passes its document, graph-entry, external/configured destination and asset checks. Two department destinations show unavailable source data; SD02 remains open. Next action: identify the failed source response and correct both destinations. D01 retains a separate direct-entry browser block. Original cutoff remains October 6 at 08:00 America/New_York (12:00 UTC); next scheduled boundary remains 18:00 local.
 
 Contents:
 
@@ -32,7 +32,7 @@ Keep separate totals for:
 
 Use stable IDs for scope rows, URL cases, and individual checks. Scope IDs and discovery case IDs are different fields; some use the same letters and numbers. Before each implementation batch, fix the selected case's passing conditions. Preserve them across deployments. Record newly discovered requirements and changes to the number of checks separately. Do not report one percentage combining local tests, implemented fixes, deployed behavior, and visual coverage.
 
-The thirty-eight scope rows contain grouped endpoints. For the provisional estimate, [url_completion_inventory.md](url_completion_inventory.md) combines sixty-two original discovery specifications with twenty later case names, then merges five known aliases, yielding seventy-seven named cases. The seventeen completed cases have whole-case evidence in `checklist_completed.md`; all other entries remain pending. The additions include eight publication-profile cases and seven additional information pages after alias reconciliation. This is a useful rough URL-case measure while the remaining interaction and format entries are reconciled with scope, not a precise estimate of engineering time. Do not count screenshots, fragments, commits or individual fixes as additional completed cases.
+The thirty-eight scope rows contain grouped endpoints. For the provisional estimate, [url_completion_inventory.md](url_completion_inventory.md) combines sixty-two original discovery specifications with twenty later case names, then merges five known aliases, yielding seventy-seven named cases. The nineteen completed cases have whole-case evidence in `checklist_completed.md`; all other entries remain pending. The additions include eight publication-profile cases and seven additional information pages after alias reconciliation. This is a useful rough URL-case measure while the remaining interaction and format entries are reconciled with scope, not a precise estimate of engineering time. Do not count screenshots, fragments, commits or individual fixes as additional completed cases.
 
 ## Current evidence
 
@@ -40,7 +40,7 @@ Current daily-run evidence includes loaded `5dd7b1b`, evaluated October 5, 2026;
 
 | Observation | Current result | Limit |
 | --- | --- | --- |
-| Whole URL cases certified in this workplan | 17 (P01, P03, P04, P07, ABOUT01, HELP01, FAQ01, ADVANCED01, EMPTY01, O04, TERMS01, HISTORY01, HELP_VIZ01, ROADMAP01, PUBLICATIONS01, E01, P10) | Partial comparisons do not certify a whole URL. |
+| Whole URL cases certified in this workplan | 19 (P01, P03, P04, P07, P08, P09, P10, ABOUT01, HELP01, FAQ01, ADVANCED01, EMPTY01, O04, TERMS01, HISTORY01, HELP_VIZ01, ROADMAP01, PUBLICATIONS01, E01) | Partial comparisons do not certify a whole URL. |
 | First improvement-count batch | 15 deployed verified; 14 lack qualifying examples; 1 before-script check blocked | Keep these states distinct from local tests. |
 | Publication text and inline elements on the original five profiles | Previous full comparison: 278/278 match Rails | Preserved evidence; current selected filter checks also compare visible citation text. |
 | Publication filter states | 35/35 match selected control and visible ordered citations | Ten profiles checked with keyboard selection; full visual/link checks remain separate. |
@@ -56,8 +56,8 @@ Current daily-run evidence includes loaded `5dd7b1b`, evaluated October 5, 2026;
 | Fresh preceding-batch baseline | 20 URLs, 40 desktop/narrow pairs, 289 frames through all footers | Profile coverage is Overview only; other states remain pending. |
 | P03 completion evidence | 6/6 functional criteria pass; 12/12 complete visual views pass | Filtered/paged return, CV bytes, all five rendered pages and signed-in delivery pass; the selected whole case completes. |
 | Expanded-filter deployment outcomes | 2/2 corrected outcomes pass | All applicable named dialogs match tie ordering and 15-pixel settled first-row spacing at both widths. Search source-data differences remain open. |
-| P08 daily-run evidence | 5/6 functional criteria and 14/14 complete visual states pass | Complete CV bytes/pages, HEAD and valid range agree; unsatisfied-range error metadata remains for review. Whole case pending. |
-| Current URL-based batch | 20 distinct URLs: 15 carried forward, 5 added | Six cases complete this review. Both filter fixes and the remaining supporting title check pass. Institution rendering/fallback and missing-record layout pass; the remote collected-file command and illustration delivery remain pending. E01 completes and L03 fills its slot. See `next_batch.md`. |
+| P08/P09 daily-run evidence | Each completes 6/6 functional criteria; P08 14/14 and P09 10/10 complete visual states | Shared document correction passes on `9140ef0`; current applicability observations retain unchanged complete profile evidence and inspected PDF pages. |
+| Current URL-based batch | 20 distinct URLs: 13 carried forward, 7 added | E01, P10, P08 and P09 complete during the daily run. D01/D02 fill the two latest completed slots after clock checks. Other whole cases and existing blockers remain pending. |
 
 Measure the same checks before and after deployment. Use content versions on changed assets to avoid reusing older browser resources; verify actual served bytes and rendered behavior rather than assuming the requested version proves delivery. Confirm collected copies during deployment, then refresh without cached resources when the browser still uses older bytes. Source count/order differences stay open until explained and checked.
 
@@ -81,6 +81,7 @@ During active improvement work, use `America/New_York` boundaries at 00:00, 06:0
 | October 5, 2026 at 14:10 America/New_York — verification checkpoint | 16 / 77 | 20.8% | E01 completes on `95a4f65`; denominator unchanged. P08 retains the document error-response review. Next scheduled boundary remains 18:00 local. |
 | October 5, 2026 — 14:54 verification checkpoint | 17 / 77 | 22.1% | P10 completes on loaded `5dd7b1b`; O02 replaces its slot. No denominator change; P08/P09 document response difference remains. |
 | October 5, 2026 at 15:48 America/New_York — resumption | 17 / 77 | 22.1% | Loaded `fd6d0a8c` confirmed. No new whole case or denominator change. Retain P11 visual evidence; unfinished functional checks and SD01 remain pending. |
+| October 5, 2026 at 16:17 America/New_York — document verification | 19 / 77 | 24.7% | Denominator unchanged. P08/P09 complete on loaded `9140ef0`; SD01 resolves and completed CV regressions pass. P11 remaining navigation/asset checks stay pending. |
 
 The estimate can decrease when scope gains required cases or a regression reopens a case. Explain that change instead of hiding it. A later estimate of work remaining may be added separately with its basis and uncertainty; it must not replace or silently change this measured fraction. Complete endpoint coverage, integration checks and owner acceptance remain separate requirements even if all currently named cases pass.
 

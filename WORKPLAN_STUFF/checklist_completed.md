@@ -29,7 +29,7 @@ These entries summarize historical evidence in [v1](previous_workplan_artificts/
 
 ## URL cases verified after deployment
 
-Seventeen whole cases are complete under their fixed checks; endpoint families and owner acceptance remain pending.
+Nineteen whole cases are complete under their fixed checks; endpoint families and owner acceptance remain pending.
 
 - [x] **2026-10-03 — P07 sparse profile, revision `a3bca98`.** Five functional and ten visual checks pass: expected controls/content, configured email/Manager destinations, organization navigation, default-search return, required asset evidence, and all five complete desktop/narrow views. The Terms destination now works; font bytes match the bundled files. Private evidence labels `url-batch-003-review` and `url-batch-004-review`. See the [evaluation](previous_workplan_artificts/url_batch_003_evaluation.md). This completes the selected case, not the entire S07 endpoint family.
 
@@ -55,6 +55,8 @@ Confirm the running revision through the automatic procedure in [workplan.md](wo
 Every required URL-pattern endpoint must have visual confirmation against Rails before being added as complete. Include the visual result and inspected page or artifact in its completion record, alongside functional and response checks.
 
 - [x] **2026-10-05 — P10, S07 profile, revision `5dd7b1b`.** Five functional and fourteen complete visual conditions pass. All six sections, View All, ordered publication filters, fresh bookmarks, keyboard/pointer selection, default and filtered/paged search return, sixteen internal destinations and required assets agree. Both visualization controls open their intended new tabs and retain the profile. Changed external links reach identical destinations; two shared publisher errors remain an external availability limit. Neither profile offers a CV. Full graph behavior belongs to separate cases. Private evidence label `daily-run-2026-10-05`; endpoint-family coverage and owner acceptance remain pending.
+
+- [x] **2026-10-05 — P08 and P09, S07 profiles, revision `9140ef0`.** Each completes all six functional conditions. P08 retains fourteen complete visual states and all eleven inspected CV pages; P09 retains ten states and all thirty pages. Current full content, panel dimensions, fonts, inline content and loaded images establish applicability at both widths. The shared document correction passes all five response states for each profile; previously completed P01/P03 delivery regressions pass. Unaffected full-profile evidence is retained with its original revision. Private evidence label `daily-run-2026-10-05`; other profile variations and owner acceptance remain pending.
 
 ## Individual improvements verified after deployment
 
@@ -82,3 +84,5 @@ Every required URL-pattern endpoint must have visual confirmation against Rails 
 - [x] **2026-10-05 — url-batch-007-01 and 02 expanded-filter outcomes.** Both pass on `88fb8e4` after collected CSS/JavaScript match current source bytes and the browser refreshes without cached resources. All applicable named dialogs retain alphabetical ties after count sorting and match settled first-row spacing at both widths. Narrowing, keyboard paging and reopening pass; source-data differences and whole search cases remain pending. See the [evaluation](previous_workplan_artificts/url_batch_007_evaluation.md).
 
 - [x] **url-batch-006-03 supporting JSON titles.** Signed-in keyword and browse JSON responses pass the retained title-shortening rule on `88fb8e4`. Whole populated search cases retain source count/order differences and other pending checks.
+
+- [x] **2026-10-05 — url-batch-008-06 shared document response correction, revision `9140ef0`.** Twenty-five paired response checks pass across three pending and two completed document cases: full bytes, HEAD, valid range, unsatisfied range error body/metadata and zero-length suffix behavior. The recorded error responses also match in equal-size browser views. SD01 resolves without accepting an intentional difference. Other document variations remain pending.
