@@ -44,6 +44,7 @@ class LocalPageDataMiddleware:
             'home_publications',
             'home_roadmap',
             'home_terms',
+            'home_brown',
             'home_help_viz',
             'home_status',
             'search',

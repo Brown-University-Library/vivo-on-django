@@ -70,7 +70,8 @@ urlpatterns = [
     path('roadmap/', vivo_views.home_roadmap, name='roadmap_slash'),
     path('termsOfUse', vivo_views.home_terms, name='terms'),
     path('termsOfUse/', vivo_views.home_terms, name='terms_slash'),
-    path('brown/', vivo_views.home_brown, name='brown'),
+    path('brown', vivo_views.home_brown, name='brown'),
+    path('brown/', vivo_views.home_brown, name='brown_slash'),
     path('help/viz', vivo_views.home_help_viz, name='help_viz'),
     path('help/viz/', vivo_views.home_help_viz, name='help_viz_slash'),
     path('status/', vivo_views.home_status, name='status'),
@@ -197,7 +198,7 @@ urlpatterns = [
     # e.g., /individual/n123.json/
     re_path(r'^individual/(?P<id>[^/]+)\.(?P<fmt>[^/]+)/$', vivo_views.individual_export, name='individual_export'),
     path('individual/<str:id>/', vivo_views.individual_redirect, name='individual_redirect'),
-    path('individual/<str:id>', vivo_views.individual_redirect),
+    path('individual/<str:id>', vivo_views.individual_redirect, name='individual_redirect_public'),
 ]
 
 # Serve static and media files in development

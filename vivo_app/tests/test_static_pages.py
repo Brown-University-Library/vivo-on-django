@@ -32,7 +32,7 @@ class StaticPageTests(TestCase):
         """
         Checks public information paths render directly and older slash links still work.
         """
-        for name in ('about', 'help', 'faq', 'history', 'publications', 'roadmap', 'terms', 'help_viz'):
+        for name in ('about', 'help', 'faq', 'history', 'publications', 'roadmap', 'terms', 'help_viz', 'brown'):
             url = reverse(name)
             route = {'terms': 'termsOfUse', 'help_viz': 'help/viz'}.get(name, name)
             self.assertEqual(url, '/' + route)
@@ -58,6 +58,11 @@ class StaticPageTests(TestCase):
             response = self.client.get('/roadmap', SCRIPT_NAME='/mounted-app')
             assert isinstance(response, HttpResponse)
             self.assertContains(response, 'href="/mounted-app/help/viz"')
+            response = self.client.get('/brown', SCRIPT_NAME='/mounted-app')
+            assert isinstance(response, HttpResponse)
+            self.assertContains(response, 'href="/mounted-app/individual/')
+            self.assertContains(response, 'href="/mounted-app/display/')
+            self.assertNotContains(response, 'href="http://vivo.')
         finally:
             set_script_prefix(previous)
 
@@ -68,7 +73,7 @@ class StaticPageTests(TestCase):
     )
     def test_information_pages_render_in_source_modes(self) -> None:
         """
-        Checks static information renders without source requests while unconverted pages stay unavailable.
+        Checks static information renders without source requests in every source mode.
         """
         for mode in ('live', 'replay', 'prepared'):
             with self.subTest(mode=mode), override_settings(PAGE_DATA_MODE=mode):
@@ -81,6 +86,7 @@ class StaticPageTests(TestCase):
                     ('roadmap', 'Improvements and Roadmap'),
                     ('terms', 'Terms of Use'),
                     ('help_viz', 'Visualize it!'),
+                    ('brown', 'Brown University'),
                 ):
                     route = {'terms': 'termsOfUse', 'help_viz': 'help/viz'}.get(name, name)
                     for path in ('/' + route, '/' + route + '/'):
@@ -90,9 +96,6 @@ class StaticPageTests(TestCase):
                         self.assertTemplateUsed(response, 'home/' + name + '.html')
                         self.assertContains(response, heading)
                         self.assertContains(response, '/css/public.css?v=')
-                response = self.client.get('/brown/')
-                assert isinstance(response, HttpResponse)
-                self.assertEqual(response.status_code, 503)
 
     def test_brown_classic_redirects_to_search(self) -> None:
         response = self.client.get(reverse('brown_classic'), {'name': 'Jane_Doe'})

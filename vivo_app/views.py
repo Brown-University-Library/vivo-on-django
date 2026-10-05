@@ -252,8 +252,13 @@ def home_terms(request: HttpRequest) -> HttpResponse:
 
 
 # Additional home/legacy static pages
-def home_brown(request):
-    return render_or_stub(request, 'home/brown.html')
+def home_brown(request: HttpRequest) -> HttpResponse:
+    """
+    Renders the institution information page with the public site's shared presentation.
+
+    Called by: config.urls urlpatterns
+    """
+    return render_or_stub(request, 'home/brown.html', {'source_page_styles': True})
 
 
 def home_help_viz(request: HttpRequest) -> HttpResponse:
