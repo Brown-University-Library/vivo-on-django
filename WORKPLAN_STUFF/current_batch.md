@@ -1,6 +1,6 @@
 # Current batch: twenty URLs
 
-Batch: url-batch-004, October 3, 2026. Follow [workplan.md](workplan.md), [next_batch.md](next_batch.md), and [../AGENTS.md](../AGENTS.md). Nineteen URLs carry forward; FAQ01 is added. P07 moves to [completed](checklist_completed.md) under its fixed case checks. Exact pairs remain in `../../url_batch_004/urls.json` and `../../current_urls.local.md`, outside Git. The preceding [implementation](previous_workplan_artificts/url_batch_003_current_batch.md) and [deployed evaluation](previous_workplan_artificts/url_batch_003_evaluation.md) are archived.
+Batch: url-batch-005, October 5, 2026. Follow [workplan.md](workplan.md), [next_batch.md](next_batch.md), and [../AGENTS.md](../AGENTS.md). Twenty URLs carry forward; none are added. Exact pairs remain in `../../url_batch_005/urls.json` and `../../current_urls.local.md`, outside Git. The preceding [implementation](previous_workplan_artificts/url_batch_004_current_batch.md), [selected list](previous_workplan_artificts/url_batch_004_next_batch.md), and [deployed evaluation](previous_workplan_artificts/url_batch_004_evaluation.md) are archived.
 
 Contents:
 
@@ -11,29 +11,27 @@ Contents:
 
 ## Status
 
-The owner deployed `a3bca98`; the loaded revision matches. Each of the three preceding changes passes its specified deployed outcome. Six supporting information pages and About/Help match full rendered content and inspected desktop/narrow layouts. Routes, navigation, and anchor checks pass. P07 completes five functional and ten visual checks. P01 now passes six of eight functional and six of twelve visual checks; its remaining differences drive the changes below.
+The owner deployed `ee0c95f`; the loaded revision matches. Both preceding improvements pass their specified deployed checks at desktop and narrow widths. P01 passes seven of eight functional and twelve of twelve visual checks, including the complete long Research and View All content through the footer. P04 passes ten complete visual checks and matching settled bookmark panels. Its Overview fragment differs from the reference. P07's previously completed views remain matched. Twelve other selected profiles pass the fresh Overview link-style subset; their whole-case checks remain pending.
 
-The selected list has twenty distinct URLs. FAQ01's twelve in-page links have all been activated; full content and both-width appearance already match. Its remaining navigation/asset coverage stays explicit. Other incomplete URLs retain their concrete checks. This batch has no fixed improvement count.
-
-Application commits `82a5701` restore ordinary profile text-link styles and `122b0a4` match research-area link spacing. These changes await deployment. The tracking commit follows them; the final handoff confirms whether all three commits have been pushed.
+Application commits `fafaff3` support partial PDF requests and `a51fcfa` match Overview URL behavior. Both changes are checked locally and await deployment; they do not increase deployed pass totals. The tracking commit follows them. The final handoff and private checkpoint record its ID and the confirmed push.
 
 ## Changes and deployed checks
 
 | Change ID | Cases and change | Local evidence | Required check after deployment |
 | --- | --- | --- | --- |
-| url-batch-004-01 | P01 and affected profiles: restrict the Overview text-link style to Overview. Research and other text panels retain their ordinary inherited font and panel link color. | Deployed comparison identifies smaller, heavier text links in the first scholarly-work item, which adds one desktop pixel and two narrow pixels below it. The stylesheet correction preserves the JavaScript section marker and table/Overview styles. Full tests and static checks pass. | Compare Research and View All links, fonts, first list-item height, following content, and footer at both widths. Recheck other text panels, section controls, Overview, and previously passing profile views. |
-| url-batch-004-02 | P01 and profiles with research areas: preserve the reference whitespace inside each area link. | Source rendered links retain surrounding spaces. The generated HTML now retains them while preserving escaped labels, ordering, separators, and filter queries. Existing blank/malformed-entry regression coverage and the full suite pass. | Compare every research-area link's spacing, wrapping, and query in Overview/View All at both widths. Confirm labels remain escaped and links still reach the selected filtered search. |
+| url-batch-005-01 | P01 linked CV and required PDF endpoints: support a single requested byte range, accurate lengths, and body-free HEAD responses. Complete downloads retain every byte. | Reference binary delivery supports a single byte range; the existing handler returns the whole document. Focused helper and endpoint tests cover closed/open/suffix ranges, unsatisfied requests, full downloads, HEAD, invalid/multiple fields, and unconfirmed If-Range. | Confirm a signed-in CV opens and displays every page; compare the downloaded document and delivery metadata. Verify a single range returns the requested bytes with 206 and Content-Range; full GET/HEAD remain correct. Do not count an unauthenticated sign-in redirect as document-handler evidence. |
+| url-batch-005-02 | P04 and affected profiles: returning to Overview or opening its explicit bookmark removes the section name from the fragment, matching the reference. | Fresh keyboard and bookmark comparisons expose the difference; reference implementation confirms the expected fragment. The correction retains the selected control and existing section behavior. JavaScript syntax checking passes. | Check keyboard and pointer navigation back to Overview and fresh Overview bookmarks at both widths. Confirm active controls, visible panels, other fragments, and profile content remain correct; recheck P01 and completed P07. |
 
 ## Local validation
 
-- Full Django suite: 276 tests pass.
-- Ruff lint and formatting: both changed Python files pass.
-- Pyright: both changed Python files pass with zero errors/warnings using the project interpreter, Python 3.12, and basic checking. Pylance is unavailable.
-- A temporary replay server starts with existing private recordings. Brave reports blocked navigation, and the server records missing recordings for the attempted exact requests. A local visual pass is not claimed. The temporary server is stopped; these changes require deployed visual comparison.
-- All twenty-one workplan Markdown files and 242 relative links/anchors pass validation; twenty distinct selected cases and all thirty-eight pending scope rows remain. `git diff --check` passes. Private evidence remains outside Git.
+- Full Django suite: 281 tests pass, including the new document delivery tests.
+- Ruff lint and formatting: all four changed Python files pass.
+- Pyright: all four changed Python files pass with zero errors/warnings using the project interpreter, Python 3.12, and basic checking. Pylance is unavailable.
+- JavaScript: `node --check vivo_app/static/js/tabs.js` passes.
+- All twenty-four workplan Markdown files and 256 relative links/anchors pass validation. Twenty distinct selected cases and all thirty-eight pending scope rows remain. `git diff --check` passes. Private evidence stays outside Git.
 
 ## Remaining work
 
-Repeat both corrections after deployment. Keep P01's complete CV/delivery and asset checks pending; its PDF's first page alone does not complete the document comparison. Repeat long narrow views through the footer, with completed image loading and enough capture frames. Finish ABOUT01/HELP01/FAQ01 remaining navigation/assets. Continue the other selected profile and organization cases; passed content/filter subsets do not certify whole URLs.
+After deployment, confirm both changes and affected previously passing behavior. P01's full CV comparison is incomplete: a viewer opening alone does not prove the downloaded document or delivery behavior. P04 retains its configuration/external-link checks and the Overview fragment difference until deployed confirmation. Its two institution links now reach the expected decoded queries; that newly enumerated requirement is recorded separately from its original five functional checks.
 
-Bare About behavior and source count/order/membership differences stay open until explained. The previous before-script source restriction remains in force. Every required URL-pattern endpoint must eventually be visually confirmed against Rails before completion. Recheck P07 when a shared change affects it.
+All twenty URLs remain selected. Finish the other profiles' full links, interactions, assets and views, and the information pages' remaining navigation/assets. Organization membership and search count/order differences remain open because source alignment is unconfirmed. Fresh profile-footer About navigation no longer reproduces the earlier slash observation; do not infer a cause or erase missing direct-entry coverage. The earlier before-script source restriction remains in force. Every required endpoint eventually needs visual confirmation.

@@ -31,7 +31,7 @@ The thirty-eight scope rows contain grouped endpoints. The existing external dis
 
 ## Current evidence
 
-Revision `a3bca98`, evaluated October 3, 2026. See the [third URL-batch evaluation](previous_workplan_artificts/url_batch_003_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
+Revision `ee0c95f`, evaluated October 5, 2026. See the [fourth URL-batch evaluation](previous_workplan_artificts/url_batch_004_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
 
 | Observation | Current result | Limit |
 | --- | --- | --- |
@@ -43,10 +43,10 @@ Revision `a3bca98`, evaluated October 3, 2026. See the [third URL-batch evaluati
 | Profile content and conditional buttons | All 15 selected profiles match the compared section text and button lists | This does not establish full links, interactions, assets, or visual coverage. |
 | Sparse-profile fresh bookmarks | 5/5 match Rails | P07 passes all five functional and ten visual criteria after settled capture and asset checks. |
 | Shared asset content versions | Present on profiles and About/Help | All observed information-page illustrations load. P07 asset evidence passes; font delivery and byte comparisons explain the export-tool limitation. Other case audits remain pending. |
-| Primary profile completion checks | 6/8 functional passed; 6/12 visual passed | Affiliations joins Background and Teaching as full matches at both sizes. Other views have remaining differences or incomplete inspection. |
+| Primary profile completion checks | 7/8 functional passed; 12/12 visual passed | Complete settled section views and assets pass; CV full-document/download/delivery comparison remains pending. New Overview fragment behavior requires deployed confirmation. |
 | Search and organization content | Previously observed count/order and missing-member differences remain open | No fresh full comparison this iteration; source alignment is unconfirmed. |
-| Information pages | About/Help full content/appearance match at both sizes | Bare About still reaches its slash form in Brave. Six supporting destinations pass the specified deployed content, route, navigation, anchor, and visual outcomes. |
-| Current URL-based batch | 20 distinct URLs: 19 carried forward, 1 added | P07 leaves the list after completion; FAQ01 is added. See `next_batch.md`. |
+| Information pages | About/Help full content/appearance match at both sizes | Fresh profile-footer About navigation now stays on its bare route; the earlier observation is not reproduced on this journey. Independent direct-entry coverage remains pending. Six supporting destinations pass the specified deployed content, route, navigation, anchor, and visual outcomes. |
+| Current URL-based batch | 20 distinct URLs: 20 carried forward, 0 added | No additional whole case completes this iteration. See `next_batch.md`. |
 
 Measure the same checks before and after deployment. Use content versions on changed assets to avoid reusing older browser resources; verify the requested version and rendered behavior rather than assuming refresh succeeded. Source count/order differences stay open until explained and checked.
 
@@ -65,21 +65,23 @@ Use P01 as the next case to finish. It has no publications, so publication varia
 | P01-F05 | Internal content links, including institutions, organizations, and research areas, reach the expected destinations and retain required queries. | Passed on `a3bca98`: all seven internal content links reach their expected paths and queries. |
 | P01-F06 | External content links and the Manager link retain their required destinations; email links expose the expected address without sending mail. | Passed on `a3bca98`: external/email hrefs match and the Manager retains its configured destination. |
 | P01-F07 | The linked CV opens the expected document and its required delivery checks pass. | Pending deployed comparison. |
-| P01-F08 | Required images, fonts, styles, and scripts load; relevant browser errors or failed resources are explained. | Pending complete coverage; selected images loaded. |
-| P01-V01 | Desktop Overview matches at 1280×720, including relevant content below the first screen. | Partial: matched initial view checked; complete capture remains. |
-| P01-V02 | Desktop Research matches at 1280×720. | Partial: full paired captures saved; long content height differs by about one to two pixels. Complete inspection and explain the difference. |
-| P01-V03 | Desktop Background matches at 1280×720. | Passed: full paired content and footer captures inspected on revision `6088911`. |
-| P01-V04 | Desktop Affiliations matches at 1280×720. | Passed: full paired Affiliations content/footer captures inspected on revision `98cf271`; the eleven-pixel heading difference is resolved. |
-| P01-V05 | Desktop Teaching matches at 1280×720. | Passed: full paired content and footer captures inspected on revision `6088911`. |
-| P01-V06 | Desktop View All matches at 1280×720. | Different/partial: full captures saved; Affiliations spacing is resolved; long Research content differences and complete inspection remain. |
-| P01-V07 | Narrow Overview matches at 390×844, including relevant content below the first screen. | Partial: matched top and lower views checked; preserve a complete evidence set for the case. |
-| P01-V08 | Narrow Research matches at 390×844. | Partial: full paired captures saved; long content height differs by about one to two pixels. Complete inspection and explain the difference. |
-| P01-V09 | Narrow Background matches at 390×844. | Passed: full paired content and footer captures inspected on revision `6088911`. |
-| P01-V10 | Narrow Affiliations matches at 390×844. | Passed: full paired Affiliations content/footer captures inspected on revision `98cf271`; the eleven-pixel heading difference is resolved. |
-| P01-V11 | Narrow Teaching matches at 390×844. | Passed: full paired content and footer captures inspected on revision `6088911`. |
-| P01-V12 | Narrow View All matches at 390×844. | Different/partial: full captures saved; Affiliations spacing is resolved; long Research content differences and complete inspection remain. |
+| P01-F08 | Required images, fonts, styles, and scripts load; relevant browser errors or failed resources are explained. | Passed on `ee0c95f`: complete browser image loading, required asset delivery and valid bundled font bytes, with no relevant warnings/errors. Protected-image metadata redirects alone are not failures or delivery proof. |
+| P01-V01 | Desktop Overview matches at 1280×720, including relevant content below the first screen. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
+| P01-V02 | Desktop Research matches at 1280×720. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
+| P01-V03 | Desktop Background matches at 1280×720. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
+| P01-V04 | Desktop Affiliations matches at 1280×720. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
+| P01-V05 | Desktop Teaching matches at 1280×720. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
+| P01-V06 | Desktop View All matches at 1280×720. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
+| P01-V07 | Narrow Overview matches at 390×844, including relevant content below the first screen. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
+| P01-V08 | Narrow Research matches at 390×844. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
+| P01-V09 | Narrow Background matches at 390×844. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
+| P01-V10 | Narrow Affiliations matches at 390×844. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
+| P01-V11 | Narrow Teaching matches at 390×844. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
+| P01-V12 | Narrow View All matches at 390×844. | Passed on `ee0c95f`: full settled paired content and footer captures inspected. Small measured differences are confined to images and remain recorded; no tolerance is widened. |
 
 Starting results under this explicitly defined checklist: functional checks 3/8 passed; visual checks 0/12 complete, with two partial views; whole case pending. These stricter whole-case criteria do not erase the observed Overview matches or change the fifteen verified batch improvements. They expose what remains before calling the URL complete.
+
+P04 now has fixed conditions in the private evidence record: five original functional checks and ten visual checks. All ten visual checks pass on `ee0c95f`; F01 content/controls and F02 settled bookmark panels pass. F03 retains the Overview fragment difference; F04 configuration and F05 remaining external destinations remain partial. The two institution destinations add P04-F06, which passes decoded-query and actual-navigation checks. Functional results are therefore 2/5 on the original set, plus 1/1 newly enumerated requirement; whole case pending. Do not count completed asset/navigation subsets as complete F04/F05 checks.
 
 ## Run the next iteration
 
@@ -91,6 +93,6 @@ Starting results under this explicitly defined checklist: functional checks 3/8 
 
 For repeatable supported comparisons, reuse the existing [comparison command and guide](../docs/conversion/browser_comparison.md), which produce structured observations, paired screenshots, and pixel-difference reports. The existing command has limits and does not establish signed-in deployed access on its own. Use documented browser controls where needed. Do not bypass a rejected browser action or copy authentication cookies into helpers.
 
-Current results on the same P01 checklist: functional checks 6/8 passed; visual checks 6/12 passed; whole case pending. New profile corrections in [current_batch.md](current_batch.md) await deployment and do not change these deployed totals.
+Current results on the same P01 checklist: functional checks 7/8 passed; visual checks 12/12 passed; whole case pending. New PDF delivery and Overview fragment corrections in [current_batch.md](current_batch.md) await deployment and do not change these deployed totals.
 
 The settled capture method limits native wheel movement to the remaining page height. Excess movement produces elastic overscroll and misleading white bands. Observe completed image loading and record whether long captures actually reach the footer; a fixed frame limit is not full-page evidence.

@@ -1,6 +1,6 @@
 # Workplan: finish the public Rails-to-Django replacement
 
-Updated October 3, 2026. This is the core workplan. Follow [GOAL.md](GOAL.md): preserve the public site's required URLs, used behavior, content, and appearance as exactly as reasonably possible. Read [../AGENTS.md](../AGENTS.md) before each batch for coding directives, checks, privacy rules, and commit guidance.
+Updated October 5, 2026. This is the core workplan. Follow [GOAL.md](GOAL.md): preserve the public site's required URLs, used behavior, content, and appearance as exactly as reasonably possible. Read [../AGENTS.md](../AGENTS.md) before each batch for coding directives, checks, privacy rules, and commit guidance.
 
 Contents:
 
@@ -33,9 +33,9 @@ Keep real identifiers, exact URLs, private addresses, record contents, screensho
 
 ## Current position and priorities
 
-The owner deployed `a3bca98`. The [third URL-batch evaluation](previous_workplan_artificts/url_batch_003_evaluation.md) verifies every preceding information-page change. P07 completes its fixed five functional and ten visual checks. P01 passes six of eight functional and six of twelve visual checks; its Research text links and research-area spacing still differ and are corrected in the next implementation.
+The owner deployed `ee0c95f`. The [fourth URL-batch evaluation](previous_workplan_artificts/url_batch_004_evaluation.md) verifies both preceding profile corrections. P07 remains the one completed whole case. P01 passes seven of eight functional and all twelve visual checks; full CV/download/delivery comparison remains pending. P04 has ten passing visual checks and a remaining Overview fragment difference.
 
-[Next batch](next_batch.md) contains twenty distinct URLs: nineteen unfinished cases and one added FAQ case. [Current batch](current_batch.md) records two profile corrections and the exact checks required after deployment. Full visual and functional evidence remains required for every endpoint and variation. Search/organization source differences, bare About behavior, and the earlier before-script condition remain unresolved.
+[Next batch](next_batch.md) contains twenty carried-forward URLs and no additions. [Current batch](current_batch.md) records PDF range delivery and Overview fragment corrections, with their required deployed checks. Full functional and visual evidence remains required for every endpoint and variation. Source alignment remains unresolved. Fresh profile-footer About navigation does not reproduce the earlier slash observation; independent direct-entry coverage and the earlier before-script condition remain pending.
 
 Prefer completing one URL before spreading work across URLs. Change shared code when needed, then check affected completed URLs. Record a concrete dependency when moving to another case before completion. The separate Manager and unused editing workflows remain excluded; preserve required external links. Keep the Research Areas download correction deferred under [issue #3](https://github.com/birkin/vivo-on-django/issues/3).
 
