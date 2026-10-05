@@ -2,10 +2,15 @@
 
 Started October 3, 2026. Follow [workplan.md](workplan.md) and [GOAL.md](GOAL.md). This record defines how Codex and the owner measure successive deployed comparisons. It does not certify historical work or owner acceptance. Exact URLs, records, screenshots, and detailed results stay in the outer workspace.
 
+**Estimated URL-case completion: 19.5% — 15 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
+
+Snapshot: October 5, 2026, using the existing recorded deployed evidence through `88fb8e4`. Application/tracking changes pushed at `f40c0dd` still require deployed verification; this workflow update adds no deployed passes. Refresh this snapshot at start/resumption, roughly every six hours while an improvement run is active, and at its final handoff.
+
 Contents:
 
 - [What to measure](#what-to-measure)
 - [Current evidence](#current-evidence)
+- [Six-hour snapshots](#six-hour-snapshots)
 - [Primary profile completion checks](#primary-profile-completion-checks)
 - [Run the next iteration](#run-the-next-iteration)
 
@@ -27,7 +32,7 @@ Keep separate totals for:
 
 Use stable IDs for scope rows, URL cases, and individual checks. Scope IDs and discovery case IDs are different fields; some use the same letters and numbers. Before each implementation batch, fix the selected case's passing conditions. Preserve them across deployments. Record newly discovered requirements and changes to the number of checks separately. Do not report one percentage combining local tests, implemented fixes, deployed behavior, and visual coverage.
 
-The thirty-eight scope rows contain grouped endpoints. The existing external discovery manifest has sixty-two case specifications, and the current review added eight publication variations outside that manifest. Match the actual endpoint patterns and required cases before establishing an overall denominator. These counts do not establish the percentage of the site completed.
+The thirty-eight scope rows contain grouped endpoints. For the provisional estimate, [url_completion_inventory.md](url_completion_inventory.md) combines sixty-two original discovery specifications with twenty later case names, then merges five known aliases, yielding seventy-seven named cases. The fifteen completed cases have whole-case evidence in `checklist_completed.md`; all other entries remain pending. The additions include eight publication-profile cases and seven additional information pages after alias reconciliation. This is a useful rough URL-case measure while the remaining interaction and format entries are reconciled with scope, not a precise estimate of engineering time. Do not count screenshots, fragments, commits or individual fixes as additional completed cases.
 
 ## Current evidence
 
@@ -57,9 +62,24 @@ Measure the same checks before and after deployment. Use content versions on cha
 
 Brave browser access was confirmed by reading the owner's signed-in staging homepage. Use its documented browser controls for ordinary page, interaction, and visual checks. Browser access does not supply absent source variations. The earlier page-source viewing rejection remains in force; do not use another browser to obtain that blocked result. The before-script condition remains pending until a permitted check is available.
 
+## Six-hour snapshots
+
+During active improvement work, use `America/New_York` boundaries at 00:00, 06:00, 12:00 and 18:00. Update at the first suitable checkpoint after a boundary; do not interrupt a browser interaction just to hit an exact minute. Also update at daily start, resumption and final handoff. If several boundaries pass during an interruption, write one honest current snapshot when work resumes rather than invent historical results. No separate scheduled task runs while the chat is idle.
+
+1. Read the completed checklist and pending/regression records. Update the named inventory's whole-case states; retained passes need their existing evidence, and reopen a case when a regression invalidates completion.
+2. Count completed canonical case IDs once, divide by the total named inventory, and show the fraction and percentage at the top of this file. Keep local-only, blocked, partial and unverified cases in the denominator. Preserve the alias map; record any additions, merges or exclusions and their reasons. Do not reduce the denominator merely because evidence is difficult to obtain.
+3. Record the snapshot time, latest verified revision, latest pending release, resolved differences, regressions, blocked checks and exact next action. Keep detailed results private. If nothing passed since the preceding snapshot, retain the same percentage and say so. An unchanged snapshot is still useful confirmation.
+4. Add a concise history row below. Update the last-snapshot time and next six-hour boundary in `../../ongoing_run.local.md`. Group safe tracking commits with normal release/pass records when authorized; do not trigger a deployment solely to satisfy every clock boundary.
+
+| Snapshot | Completed / known cases | Estimated completion | Verified evidence / remaining limit |
+| --- | --- | --- | --- |
+| October 5, 2026 — workflow update | 15 / 77 | 19.5% | Existing whole-case evidence through `88fb8e4`; `f40c0dd` requires verification. Inventory v1 is provisional; no new deployed checks run during this update. |
+
+The estimate can decrease when scope gains required cases or a regression reopens a case. Explain that change instead of hiding it. A later estimate of work remaining may be added separately with its basis and uncertainty; it must not replace or silently change this measured fraction. Complete endpoint coverage, integration checks and owner acceptance remain separate requirements even if all currently named cases pass.
+
 ## Primary profile completion checks
 
-Use P01 as the next case to finish. It has no publications, so publication variations belong to separate cases. Start with these twenty checks; record newly demonstrated requirements separately. Each visual check includes the selected section, controls, heading, full relevant content, and footer. Match browser, viewport, loading state, and scroll position between Rails and Django. Preserve paired evidence and record any missing capture.
+P01 is complete under these original twenty checks. Preserve their definitions and historical evidence; publication variations belong to separate cases. Record newly demonstrated requirements separately. Each visual check includes the selected section, controls, heading, full relevant content, and footer. Match browser, viewport, loading state and scroll position between Rails and Django. Preserve paired evidence and record any missing capture.
 
 | Check ID | Passing condition | Current evidence |
 | --- | --- | --- |
@@ -92,9 +112,9 @@ P04 preserves five original functional and ten visual conditions, plus the separ
 
 1. Codex records the twenty selected URLs, their fixed passing conditions, current evidence, and specific remaining work in [next_batch.md](next_batch.md). Preserve stable case IDs and private URL bindings. Reconcile endpoint coverage while continuing useful work on selected URLs.
 2. Codex reviews each URL and makes as many relevant improvements as reasonably possible, preferring to finish an individual URL. Record per-change expected outcomes in [current_batch.md](current_batch.md). Missing source variations remain pending without repeated searches for examples.
-3. Codex runs required local checks, commits reasonable groups, pushes, and tells the owner the code is ready. The owner deploys and confirms completion.
-4. Codex verifies the loaded revision and each recorded improvement, then records all required checks for the twenty URLs as passed, different, blocked, unavailable, partial, or not run. Compare desktop/narrow views and relevant lower content under matching conditions. Keep source-data differences distinct from application differences.
-5. Codex reports prior/current totals on the same checks, resolved differences, and regressions. Move only whole completed URLs to [checklist_completed.md](checklist_completed.md). Keep unfinished URLs with specific next actions and add pending URLs to refill the next list to twenty. Report how many carry forward and how many are added, then continue the work.
+3. Codex runs required local checks and releases reasonable groups when the owner's current prompt authorizes commits/pushes. The scheduled caller deploys; Codex follows [automatic deployment checks](workplan.md#automatic-deployment-and-verification), including loaded revision and actual asset delivery. Continue without waiting for owner confirmation; do not push another release until the preceding release's verification is accounted for.
+4. Codex verifies every recorded change and affected previously passing behavior after each release. At the pass boundary, account for all selected URLs and required checks as passed, different, blocked, unavailable, partial or not run. Retain applicable earlier evidence for unchanged checks with its revision and reason. Compare desktop/narrow views and relevant lower content under matching conditions. Keep source-data differences separate.
+5. Codex reports prior/current totals, resolved differences and regressions. Complete only whole verified URLs, update [the inventory](url_completion_inventory.md), and carry unfinished URLs with concrete actions. Refill and begin another pass only before the fixed daily cutoff. At the cutoff, finish the active pass and handoff. Refresh the completion snapshot using the procedure above.
 
 For repeatable supported comparisons, reuse the existing [comparison command and guide](../docs/conversion/browser_comparison.md), which produce structured observations, paired screenshots, and pixel-difference reports. The existing command has limits and does not establish signed-in deployed access on its own. Use documented browser controls where needed. Do not bypass a rejected browser action or copy authentication cookies into helpers.
 

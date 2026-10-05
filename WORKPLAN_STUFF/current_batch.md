@@ -5,6 +5,7 @@ Batch: url-batch-008, October 5, 2026. Follow [workplan.md](workplan.md), [next_
 Contents:
 
 - [Status](#status)
+- [Pass and release record](#pass-and-release-record)
 - [Changes and deployed checks](#changes-and-deployed-checks)
 - [Local validation](#local-validation)
 - [Remaining work](#remaining-work)
@@ -14,6 +15,18 @@ Contents:
 The owner deployed `88fb8e4`. Both preceding expanded-filter corrections pass after static collection and a browser refresh without cached resources. Terms of Use, History and Visualization Help complete four functional and two visual checks each; whole cases advance from nine to twelve. P03, Roadmap and Publications Help subsequently complete their defined checks, bringing the total to fifteen. Endpoint families and owner acceptance remain pending.
 
 The new collected-file check passes its local tests and detects stale local copies when run as a management command. It and the institution-page correction await deployment on `main`. Application commits are `fb860ad` (collected-file checks) and `2d2fad0` (institution page); the private checkpoint records the final tracking commit and confirmed push. A push does not establish deployment or increase deployed pass totals.
+
+Follow [the automatic procedure](workplan.md#automatic-deployment-and-verification) for pending checks. The next invocation confirms the expected loaded revision and actual asset delivery itself; it does not wait for another owner deployment message. The historical verified results above retain their original revision.
+
+## Pass and release record
+
+The preceding review pass is finished. A new daily run has not started; its writer, start time, selected actions and fixed cutoff are set in `../../ongoing_run.local.md` when the owner uses the daily-start prompt. [next_batch.md](next_batch.md) preserves the prepared twenty-case list. Resuming a recorded daily run keeps that run's cutoff.
+
+| Release | Change IDs | Implementation / tracking commits | Expected remote revision and push | Observed loaded revision / verification | State and next action |
+| --- | --- | --- | --- | --- | --- |
+| url-batch-008 release 1 | 008-01 through 008-03 | `fb860ad`, `2d2fad0`; tracking `f40c0dd` | Full revision and confirmed October 5, 2026 11:38 EDT push in private checkpoint | Pending for these changes; preceding evaluation used `88fb8e4` | Awaiting deployment verification: check loaded revision, collected/served asset evidence and each institution-page outcome. |
+
+For subsequent releases, record the full expected and confirmed remote commits, push time, actual loaded commit, verification time, per-change result and next action privately; keep safe summaries here. Record pass start time and finite planned actions before starting it. Verify changed behavior and affected passing cases for each release, then account for all selected cases at the pass boundary. Check [progress.md](progress.md#six-hour-snapshots) for a due snapshot. After the cutoff, finish existing actions and records without refilling or starting another pass.
 
 ## Changes and deployed checks
 

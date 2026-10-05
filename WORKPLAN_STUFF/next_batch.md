@@ -29,6 +29,8 @@ Batch: url-batch-008; prepared October 5, 2026. Sixteen unfinished URLs carry fo
 
 ## Work this list
 
+This prepared list does not establish an active daily run or extend a cutoff. Before starting its next pass, read `../../ongoing_run.local.md`, recover or set the cutoff according to the owner's prompt, and record the pass start time and concrete planned actions. First confirm and verify the pending release through [automatic deployment checks](workplan.md#automatic-deployment-and-verification). Keep the current sixteen-carried/four-added counts until membership actually changes. At or after the cutoff, finish the pass already underway without replacements or another pass; leave this list ready for the next explicit daily-start prompt.
+
 Codex makes as many demonstrated improvements as reasonably possible and prefers completing an individual URL. Keep incomplete cases with specific remaining actions. All required endpoints eventually need visual confirmation. Local tests and partial comparisons do not complete a URL. Record implemented outcomes in [current_batch.md](current_batch.md).
 
 Before reviewing each added information page, keep these passing conditions fixed: F01 full content and applicable controls; F02 all internal links/anchors, keyboard navigation and search/return; F03 external/configured destinations; F04 required images/assets and relevant browser errors. V01 covers complete settled views at 1280×720; V02 covers complete settled views at 390×844. Confirm the actual bitmap dimensions and start at the header, then include all content through the footer.

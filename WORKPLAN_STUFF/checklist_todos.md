@@ -6,10 +6,12 @@ Initialized October 3, 2026 from the approved [endpoint scope](public_endpoint_s
 
 **Current work:** [next_batch.md](next_batch.md) holds twenty distinct URLs: sixteen carried forward and four added. The [seventh evaluation](previous_workplan_artificts/url_batch_007_evaluation.md) confirms both filter corrections after static collection. Six cases complete this review; fifteen whole cases are recorded. P03 and supporting title JSON pass their remaining checks. Source-data differences remain pending. [current_batch.md](current_batch.md) adds a deployment-only collected-file check and the institution-page correction.
 
-- [ ] Keep unresolved URLs in `next_batch.md` with specific remaining improvements or checks. Refill to twenty only after moving whole completed URLs to the completed checklist; required variations are checks, not extra URLs used to fill the list.
+- [ ] Recover the private daily-run checkpoint, original cutoff and pending release revisions before resuming. Confirm one writer. A daily-start prompt sets a new cutoff; a resumption does not.
+- [ ] Keep unresolved URLs in `next_batch.md` with specific remaining improvements or checks. Refill to twenty only before the cutoff and after moving whole completed URLs to the completed checklist; required variations are checks, not extra URLs used to fill the list.
 - [ ] Reconcile discovery cases and existing evidence with all required endpoint patterns. Preserve stable IDs and exact private bindings in `../../current_urls.local.md`.
 - [ ] Make as many relevant improvements as reasonably possible on each URL; prefer finishing an individual URL. Record changed behavior, local checks, commits, and required deployed checks in `current_batch.md`.
-- [ ] Check every recorded improvement after the owner confirms deployment. Track functional, visual, difference, and blocked-check totals separately in [progress.md](progress.md).
+- [ ] Confirm automatic deployment through `response.loaded_version` and actual asset delivery, then check every recorded improvement and affected previously passing behavior. Account for all selected URLs at the pass boundary. Track functional, visual, difference and blocked-check totals separately in [progress.md](progress.md).
+- [ ] Keep [url_completion_inventory.md](url_completion_inventory.md) and the progress percentage consistent with whole-case evidence. Refresh the snapshot at the first suitable active-run checkpoint after midnight, 6 a.m., noon and 6 p.m. `America/New_York`; explain changed totals.
 - [ ] Keep fourteen unavailable first-batch source variations and the blocked before-script check pending; do not count them as deployed passes.
 
 ## Required URLs and variations

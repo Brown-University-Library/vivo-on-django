@@ -48,6 +48,8 @@ Fifteen whole cases are certified under their fixed checks; endpoint families an
 
 For each completed case, record the original pending ID, stable case ID, safe URL pattern and variation, required checks, deployed revision, comparison date, evidence label, result, and owner acceptance if required. Keep exact URL bindings and identifying observations private. Leave other variations pending. If a regression appears, return the affected case to `checklist_todos.md` and record when and why it was reopened.
 
+Confirm the running revision through the automatic procedure in [workplan.md](workplan.md#automatic-deployment-and-verification); owner deployment confirmation is no longer a prerequisite. Update the completed state in [url_completion_inventory.md](url_completion_inventory.md) when a whole case completes or reopens. Individual fixes, local passes, pushes and repeated deployments do not increase the URL-case percentage. Preserve the historical deployment descriptions below.
+
 Every required URL-pattern endpoint must have visual confirmation against Rails before being added as complete. Include the visual result and inspected page or artifact in its completion record, alongside functional and response checks.
 
 ## Individual improvements verified after deployment

@@ -39,6 +39,8 @@ A case can set `screenshot_css` when one changing visual detail hides the rest o
 
 ## Read the results
 
+For deployed comparisons, first follow [the automatic deployment procedure](../../WORKPLAN_STUFF/workplan.md#automatic-deployment-and-verification). Record the expected commit and the actual `response.loaded_version` from `/version/` through permitted access. Confirm actual served asset bytes; an updated checkout or asset query does not prove the browser has current CSS/JavaScript. Check the loaded revision again after each comparison group. Repeat observations affected by changed code, restarts, failed requests or interrupted interactions; automatic deployment can restart the application even at the same commit. Preserve existing access restrictions and do not extract authentication state into helpers.
+
 Open `report.html` for side-by-side screenshots, `report.md` for a brief list, or `report.json` for structured results. Each case has observations, a screenshot, and an amplified pixel-difference image. The command records status, content type, final URL, title, selected visible text, image loading, resource failures, script errors, viewport, and browser version.
 
 Any changed pixel or observation requires review and produces exit code 1. Missing screenshots, failed assets, script errors, blocked reference access, and incomplete captures cannot pass. Reference failures remain visible even when local pages load correctly. There is no automatic tolerance that accepts a visual difference.
