@@ -2,9 +2,9 @@
 
 Started October 3, 2026. Follow [workplan.md](workplan.md) and [GOAL.md](GOAL.md). This record defines how Codex and the owner measure successive deployed comparisons. It does not certify historical work or owner acceptance. Exact URLs, records, screenshots, and detailed results stay in the outer workspace.
 
-**Estimated URL-case completion: 19.5% — 15 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
+**Estimated URL-case completion: 20.8% — 16 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
 
-Snapshot: October 5, 2026 at 12:43 America/New_York, daily-run start. Completion remains 15/77 (19.5%); the provisional denominator is unchanged. Retained whole-case evidence runs through `88fb8e4`. Loaded revision `aae7a67` includes the pending application and workflow changes; those changes still require individual verification. The fixed run cutoff is October 6, 2026 at 08:00 America/New_York (12:00 UTC).
+Snapshot: October 5, 2026 at 14:10 America/New_York, verification checkpoint. Completion is 16/77 (20.8%); the provisional denominator is unchanged. E01 completes after the layout correction on loaded `95a4f65`. P08 confirms five functional and fourteen visual criteria; the document error-response difference remains for review. Institution fallback passes; illustration delivery and the remote collected-file command remain pending. The fixed run cutoff is October 6, 2026 at 08:00 America/New_York (12:00 UTC).
 
 Contents:
 
@@ -32,15 +32,15 @@ Keep separate totals for:
 
 Use stable IDs for scope rows, URL cases, and individual checks. Scope IDs and discovery case IDs are different fields; some use the same letters and numbers. Before each implementation batch, fix the selected case's passing conditions. Preserve them across deployments. Record newly discovered requirements and changes to the number of checks separately. Do not report one percentage combining local tests, implemented fixes, deployed behavior, and visual coverage.
 
-The thirty-eight scope rows contain grouped endpoints. For the provisional estimate, [url_completion_inventory.md](url_completion_inventory.md) combines sixty-two original discovery specifications with twenty later case names, then merges five known aliases, yielding seventy-seven named cases. The fifteen completed cases have whole-case evidence in `checklist_completed.md`; all other entries remain pending. The additions include eight publication-profile cases and seven additional information pages after alias reconciliation. This is a useful rough URL-case measure while the remaining interaction and format entries are reconciled with scope, not a precise estimate of engineering time. Do not count screenshots, fragments, commits or individual fixes as additional completed cases.
+The thirty-eight scope rows contain grouped endpoints. For the provisional estimate, [url_completion_inventory.md](url_completion_inventory.md) combines sixty-two original discovery specifications with twenty later case names, then merges five known aliases, yielding seventy-seven named cases. The sixteen completed cases have whole-case evidence in `checklist_completed.md`; all other entries remain pending. The additions include eight publication-profile cases and seven additional information pages after alias reconciliation. This is a useful rough URL-case measure while the remaining interaction and format entries are reconciled with scope, not a precise estimate of engineering time. Do not count screenshots, fragments, commits or individual fixes as additional completed cases.
 
 ## Current evidence
 
-Revision `88fb8e4`, evaluated October 5, 2026. See the [seventh URL-batch evaluation](previous_workplan_artificts/url_batch_007_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
+Current daily-run evidence includes loaded `95a4f65`, evaluated October 5, 2026; preceding evidence remains on `88fb8e4`. See the [seventh URL-batch evaluation](previous_workplan_artificts/url_batch_007_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
 
 | Observation | Current result | Limit |
 | --- | --- | --- |
-| Whole URL cases certified in this workplan | 15 (P01, P03, P04, P07, ABOUT01, HELP01, FAQ01, ADVANCED01, EMPTY01, O04, TERMS01, HISTORY01, HELP_VIZ01, ROADMAP01, PUBLICATIONS01) | Partial comparisons do not certify a whole URL. |
+| Whole URL cases certified in this workplan | 16 (P01, P03, P04, P07, ABOUT01, HELP01, FAQ01, ADVANCED01, EMPTY01, O04, TERMS01, HISTORY01, HELP_VIZ01, ROADMAP01, PUBLICATIONS01, E01) | Partial comparisons do not certify a whole URL. |
 | First improvement-count batch | 15 deployed verified; 14 lack qualifying examples; 1 before-script check blocked | Keep these states distinct from local tests. |
 | Publication text and inline elements on the original five profiles | Previous full comparison: 278/278 match Rails | Preserved evidence; current selected filter checks also compare visible citation text. |
 | Publication filter states | 35/35 match selected control and visible ordered citations | Ten profiles checked with keyboard selection; full visual/link checks remain separate. |
@@ -56,7 +56,8 @@ Revision `88fb8e4`, evaluated October 5, 2026. See the [seventh URL-batch evalua
 | Fresh preceding-batch baseline | 20 URLs, 40 desktop/narrow pairs, 289 frames through all footers | Profile coverage is Overview only; other states remain pending. |
 | P03 completion evidence | 6/6 functional criteria pass; 12/12 complete visual views pass | Filtered/paged return, CV bytes, all five rendered pages and signed-in delivery pass; the selected whole case completes. |
 | Expanded-filter deployment outcomes | 2/2 corrected outcomes pass | All applicable named dialogs match tie ordering and 15-pixel settled first-row spacing at both widths. Search source-data differences remain open. |
-| Current URL-based batch | 20 distinct URLs: 16 carried forward, 4 added | Six cases complete this review. Both filter fixes and the remaining supporting title check pass. The institution-page correction and deployment check await deployment. See `next_batch.md`. |
+| P08 daily-run evidence | 5/6 functional criteria and 14/14 complete visual states pass | Complete CV bytes/pages, HEAD and valid range agree; unsatisfied-range error metadata remains for review. Whole case pending. |
+| Current URL-based batch | 20 distinct URLs: 16 carried forward, 4 added | Six cases complete this review. Both filter fixes and the remaining supporting title check pass. Institution rendering/fallback and missing-record layout pass; the remote collected-file command and illustration delivery remain pending. E01 completes and L03 fills its slot. See `next_batch.md`. |
 
 Measure the same checks before and after deployment. Use content versions on changed assets to avoid reusing older browser resources; verify actual served bytes and rendered behavior rather than assuming the requested version proves delivery. Confirm collected copies during deployment, then refresh without cached resources when the browser still uses older bytes. Source count/order differences stay open until explained and checked.
 
@@ -75,6 +76,8 @@ During active improvement work, use `America/New_York` boundaries at 00:00, 06:0
 | --- | --- | --- | --- |
 | October 5, 2026 — workflow update | 15 / 77 | 19.5% | Existing whole-case evidence through `88fb8e4`; `f40c0dd` requires verification. Inventory v1 is provisional; no new deployed checks run during this update. |
 | October 5, 2026 at 12:43 America/New_York — daily start | 15 / 77 | 19.5% | Denominator unchanged. Loaded `aae7a67` includes pending changes; per-change checks begin. No new whole case passes at start. |
+
+| October 5, 2026 at 14:10 America/New_York — verification checkpoint | 16 / 77 | 20.8% | E01 completes on `95a4f65`; denominator unchanged. P08 retains the document error-response review. Next scheduled boundary remains 18:00 local. |
 
 The estimate can decrease when scope gains required cases or a regression reopens a case. Explain that change instead of hiding it. A later estimate of work remaining may be added separately with its basis and uncertainty; it must not replace or silently change this measured fraction. Complete endpoint coverage, integration checks and owner acceptance remain separate requirements even if all currently named cases pass.
 
@@ -119,6 +122,8 @@ P04 preserves five original functional and ten visual conditions, plus the separ
 
 For repeatable supported comparisons, reuse the existing [comparison command and guide](../docs/conversion/browser_comparison.md), which produce structured observations, paired screenshots, and pixel-difference reports. The existing command has limits and does not establish signed-in deployed access on its own. Use documented browser controls where needed. Do not bypass a rejected browser action or copy authentication cookies into helpers.
 
-Current results on the same P01 checklist: functional checks 8/8 passed; visual checks 12/12 passed; whole case complete. Four preceding search/homepage outcomes pass on `dedf2c8`; the fifth now also passes supporting JSON on `88fb8e4`. Both expanded-filter corrections pass after collection and browser refresh. The new institution-page and collection-check changes in [current_batch.md](current_batch.md) await deployment; they do not add deployed passes.
+Current results on the same P01 checklist: functional checks 8/8 passed; visual checks 12/12 passed; whole case complete. Four preceding search/homepage outcomes pass on `dedf2c8`; the fifth now also passes supporting JSON on `88fb8e4`. Both expanded-filter corrections pass after collection and browser refresh. The institution fallback and missing-record wrapper corrections in [current_batch.md](current_batch.md) pass deployed checks; illustration delivery and the remote collected-file command remain pending.
 
 The settled capture method limits native wheel movement to the remaining page height. Excess movement produces elastic overscroll and misleading white bands. Observe completed image loading and record whether long captures actually reach the footer; a fixed frame limit is not full-page evidence.
+
+October 5, 2026 at 13:19 America/New_York: E01 completes four functional and two complete visual criteria on loaded `95a4f65`, confirmed again after comparison. Whole cases advance to 16/77 (20.8%); denominator unchanged. Institution fallback placement also passes, but illustration delivery remains unavailable. The remote collected-file command is not run; served bytes pass. Next scheduled snapshot remains 18:00 local time.
