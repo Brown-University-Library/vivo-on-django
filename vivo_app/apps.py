@@ -8,7 +8,7 @@ class VivoAppConfig(AppConfig):
 
     def ready(self) -> None:
         """
-        Registers page-data startup checks.
+        Registers page-data startup checks and collected-file deployment checks.
 
         Called by: Django application setup
         """

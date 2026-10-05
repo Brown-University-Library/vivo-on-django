@@ -43,7 +43,15 @@ Run these commands from the Django checkout on the development server. The comma
 ```console
 uv run ./manage.py check_dev_sources
 uv run ./manage.py check
+uv run ./manage.py collectstatic --noinput
+uv run ./manage.py check --deploy --tag staticfiles
 ```
+
+Run `collectstatic` after every code update, before calling deployment complete. It copies changed static files into `STATIC_ROOT`; new asset version queries alone do not update those copies. The owner runs it as part of deployment, then tells Codex the deployment is ready for browser checks.
+
+`check --deploy --tag staticfiles` reads the application's CSS and JavaScript source files and compares their contents with the collected copies. It reports an error when a copy is missing, unreadable, or stale. It contacts no server and changes no files or application data. Ordinary startup checks skip this comparison. After an error, run `collectstatic` and repeat the check.
+
+This check expects the ordinary copied files used by this application. It does not verify the web server's static directory mapping, cache contents, fonts, or images. Codex separately checks the actual served asset bytes and rendered behavior. A current `/version/` response and current asset query values do not prove that the browser received current CSS or JavaScript. If the served bytes match but the browser still uses older files, refresh that page without its cached resources and repeat the comparison.
 
 If the root page reports a missing prepared manifest, set `PREPARED_FIXTURE_DIR` in the server's private `.env` to the separately copied bundle directory. The directory must contain `manifest.json` and its referenced files, remain readable by the Django process, and be outside the Git checkout. Relative values resolve against the Django checkout. Then run `uv run ./manage.py validate_prepared_data` and restart the application; prepared bundles are cached per process. A valid local bundle or a successful `/version/` response does not establish that the server has this bundle.
 

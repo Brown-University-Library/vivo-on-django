@@ -38,3 +38,25 @@ def versioned_asset_url(name: str) -> str:
         query.append(('v', digest))
         result = urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
     return result
+
+
+def collected_asset_differences(source_root: Path, collected_root: Path) -> list[str]:
+    """
+    Lists application stylesheets and scripts with missing, unreadable, or changed copies.
+
+    Called by: checks.check_static_collection()
+    """
+    sources = sorted(path for path in source_root.rglob('*') if path.is_file() and path.suffix in {'.css', '.js'})
+    if not sources:
+        raise ValueError('Application stylesheets and scripts are unavailable.')
+    differences: list[str] = []
+    for source in sources:
+        name = source.relative_to(source_root).as_posix()
+        found = finders.find(name)
+        selected_source = Path(found) if isinstance(found, str) else source
+        try:
+            if selected_source.read_bytes() != (collected_root / name).read_bytes():
+                differences.append(name)
+        except OSError:
+            differences.append(name)
+    return differences
