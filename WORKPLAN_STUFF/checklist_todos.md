@@ -72,3 +72,7 @@ Each `S` entry covers one row of the settled scope table. Keep its required beha
 - [ ] **R09 — Owner acceptance.** Complete the final walkthrough and record the owner's explicit acceptance of the replacement and any intentional differences. Leave issue closure and the eventual traffic switch to separately authorized owner actions.
 
 The Research Areas download-link correction remains deferred under [issue #3](https://github.com/birkin/vivo-on-django/issues/3); do not add it to a batch until scheduled. Excluded old routes and Manager internals are not pending work.
+
+Current graph follow-up: profile graph entries pass, but their destination views still differ in calculated date, legend, color assignment and source data. Retain the private recorded destinations as required graph variations under the existing graph review. Do not infer whole graph completion from a passing profile entry.
+
+- [ ] **SD05 — information-page browser titles.** Nine pages inherit a different title than the reference. A focused template correction and existing heading/title test pass locally; verify the loaded revision, canonical/slash routes and unchanged full-page evidence before restoring the eight completed information cases. Institution illustration delivery remains independent.

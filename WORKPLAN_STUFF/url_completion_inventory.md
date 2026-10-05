@@ -1,6 +1,6 @@
 # Inventory for the estimated URL-case completion percentage
 
-Inventory v1, October 5, 2026: **20 of 77 known cases complete — 26.0%.** See [progress.md](progress.md) for the current snapshot and six-hour update procedure. This inventory counts named URL cases with their required behavior; it is a provisional estimate, not a count of every distinct HTTP URL string or a percentage of engineering time.
+Inventory v1, October 5, 2026: **13 of 77 known cases complete — 16.9%.** See [progress.md](progress.md) for the current snapshot and six-hour update procedure. This inventory counts named URL cases with their required behavior; it is a provisional estimate, not a count of every distinct HTTP URL string or a percentage of engineering time.
 
 The initial denominator combines 62 case specifications in the private discovery manifest, plus 20 later case names in private batch lists and the completed checklist, minus five aliases. The net additions are eight publication-profile cases and seven information pages. No private URL, record identifier or source response is copied here. The existing evidence in [checklist_completed.md](checklist_completed.md) supplies the completed states. Other rows remain pending even when partial or local evidence exists.
 
@@ -20,7 +20,7 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 
 | Canonical case | Whole-case state |
 | --- | --- |
-| ABOUT01 | Complete |
+| ABOUT01 | Pending: SD05 title check |
 | ADVANCED01 | Complete |
 | BROWSE01 | Pending |
 | C01 | Pending |
@@ -30,13 +30,13 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | D04 | Pending |
 | E01 | Complete |
 | EMPTY01 | Complete |
-| FAQ01 | Complete |
+| FAQ01 | Pending: SD05 title check |
 | H01 | Pending |
 | H02 | Pending |
 | H03 | Pending |
-| HELP01 | Complete |
-| HELP_VIZ01 | Complete |
-| HISTORY01 | Complete |
+| HELP01 | Pending: SD05 title check |
+| HELP_VIZ01 | Pending: SD05 title check |
+| HISTORY01 | Pending: SD05 title check |
 | I02 | Pending |
 | I03 | Pending |
 | I04 | Pending |
@@ -64,15 +64,15 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | P09 | Complete |
 | P10 | Complete |
 | P11 | Pending |
-| P12 | Pending |
+| P12 | Complete |
 | P13 | Pending |
 | P14 | Pending |
 | P15 | Pending |
-| PUBLICATIONS01 | Complete |
+| PUBLICATIONS01 | Pending: SD05 title check |
 | R01 | Pending |
 | R02 | Pending |
 | R03 | Pending |
-| ROADMAP01 | Complete |
+| ROADMAP01 | Pending: SD05 title check |
 | S02 | Pending |
 | S03 | Pending |
 | S04 | Pending |
@@ -85,7 +85,7 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | S14 | Pending |
 | S15 | Pending |
 | SEARCH01 | Pending |
-| TERMS01 | Complete |
+| TERMS01 | Pending: SD05 title check |
 | V01 | Pending |
 | V02 | Pending |
 | V03 | Pending |

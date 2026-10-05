@@ -29,7 +29,9 @@ These entries summarize historical evidence in [v1](previous_workplan_artificts/
 
 ## URL cases verified after deployment
 
-Nineteen whole cases are complete under their fixed checks; endpoint families and owner acceptance remain pending.
+Current exception: ABOUT01, HELP01, FAQ01, HISTORY01, ROADMAP01, HELP_VIZ01, PUBLICATIONS01 and TERMS01 are temporarily pending under SD05 after a new browser-title difference is demonstrated. Their earlier checks below remain historical evidence. Restore each current completed state after the deployed title correction and affected checks pass.
+
+Thirteen whole cases are currently complete under their fixed checks; eight earlier information cases await the new SD05 title check; endpoint families and owner acceptance remain pending.
 
 - [x] **2026-10-03 — P07 sparse profile, revision `a3bca98`.** Five functional and ten visual checks pass: expected controls/content, configured email/Manager destinations, organization navigation, default-search return, required asset evidence, and all five complete desktop/narrow views. The Terms destination now works; font bytes match the bundled files. Private evidence labels `url-batch-003-review` and `url-batch-004-review`. See the [evaluation](previous_workplan_artificts/url_batch_003_evaluation.md). This completes the selected case, not the entire S07 endpoint family.
 
@@ -47,6 +49,8 @@ Nineteen whole cases are complete under their fixed checks; endpoint families an
 - [x] **2026-10-05 — ROADMAP01 and PUBLICATIONS01, S24 — Remaining information pages.** Each passes four functional and two complete visual criteria on `88fb8e4`; all internal destinations and all six Publications anchors work by keyboard, content and configured/external hrefs match, search/return and required shared assets pass. No Manager action or feedback submission occurs. Private evidence label `url-batch-008-review`; see the [evaluation](previous_workplan_artificts/url_batch_007_evaluation.md).
 
 - [x] **2026-10-05 — E01, S30 missing-record page, revision `95a4f65`.** Four functional and two complete visual checks pass: actual not-found status/content, recovery and footer keyboard destinations, search/return, external/configured destinations, loaded images/fonts/styles and relevant browser errors. Complete clipped desktop/narrow captures reach the footer. Both university links resolve to the same destination despite their initial scheme difference; feedback preserves the current page. Changing background images remain documented. Private evidence label `daily-run-2026-10-05`; endpoint-family and final acceptance remain pending.
+
+- [x] **2026-10-05 — P12, S07 profile, revision `33ab1be`.** Six functional and fourteen complete visual criteria pass. Complete section text, inline formatting, table rows and publication filters match. Fresh and actual filtered search returns, eighty-four settled section states, twenty-eight internal destinations on each site, configured/external/email links, both graph entries, CV absence and required assets/errors pass. Twelve complete individual views retain their applicable evidence; two complete All views add eighty-eight frames through the footer. The shared graph-label correction passes at both widths. An unsuccessful pointer attempt is excluded; its matching keyboard journey supplies the destination check. Full graph data/date/legend comparisons remain separate pending work. Private evidence label `daily-run-2026-10-05`; endpoint families and owner acceptance remain pending.
 
 For each completed case, record the original pending ID, stable case ID, safe URL pattern and variation, required checks, deployed revision, comparison date, evidence label, result, and owner acceptance if required. Keep exact URL bindings and identifying observations private. Leave other variations pending. If a regression appears, return the affected case to `checklist_todos.md` and record when and why it was reopened.
 
