@@ -981,7 +981,7 @@ def profile_sections(
         affiliation_html += (
             '<a id="viz_collab" class="btn btn-default" style="float:right;" href="'
             + escape(collaborator_visualization_url, quote=True)
-            + '" target="_blank" rel="noopener" title="Visualize collaborators network">Visualize it '
+            + '" target="_blank" rel="noopener" title="Visualize collaborators network">Visualize it&nbsp; '
             '<i class="glyphicon glyphicon-signal" style="color:rgb(232, 217, 139);" aria-hidden="true"></i></a>'
         )
     affiliation_html += '</h3>'

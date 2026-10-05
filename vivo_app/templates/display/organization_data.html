@@ -26,7 +26,7 @@
             {% for line in organization.visualization_graph.lines %}<line x1="{{ line.x1 }}" y1="{{ line.y1 }}" x2="{{ line.x2 }}" y2="{{ line.y2 }}" style="stroke: rgb(204, 204, 204); stroke-width: 1;"></line>{% endfor %}
             {% for node in organization.visualization_graph.nodes %}<g transform="translate({{ node.x }},{{ node.y }})"><circle r="{{ node.radius }}" style="fill: {{ node.color }};"></circle></g>{% endfor %}
           </svg></div>
-          <a id="viz_collab" class="btn btn-default" href="{{ organization.visualization_url }}" target="_blank" title="Visualize collaboration for members of this organization">Visualize it <i class="glyphicon glyphicon-signal" style="color:rgb(232, 217, 139);" aria-hidden="true"></i></a>
+          <a id="viz_collab" class="btn btn-default" href="{{ organization.visualization_url }}" target="_blank" title="Visualize collaboration for members of this organization">Visualize it&nbsp; <i class="glyphicon glyphicon-signal" style="color:rgb(232, 217, 139);" aria-hidden="true"></i></a>
         </div>{% endif %}
         <div id="tabOverview" class="tabFinder">
           <h3>Affiliations</h3>
