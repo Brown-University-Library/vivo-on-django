@@ -579,6 +579,28 @@ class SourcePageTests(TestCase):
             self.assertEqual(part.content, b'%PDF-')
             self.assertEqual(part['Content-Range'], f'bytes 0-4/{len(document.content)}')
 
+    def test_search_title_length_matches_in_html_and_json(self) -> None:
+        """
+        Checks fifty-character titles stay whole and longer titles retain forty-eight characters before the ellipsis.
+        """
+        key = search_key('Example', 1, [])
+        for title, expected in (('Short title', 'Short title'), ('É' * 50, 'É' * 50), ('É' * 48 + 'XYZ', 'É' * 48 + '...')):
+            with self.subTest(title=title):
+                response = json.loads(self.responses[key].body)
+                document = response['response']['docs'][0]
+                record = json.loads(document['json_txt'][0])
+                record['title'] = title
+                document['json_txt'] = [json.dumps(record)]
+                self.responses[key] = RecordedResponse(
+                    200, (('content-type', 'application/json'),), json.dumps(response).encode()
+                )
+                html = search_data([('q', 'Example')], 'live', self.read)
+                items = html['results']
+                assert isinstance(items, list)
+                self.assertEqual(items[0]['title'], expected)
+                data = search_json_data([('q', 'Example')], 'live', 'https://example.invalid', self.read)
+                self.assertEqual(data[0]['title'], expected)
+
     def test_live_search_links_keep_the_deployment_prefix(self) -> None:
         """
         Checks search links, profile images, and JSON destinations stay inside a mounted Django application.
@@ -592,8 +614,8 @@ class SourcePageTests(TestCase):
                 patch('vivo_app.views.read_source', side_effect=self.read),
             ):
                 search = self.client.get('/search?q=Example', SCRIPT_NAME=prefix)
-                self.assertContains(search, f'action="{prefix}/search/"')
-                self.assertContains(search, f'href="{prefix}/search/advanced/"')
+                self.assertContains(search, f'action="{prefix}/search"')
+                self.assertContains(search, f'href="{prefix}/search/advanced?q=Example"')
                 self.assertContains(search, f'href="{prefix}/display/invented-a"')
                 self.assertContains(search, f'href="{prefix}/search?q=Example')
                 self.assertContains(search, f'src="{prefix}/source-images/profile-images/123/4/portrait.jpg"')
@@ -1424,7 +1446,7 @@ class SourcePageTests(TestCase):
             person = self.get_page('/display/invented-absent')
             organization = self.get_page('/display/org-absent')
         self.assertContains(person, 'Page not found', status_code=404)
-        self.assertContains(person, 'href="/search/">searching for a researcher</a>', status_code=404)
+        self.assertContains(person, 'href="/search">searching for a researcher</a>', status_code=404)
         self.assertContains(person, 'id="search-homepage"', status_code=404)
         self.assertContains(person, 'name="q"', status_code=404)
         self.assertContains(organization, 'Page not found', status_code=404)

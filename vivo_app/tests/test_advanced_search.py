@@ -6,14 +6,14 @@ from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 
 from django.http import HttpResponse
-from django.test import SimpleTestCase, override_settings
+from django.test import TestCase, override_settings
 from django.urls import get_script_prefix, set_script_prefix
 
 from vivo_app.lib.advanced_search import advanced_search_query
 
 
 @override_settings(PAGE_DATA_MODE='live', SOLR_URL='http://example.invalid/solr/example')
-class AdvancedSearchTests(SimpleTestCase):
+class AdvancedSearchTests(TestCase):
     """Checks advanced search without contacting a source service."""
 
     def test_form_and_blank_submission(self) -> None:
@@ -21,10 +21,12 @@ class AdvancedSearchTests(SimpleTestCase):
         Checks the live form has the two Rails fields and a blank search stays on the form.
         """
         with patch('vivo_app.lib.source_requests.read_source') as read:
-            page = self.client.get('/search/advanced/')
-            self.assertContains(page, 'Researcher Name')
-            self.assertContains(page, 'Researcher Title')
-            self.assertContains(page, 'action="/search/advanced/"')
+            for path in ('/search/advanced', '/search/advanced/'):
+                page = self.client.get(path)
+                self.assertContains(page, 'Researcher Name')
+                self.assertContains(page, 'Researcher Title')
+                self.assertContains(page, 'action="/search/advanced"')
+                self.assertContains(page, 'href="/search"')
             blank = self.client.get('/search/advanced/?name_t=+&title_t=&search=true')
             self.assertContains(blank, 'Advanced Search')
             read.assert_not_called()
@@ -49,8 +51,19 @@ class AdvancedSearchTests(SimpleTestCase):
             self.assertEqual(parse_qs(destination.query), {'q': ['title_t:"Professor" AND name_t:"Fairbrother"']})
             legacy_path = self.client.get('/search/advanced', SCRIPT_NAME=prefix)
             self.assertContains(legacy_path, 'Advanced Search')
+            self.assertContains(legacy_path, f'action="{prefix}/search/advanced"')
+            self.assertContains(legacy_path, f'href="{prefix}/search"')
         finally:
             set_script_prefix(previous_prefix)
+
+    def test_results_preserve_repeated_queries_in_advanced_link(self) -> None:
+        """
+        Checks the advanced link retains filters and safely escapes entered query text.
+        """
+        query = 'q=Example%20%26%20Other&fq=record_type%7CPEOPLE&fq=affiliations%7CExample&page=2'
+        with patch('vivo_app.views.get_search_data', return_value={'query': 'Example & Other', 'total': 0}):
+            page = self.client.get('/search?' + query)
+        self.assertContains(page, 'href="/search/advanced?' + query.replace('&', '&amp;') + '"')
 
     def test_quoted_input_stays_within_one_field(self) -> None:
         """
