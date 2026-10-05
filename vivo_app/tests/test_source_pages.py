@@ -1800,6 +1800,13 @@ class SourcePageTests(TestCase):
         )
         self.assertEqual(publication_citation({}), '.')
 
+    def test_publication_export_citation_preserves_unicode_spacing_in_titles(self) -> None:
+        """
+        Checks the export retains a figure space that the reference's title trim preserves.
+        """
+        self.assertEqual(publication_citation({'title': '\u2007Example'}), '"\u2007Example.".')
+        self.assertEqual(publication_citation({'title': ' Example\u2007\n'}), '"Example\u2007.".')
+
     def test_publication_export_type_keeps_absent_and_unrecognized_types_empty(self) -> None:
         """
         Checks an absent export type stays empty while known classes use reference labels.

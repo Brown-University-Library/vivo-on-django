@@ -678,7 +678,7 @@ def publication_citation(item: dict[str, object]) -> str:
 
     Called by: organization_publications_data(), tests
     """
-    title = citation_text(item.get('title')).removeprefix('“')
+    title = citation_text(item.get('title'), preserve_spacing=True).strip(' \t\r\n\v\f').removeprefix('“')
     text = ''
     if title:
         if not title.startswith('"'):
