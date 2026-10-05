@@ -4,7 +4,7 @@ Started October 3, 2026. Follow [workplan.md](workplan.md) and [GOAL.md](GOAL.md
 
 **Estimated URL-case completion: 22.1% — 17 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
 
-Snapshot: October 5, 2026 at 14:54 America/New_York, verification checkpoint. Completion is 17/77 (22.1%); the provisional denominator is unchanged. P10 completes five functional and fourteen visual conditions on loaded `5dd7b1b`; O02 replaces its slot. P08 and P09 retain the shared document error-response difference. Institution illustration delivery and the remote collected-file command remain pending. The fixed run cutoff is October 6, 2026 at 08:00 America/New_York (12:00 UTC).
+Snapshot: October 5, 2026 at 15:48 America/New_York, resumption. Completion remains 17/77 (22.1%); no new whole case or denominator change since the pause. Loaded `fd6d0a8c` is confirmed; no release awaits initial deployment confirmation. P11 retains its completed visual evidence and unfinished functional checks. P08/P09 remain linked to SD01. Next action: finish P11 excluded search-return and interrupted navigation checks, then remaining document/link/asset checks. Original cutoff remains October 6 at 08:00 America/New_York (12:00 UTC).
 
 Contents:
 
@@ -57,7 +57,7 @@ Current daily-run evidence includes loaded `5dd7b1b`, evaluated October 5, 2026;
 | P03 completion evidence | 6/6 functional criteria pass; 12/12 complete visual views pass | Filtered/paged return, CV bytes, all five rendered pages and signed-in delivery pass; the selected whole case completes. |
 | Expanded-filter deployment outcomes | 2/2 corrected outcomes pass | All applicable named dialogs match tie ordering and 15-pixel settled first-row spacing at both widths. Search source-data differences remain open. |
 | P08 daily-run evidence | 5/6 functional criteria and 14/14 complete visual states pass | Complete CV bytes/pages, HEAD and valid range agree; unsatisfied-range error metadata remains for review. Whole case pending. |
-| Current URL-based batch | 20 distinct URLs: 16 carried forward, 4 added | Six cases complete this review. Both filter fixes and the remaining supporting title check pass. Institution rendering/fallback and missing-record layout pass; the remote collected-file command and illustration delivery remain pending. E01 completes and L03 fills its slot. See `next_batch.md`. |
+| Current URL-based batch | 20 distinct URLs: 15 carried forward, 5 added | Six cases complete this review. Both filter fixes and the remaining supporting title check pass. Institution rendering/fallback and missing-record layout pass; the remote collected-file command and illustration delivery remain pending. E01 completes and L03 fills its slot. See `next_batch.md`. |
 
 Measure the same checks before and after deployment. Use content versions on changed assets to avoid reusing older browser resources; verify actual served bytes and rendered behavior rather than assuming the requested version proves delivery. Confirm collected copies during deployment, then refresh without cached resources when the browser still uses older bytes. Source count/order differences stay open until explained and checked.
 
@@ -80,6 +80,7 @@ During active improvement work, use `America/New_York` boundaries at 00:00, 06:0
 | October 5, 2026 at 12:43 America/New_York — daily start | 15 / 77 | 19.5% | Denominator unchanged. Loaded `aae7a67` includes pending changes; per-change checks begin. No new whole case passes at start. |
 | October 5, 2026 at 14:10 America/New_York — verification checkpoint | 16 / 77 | 20.8% | E01 completes on `95a4f65`; denominator unchanged. P08 retains the document error-response review. Next scheduled boundary remains 18:00 local. |
 | October 5, 2026 — 14:54 verification checkpoint | 17 / 77 | 22.1% | P10 completes on loaded `5dd7b1b`; O02 replaces its slot. No denominator change; P08/P09 document response difference remains. |
+| October 5, 2026 at 15:48 America/New_York — resumption | 17 / 77 | 22.1% | Loaded `fd6d0a8c` confirmed. No new whole case or denominator change. Retain P11 visual evidence; unfinished functional checks and SD01 remain pending. |
 
 The estimate can decrease when scope gains required cases or a regression reopens a case. Explain that change instead of hiding it. A later estimate of work remaining may be added separately with its basis and uncertainty; it must not replace or silently change this measured fraction. Complete endpoint coverage, integration checks and owner acceptance remain separate requirements even if all currently named cases pass.
 

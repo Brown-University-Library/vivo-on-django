@@ -1,11 +1,12 @@
 # Current batch: twenty URLs
 
-Batch: url-batch-008, October 5, 2026. Follow [workplan.md](workplan.md), [next_batch.md](next_batch.md), and [../AGENTS.md](../AGENTS.md). The initial list contains seventeen carried URLs and three added URLs. After three more whole cases finish, the refilled next list contains sixteen carried URLs and four added URLs. Exact pairs and evidence stay in `../../url_batch_008/` and `../../current_urls.local.md`, outside Git. The preceding [implementation](previous_workplan_artificts/url_batch_007_current_batch.md), [selected list](previous_workplan_artificts/url_batch_007_next_batch.md), and [evaluation](previous_workplan_artificts/url_batch_007_evaluation.md) are archived.
+Batch: url-batch-008, October 5, 2026. Follow [workplan.md](workplan.md), [next_batch.md](next_batch.md), and [../AGENTS.md](../AGENTS.md). The initial list contains seventeen carried URLs and three added URLs. The current rolling list contains fifteen carried URLs and five additions after the recorded completions and replacements. Exact pairs and evidence stay in `../../url_batch_008/` and `../../current_urls.local.md`, outside Git. The preceding [implementation](previous_workplan_artificts/url_batch_007_current_batch.md), [selected list](previous_workplan_artificts/url_batch_007_next_batch.md), and [evaluation](previous_workplan_artificts/url_batch_007_evaluation.md) are archived.
 
 Contents:
 
 - [Status](#status)
 - [Pass and release record](#pass-and-release-record)
+- [Shared differences](#shared-differences)
 - [Changes and deployed checks](#changes-and-deployed-checks)
 - [Local validation](#local-validation)
 - [Remaining work](#remaining-work)
@@ -18,6 +19,8 @@ Daily-run verification on October 5, 2026 confirms `response.loaded_version` at 
 
 Follow [the automatic procedure](workplan.md#automatic-deployment-and-verification) for pending checks. The next invocation confirms the expected loaded revision and actual asset delivery itself; it does not wait for another owner deployment message. The historical verified results above retain their original revision.
 
+The owner paused the daily run at October 5, 2026 15:36 America/New_York for a workflow update. The private checkpoint records a clean checkout at that pause, last pushed and confirmed loaded `fd6d0a8c`, and seventeen completed whole cases (22.1% of seventy-seven). P11 has complete visual evidence at both widths but unfinished functional checks. Preserve its evidence and resume the recorded next action. This documentation update runs no deployed comparisons and certifies no additional check or case; its edits remain local until an authorized release. The original cutoff remains October 6 at 08:00 America/New_York (12:00 UTC).
+
 ## Pass and release record
 
 The daily run starts October 5, 2026 at 12:43 America/New_York. Its sole writer, finite active-pass actions and fixed October 6 cutoff are recorded in `../../ongoing_run.local.md`. [next_batch.md](next_batch.md) preserves the prepared twenty-case list. Resuming a recorded daily run keeps that run's cutoff.
@@ -28,6 +31,14 @@ The daily run starts October 5, 2026 at 12:43 America/New_York. Its sole writer,
 
 For subsequent releases, record the full expected and confirmed remote commits, push time, actual loaded commit, verification time, per-change result and next action privately; keep safe summaries here. Record pass start time and finite planned actions before starting it. Verify changed behavior and affected passing cases for each release, then account for all selected cases at the pass boundary. Check [progress.md](progress.md#six-hour-snapshots) for a due snapshot. After the cutoff, finish existing actions and records without refilling or starting another pass.
 
+## Shared differences
+
+Follow [handle shared differences once](workplan.md#handle-shared-differences-once). These records retain existing unresolved findings; creating an ID does not resolve a difference or change a case's passing conditions. Carry unresolved IDs into the next pass report, and link affected case rows here. Detailed evidence and exact responses stay private.
+
+| ID | State and demonstrated difference | Affected cases and checks | Existing evidence / last checked revision | Next action |
+| --- | --- | --- | --- | --- |
+| SD01 | Checked locally: the shared document handler now matches the reference range-error body and metadata. A zero-length suffix retains the full document, as observed on the reference. No intentional difference is accepted. | P08 F05 and P09 F05; P11 F05 applicability confirmed through the common handler and its own reference response. P11 document bytes/pages remain pending. Previously completed CV delivery needs focused regression checks. | Private label `daily-run-2026-10-05`: existing profile results and shared response evidence; last loaded `fd6d0a8c`. Six focused checks, full 290-test suite, Ruff and three-file Pyright pass. | Release change 008-06, confirm the loaded revision, compare affected document responses and normal delivery, and retain unaffected full-profile visual evidence. Whole cases stay pending until their own remaining checks pass. |
+
 ## Changes and deployed checks
 
 | Change ID | Change and reason | Local evidence | Required check after deployment |
@@ -37,6 +48,7 @@ For subsequent releases, record the full expected and confirmed remote commits, 
 | url-batch-008-03 | Render the additional institution information page in source modes, preserve no-slash/slash entry, use the shared public styles and keep existing profile/individual links local with any mount prefix. Match the reference punctuation. | Route/template tests cover both forms in prototype/prepared/replay/live modes and prefixed links. Local browser rendering confirms the heading, public styles and local destinations. | Confirm direct/slash entry, full content, four internal destinations, search/return and full desktop/narrow views. Reconcile the illustration that fails on the reference and local pages. |
 | url-batch-008-04 | Match the institution illustration fallback text to the reference. The unavailable image exposes a different label and horizontal position in both layouts. | Direct paired views demonstrate the difference; only the template alternative text changes. Full suite: 289 tests pass. No Python file changes. | Confirm the fallback label and its placement at both widths, retain the failed image observation, and recheck the four content destinations and search/return. |
 | url-batch-008-05 | Keep the missing-record search area inside its error wrapper, matching the reference layout. The separate wrapper leaves a large empty region before the search. | Reference and target rendered structure and positions demonstrate the difference. An offline browser preview moves the search to the reference vertical position without changing recovery links or form controls. All 289 tests pass; no Python changes. | Confirm 404 behavior, recovery links, keyboard search/return, required assets and complete desktop/narrow views. Preserve changing background images and any remaining width/capture differences as separate observations. |
+| url-batch-008-06 | Match reference document range handling and error responses in the shared handler. Keep normal PDF downloads, valid ranges and HEAD behavior. | Six focused checks and all 290 tests pass. Error bytes match the observed reference. Ruff and three-file Pyright pass using Python 3.12 and the project interpreter. | Confirm the loaded revision; compare affected error bodies/metadata and zero-length suffix behavior, full document bytes, HEAD and valid ranges. Recheck applicable completed document cases. Retain unrelated profile visual evidence. |
 
 ## Local validation
 
@@ -65,3 +77,5 @@ P08 review on loaded `95a4f65` confirms all available section content and filter
 Daily release 03 pushes workflow records in `5dd7b1b`; loaded revision is confirmed before further comparisons. No application code changes, so unchanged behavior retains its earlier recorded evidence. P09 confirms five functional and ten complete visual checks, including publication filters, fresh bookmarks, pointer/keyboard states, default and filtered/paged return, three internal destinations and required assets. Its complete CV bytes and all thirty pages match; normal delivery agrees. The shared unsatisfied-range error-response difference remains for review. Whole cases remain sixteen.
 
 P10 review on loaded `5dd7b1b` completes five functional and fourteen visual criteria. Full content, all publication filters, section controls, fresh bookmarks, search return, sixteen internal destinations, external/configured links and required assets agree. Both visualization controls open their intended new tabs. Whole graph checks remain separate. Full desktop/narrow comparisons reach the footer in every state. Two publishers return the same temporary error for both link variants; their destination checks pass, with publisher availability recorded as a limitation. No application code change is required. P10 leaves the rolling list; approved O02 replaces its slot after a clock check. Seventeen of seventy-seven cases complete; the denominator is unchanged.
+
+Daily run resumes with the original cutoff and unchanged twenty-case membership. The coordinating workflow and comparison-guide edits are preserved. P11 fresh and filtered/paged search return now reaches each actual origin; earlier premature observations are excluded. Two target department destinations remain browser-blocked, and graph/external/document/asset checks are incomplete. No new whole-case pass is claimed. SD01 has a focused checked correction ready for the next authorized release.
