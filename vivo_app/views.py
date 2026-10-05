@@ -415,7 +415,7 @@ def organization_publications_tsv(request: HttpRequest, id: str) -> HttpResponse
         return HttpResponse(
             body.encode(),
             content_type='text/csv',
-            headers={'Content-Disposition': f'attachment; filename="{id}.tsv"'},
+            headers={'Content-Disposition': f'attachment; filename="{id}.tsv"; filename*=UTF-8\'\'{id}.tsv'},
         )
     except PageDataError as exc:
         return data_unavailable(exc)

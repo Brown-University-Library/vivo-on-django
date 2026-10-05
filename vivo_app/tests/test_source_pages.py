@@ -27,6 +27,8 @@ from vivo_app.lib.source_pages import (
     profile_data,
     profile_sections,
     profile_year_range,
+    publication_citation,
+    publication_export_type,
     publication_html,
     publications,
     safe_match_text,
@@ -1737,7 +1739,9 @@ class SourcePageTests(TestCase):
             response = self.get_page('/display/org-example/publications.tsv')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'text/csv')
-        self.assertEqual(response['Content-Disposition'], 'attachment; filename="org-example.tsv"')
+        self.assertEqual(
+            response['Content-Disposition'], 'attachment; filename="org-example.tsv"; filename*=UTF-8\'\'org-example.tsv'
+        )
         self.assertEqual(response.content.decode(), body)
         self.responses.pop(member_details_key(['invented-a']))
         with self.assertRaises(PageDataError):
@@ -1761,9 +1765,9 @@ class SourcePageTests(TestCase):
         self.assertLess(body.index('\tAlpha\t'), body.index('\t Zeta\t'))
         self.assertIn('\tOld\t\t\tArticle\t', body)
 
-    def test_organization_publications_tsv_keeps_each_record_on_one_line(self) -> None:
+    def test_organization_publications_tsv_preserves_source_tabs_and_line_breaks(self) -> None:
         """
-        Checks source tabs and line breaks cannot split a publication download row.
+        Checks the download retains the reference's original field separators.
         """
         key = member_details_key(['invented-a'])
         source = json.loads(self.responses[key].body)
@@ -1771,10 +1775,41 @@ class SourcePageTests(TestCase):
         person['contributor_to'][0]['title'] = 'Example\tpublication\ncontinued'
         source['response']['docs'][0]['json_txt'] = [json.dumps(person)]
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        lines = organization_publications_data('org-example', 'live', self.read).splitlines()
-        self.assertEqual(len(lines), 2)
-        self.assertEqual(len(lines[1].split('\t')), 7)
-        self.assertIn('Example publication continued', lines[1])
+        body = organization_publications_data('org-example', 'live', self.read)
+        self.assertIn('\tExample\tpublication\ncontinued\t', body)
+        self.assertIn('"Example\tpublication\ncontinued." ', body)
+        self.assertGreater(len(body.splitlines()), 2)
+
+    def test_publication_export_citation_preserves_quotation_and_detail_spacing(self) -> None:
+        """
+        Checks raw citation text retains nested quotes, periods, markup and spacing.
+        """
+        self.assertEqual(
+            publication_citation({'title': '"An "example".."', 'published_in': 'Example & <b>Journal</b>', 'date': '2024'}),
+            '"An "example".."  <i>Example & <b>Journal</b></i>, 2024.',
+        )
+        self.assertEqual(publication_citation({'title': '“Example”'}), '"Example”.".')
+
+    def test_publication_export_citation_preserves_numeric_and_empty_details(self) -> None:
+        """
+        Checks numeric details, blank venue fallback and empty non-null fields match Rails.
+        """
+        self.assertEqual(
+            publication_citation({'published_in': ' ', 'venue': 'Example', 'volume': 3, 'issue': '', 'pages': '1–2'}),
+            '<i>Example</i>, vol. 3, no., pp. 1–2.',
+        )
+        self.assertEqual(publication_citation({}), '.')
+
+    def test_publication_export_type_keeps_absent_and_unrecognized_types_empty(self) -> None:
+        """
+        Checks an absent export type stays empty while known classes use reference labels.
+        """
+        for value in (None, '', 'urn:example:Article'):
+            with self.subTest(value=value):
+                self.assertEqual(publication_export_type({'type': value}), '')
+        prefix = 'http://vivo.brown.edu/ontology/citation#'
+        self.assertEqual(publication_export_type({'type': prefix + 'BookSection'}), 'Book Section')
+        self.assertEqual(publication_export_type({'type': prefix + 'Citation'}), 'Other')
 
     def test_sparse_profile_json_uses_graph_availability(self) -> None:
         """

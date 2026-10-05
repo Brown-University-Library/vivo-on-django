@@ -678,35 +678,51 @@ def publication_citation(item: dict[str, object]) -> str:
 
     Called by: organization_publications_data(), tests
     """
-    title = first_text(item.get('title')).strip(' \t\r\n\v\f').removeprefix('“')
+    title = citation_text(item.get('title')).removeprefix('“')
     text = ''
     if title:
-        title = title.strip('"')
-        text = '"' + title.rstrip('.') + '." '
-    venue = first_text(item.get('published_in')) or first_text(item.get('venue'))
-    fields = [('<i>' + venue + '</i>') if venue else '']
+        if not title.startswith('"'):
+            title = '"' + title
+        if not title.endswith('"'):
+            title += '"'
+        if len(title) < 2 or title[-2] != '.':
+            title = title[:-1] + '."'
+        text = title + ' '
+    venue = citation_text(item.get('published_in'), preserve_spacing=True)
+    if not venue.strip():
+        venue = citation_text(item.get('venue'), preserve_spacing=True)
+    fields: list[tuple[str, str]] = [('<i>' + venue + '</i>', ',')] if venue.strip() else []
     for name, prefix in (('volume', 'vol. '), ('issue', 'no. ')):
-        value = first_text(item.get(name))
-        if value:
-            fields.append(prefix + value)
+        if item.get(name) is not None:
+            fields.append((prefix + citation_text(item.get(name), preserve_spacing=True), ','))
     year = publication_year(item)
     if year:
-        fields.append(year)
-    pages = first_text(item.get('pages'))
-    if pages:
-        fields.append('pp. ' + pages)
-    parts = [field for field in fields if field]
-    text += (' ' if text and parts else '') + ', '.join(parts)
-    return text.rstrip(' ,.') + '.'
+        fields.append((year, ','))
+    pages = citation_text(item.get('pages'), preserve_spacing=True)
+    if pages.strip():
+        fields.append(('pp. ' + pages, '.'))
+    for value, delimiter in fields:
+        text += ' ' + value.strip(' \t\r\n\v\f')
+        if not text.endswith(delimiter):
+            text += delimiter
+    return citation_period(text)
 
 
-def tsv_field(value: str) -> str:
+def publication_export_type(item: dict[str, object]) -> str:
     """
-    Keeps source line breaks and tabs inside one download column.
+    Keeps the reference export's empty type and citation class labels.
 
     Called by: organization_publications_data()
     """
-    return re.sub(r'[\t\r\n]+', ' ', value)
+    prefix = 'http://vivo.brown.edu/ontology/citation#'
+    raw = first_text(item.get('type'))
+    result = ''
+    if raw.startswith(prefix):
+        kind = raw.replace(prefix, '')
+        if kind == 'Citation':
+            kind = 'Other'
+        result = re.sub(r'[A-Z]', r' \g<0>', kind).strip()
+    return result
 
 
 def ordered_publication_rows(item: dict[str, object]) -> list[dict[str, object]]:
@@ -1331,7 +1347,7 @@ def organization_publications_data(
         person = record_data(doc)
         publications_data = ordered_publication_rows(person)
         for publication in publications_data:
-            _, kind = publication_type(publication)
+            kind = publication_export_type(publication)
             fields = (
                 first_text(doc.get('id')),
                 first_text(person.get('name')),
@@ -1341,5 +1357,5 @@ def organization_publications_data(
                 kind,
                 publication_citation(publication),
             )
-            lines.append('\t'.join(tsv_field(field) for field in fields) + '\n')
+            lines.append('\t'.join(fields) + '\n')
     return ''.join(lines)
