@@ -40,6 +40,7 @@ COMMUNITY_RESEARCH_AREAS = (
 )
 MAX_RESPONSE_BYTES = 3_000_000
 MAX_DOCUMENT_BYTES = 10_000_000
+MAX_IMAGE_BYTES = 10_000_000
 logger = logging.getLogger(__name__)
 
 
@@ -362,6 +363,7 @@ def read_source(key: RequestKey, mode: str) -> RecordedResponse:
 
     Called by: source_pages.response_object(), views.source_image(), views.source_document(), tools.source_capture.CapturingReader.__call__()
     """
+    limit = {'documents': MAX_DOCUMENT_BYTES, 'images': MAX_IMAGE_BYTES}.get(key.service, MAX_RESPONSE_BYTES)
     if mode == 'replay':
         manifest = settings.UPSTREAM_RECORDING_MANIFEST
         if not manifest:
@@ -382,7 +384,6 @@ def read_source(key: RequestKey, mode: str) -> RecordedResponse:
             result = book_rows_response()
         else:
             origin = source_origin(key.service)
-            limit = MAX_DOCUMENT_BYTES if key.service == 'documents' else MAX_RESPONSE_BYTES
             try:
                 with (
                     httpx2.Client(timeout=10.0, follow_redirects=False, trust_env=False) as client,
@@ -403,7 +404,6 @@ def read_source(key: RequestKey, mode: str) -> RecordedResponse:
                 raise PageDataError(f'{key.service} source request failed.') from exc
     else:
         raise PageDataError('Source requests require replay or live mode.')
-    limit = MAX_DOCUMENT_BYTES if key.service == 'documents' else MAX_RESPONSE_BYTES
     allowed_status = {200, 301, 302} if key.service == 'documents' else ({200, 404} if key.service == 'vitro' else {200})
     if result.status not in allowed_status or len(result.body) > limit:
         logger.warning(
