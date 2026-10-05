@@ -43,6 +43,10 @@ Open `report.html` for side-by-side screenshots, `report.md` for a brief list, o
 
 Any changed pixel or observation requires review and produces exit code 1. Missing screenshots, failed assets, script errors, blocked reference access, and incomplete captures cannot pass. Reference failures remain visible even when local pages load correctly. There is no automatic tolerance that accepts a visual difference.
 
+For interactive browser captures, verify the selected tab after opening a linked document. Set its requested viewport after navigation and confirm the actual screenshot bitmap dimensions. Begin complete-page coverage at scroll position zero, record each subsequent scroll position, and continue through the footer with overlapping frames. Resizing can retain an earlier scroll position or affect another selected tab. A viewport setting or DOM size alone does not establish the screenshot size or complete coverage. Exclude incorrect captures and repeat them before counting visual checks as passed.
+
+For animated dialogs, confirm the intended dialog's title, selected control and settled values before saving a result. Wait for the previous dialog to close before opening another. Preserve source-data differences separately from sorting or spacing results; a corrected control does not establish matching counts or whole-page completion.
+
 ## Current limits
 
 This command now compares selected search, profile, organization, and homepage pages. It compares final URLs, but does not yet report every redirect hop or check all linked destinations, downloads, or JSON responses. A separate external check compares selected full redirect chains, response formats and cache headers, one saved cover image, and a CV download. A screenshot covers one viewport, not the entire page. Add explicit selectors and interaction cases for content below it. Use narrow `screenshot_css` for the homepage's changing background, then review the normal page separately to confirm that its background loads. The invented detector check proves selected failure detection; it does not prove that every real page has complete coverage.
