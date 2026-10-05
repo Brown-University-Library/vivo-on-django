@@ -573,6 +573,11 @@ class SourcePageTests(TestCase):
             document = self.get_page(redirect['Location'])
             self.assertEqual(document['Content-Type'], 'application/pdf')
             self.assertTrue(document.content.startswith(b'%PDF-'))
+            part = self.client.get(redirect['Location'], SERVER_NAME='127.0.0.1', HTTP_RANGE='bytes=0-4')
+            assert isinstance(part, HttpResponse)
+            self.assertEqual(part.status_code, 206)
+            self.assertEqual(part.content, b'%PDF-')
+            self.assertEqual(part['Content-Range'], f'bytes 0-4/{len(document.content)}')
 
     def test_live_search_links_keep_the_deployment_prefix(self) -> None:
         """

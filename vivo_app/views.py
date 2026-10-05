@@ -34,6 +34,7 @@ from .lib.page_data import (
 from .lib.page_rendering import data_unavailable, prepared_response, query_pairs, render_or_stub
 from .lib.prepared_data import MissingRecordError, PageDataError
 from .lib.profile_navigation import profile_search_return
+from .lib.source_documents import document_response
 from .lib.source_formats import organization_json_data, profile_json_data, raw_record_json_data
 from .lib.source_graph import graph_csv, graph_page_data, graph_subject_data, visualization_graph
 from .lib.source_org_charts import publication_history_csv, publication_history_data, research_areas_data
@@ -95,7 +96,7 @@ def source_document(request: HttpRequest, filename: str) -> HttpResponse:
             return HttpResponse(status=result.status, headers={'Location': redirect_url})
         if headers.get('content-type', '').split(';', 1)[0] != 'application/pdf' or not result.body.startswith(b'%PDF-'):
             raise PageDataError('The document source returned an unsupported PDF response.')
-        return HttpResponse(result.body, content_type='application/pdf')
+        return document_response(request, result.body)
     except PageDataError as exc:
         return data_unavailable(exc)
 
