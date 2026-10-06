@@ -1,6 +1,6 @@
 # Inventory for the estimated URL-case completion percentage
 
-Inventory v1, October 5, 2026: **20 of 77 known cases complete — 26.0%.** See [progress.md](progress.md) for the current snapshot and six-hour update procedure. This inventory counts named URL cases with their required behavior; it is a provisional estimate, not a count of every distinct HTTP URL string or a percentage of engineering time.
+Inventory v1, updated October 6, 2026: **27 of 77 known cases complete — 35.1%.** See [progress.md](progress.md) for the current snapshot and six-hour update procedure. This inventory counts named URL cases with their required behavior; it is a provisional estimate, not a count of every distinct HTTP URL string or a percentage of engineering time.
 
 Midnight snapshot, October 6, 2026 at 00:00 America/New_York: all case states below remain unchanged, with 25 complete and 77 known. P05 and P14 retain their specific incomplete checks; partial gains do not change whole completion. No new cases or aliases are added. The original daily cutoff remains October 6 at 08:00 local time.
 
@@ -50,7 +50,7 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | L06 | Pending |
 | L07 | Complete |
 | O01 | Pending |
-| O02 | Pending |
+| O02 | Complete |
 | O03 | Complete |
 | O04 | Complete |
 | O05 | Pending |
@@ -59,17 +59,17 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | P02 | Complete |
 | P03 | Complete |
 | P04 | Complete |
-| P05 | Pending |
+| P05 | Complete |
 | P06 | Pending |
 | P07 | Complete |
-| P08 | Pending: SD17 literal citation links |
-| P09 | Pending: SD17 literal citation links |
-| P10 | Pending: SD17 literal citation links |
+| P08 | Complete |
+| P09 | Complete |
+| P10 | Complete |
 | P11 | Pending |
-| P12 | Pending: SD17 literal citation links |
+| P12 | Complete |
 | P13 | Pending |
 | P14 | Pending |
-| P15 | Pending: SD17 literal citation links |
+| P15 | Complete |
 | PUBLICATIONS01 | Complete |
 | R01 | Pending |
 | R02 | Pending |
@@ -125,3 +125,6 @@ October 6, 2026 06:00 America/New_York snapshot: 25 completed / 77 known (32.5%)
 
 
 October 6, 2026 at 07:06 America/New_York: SD17 adds the demonstrated literal citation-link requirement F04a. P08, P09, P10, P12 and P15 reopen for this focused deployed check. Earlier complete content, controls, documents and visual evidence remain applicable. Twenty cases remain complete; the denominator stays seventy-seven. Supporting regressions do not alter the rolling twenty URLs or original cutoff.
+
+
+Final comparison checkpoint, October 6: SD17 and its address-space follow-up pass on loaded `7f78c9a`. The five reopened profiles regain Complete after all literal citation addresses, forty-two paired filter/text/geometry states, actual new-tab behavior, resources and affected visual regions pass. Their unchanged complete views, navigation and document evidence remain applicable. P05 and O02 also complete after SD10 exact shared links and current applicability checks. Whole completion is twenty-seven of seventy-seven (35.1%); the denominator is unchanged. The active pass keeps its original twenty members; completed slots are not replaced while finishing this dated run.

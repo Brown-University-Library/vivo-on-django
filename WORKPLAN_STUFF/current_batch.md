@@ -1,5 +1,8 @@
 # Current batch: twenty URLs
 
+Final dated-run state: the original cutoff has been reached. Twenty active members are frozen; P05 and O02 complete, and eighteen unfinished cases carry forward in next_batch.md. SD17 restores five supporting profiles. Current whole-case completion is 27/77 (35.1%); all application releases are loaded and accounted for. Earlier entries below record the review history.
+
+
 Batch: url-batch-008, October 5, 2026. Follow [workplan.md](workplan.md), [next_batch.md](next_batch.md), and [../AGENTS.md](../AGENTS.md). The initial list contains seventeen carried URLs and three added URLs. The current rolling list contains nine carried URLs and eleven additions after the recorded completions and replacements. Exact pairs and evidence stay in `../../url_batch_008/` and `../../current_urls.local.md`, outside Git. The preceding [implementation](previous_workplan_artificts/url_batch_007_current_batch.md), [selected list](previous_workplan_artificts/url_batch_007_next_batch.md), and [evaluation](previous_workplan_artificts/url_batch_007_evaluation.md) are archived.
 
 Contents:
@@ -228,3 +231,9 @@ SD17 has forty-two paired deployed publication states. Visible citation text and
 | Additional change | Improvement and local validation | Required deployed check |
 | --- | --- | --- |
 | url-batch-008-30 / SD17 | Preserve demonstrated leading and trailing spaces in DOI, PubMed and More Info addresses. Keep link validation and HTML attribute escaping. All 313 tests and changed-file Ruff, formatting and project Pyright pass. | Compare every literal citation address and offered new-tab journeys on the five affected profiles at both widths; preserve previously passing visible text, filtering and geometry. |
+
+
+Final deployed comparison: SD17 and 008-30 pass on loaded `7f78c9a`, with all forty-two literal-link/text/filter/geometry pairs and twenty-eight actual new-tab observations across seven address variations. Premature image reads are excluded and replaced. Nine paired current visual sheets are inspected; unchanged complete interiors, controls, navigation and documents retain their applicability. P08, P09, P10, P12 and P15 regain Complete. P05 and O02 complete after verified SD10 shared links and current desktop/narrow applicability. Other selected URLs retain their recorded differences and concrete next actions. No case is passed because access or a capture is blocked. The original twenty-member active pass is preserved through the cutoff and handoff.
+
+
+The fixed cutoff is reached: October 6, 2026 at 08:00 America/New_York (12:00 UTC). Membership and planned work are frozen. The active pass has two whole completions, P05 and O02, and eighteen retained unfinished cases. Their concrete next actions are prepared in [next_batch.md](next_batch.md); no replacement is started. All application changes are pushed, loaded and accounted for. The final documentation release and handoff complete this dated run without accepting the site, closing issues or switching traffic.

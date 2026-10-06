@@ -93,6 +93,6 @@ SD07 is verified after deployment on `42eb1e4`. Current citation text, inline fo
 - [ ] Finish SD09 supporting JSON/CSV and native downloaded-image comparison through permitted owner views/artifacts. Complete empty HTML, recovery layout, SVG display/scroll, fit navigation, pointer/keyboard controls, current graph assets and affected completed-profile entries are verified on `d350fca`. Format entries and image artifact capture remain blocked; no whole V02 completion is claimed. Confirm actual served assets on each later release; automatic caller collection remains unconfirmed here.
 
 
-- [ ] Verify SD17 on the next loaded release: literal DOI and PubMed links, actual offered new-tab behavior and affected profile filters/content. Restore the five reopened profiles only after all required checks pass.
+- [x] Verified SD17 on loaded `7f78c9a`: literal DOI and PubMed links, actual offered new-tab behavior and affected profile filters/content. Restore the five reopened profiles only after all required checks pass.
 
-- [ ] Verify 008-30 literal citation addresses and offered new-tab journeys on the five reopened profiles. Retain incomplete checks; do not replace raw address equality with destination normalization.
+- [x] Verified 008-30 literal citation addresses and offered new-tab journeys on the five reopened profiles. Retain incomplete checks; do not replace raw address equality with destination normalization.

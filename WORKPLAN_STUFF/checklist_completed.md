@@ -115,3 +115,5 @@ SD07 is verified after deployment on `42eb1e4`. Current citation text, inline fo
 
 
 SD17 temporarily reopens P08, P09, P10, P12 and P15 for added F04a literal citation-link checks. Their earlier complete evidence is retained; current completion is 20/77 (26.0%) until the focused deployed correction passes.
+
+- [x] **October 6, 2026 — SD17, P08/P09/P10/P12/P15 restored; P05 and O02 complete.** Loaded `7f78c9a` passes exact citation addresses, forty-two paired publication states, twenty-eight actual new-tab observations across seven address variations, settled resources and inspected affected regions. Earlier complete unaffected evidence remains applicable. P05 and O02 add passing SD10 shared-link checks and current two-width applicability. Whole completion is 27/77; supporting graphs and owner acceptance remain separate.
