@@ -20,4 +20,15 @@
 .network-empty .network-options > .btn { display: inline-block; white-space: nowrap; }
 .network-empty label { font-weight: normal; margin-bottom: 0; }
 .network-empty #embedHtmlText { background-color: #f5f5d3; border: 1px solid #999; width: 98%; margin: 5px 0; padding: 1%; }
+.network-person div.btn-group { margin-top: .7em; margin-left: .7em; float: left; }
+.network-person .network-scope { margin-top: .7em; margin-left: .7em; }
+.network-person #svgElement { display: block; margin: 1.67em; float: left; }
+.network-person .network-options > .btn { display: inline-block; clear: left; white-space: nowrap; }
+.network-person label { font-weight: normal; margin-bottom: 0; }
+.network-person #legendList span { display: inline; width: auto; height: auto; margin-right: 0; }
+.network-person #svgElement circle { stroke: none; stroke-width: 1px; }
+.network-person #embedHtmlText { background-color: #f5f5d3; border: 1px solid #999; width: 98%; margin: 5px 0; padding: 1%; }
+.network-person .network-tooltip { position: absolute; z-index: auto; padding: 5px; border: 0; border-radius: 10px; box-shadow: 4px 4px 10px rgba(0, 0, 0, .4); }
+.network-person #title { font-weight: bold; }
+.network-person #subtitle2 { font-size: small; font-style: italic; }
 @media (max-width: 767px) { .network-page .network-graph { max-width: 100%; height: auto; } }

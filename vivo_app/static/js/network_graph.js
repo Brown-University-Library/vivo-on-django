@@ -5,6 +5,7 @@
   if (!sourceElement || !window.d3) return;
   var page = JSON.parse(sourceElement.textContent);
   var source = page.source;
+  var personNetwork = page.type === 'PEOPLE' && !page.empty_network;
   var svg = d3.select('#svgElement');
   var tooltip = document.getElementById('tooltip');
   var scope = page.type === 'PEOPLE' ? 1 : 1;
@@ -15,7 +16,7 @@
     linkedIds.add(link.source);
     linkedIds.add(link.target);
   });
-  var allNodes = source.nodes.filter(function (node) { return linkedIds.has(node.id); });
+  var allNodes = personNetwork ? source.nodes.slice() : source.nodes.filter(function (node) { return linkedIds.has(node.id); });
   var allLinks = source.links.slice();
   var rootIds = new Set([rootUri, page.id]);
   var directIds = new Set();
@@ -36,7 +37,8 @@
   var top = groups.indexOf(page.name);
   if (top !== -1) groups.unshift(groups.splice(top, 1)[0]);
   var colors = d3.scaleOrdinal(d3.schemeCategory20).domain(groups);
-  var headingColor = colors(page.type === 'PEOPLE' ? (groups[0] || 'N/A') : page.name);
+  var rootNode = allNodes.find(function (node) { return rootIds.has(node.id); });
+  var headingColor = colors(page.type === 'PEOPLE' ? (rootNode ? rootNode.group || 'N/A' : groups[0] || 'N/A') : page.name);
   if (!page.empty_network) document.querySelector('.researcherName').style.borderLeftColor = headingColor;
   var subtitle = document.querySelector('.facultyTitle');
   if (subtitle && !page.empty_network) subtitle.style.borderLeftColor = headingColor;
@@ -54,14 +56,20 @@
   var missingDate = document.getElementById('txtLastUpdated');
   if (missingDate && !missingDate.textContent) missingDate.textContent = '(not available)';
   var legend = document.getElementById('legendList');
-  groups.forEach(function (group) {
-    var row = document.createElement('li');
-    var swatch = document.createElement('span');
-    swatch.style.backgroundColor = colors(group);
-    row.appendChild(swatch);
-    row.appendChild(document.createTextNode(group));
-    legend.appendChild(row);
-  });
+  function updateLegend(nodes) {
+    legend.textContent = '';
+    var visibleGroups = personNetwork
+      ? Array.from(new Set(nodes.map(function (node) { return node.group || 'N/A'; }))).sort() : groups;
+    visibleGroups.forEach(function (group) {
+      var row = document.createElement('li');
+      var swatch = document.createElement('span');
+      swatch.style.backgroundColor = colors(group);
+      if (personNetwork) swatch.textContent = '\u00a0\u00a0\u00a0\u00a0';
+      row.appendChild(swatch);
+      row.appendChild(document.createTextNode((personNetwork ? '\u00a0' : '') + group));
+      legend.appendChild(row);
+    });
+  }
 
   function updateScopeButtons() {
     [['showLess', 1], ['showMore', 2], ['showLevel0', 0], ['showLevel1', 1]].forEach(function (entry) {
@@ -76,49 +84,90 @@
     if (simulation) simulation.stop();
     svg.selectAll('*').remove();
     var nodes = allNodes.filter(function (node) { return node.localLevel <= scope; }).map(function (node) {
-      return Object.assign({}, node);
+      return personNetwork ? node : Object.assign({}, node);
     });
     var visible = new Set(nodes.map(function (node) { return node.id; }));
     var links = allLinks.filter(function (link) {
       return visible.has(link.source) && visible.has(link.target);
     }).map(function (link) { return Object.assign({}, link); });
     updateScopeButtons();
+    updateLegend(nodes);
     if (page.empty_network || !nodes.length) return;
 
-    var edges = svg.append('g').selectAll('line').data(links).enter().append('line')
-      .attr('stroke', '#ccc').attr('stroke-width', 1);
-    var people = svg.append('g').selectAll('g').data(nodes).enter().append('g')
-      .style('cursor', 'pointer');
-    people.append('circle')
-      .attr('r', function (node) { return node.localLevel === 0 ? 15 : (node.localLevel === 1 ? 11 : 6); })
-      .attr('fill', function (node) { return colors(node.group || 'N/A'); });
-    people.append('text').attr('class', 'node-text')
-      .attr('font-size', function (node) { return node.localLevel === 0 ? 12 : 8; })
-      .attr('font-weight', function (node) { return node.localLevel === 0 ? 'bold' : 'normal'; })
-      .text(function (node) { return node.name || ''; });
+    var edges = (personNetwork ? svg : svg.append('g')).selectAll('line').data(links).enter().append('line');
+    if (personNetwork) edges.style('stroke', '#ccc').style('stroke-width', 1);
+    else edges.attr('stroke', '#ccc').attr('stroke-width', 1);
+    var people = (personNetwork ? svg : svg.append('g')).selectAll('g').data(nodes).enter().append('g');
+    if (!personNetwork) people.style('cursor', 'pointer');
+    var circles = people.append('circle')
+      .attr('r', function (node) { return node.localLevel === 0 ? 15 : (node.localLevel === 1 ? 11 : 6); });
+    if (personNetwork) circles.style('fill', function (node) { return colors(node.group || 'N/A'); });
+    else circles.attr('fill', function (node) { return colors(node.group || 'N/A'); });
+    var labels = people.append('text').attr('class', 'node-text').text(function (node) { return node.name || ''; });
+    if (personNetwork) {
+      labels.style('font-size', function (node) { return node.localLevel === 0 ? '12px' : '8px'; })
+        .style('font-weight', function (node) { return node.localLevel === 0 ? 'bold' : 'normal'; });
+    } else {
+      labels.attr('font-size', function (node) { return node.localLevel === 0 ? 12 : 8; })
+        .attr('font-weight', function (node) { return node.localLevel === 0 ? 'bold' : 'normal'; });
+    }
     people.selectAll('text').classed('hidden', !document.getElementById('showLabels').checked);
 
     people.on('mouseover', function (node) {
+      if (personNetwork) {
+        if (document.getElementById('showDetails').checked) {
+          var matrix = this.getScreenCTM().translate(+this.getAttribute('cx'), +this.getAttribute('cy'));
+          tooltip.style.left = (window.pageXOffset + matrix.e + 15) + 'px';
+          tooltip.style.top = (window.pageYOffset + matrix.f - 30) + 'px';
+          document.getElementById('title').textContent = node.name || '';
+          document.getElementById('subtitle').textContent = node.group || '';
+          var instruction = document.getElementById('subtitle2');
+          instruction.classList.toggle('hidden', node.localLevel === 0);
+          instruction.textContent = 'Click to view ' + node.name + "'s " + page.kind;
+          tooltip.classList.remove('hidden');
+        } else {
+          d3.select(this).select('text').style('font-weight', 'bold').style('font-size', '12px');
+        }
+        var circle = d3.select(this).select('circle');
+        if (page.kind === 'coauthors') circle.style('stroke', '#ffbb78').style('stroke-width', 3);
+        else circle.style('fill', '#ffbb78');
+        return;
+      }
       if (!document.getElementById('showDetails').checked) return;
       tooltip.textContent = (node.name || '') + (node.group ? ' — ' + node.group : '');
       tooltip.style.left = (d3.event.clientX + 16) + 'px';
       tooltip.style.top = (d3.event.clientY - 20) + 'px';
       tooltip.classList.remove('hidden');
-    }).on('mouseout', function () { tooltip.classList.add('hidden'); });
+    }).on('mouseout', function (node) {
+      tooltip.classList.add('hidden');
+      if (personNetwork) {
+        if (!document.getElementById('showDetails').checked) {
+          d3.select(this).select('text').style('font-weight', 'normal').style('font-size', '10px');
+        }
+        var circle = d3.select(this).select('circle');
+        if (page.kind === 'coauthors') circle.style('stroke', colors(node.group || 'N/A')).style('stroke-width', 3);
+        else circle.style('fill', colors(node.group || 'N/A'));
+      }
+    });
     people.on('click', function (node) {
       if (page.type === 'PEOPLE' && rootIds.has(node.id)) return;
       var shortId = node.id.split('/').pop();
       if (!/^[A-Za-z0-9_-]{1,80}$/.test(shortId)) return;
-      window.location.assign(page.type === 'PEOPLE'
-        ? '/display/' + shortId + '/viz/' + (page.kind === 'coauthors' ? 'coauthor' : 'collab')
-        : '/display/' + shortId + '/');
+      if (page.type === 'PEOPLE') {
+        var destination = new URL(window.location.href);
+        destination.pathname = destination.pathname.replace('/display/' + page.id + '/viz/', '/display/' + shortId + '/viz/');
+        window.location.assign(destination.toString());
+      } else window.location.assign('/display/' + shortId + '/');
     });
 
-    simulation = d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(links).id(function (node) { return node.id; })
-        .distance(document.getElementById('forceToFit').checked ? 45 : 100).strength(0.1))
-      .force('charge', d3.forceManyBody())
-      .force('center', d3.forceCenter(480, 350));
+    var linkForce = d3.forceLink(links).id(function (node) { return node.id; });
+    if (!personNetwork || !document.getElementById('forceToFit').checked) {
+      linkForce.distance(document.getElementById('forceToFit').checked ? 45 : 100).strength(0.1);
+    }
+    simulation = d3.forceSimulation(nodes);
+    if (!personNetwork) simulation.force('link', linkForce);
+    simulation.force('charge', d3.forceManyBody()).force('center', d3.forceCenter(480, 350));
+    if (personNetwork) simulation.force('link', linkForce);
     people.call(d3.drag()
       .on('start', function (node) {
         if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -126,7 +175,10 @@
         node.fy = node.y;
       })
       .on('drag', function (node) { node.fx = d3.event.x; node.fy = d3.event.y; })
-      .on('end', function () { simulation.alphaTarget(0); }));
+      .on('end', function () {
+        if (personNetwork) document.getElementById('forceToFit').checked = false;
+        else simulation.alphaTarget(0);
+      }));
     simulation.on('tick', function () {
       edges.attr('x1', function (link) { return link.source.x; })
         .attr('y1', function (link) { return link.source.y; })
@@ -145,7 +197,7 @@
   });
   document.getElementById('forceToFit').addEventListener('change', function () {
     var url = new URL(window.location.href);
-    if (page.empty_network) {
+    if (page.type === 'PEOPLE') {
       url.hash = '';
       url.search = '';
     }
@@ -155,23 +207,27 @@
   });
 
   function svgCode() {
+    if (page.type === 'PEOPLE') {
+      return '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="700">\r\n' +
+        document.getElementById('svgElement').innerHTML + '\r\n</svg>';
+    }
     var image = document.getElementById('svgElement').cloneNode(true);
     image.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
     image.querySelectorAll('.hidden').forEach(function (node) { node.remove(); });
     return new XMLSerializer().serializeToString(image);
   }
   document.getElementById('embedHtml').addEventListener('click', function () {
-    document.getElementById('embedHtmlText').value = page.empty_network
+    document.getElementById('embedHtmlText').value = page.type === 'PEOPLE'
       ? '<svg width="960" height="700">\r\n' + document.getElementById('svgElement').innerHTML + '\r\n</svg>' : svgCode();
     document.getElementById('embedHtmlDiv').classList.remove('hidden');
-    if (page.empty_network) {
+    if (page.type === 'PEOPLE') {
       $('html, body').animate({scrollTop: $(document).height() - $(window).height()}, 1400, 'swing');
     }
   });
   document.getElementById('downloadPng').addEventListener('click', function () {
     var status = document.getElementById('downloadStatus');
     status.textContent = 'Preparing image…';
-    if (!page.empty_network) status.classList.remove('hidden');
+    if (page.type !== 'PEOPLE') status.classList.remove('hidden');
     var image = new Image();
     var svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgCode());
     image.onload = function () {
@@ -190,7 +246,7 @@
         var pngUrl = URL.createObjectURL(blob);
         var download = document.createElement('a');
         download.href = pngUrl;
-        download.download = (page.empty_collaboration ? 'collabs' : page.kind) + '_' + page.id + '.png';
+        download.download = (page.type === 'PEOPLE' && page.kind === 'collaborators' ? 'collabs' : page.kind) + '_' + page.id + '.png';
         document.body.appendChild(download);
         download.click();
         download.remove();
