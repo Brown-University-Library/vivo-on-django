@@ -667,8 +667,7 @@ def publication_html(item: dict[str, object]) -> str:
                 + label
                 + '</a>'
             )
-    if links:
-        citation += ' <div class="no-orphans">' + ' '.join(links) + '</div>'
+    citation += ' <div class="no-orphans">' + ' '.join(links) + '</div>'
     return citation
 
 

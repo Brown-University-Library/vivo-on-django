@@ -1504,13 +1504,13 @@ class SourcePageTests(TestCase):
         Checks book titles retain spaces inside italics while blank values stay absent.
         """
         record: dict[str, object] = {'type': 'http://vivo.brown.edu/ontology/citation#Book', 'title': 'Example Book '}
-        self.assertEqual(publication_html(record), '<i>Example Book </i>.')
+        self.assertEqual(publication_html(record), '<i>Example Book </i>. <div class="no-orphans"></div>')
         record['title'] = ' '
         record['book'] = '  '
         self.assertNotIn('<i>', publication_html(record))
         record['title'] = ['Example Book ']
         record['book'] = 'Volume Two '
-        self.assertEqual(publication_html(record), '<i>Example Book  Volume Two </i>.')
+        self.assertEqual(publication_html(record), '<i>Example Book  Volume Two </i>. <div class="no-orphans"></div>')
 
     def test_publications_sort_titles_without_outer_spaces(self) -> None:
         """
@@ -1587,6 +1587,9 @@ class SourcePageTests(TestCase):
         self.assertIn('https://example.invalid/item', alternate)
         invalid = publication_html({'pub_med_id': 'bad value'})
         self.assertNotIn('PubMed', invalid)
+        self.assertTrue(invalid.endswith(' <div class="no-orphans"></div>'))
+        self.assertTrue(linked.endswith('</a></div>'))
+        self.assertTrue(alternate.endswith('</a></div>'))
 
     def test_pubmed_link_accepts_alphanumeric_identifiers(self) -> None:
         """

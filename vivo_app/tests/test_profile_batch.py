@@ -93,7 +93,7 @@ class ProfileBatchTests(SimpleTestCase):
         ]
         for record, expected in cases:
             with self.subTest(record=record):
-                self.assertEqual(publication_html(record), expected)
+                self.assertEqual(publication_html(record), expected + ' <div class="no-orphans"></div>')
 
     def test_source_title_and_author_punctuation_is_preserved(self) -> None:
         """
@@ -118,7 +118,7 @@ class ProfileBatchTests(SimpleTestCase):
         ]
         for record, expected in cases:
             with self.subTest(record=record):
-                self.assertEqual(publication_html(record), expected)
+                self.assertEqual(publication_html(record), expected + ' <div class="no-orphans"></div>')
 
     def test_scientific_title_formatting_and_entities_render_as_text(self) -> None:
         """
@@ -151,8 +151,8 @@ class ProfileBatchTests(SimpleTestCase):
         ]
         for record, expected in cases:
             with self.subTest(record=record):
-                self.assertEqual(publication_html(record), expected)
-        self.assertEqual(publication_html({'volume': True, 'issue': {}, 'pages': []}), '.')
+                self.assertEqual(publication_html(record), expected + ' <div class="no-orphans"></div>')
+        self.assertEqual(publication_html({'volume': True, 'issue': {}, 'pages': []}), '. <div class="no-orphans"></div>')
 
     def test_padded_citation_links_reach_the_intended_destination(self) -> None:
         """
@@ -188,7 +188,7 @@ class ProfileBatchTests(SimpleTestCase):
                             'date': '2020',
                         }
                     ),
-                    expected,
+                    expected + ' <div class="no-orphans"></div>',
                 )
 
     def test_empty_profile_panels_do_not_add_navigation_buttons(self) -> None:
