@@ -112,3 +112,6 @@ SD07 reproduces the reference publication-link wrapper even when a citation has 
 
 
 SD07 is verified after deployment on `42eb1e4`. Current citation text, inline formatting, row geometry and all offered ordered filters agree at both widths. Four affected complete P14 views and every changed citation region are visually inspected. The five reopened profiles also pass their affected boundaries and required resource checks; unchanged complete interiors, navigation and document evidence remain applicable. P03, P08, P09, P10 and P12 regain Complete. Whole completion returns to twenty-two of seventy-seven (28.6%); denominator and rolling membership are unchanged. P14 now passes all twelve visual criteria and its complete content/filter check, while remaining target interactions, links, document delivery and resources are pending. Private evidence label `daily-run-2026-10-05`.
+
+
+SD17 temporarily reopens P08, P09, P10, P12 and P15 for added F04a literal citation-link checks. Their earlier complete evidence is retained; current completion is 20/77 (26.0%) until the focused deployed correction passes.

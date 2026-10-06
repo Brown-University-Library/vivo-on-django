@@ -2,7 +2,9 @@
 
 Started October 3, 2026. Follow [workplan.md](workplan.md) and [GOAL.md](GOAL.md). This record defines how Codex and the owner measure successive deployed comparisons. It does not certify historical work or owner acceptance. Exact URLs, records, screenshots, and detailed results stay in the outer workspace.
 
-**Estimated URL-case completion: 32.5% — 25 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
+**Estimated URL-case completion: 26.0% — 20 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
+
+Current checkpoint: October 6, 2026 at 07:06 America/New_York. SD17 adds literal citation-link checks and temporarily reopens five profiles; completion is 20/77 (26.0%). No cases or aliases are added. Release `decb9a2` is confirmed loaded; its three changed assets match after the owner repairs delivery. SD10 and SD13 pass, while remaining shared checks continue. The focused citation correction is committed locally in `76a4171`; 312 tests and changed-file checks pass. Twenty selected URLs and the original October 6 08:00 local (12:00 UTC) cutoff remain unchanged. Earlier snapshots below are historical.
 
 Snapshot: October 6, 2026 at 06:00 America/New_York, first suitable checkpoint after the boundary. Completion remains 25/77 (32.5%); denominator and twenty selected URLs are unchanged. Release `d350fca` is confirmed loaded and all thirteen observed graph assets match after collection. SD09 complete empty views, controls, SVG display and fit navigation pass; supporting formats and downloaded-image comparison remain isolated blockers. Every release change is accounted for. Local SD10–SD16 and report-entry commits remain unpushed and require their recorded deployed checks. BROWSE01 full publication inventories are complete in both sorts; source-data differences remain. No whole URL completes. Original cutoff remains October 6 at 08:00 local (12:00 UTC); final snapshot follows the completed pass and handoff.
 
@@ -52,7 +54,7 @@ Current daily-run evidence includes loaded `98c64bd`, evaluated October 5, 2026;
 
 | Observation | Current result | Limit |
 | --- | --- | --- |
-| Whole URL cases currently complete | 25; see the named inventory for all completed IDs | Partial comparisons do not certify a whole URL. |
+| Whole URL cases currently complete | 20; see the named inventory for all completed IDs | Partial comparisons do not certify a whole URL. |
 | First improvement-count batch | 15 deployed verified; 14 lack qualifying examples; 1 before-script check blocked | Keep these states distinct from local tests. |
 | Publication text and inline elements on the original five profiles | Previous full comparison: 278/278 match Rails | Preserved evidence; current selected filter checks also compare visible citation text. |
 | Publication filter states | 35/35 match selected control and visible ordered citations | Ten profiles checked with keyboard selection; full visual/link checks remain separate. |

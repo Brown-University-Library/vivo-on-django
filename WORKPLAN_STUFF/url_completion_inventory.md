@@ -1,6 +1,6 @@
 # Inventory for the estimated URL-case completion percentage
 
-Inventory v1, October 5, 2026: **25 of 77 known cases complete — 32.5%.** See [progress.md](progress.md) for the current snapshot and six-hour update procedure. This inventory counts named URL cases with their required behavior; it is a provisional estimate, not a count of every distinct HTTP URL string or a percentage of engineering time.
+Inventory v1, October 5, 2026: **20 of 77 known cases complete — 26.0%.** See [progress.md](progress.md) for the current snapshot and six-hour update procedure. This inventory counts named URL cases with their required behavior; it is a provisional estimate, not a count of every distinct HTTP URL string or a percentage of engineering time.
 
 Midnight snapshot, October 6, 2026 at 00:00 America/New_York: all case states below remain unchanged, with 25 complete and 77 known. P05 and P14 retain their specific incomplete checks; partial gains do not change whole completion. No new cases or aliases are added. The original daily cutoff remains October 6 at 08:00 local time.
 
@@ -62,14 +62,14 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | P05 | Pending |
 | P06 | Pending |
 | P07 | Complete |
-| P08 | Complete |
-| P09 | Complete |
-| P10 | Complete |
+| P08 | Pending: SD17 literal citation links |
+| P09 | Pending: SD17 literal citation links |
+| P10 | Pending: SD17 literal citation links |
 | P11 | Pending |
-| P12 | Complete |
+| P12 | Pending: SD17 literal citation links |
 | P13 | Pending |
 | P14 | Pending |
-| P15 | Complete |
+| P15 | Pending: SD17 literal citation links |
 | PUBLICATIONS01 | Complete |
 | R01 | Pending |
 | R02 | Pending |
@@ -122,3 +122,6 @@ SD07 is verified after deployment on `42eb1e4`. Current citation text, inline fo
 
 
 October 6, 2026 06:00 America/New_York snapshot: 25 completed / 77 known (32.5%). No cases are added, merged or completed; provisional denominator remains unchanged. Partial SD09 deployment verification does not complete V02.
+
+
+October 6, 2026 at 07:06 America/New_York: SD17 adds the demonstrated literal citation-link requirement F04a. P08, P09, P10, P12 and P15 reopen for this focused deployed check. Earlier complete content, controls, documents and visual evidence remain applicable. Twenty cases remain complete; the denominator stays seventy-seven. Supporting regressions do not alter the rolling twenty URLs or original cutoff.
