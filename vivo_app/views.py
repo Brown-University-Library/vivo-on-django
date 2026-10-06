@@ -49,7 +49,7 @@ from .lib.source_requests import (
     source_origin,
     vitro_key,
 )
-from .lib.source_status import status_data
+from .lib.source_status import status_data, status_error_data
 from .lib.source_teams import custom_organization_members
 from .lib.version_helper import GatherCommitAndBranchData
 
@@ -287,8 +287,15 @@ def home_status(request: HttpRequest) -> HttpResponse:
                 raise PageDataError('The status response is unavailable in prepared data.')
             return prepared_response(saved_response)
         return JsonResponse(status_data(mode))
-    except PageDataError:
-        return JsonResponse({'status': 'ERROR', 'message': 'The search status could not be checked.'}, status=500)
+    except Exception as exc:
+        error_data = status_error_data(exc)
+        logger.exception(
+            'status_check_failed: message, ``%s``; error_type, ``%s``',
+            error_data['message'],
+            type(exc).__name__,
+            exc_info=False,
+        )
+        return JsonResponse(error_data, status=500)
 
 
 def home_brown_classic(request, name=None):
