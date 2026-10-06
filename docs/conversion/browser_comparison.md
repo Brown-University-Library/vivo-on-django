@@ -58,6 +58,8 @@ When measuring page movement, inspect the scrolling element actually used by the
 
 For animated dialogs, confirm the intended dialog's title, selected control and settled values before saving a result. Wait for the previous dialog to close before opening another. Preserve source-data differences separately from sorting or spacing results; a corrected control does not establish matching counts or whole-page completion.
 
+Complete each native download Save dialog before starting another browser check. Explicitly choose the current run's private evidence folder and a filename identifying the reference or target artifact; browsers can retain a previous run's folder. Confirm that the dialog closes and the file exists before continuing. A pending Save dialog can obstruct other content and leave a download check waiting; inspect it before treating a download timeout as a failure.
+
 ## Reuse visual evidence
 
 Every required endpoint and variation still needs a recorded visual comparison. The steps below reduce repeated review of content already inspected; they do not replace an endpoint's visual check with a representative page or a successful text comparison. Preserve existing check IDs and passing conditions.
