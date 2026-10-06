@@ -221,19 +221,25 @@ class ProfileBatchTests(SimpleTestCase):
         Checks direct and unrelated-referrer visits return to the default search.
         """
         factory = RequestFactory()
-        for referer in ['', 'http://testserver/about', 'https://example.invalid/search?q=Old']:
+        for referer in [
+            '',
+            'http://testserver/about',
+            'https://example.invalid/search?q=Old',
+            'http://testserver/searching?q=Old',
+            'http://testserver/search?q=Old\n',
+        ]:
             with self.subTest(referer=referer):
                 request = factory.get('/display/invented-profile', HTTP_REFERER=referer)
                 self.assertEqual(profile_search_return(request), '/search')
 
-    def test_profile_returns_to_the_actual_filtered_search(self) -> None:
+    def test_profile_revisits_the_actual_search_history_entry(self) -> None:
         """
-        Checks search-return links retain repeated filters and pagination from the referring search.
+        Checks actual search entries use browser history, retaining filters, pagination and Forward navigation.
         """
         factory = RequestFactory()
         query = '?q=Example&fq=record_type%7CPEOPLE&fq=affiliations%7CExample&page=2'
         request = factory.get('/display/invented-profile', HTTP_REFERER='http://testserver/search/' + query)
-        self.assertEqual(profile_search_return(request), '/search' + query)
+        self.assertEqual(profile_search_return(request), 'javascript: history.go(-1)')
         prefix = get_script_prefix()
         set_script_prefix('/mounted-app')
         try:
@@ -242,7 +248,7 @@ class ProfileBatchTests(SimpleTestCase):
                 HTTP_REFERER='http://testserver/mounted-app/search' + query,
                 SCRIPT_NAME='/mounted-app',
             )
-            self.assertEqual(profile_search_return(mounted), '/mounted-app/search' + query)
+            self.assertEqual(profile_search_return(mounted), 'javascript: history.go(-1)')
         finally:
             set_script_prefix(prefix)
 

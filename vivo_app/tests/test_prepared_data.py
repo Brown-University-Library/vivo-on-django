@@ -143,7 +143,7 @@ class PreparedDataTests(TestCase):
 
     def test_search_profile_and_return(self) -> None:
         """
-        Checks HTML rendering, optional tabs, and the preserved search return URL without network access.
+        Checks HTML rendering, optional tabs, and the actual search history action without network access.
         """
         with patch('socket.socket.connect', side_effect=AssertionError('Unexpected network connection')):
             response = self.get_page('/search?q=Example&page=1')
@@ -156,7 +156,7 @@ class PreparedDataTests(TestCase):
             self.assertContains(response, 'Invented research.')
             self.assertContains(response, 'tabResearchBtn')
             self.assertNotContains(response, 'tabTeachingBtn')
-            self.assertContains(response, '/search?q=Example&amp;page=1')
+            self.assertContains(response, 'href="javascript: history.go(-1)" class="back-to-search"')
             self.assertNotContains(response, 'Mock Person')
             self.assertIn("connect-src 'self'", response['Content-Security-Policy'])
             self.assertNotContains(response, 'fonts.googleapis.com')

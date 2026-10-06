@@ -10,7 +10,7 @@ from django.urls import reverse
 
 def profile_search_return(request: HttpRequest) -> str:
     """
-    Returns to the referring local search or the default search on a direct visit.
+    Revisits the actual search history entry or opens the default search on a direct visit.
 
     Called by: views.display_show()
     """
@@ -26,7 +26,7 @@ def profile_search_return(request: HttpRequest) -> str:
                 and parsed.netloc == current.netloc
                 and parsed.path.rstrip('/') == search_path
             ):
-                result = search_path + ('?' + parsed.query if parsed.query else '')
+                result = 'javascript: history.go(-1)'
         except ValueError:
             pass
     return result
