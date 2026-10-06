@@ -29,9 +29,11 @@ These entries summarize historical evidence in [v1](previous_workplan_artificts/
 
 ## URL cases verified after deployment
 
+- [x] **2026-10-05 — P15.** All six functional criteria and twelve complete desktop/narrow views pass on loaded `65af0bd`. Complete content, all five publication filters, pointer/keyboard/bookmark controls, actual filtered first-page search return, all links and graph entries/returns, CV absence and resources agree. All seventy paired captures are manually inspected through the footer. Supporting graph cases and owner acceptance remain separate. Private evidence: `daily-run-2026-10-05`, P15 results.
+
 SD05 is verified on `88a8548`: the eight information cases complete the newly added browser-title check and retain their earlier full-page evidence. Institution title correction passes; its illustration remains pending.
 
-Twenty-two whole cases are currently complete. SD07 citation checks pass and the five affected profiles retain their unrelated evidence. Endpoint families and owner acceptance remain pending.
+Twenty-three whole cases are currently complete. SD07 citation checks pass and the five affected profiles retain their unrelated evidence. Endpoint families and owner acceptance remain pending.
 
 - [x] **2026-10-03 — P07 sparse profile, revision `a3bca98`.** Five functional and ten visual checks pass: expected controls/content, configured email/Manager destinations, organization navigation, default-search return, required asset evidence, and all five complete desktop/narrow views. The Terms destination now works; font bytes match the bundled files. Private evidence labels `url-batch-003-review` and `url-batch-004-review`. See the [evaluation](previous_workplan_artificts/url_batch_003_evaluation.md). This completes the selected case, not the entire S07 endpoint family.
 

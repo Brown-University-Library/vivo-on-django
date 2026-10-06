@@ -1,6 +1,6 @@
 # Current batch: twenty URLs
 
-Batch: url-batch-008, October 5, 2026. Follow [workplan.md](workplan.md), [next_batch.md](next_batch.md), and [../AGENTS.md](../AGENTS.md). The initial list contains seventeen carried URLs and three added URLs. The current rolling list contains eleven carried URLs and nine additions after the recorded completions and replacements. Exact pairs and evidence stay in `../../url_batch_008/` and `../../current_urls.local.md`, outside Git. The preceding [implementation](previous_workplan_artificts/url_batch_007_current_batch.md), [selected list](previous_workplan_artificts/url_batch_007_next_batch.md), and [evaluation](previous_workplan_artificts/url_batch_007_evaluation.md) are archived.
+Batch: url-batch-008, October 5, 2026. Follow [workplan.md](workplan.md), [next_batch.md](next_batch.md), and [../AGENTS.md](../AGENTS.md). The initial list contains seventeen carried URLs and three added URLs. The current rolling list contains ten carried URLs and ten additions after the recorded completions and replacements. Exact pairs and evidence stay in `../../url_batch_008/` and `../../current_urls.local.md`, outside Git. The preceding [implementation](previous_workplan_artificts/url_batch_007_current_batch.md), [selected list](previous_workplan_artificts/url_batch_007_next_batch.md), and [evaluation](previous_workplan_artificts/url_batch_007_evaluation.md) are archived.
 
 Contents:
 
@@ -13,7 +13,7 @@ Contents:
 
 ## Status
 
-Current checkpoint: release 15, `42eb1e4`, is confirmed loaded before and after P14 checks; every recorded release change is accounted for. P14 passes its complete content, section controls and resource criteria, with partial search, destination and document criteria. Release 16 prepares SD08: explicit first-page pagination parameters. All 302 tests, changed-file Ruff and project Pyright pass; deployment verification remains pending.
+Current checkpoint: release 16, `65af0bd`, is confirmed loaded and all changes are accounted for. P15 completes six functional and twelve complete visual criteria, advancing whole cases to 23/77 (29.9%). P14 passes four functional and all twelve visual criteria, retaining isolated destination and desktop document-viewer checks. A clock check precedes replacing P15 with the approved normal-state status case I03; twenty distinct URLs remain.
 
 The owner deployed `88fb8e4`. Both preceding expanded-filter corrections pass after static collection and a browser refresh without cached resources. Terms of Use, History and Visualization Help complete four functional and two visual checks each; whole cases advance from nine to twelve. P03, Roadmap and Publications Help subsequently complete their defined checks, bringing the total to fifteen. Endpoint families and owner acceptance remain pending.
 
@@ -45,7 +45,7 @@ Follow [handle shared differences once](workplan.md#handle-shared-differences-on
 | SD04 | Verified after deployment: reference nonbreaking space and button dimensions match. | P12/P11 controls, three organization cases and applicable completed-profile regressions. | Private label `daily-run-2026-10-05`; loaded `33ab1be`. Thirty paired control states manually inspected. | Both profile graph entries and organization entry pass; retain unchanged body/CV/asset evidence. Full graph differences remain separate. |
 | SD05 | Verified after deployment: all nine information/institution pages use the reference shared browser title. | Eight information cases and I02; discovered during O03 shared navigation. | Private label `daily-run-2026-10-05`; loaded `88a8548`. Thirty-six canonical observations, eighteen target alias checks and eighteen paired viewport views pass. | Eight information cases return to Complete; retain unchanged complete-body/link/asset evidence. Institution illustration remains pending. |
 | SD07 | Verified after deployment: reference empty citation-link wrapper and layout agree. | P14 and five completed publication profiles; applicable selected profiles. | Private label `daily-run-2026-10-05`; loaded `42eb1e4`. | Retain unaffected evidence; finish independent profile checks. |
-| SD08 | Checked locally: first-page pagination currently drops the explicit page parameter shown by the reference. | P14/P13 filtered history and shared search pagination. | Private label `daily-run-2026-10-05`; observed on `42eb1e4`. | Deploy the focused page-link correction; check actual first/previous-page links, ordered repeated filters and profile Back/Forward. |
+| SD08 | Verified after deployment: first-page pagination retains the explicit page parameter shown by the reference. | P14/P13 filtered history and shared search pagination. | Private label `daily-run-2026-10-05`; loaded `65af0bd` before and after comparison. | Retain four passing history journeys and actual first/previous-page links. Existing search source differences remain separate. |
 
 ## Changes and deployed checks
 
@@ -147,3 +147,9 @@ P14 passes all twelve full visual criteria and F01, F03 and F06. Default/query/f
 
 
 Release 16 implementation `caedc65` contains SD08 only. The accompanying workflow records restore the verified SD07 completions and retain all incomplete P14 criteria. After the authorized push, confirm the expected loaded revision, then complete SD08 checks before another release.
+
+
+SD08 is verified on loaded `65af0bd` before and after comparison. Four actual profile journeys preserve the reference query values, ordered repeated filters and explicit first-page parameter, then return to the exact origin and restore the profile with Forward. Actual default first/previous-page navigation passes. Result text and unrelated rendering/history code remain unchanged. Existing default-search source counts/order stay pending independently. P14 passes F02 and retains its two isolated incomplete criteria; twenty-two whole cases and rolling membership remain unchanged.
+
+
+P15 completes on loaded `65af0bd`: all twelve content sets, five filters at both widths, seventy-two control observations, filtered first-page search return, forty-nine links, fifty-two internal journeys, graph entries/returns, CV absence and current resources pass. All seventy paired full-view captures are manually inspected. Excluded loading and measurement attempts are recorded privately. Supporting graph data/date/control differences remain separate. I03 replaces its slot after the October 6 02:28:32 UTC clock check; whole completion is 23/77, with no denominator change.
