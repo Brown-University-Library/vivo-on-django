@@ -2257,7 +2257,7 @@ td.citation-data.pub-item {
 
 /* Saved search-match previews retain the reference page's text treatment. */
 .prepared-match-tooltip {
-  position: fixed;
+  position: absolute;
   z-index: 9999;
   padding: 8px;
   max-width: 300px;

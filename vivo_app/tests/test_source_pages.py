@@ -1267,8 +1267,10 @@ class SourcePageTests(TestCase):
         """
         self.assertEqual(thumbnail_url({}), '/static/images/person_placeholder.jpg')
 
-    def test_search_result_without_email_has_no_empty_email_link(self) -> None:
-        """Avoids an unusable email control for organizations without an address."""
+    def test_search_result_without_email_keeps_reference_email_link(self) -> None:
+        """
+        Checks a result without an address retains the reference email control.
+        """
         key = search_key('Example', 1, [])
         source = json.loads(self.responses[key].body)
         org = json.loads(self.responses[profile_key('org-example')].body)['response']['docs'][0]
@@ -1276,7 +1278,7 @@ class SourcePageTests(TestCase):
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
             page = self.get_page('/search?q=Example')
-        self.assertNotContains(page, 'href="mailto:"')
+        self.assertContains(page, 'href="mailto:" aria-label="Email researcher at "')
         self.assertContains(page, 'Example Department')
 
     def test_search_form_keeps_selected_filters_for_new_query(self) -> None:

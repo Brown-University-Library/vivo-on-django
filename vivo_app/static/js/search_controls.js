@@ -112,11 +112,11 @@
     var content = document.getElementById(link.dataset.matchContent);
     var tooltip;
     function hide() {
-      if (tooltip) tooltip.remove();
+      if (tooltip) window.jQuery(tooltip).fadeOut(function () { this.remove(); });
       tooltip = null;
       link.removeAttribute('aria-describedby');
     }
-    function show(event) {
+    function show() {
       hide();
       tooltip = document.createElement('div');
       tooltip.className = 'prepared-match-tooltip ui-tooltip';
@@ -130,11 +130,27 @@
       var box = link.getBoundingClientRect();
       var left = box.left;
       var top = box.top + window.jQuery(link).outerHeight() + 15;
-      left = Math.max(8, Math.min(left, window.innerWidth - tooltip.offsetWidth - 8));
-      if (top + tooltip.offsetHeight > window.innerHeight && box.top >= tooltip.offsetHeight + 15) top = box.top - tooltip.offsetHeight - 15;
-      tooltip.style.left = left + 'px';
-      tooltip.style.top = top + 'px';
+      // Match the dimensions and flip rules used by the reference jQuery UI tooltip.
+      var width = window.jQuery(tooltip).outerWidth();
+      var height = window.jQuery(tooltip).outerHeight();
+      var flippedLeft = box.right - width;
+      var overRight = left + width - window.innerWidth;
+      if (left < 0 && (flippedLeft + width < window.innerWidth || flippedLeft + width - window.innerWidth < -left)) {
+        left = flippedLeft;
+      } else if (overRight > 0 && (flippedLeft > 0 || Math.abs(flippedLeft) < overRight)) {
+        left = flippedLeft;
+      }
+      left = Math.max(0, Math.min(left, window.innerWidth - width));
+      var flippedTop = box.top - height - 15;
+      var overBottom = top + height - window.innerHeight;
+      if (top < 0 && (flippedTop + height < window.innerHeight || flippedTop + height - window.innerHeight < -top)) {
+        top = flippedTop;
+      } else if (overBottom > 0 && (flippedTop > 0 || Math.abs(flippedTop) < overBottom)) {
+        top = flippedTop;
+      }
+      window.jQuery(tooltip).offset({ left: left + window.scrollX, top: top + window.scrollY });
       link.setAttribute('aria-describedby', tooltip.id);
+      window.jQuery(tooltip).hide().fadeIn();
     }
     link.addEventListener('mouseenter', show);
     link.addEventListener('focus', show);
