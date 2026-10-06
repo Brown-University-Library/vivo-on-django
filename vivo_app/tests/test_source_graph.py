@@ -128,6 +128,37 @@ class SourceGraphTests(TestCase):
         graph = graph_page_data(empty, 'collaborators', 'invented-a')
         self.assertEqual(graph['source'], {'nodes': [], 'links': []})
         self.assertTrue(graph['empty_collaboration'])
+        self.assertTrue(graph['empty_network'])
+
+    def test_empty_coauthor_graph_keeps_recovery_and_original_links(self) -> None:
+        """
+        Checks an empty coauthor response retains its explanation, controls and bare profile links.
+        """
+        self.replies[visualization_key('coauthors', 'invented-a')] = {}
+        with patch('vivo_app.lib.source_graph.read_source', side_effect=self.read):
+            data = self.get_page('/display/invented-a/viz/coauthor.json')
+            page = self.get_page('/display/invented-a/viz/coauthor')
+        self.assertEqual(json.loads(data.content), {})
+        self.assertContains(page, 'No coauthor data is available for this researcher.')
+        self.assertContains(page, 'two Brown University coauthors must approve the same publication.')
+        self.assertContains(page, 'review and approve your publications via the')
+        self.assertContains(page, 'network-empty-coauthor')
+        self.assertContains(page, 'href="/display/invented-a#Publications"')
+        self.assertContains(page, 'href="/display/invented-a"')
+        self.assertContains(page, 'Display labels</label>&nbsp;')
+        self.assertContains(page, '<a id="embedHtml" href="#"')
+        graph = graph_page_data({}, 'coauthors', 'invented-a')
+        self.assertTrue(graph['empty_network'])
+        self.assertFalse(graph['empty_collaboration'])
+
+    def test_coauthor_nodes_without_links_use_empty_recovery(self) -> None:
+        """
+        Checks isolated nodes retain their source data while the page shows empty-network recovery.
+        """
+        value: dict[str, object] = {'data': {'nodes': [{'id': 'invented-a', 'name': 'Invented A'}], 'links': []}}
+        graph = graph_page_data(value, 'coauthors', 'invented-a')
+        self.assertTrue(graph['empty_network'])
+        self.assertEqual(graph['source'], value['data'])
 
     def test_populated_graph_keeps_its_existing_rendering(self) -> None:
         """
@@ -137,6 +168,7 @@ class SourceGraphTests(TestCase):
         graph = graph_page_data(value, 'collaborators', 'invented-a')
         self.assertEqual(graph['source'], value['graph'])
         self.assertFalse(graph['empty_collaboration'])
+        self.assertFalse(graph['empty_network'])
         with patch('vivo_app.lib.source_graph.read_source', side_effect=self.read):
             page = self.get_page('/display/invented-a/viz/collab')
         self.assertNotContains(page, 'network-empty-collaboration')

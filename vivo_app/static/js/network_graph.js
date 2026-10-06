@@ -37,10 +37,10 @@
   if (top !== -1) groups.unshift(groups.splice(top, 1)[0]);
   var colors = d3.scaleOrdinal(d3.schemeCategory20).domain(groups);
   var headingColor = colors(page.type === 'PEOPLE' ? (groups[0] || 'N/A') : page.name);
-  if (!page.empty_collaboration) document.querySelector('.researcherName').style.borderLeftColor = headingColor;
+  if (!page.empty_network) document.querySelector('.researcherName').style.borderLeftColor = headingColor;
   var subtitle = document.querySelector('.facultyTitle');
-  if (subtitle && !page.empty_collaboration) subtitle.style.borderLeftColor = headingColor;
-  if (page.updated && !page.empty_collaboration) {
+  if (subtitle && !page.empty_network) subtitle.style.borderLeftColor = headingColor;
+  if (page.updated && !page.empty_network) {
     var date = new Date(page.updated + 'T00:00:00Z');
     if (!Number.isNaN(date.getTime())) {
       var formatted = date.toLocaleDateString('en-US', {timeZone: 'UTC'});
@@ -83,7 +83,7 @@
       return visible.has(link.source) && visible.has(link.target);
     }).map(function (link) { return Object.assign({}, link); });
     updateScopeButtons();
-    if (page.empty_collaboration || !nodes.length) return;
+    if (page.empty_network || !nodes.length) return;
 
     var edges = svg.append('g').selectAll('line').data(links).enter().append('line')
       .attr('stroke', '#ccc').attr('stroke-width', 1);
@@ -145,7 +145,7 @@
   });
   document.getElementById('forceToFit').addEventListener('change', function () {
     var url = new URL(window.location.href);
-    if (page.empty_collaboration) {
+    if (page.empty_network) {
       url.hash = '';
       url.search = '';
     }
@@ -161,17 +161,17 @@
     return new XMLSerializer().serializeToString(image);
   }
   document.getElementById('embedHtml').addEventListener('click', function () {
-    document.getElementById('embedHtmlText').value = page.empty_collaboration
+    document.getElementById('embedHtmlText').value = page.empty_network
       ? '<svg width="960" height="700">\r\n' + document.getElementById('svgElement').innerHTML + '\r\n</svg>' : svgCode();
     document.getElementById('embedHtmlDiv').classList.remove('hidden');
-    if (page.empty_collaboration) {
+    if (page.empty_network) {
       $('html, body').animate({scrollTop: $(document).height() - $(window).height()}, 1400, 'swing');
     }
   });
   document.getElementById('downloadPng').addEventListener('click', function () {
     var status = document.getElementById('downloadStatus');
     status.textContent = 'Preparing image…';
-    if (!page.empty_collaboration) status.classList.remove('hidden');
+    if (!page.empty_network) status.classList.remove('hidden');
     var image = new Image();
     var svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgCode());
     image.onload = function () {

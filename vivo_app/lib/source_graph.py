@@ -429,6 +429,9 @@ def graph_page_data(
         'title': subject['title'] if subject else '',
         'type': subject['type'] if subject else 'PEOPLE',
         'empty_collaboration': kind == 'collaborators' and (subject is None or subject['type'] == 'PEOPLE') and not links,
+        'empty_network': kind in {'collaborators', 'coauthors'}
+        and (subject is None or subject['type'] == 'PEOPLE')
+        and not links,
         'nodes': nodes,
         'links': links,
         'source': graph,
