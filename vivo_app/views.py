@@ -351,7 +351,7 @@ def display_show(request, id):
                     )
                 return HttpResponse(
                     profile_json_text(profile_json_data(identifier, settings.PAGE_DATA_MODE)).encode('utf-8'),
-                    content_type='application/json',
+                    content_type='application/json; charset=utf-8',
                 )
             saved_response = get_response_data(request.path_info, query_pairs(request.GET))
             if saved_response is not None:

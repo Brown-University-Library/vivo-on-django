@@ -1976,7 +1976,7 @@ class SourcePageTests(TestCase):
 
     def test_profile_json_routes_use_compact_reference_encoding(self) -> None:
         """
-        Checks both person JSON route forms use the same compact response without changing parsed values.
+        Checks both person JSON route forms preserve compact values and the reference UTF-8 response header.
         """
         data = {'overview': '<p>Made-up & text</p>', 'name': 'Réseau', 'optional': None}
         with patch('vivo_app.views.profile_json_data', return_value=data):
@@ -1984,7 +1984,7 @@ class SourcePageTests(TestCase):
                 with self.subTest(path=path):
                     response = self.get_page(path)
                     self.assertEqual(response.status_code, 200)
-                    self.assertEqual(response['Content-Type'], 'application/json')
+                    self.assertEqual(response['Content-Type'], 'application/json; charset=utf-8')
                     self.assertEqual(response.content.decode(), profile_json_text(data))
                     self.assertEqual(json.loads(response.content), data)
 
