@@ -2,6 +2,8 @@
 
 Inventory v1, October 5, 2026: **25 of 77 known cases complete — 32.5%.** See [progress.md](progress.md) for the current snapshot and six-hour update procedure. This inventory counts named URL cases with their required behavior; it is a provisional estimate, not a count of every distinct HTTP URL string or a percentage of engineering time.
 
+Midnight snapshot, October 6, 2026 at 00:00 America/New_York: all case states below remain unchanged, with 25 complete and 77 known. P05 and P14 retain their specific incomplete checks; partial gains do not change whole completion. No new cases or aliases are added. The original daily cutoff remains October 6 at 08:00 local time.
+
 The initial denominator combines 62 case specifications in the private discovery manifest, plus 20 later case names in private batch lists and the completed checklist, minus five aliases. The net additions are eight publication-profile cases and seven information pages. No private URL, record identifier or source response is copied here. The existing evidence in [checklist_completed.md](checklist_completed.md) supplies the completed states. Other rows remain pending even when partial or local evidence exists.
 
 ## Known aliases
