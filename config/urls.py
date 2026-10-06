@@ -8,11 +8,9 @@ The `urlpatterns` list routes URLs to views. For more information please see:
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.contrib.auth import views as auth_views
 from django.urls import include, path, re_path
 
 from vivo_app import views as vivo_views
-from vivo_app.views_auth import change_password, custom_login, custom_logout, profile, register
 
 # Set custom error handlers
 handler404 = 'vivo_app.views.page_not_found'
@@ -21,39 +19,39 @@ handler500 = 'vivo_app.views.server_error'
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
-    # Standard application support endpoints
+    # # Standard application support endpoints
     path('error_check/', vivo_views.error_check, name='error_check'),
     path('version/', vivo_views.version, name='version'),
-    # Authentication
-    path('accounts/register/', register, name='register'),
-    path('accounts/login/', custom_login, name='login'),
-    path('accounts/logout/', custom_logout, name='logout'),
-    path('accounts/profile/', profile, name='profile'),
-    path('accounts/change-password/', change_password, name='change_password'),
-    path(
-        'accounts/password_reset/',
-        auth_views.PasswordResetView.as_view(
-            template_name='registration/password_reset_form.html',
-            email_template_name='registration/password_reset_email.html',
-            subject_template_name='registration/password_reset_subject.txt',
-        ),
-        name='password_reset',
-    ),
-    path(
-        'accounts/password_reset/done/',
-        auth_views.PasswordResetDoneView.as_view(template_name='registration/password_reset_done.html'),
-        name='password_reset_done',
-    ),
-    path(
-        'accounts/reset/<uidb64>/<token>/',
-        auth_views.PasswordResetConfirmView.as_view(template_name='registration/password_reset_confirm.html'),
-        name='password_reset_confirm',
-    ),
-    path(
-        'accounts/reset/done/',
-        auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'),
-        name='password_reset_complete',
-    ),
+    # # Authentication
+    # path('accounts/register/', register, name='register'),
+    # path('accounts/login/', custom_login, name='login'),
+    # path('accounts/logout/', custom_logout, name='logout'),
+    # path('accounts/profile/', profile, name='profile'),
+    # path('accounts/change-password/', change_password, name='change_password'),
+    # path(
+    #     'accounts/password_reset/',
+    #     auth_views.PasswordResetView.as_view(
+    #         template_name='registration/password_reset_form.html',
+    #         email_template_name='registration/password_reset_email.html',
+    #         subject_template_name='registration/password_reset_subject.txt',
+    #     ),
+    #     name='password_reset',
+    # ),
+    # path(
+    #     'accounts/password_reset/done/',
+    #     auth_views.PasswordResetDoneView.as_view(template_name='registration/password_reset_done.html'),
+    #     name='password_reset_done',
+    # ),
+    # path(
+    #     'accounts/reset/<uidb64>/<token>/',
+    #     auth_views.PasswordResetConfirmView.as_view(template_name='registration/password_reset_confirm.html'),
+    #     name='password_reset_confirm',
+    # ),
+    # path(
+    #     'accounts/reset/done/',
+    #     auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'),
+    #     name='password_reset_complete',
+    # ),
     # Home and static pages
     path('', vivo_views.home_index, name='home'),
     path('about', vivo_views.home_about, name='about'),
@@ -151,13 +149,13 @@ urlpatterns = [
     path('display/<str:id>/viz/research', vivo_views.visualization_research, name='visualization_research'),
     path('display/<str:id>/viz/research/', vivo_views.visualization_research, name='visualization_research_slash'),
     # Edit functionality
-    path('edit/fast/search/', vivo_views.edit_fast_search, name='edit_fast_search'),
-    path('edit/<str:id>/', vivo_views.edit_profile, name='edit_profile'),
-    path('edit/overview/<str:faculty_id>/update', vivo_views.overview_update, name='overview_update'),
-    path('edit/research_area/<str:faculty_id>/add', vivo_views.research_area_add, name='research_area_add'),
-    path('edit/research_area/<str:faculty_id>/delete', vivo_views.research_area_delete, name='research_area_delete'),
-    path('edit/web_link/<str:faculty_id>/save', vivo_views.web_link_save, name='web_link_save'),
-    path('edit/web_link/<str:faculty_id>/delete', vivo_views.web_link_delete, name='web_link_delete'),
+    # path('edit/fast/search/', vivo_views.edit_fast_search, name='edit_fast_search'),
+    # path('edit/<str:id>/', vivo_views.edit_profile, name='edit_profile'),
+    # path('edit/overview/<str:faculty_id>/update', vivo_views.overview_update, name='overview_update'),
+    # path('edit/research_area/<str:faculty_id>/add', vivo_views.research_area_add, name='research_area_add'),
+    # path('edit/research_area/<str:faculty_id>/delete', vivo_views.research_area_delete, name='research_area_delete'),
+    # path('edit/web_link/<str:faculty_id>/save', vivo_views.web_link_save, name='web_link_save'),
+    # path('edit/web_link/<str:faculty_id>/delete', vivo_views.web_link_delete, name='web_link_delete'),
     # Search
     path('search', vivo_views.search, name='search'),
     path('search/advanced', vivo_views.advanced_search, name='advanced_search'),
