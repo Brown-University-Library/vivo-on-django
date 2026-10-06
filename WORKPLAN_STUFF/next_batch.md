@@ -74,3 +74,5 @@ P02 completes all six functional and ten complete visual criteria on loaded `40d
 
 
 At October 5, 2026 23:01 America/New_York, L07 completes four functional and two visual criteria on loaded `98c64bd`. A clock check precedes selecting approved V02. Twenty distinct URLs remain, nine carried and eleven added. Whole completion is 25/77 (32.5%); denominator and original cutoff are unchanged. V02 has fixed checks and a demonstrated empty-data difference under SD09; local checks do not complete it.
+
+Release 20 is code-loaded in `decb9a2`, but three changed asset files remain stale after the initial delay limit. Retain the same twenty selected URLs and stop further pushes pending collection/staticfiles recovery. Independent publication-error checks establish correct failure and recovery behavior, with two remaining checked local corrections for facet-response charset and button spacing. Full error visual confirmation and asset-dependent SD11–SD15 checks remain pending. No whole-case count changes.
