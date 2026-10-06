@@ -788,6 +788,13 @@ class SourcePageTests(TestCase):
         if not isinstance(selected_filters, list):
             self.fail('Selected search filters were not a list.')
         self.assertEqual(len(selected_filters), 2)
+        repeated_pagination = repeated['pagination']
+        if not isinstance(repeated_pagination, list):
+            self.fail('Search pagination was not a list.')
+        self.assertEqual(
+            repeated_pagination[0]['url'],
+            '/search?q=Example&fq=record_type%7CPEOPLE&fq=affiliations%7CExample+Department&page=1',
+        )
         sparse = profile_data('invented-sparse', 'live', self.read)
         sections = sparse['sections']
         self.assertIsInstance(sections, list)
@@ -1292,8 +1299,9 @@ class SourcePageTests(TestCase):
             first = self.get_page('/search?q=Example')
             second = self.get_page('/search?q=Example&page=2')
         self.assertContains(first, '<h2 class="sr-only">Pagination</h2>')
+        self.assertContains(first, '<a href="/search?q=Example&amp;page=1" aria-current="page">1</a>')
         self.assertContains(first, '<a href="/search?q=Example&amp;page=2" aria-label="Next page">')
-        self.assertContains(second, '<a href="/search?q=Example" aria-label="Previous page">')
+        self.assertContains(second, '<a href="/search?q=Example&amp;page=1" aria-label="Previous page">')
 
     def test_old_search_term_redirects_without_source_request(self) -> None:
         """

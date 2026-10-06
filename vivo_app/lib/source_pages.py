@@ -151,7 +151,7 @@ def search_inputs(pairs: list[tuple[str, str]]) -> tuple[str, int, list[tuple[st
     return (queries[0] if queries else ''), (int(pages[0]) if pages else 1), filters
 
 
-def search_url(query: str, page: int, filters: list[tuple[str, str]]) -> str:
+def search_url(query: str, page: int, filters: list[tuple[str, str]], *, include_page: bool = False) -> str:
     """
     Builds a local link while retaining selected filters and the search term.
 
@@ -159,7 +159,7 @@ def search_url(query: str, page: int, filters: list[tuple[str, str]]) -> str:
     """
     params = [('q', query)] if query else []
     params.extend(('fq', field + '|' + value) for field, value in filters)
-    if page != 1:
+    if page != 1 or include_page:
         params.append(('page', str(page)))
     return reverse('search').rstrip('/') + ('?' + urlencode(params) if params else '')
 
@@ -341,7 +341,7 @@ def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | 
     else:
         first_page = page_count - 9
     pagination = [
-        {'label': str(number), 'url': search_url(query, number, filters), 'current': number == page}
+        {'label': str(number), 'url': search_url(query, number, filters, include_page=True), 'current': number == page}
         for number in range(first_page, min(page_count, first_page + 9) + 1)
     ]
     selected_filters = [
@@ -363,7 +363,7 @@ def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | 
         'results': results,
         'facets': facet_data(response, query, filters),
         'pagination': pagination,
-        'previous_url': search_url(query, page - 1, filters) if page > 1 else '',
+        'previous_url': search_url(query, page - 1, filters, include_page=True) if page > 1 else '',
         'next_url': search_url(query, page + 1, filters) if page * 20 < total else '',
         'remove_query_url': search_url('', 1, filters),
         'selected_filters': selected_filters,
