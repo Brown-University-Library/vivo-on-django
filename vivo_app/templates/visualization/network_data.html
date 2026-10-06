@@ -65,7 +65,7 @@
       {% if graph.type == 'PEOPLE' %}<p>&nbsp;</p>{% endif %}
       <div id="legend"><p><b>Legend</b></p><ul id="legendList" class="legend"></ul></div>
       <p><b>Options</b></p>
-      {% if graph.type != 'TEAM' %}<p><a href="{% if graph.type == 'PEOPLE' %}{% url 'display_show_public' graph.id %}{% else %}{% url 'display_show' graph.id %}{% endif %}">Go to {% if graph.type == 'PEOPLE' %}Researcher's{% else %}Organization's{% endif %} Profile</a></p>{% endif %}
+      {% if graph.type != 'TEAM' %}<p><a href="{% url 'display_show_public' graph.id %}">Go to {% if graph.type == 'PEOPLE' %}Researcher's{% else %}Organization's{% endif %} Profile</a></p>{% endif %}
       <p><label for="showLabels">{% if graph.kind == 'coauthors' %}Display{% else %}Show{% endif %} labels</label>&nbsp;<input id="showLabels" type="checkbox" checked></p>
       <p><label for="showDetails">{% if graph.kind == 'coauthors' %}Display{% else %}Show{% endif %} details on mouse hover</label>&nbsp;<input id="showDetails" type="checkbox" checked></p>
       <p><label for="forceToFit">Force to fit</label>&nbsp;<input id="forceToFit" type="checkbox"{% if force_to_fit %} checked{% endif %} title="Forces the graph to fit on the screen (useful when some nodes fall outside the display area)"></p>
@@ -78,7 +78,7 @@
     </div>
   </div>
   <div id="embedHtmlDiv" class="row hidden"><div class="col-md-12"><p>Copy the following HTML to embed the SVG into your own page</p><textarea id="embedHtmlText" rows="15" class="htmlSnippet" aria-label="SVG code"></textarea></div><div><p>&nbsp;</p></div></div>
-  <div id="tooltip" class="network-tooltip hidden" role="status">{% if graph.type == 'PEOPLE' %}<p id="title" style="margin:0"></p><p id="subtitle" style="margin:0"></p><p id="subtitle2" style="margin:0"></p>{% endif %}</div>
+  <div id="tooltip" class="network-tooltip hidden" role="status"><p id="title" style="margin:0"></p><p id="subtitle" style="margin:0"></p><p id="subtitle2" style="margin:0"></p></div>
 </div>
 {{ graph|json_script:"network-data" }}
 {% endblock %}

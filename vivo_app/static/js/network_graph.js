@@ -58,8 +58,9 @@
   var legend = document.getElementById('legendList');
   function updateLegend(nodes) {
     legend.textContent = '';
-    var visibleGroups = personNetwork
-      ? Array.from(new Set(nodes.map(function (node) { return node.group || 'N/A'; }))).sort() : groups;
+    var visibleGroups = Array.from(new Set(nodes.map(function (node) { return node.group || 'N/A'; }))).sort();
+    var visibleTop = visibleGroups.indexOf(page.name);
+    if (page.type !== 'PEOPLE' && visibleTop !== -1) visibleGroups.unshift(visibleGroups.splice(visibleTop, 1)[0]);
     visibleGroups.forEach(function (group) {
       var row = document.createElement('li');
       var swatch = document.createElement('span');
@@ -83,9 +84,7 @@
   function draw() {
     if (simulation) simulation.stop();
     svg.selectAll('*').remove();
-    var nodes = allNodes.filter(function (node) { return node.localLevel <= scope; }).map(function (node) {
-      return personNetwork ? node : Object.assign({}, node);
-    });
+    var nodes = allNodes.filter(function (node) { return node.localLevel <= scope; });
     var visible = new Set(nodes.map(function (node) { return node.id; }));
     var links = allLinks.filter(function (link) {
       return visible.has(link.source) && visible.has(link.target);
@@ -113,7 +112,7 @@
     people.selectAll('text').classed('hidden', !document.getElementById('showLabels').checked);
 
     people.on('mouseover', function (node) {
-      if (personNetwork) {
+      if (personNetwork || page.type !== 'PEOPLE') {
         if (document.getElementById('showDetails').checked) {
           var matrix = this.getScreenCTM().translate(+this.getAttribute('cx'), +this.getAttribute('cy'));
           tooltip.style.left = (window.pageXOffset + matrix.e + 15) + 'px';
@@ -121,30 +120,25 @@
           document.getElementById('title').textContent = node.name || '';
           document.getElementById('subtitle').textContent = node.group || '';
           var instruction = document.getElementById('subtitle2');
-          instruction.classList.toggle('hidden', node.localLevel === 0);
-          instruction.textContent = 'Click to view ' + node.name + "'s " + page.kind;
+          instruction.classList.toggle('hidden', page.type === 'PEOPLE' && node.localLevel === 0);
+          instruction.textContent = 'Click to view ' + node.name + "'s " + (page.type === 'PEOPLE' ? page.kind : 'profile');
           tooltip.classList.remove('hidden');
         } else {
           d3.select(this).select('text').style('font-weight', 'bold').style('font-size', '12px');
         }
         var circle = d3.select(this).select('circle');
-        if (page.kind === 'coauthors') circle.style('stroke', '#ffbb78').style('stroke-width', 3);
+        if (page.type === 'PEOPLE' && page.kind === 'coauthors') circle.style('stroke', '#ffbb78').style('stroke-width', 3);
         else circle.style('fill', '#ffbb78');
         return;
       }
-      if (!document.getElementById('showDetails').checked) return;
-      tooltip.textContent = (node.name || '') + (node.group ? ' — ' + node.group : '');
-      tooltip.style.left = (d3.event.clientX + 16) + 'px';
-      tooltip.style.top = (d3.event.clientY - 20) + 'px';
-      tooltip.classList.remove('hidden');
     }).on('mouseout', function (node) {
       tooltip.classList.add('hidden');
-      if (personNetwork) {
+      if (personNetwork || page.type !== 'PEOPLE') {
         if (!document.getElementById('showDetails').checked) {
           d3.select(this).select('text').style('font-weight', 'normal').style('font-size', '10px');
         }
         var circle = d3.select(this).select('circle');
-        if (page.kind === 'coauthors') circle.style('stroke', colors(node.group || 'N/A')).style('stroke-width', 3);
+        if (page.type === 'PEOPLE' && page.kind === 'coauthors') circle.style('stroke', colors(node.group || 'N/A')).style('stroke-width', 3);
         else circle.style('fill', colors(node.group || 'N/A'));
       }
     });
@@ -156,17 +150,22 @@
         var destination = new URL(window.location.href);
         destination.pathname = destination.pathname.replace('/display/' + page.id + '/viz/', '/display/' + shortId + '/viz/');
         window.location.assign(destination.toString());
-      } else window.location.assign('/display/' + shortId + '/');
+      } else {
+        var profile = new URL(window.location.href);
+        profile.pathname = profile.pathname.slice(0, profile.pathname.indexOf('/display/')) + '/display/' + shortId;
+        profile.search = '';
+        profile.hash = '';
+        window.location.assign(profile.toString());
+      }
     });
 
     var linkForce = d3.forceLink(links).id(function (node) { return node.id; });
-    if (!personNetwork || !document.getElementById('forceToFit').checked) {
-      linkForce.distance(document.getElementById('forceToFit').checked ? 45 : 100).strength(0.1);
+    if (!document.getElementById('forceToFit').checked) {
+      linkForce.distance(100).strength(0.1);
     }
     simulation = d3.forceSimulation(nodes);
-    if (!personNetwork) simulation.force('link', linkForce);
     simulation.force('charge', d3.forceManyBody()).force('center', d3.forceCenter(480, 350));
-    if (personNetwork) simulation.force('link', linkForce);
+    simulation.force('link', linkForce);
     people.call(d3.drag()
       .on('start', function (node) {
         if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -175,8 +174,7 @@
       })
       .on('drag', function (node) { node.fx = d3.event.x; node.fy = d3.event.y; })
       .on('end', function () {
-        if (personNetwork) document.getElementById('forceToFit').checked = false;
-        else simulation.alphaTarget(0);
+        document.getElementById('forceToFit').checked = false;
       }));
     simulation.on('tick', function () {
       edges.attr('x1', function (link) { return link.source.x; })
@@ -196,10 +194,8 @@
   });
   document.getElementById('forceToFit').addEventListener('change', function () {
     var url = new URL(window.location.href);
-    if (page.type === 'PEOPLE') {
-      url.hash = '';
-      url.search = '';
-    }
+    url.hash = '';
+    url.search = '';
     if (this.checked) url.searchParams.set('fit', '1');
     else url.searchParams.delete('fit');
     window.location.assign(url.toString());
