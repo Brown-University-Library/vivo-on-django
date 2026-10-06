@@ -31,7 +31,7 @@ These entries summarize historical evidence in [v1](previous_workplan_artificts/
 
 SD05 is verified on `88a8548`: the eight information cases complete the newly added browser-title check and retain their earlier full-page evidence. Institution title correction passes; its illustration remains pending.
 
-Seventeen whole cases are currently complete. Five profiles await the SD07 citation checks; their unrelated evidence is retained. Endpoint families and owner acceptance remain pending.
+Twenty-two whole cases are currently complete. SD07 citation checks pass and the five affected profiles retain their unrelated evidence. Endpoint families and owner acceptance remain pending.
 
 - [x] **2026-10-03 — P07 sparse profile, revision `a3bca98`.** Five functional and ten visual checks pass: expected controls/content, configured email/Manager destinations, organization navigation, default-search return, required asset evidence, and all five complete desktop/narrow views. The Terms destination now works; font bytes match the bundled files. Private evidence labels `url-batch-003-review` and `url-batch-004-review`. See the [evaluation](previous_workplan_artificts/url_batch_003_evaluation.md). This completes the selected case, not the entire S07 endpoint family.
 
@@ -104,3 +104,6 @@ SD06 is verified on loaded `6ede886`. Thirty-six actual search/default/Back/Forw
 
 
 SD07 reproduces the reference publication-link wrapper even when a citation has no outgoing links. The missing empty wrapper causes a narrow citation to be one line shorter. A private local browser comparison reproduces the old and corrected heights; all 302 tests, changed-file Ruff and project Pyright checks pass. Deployed citation content, links, filters and complete Publications/All views remain pending. P03, P08, P09, P10 and P12 temporarily reopen for these affected checks; their unrelated complete evidence remains applicable. Whole completion is seventeen of seventy-seven (22.1%); denominator and rolling membership are unchanged. Fresh target review requires renewed sign-in. No deployed pass is claimed from an already loaded document.
+
+
+SD07 is verified after deployment on `42eb1e4`. Current citation text, inline formatting, row geometry and all offered ordered filters agree at both widths. Four affected complete P14 views and every changed citation region are visually inspected. The five reopened profiles also pass their affected boundaries and required resource checks; unchanged complete interiors, navigation and document evidence remain applicable. P03, P08, P09, P10 and P12 regain Complete. Whole completion returns to twenty-two of seventy-seven (28.6%); denominator and rolling membership are unchanged. P14 now passes all twelve visual criteria and its complete content/filter check, while remaining target interactions, links, document delivery and resources are pending. Private evidence label `daily-run-2026-10-05`.
