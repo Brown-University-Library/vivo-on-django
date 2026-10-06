@@ -64,9 +64,9 @@
       var row = document.createElement('li');
       var swatch = document.createElement('span');
       swatch.style.backgroundColor = colors(group);
-      if (personNetwork) swatch.textContent = '\u00a0\u00a0\u00a0\u00a0';
+      if (personNetwork || page.type !== 'PEOPLE') swatch.textContent = '\u00a0\u00a0\u00a0\u00a0';
       row.appendChild(swatch);
-      row.appendChild(document.createTextNode((personNetwork ? '\u00a0' : '') + group));
+      row.appendChild(document.createTextNode((personNetwork || page.type !== 'PEOPLE' ? '\u00a0' : '') + group));
       legend.appendChild(row);
     });
   }
@@ -94,23 +94,22 @@
     updateLegend(nodes);
     if (page.empty_network || !nodes.length) return;
 
-    var edges = (personNetwork ? svg : svg.append('g')).selectAll('line').data(links).enter().append('line');
-    if (personNetwork) edges.style('stroke', '#ccc').style('stroke-width', 1);
-    else edges.attr('stroke', '#ccc').attr('stroke-width', 1);
-    var people = (personNetwork ? svg : svg.append('g')).selectAll('g').data(nodes).enter().append('g');
-    if (!personNetwork) people.style('cursor', 'pointer');
+    var edges = svg.selectAll('line').data(links).enter().append('line');
+    edges.style('stroke', '#ccc').style('stroke-width', 1);
+    var people = svg.selectAll('g').data(nodes).enter().append('g');
     var circles = people.append('circle')
       .attr('r', function (node) { return node.localLevel === 0 ? 15 : (node.localLevel === 1 ? 11 : 6); });
-    if (personNetwork) circles.style('fill', function (node) { return colors(node.group || 'N/A'); });
-    else circles.attr('fill', function (node) { return colors(node.group || 'N/A'); });
-    var labels = people.append('text').attr('class', 'node-text').text(function (node) { return node.name || ''; });
-    if (personNetwork) {
-      labels.style('font-size', function (node) { return node.localLevel === 0 ? '12px' : '8px'; })
-        .style('font-weight', function (node) { return node.localLevel === 0 ? 'bold' : 'normal'; });
-    } else {
-      labels.attr('font-size', function (node) { return node.localLevel === 0 ? 12 : 8; })
-        .attr('font-weight', function (node) { return node.localLevel === 0 ? 'bold' : 'normal'; });
+    circles.style('fill', function (node) { return colors(node.group || 'N/A'); });
+    if (page.type !== 'PEOPLE') {
+      circles.style('stroke', function (node) {
+        if (node.localLevel !== 0) return null;
+        var color = d3.rgb(colors(node.group || 'N/A'));
+        return d3.rgb(Math.round(color.r * 0.85), Math.round(color.g * 0.85), Math.round(color.b * 0.85)).toString();
+      }).style('stroke-width', function (node) { return node.localLevel === 0 ? 2 : 0; });
     }
+    var labels = people.append('text').attr('class', 'node-text').text(function (node) { return node.name || ''; });
+    labels.style('font-size', function (node) { return node.localLevel === 0 ? '12px' : '8px'; })
+      .style('font-weight', function (node) { return node.localLevel === 0 ? 'bold' : 'normal'; });
     people.selectAll('text').classed('hidden', !document.getElementById('showLabels').checked);
 
     people.on('mouseover', function (node) {
@@ -207,27 +206,18 @@
   });
 
   function svgCode() {
-    if (page.type === 'PEOPLE') {
-      return '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="700">\r\n' +
-        document.getElementById('svgElement').innerHTML + '\r\n</svg>';
-    }
-    var image = document.getElementById('svgElement').cloneNode(true);
-    image.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    image.querySelectorAll('.hidden').forEach(function (node) { node.remove(); });
-    return new XMLSerializer().serializeToString(image);
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="700">\r\n' +
+      document.getElementById('svgElement').innerHTML + '\r\n</svg>';
   }
   document.getElementById('embedHtml').addEventListener('click', function () {
-    document.getElementById('embedHtmlText').value = page.type === 'PEOPLE'
-      ? '<svg width="960" height="700">\r\n' + document.getElementById('svgElement').innerHTML + '\r\n</svg>' : svgCode();
+    document.getElementById('embedHtmlText').value = '<svg width="960" height="700">\r\n' +
+      document.getElementById('svgElement').innerHTML + '\r\n</svg>';
     document.getElementById('embedHtmlDiv').classList.remove('hidden');
-    if (page.type === 'PEOPLE') {
-      $('html, body').animate({scrollTop: $(document).height() - $(window).height()}, 1400, 'swing');
-    }
+    $('html, body').animate({scrollTop: $(document).height() - $(window).height()}, 1400, 'swing');
   });
   document.getElementById('downloadPng').addEventListener('click', function () {
     var status = document.getElementById('downloadStatus');
     status.textContent = 'Preparing image…';
-    if (page.type !== 'PEOPLE') status.classList.remove('hidden');
     var image = new Image();
     var svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgCode());
     image.onload = function () {
@@ -246,7 +236,7 @@
         var pngUrl = URL.createObjectURL(blob);
         var download = document.createElement('a');
         download.href = pngUrl;
-        download.download = (page.type === 'PEOPLE' && page.kind === 'collaborators' ? 'collabs' : page.kind) + '_' + page.id + '.png';
+        download.download = (page.kind === 'collaborators' ? 'collabs' : page.kind) + '_' + page.id + '.png';
         document.body.appendChild(download);
         download.click();
         download.remove();

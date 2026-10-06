@@ -31,4 +31,12 @@
 .network-person .network-tooltip { position: absolute; z-index: auto; padding: 5px; border: 0; border-radius: 10px; box-shadow: 4px 4px 10px rgba(0, 0, 0, .4); }
 .network-person #title { font-weight: bold; }
 .network-person #subtitle2 { font-size: small; font-style: italic; }
+.network-organization div.btn-group { margin-top: .7em; margin-left: .7em; float: left; }
+.network-organization .network-scope { margin-top: .7em; margin-left: .7em; }
+.network-organization #svgElement { display: block; margin: 1.67em; float: left; }
+.network-organization .network-options > .btn { display: inline-block; clear: left; white-space: nowrap; }
+.network-organization label { font-weight: normal; margin-bottom: 0; }
+.network-organization #legendList span { display: inline; width: auto; height: auto; margin-right: 0; }
+.network-organization #svgElement circle { stroke: none; stroke-width: 0; }
+.network-organization #embedHtmlText { background-color: #f5f5d3; border: 1px solid #999; width: 98%; margin: 5px 0; padding: 1%; }
 @media (max-width: 767px) { .network-page .network-graph { max-width: 100%; height: auto; } }
