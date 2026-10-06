@@ -1,6 +1,6 @@
 # Inventory for the estimated URL-case completion percentage
 
-Inventory v1, October 5, 2026: **14 of 77 known cases complete — 18.2%.** See [progress.md](progress.md) for the current snapshot and six-hour update procedure. This inventory counts named URL cases with their required behavior; it is a provisional estimate, not a count of every distinct HTTP URL string or a percentage of engineering time.
+Inventory v1, October 5, 2026: **17 of 77 known cases complete — 22.1%.** See [progress.md](progress.md) for the current snapshot and six-hour update procedure. This inventory counts named URL cases with their required behavior; it is a provisional estimate, not a count of every distinct HTTP URL string or a percentage of engineering time.
 
 The initial denominator combines 62 case specifications in the private discovery manifest, plus 20 later case names in private batch lists and the completed checklist, minus five aliases. The net additions are eight publication-profile cases and seven information pages. No private URL, record identifier or source response is copied here. The existing evidence in [checklist_completed.md](checklist_completed.md) supplies the completed states. Other rows remain pending even when partial or local evidence exists.
 
@@ -53,18 +53,18 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | O04 | Complete |
 | O05 | Pending |
 | O06 | Pending |
-| P01 | Pending |
+| P01 | Complete |
 | P02 | Pending |
-| P03 | Pending |
-| P04 | Pending |
+| P03 | Pending: SD07 deployed citation checks |
+| P04 | Complete |
 | P05 | Pending |
 | P06 | Pending |
-| P07 | Pending |
-| P08 | Pending |
-| P09 | Pending |
-| P10 | Pending |
+| P07 | Complete |
+| P08 | Pending: SD07 deployed citation checks |
+| P09 | Pending: SD07 deployed citation checks |
+| P10 | Pending: SD07 deployed citation checks |
 | P11 | Pending |
-| P12 | Pending |
+| P12 | Pending: SD07 deployed citation checks |
 | P13 | Pending |
 | P14 | Pending |
 | P15 | Pending |
@@ -108,3 +108,9 @@ Source references from the outer workspace are `public_site_review/planning/publ
 
 
 SD06 adds the demonstrated search-history requirement F02a. After an actual search/profile/Back journey, Forward must restore the profile, matching the reference. P01, P03, P04, P07, P08, P09, P10 and P12 temporarily reopen for this new shared check; their complete content, controls, document and visual evidence is retained. Whole completion is fourteen of seventy-seven (18.2%); the provisional denominator and rolling twenty membership are unchanged. Direct and unrelated-referrer entries must still open the default search.
+
+
+SD06 is verified on loaded `6ede886`. Thirty-six actual search/default/Back/Forward journeys and four repeated-filter/Page1 journeys pass at both widths. All nine rendered section-content sets match; required settled images and fonts load. Eighteen current paired viewport views are manually inspected; premature portrait captures are excluded and replaced. Earlier complete page, document and navigation evidence remains applicable because only the search-return action changed. P01, P03, P04, P07, P08, P09, P10 and P12 regain Complete. Whole completion returns to twenty-two of seventy-seven (28.6%); denominator and membership are unchanged. P13 retains its separate blocked department and incomplete CV checks; current served bytes and resources pass.
+
+
+SD07 reproduces the reference publication-link wrapper even when a citation has no outgoing links. The missing empty wrapper causes a narrow citation to be one line shorter. A private local browser comparison reproduces the old and corrected heights; all 302 tests, changed-file Ruff and project Pyright checks pass. Deployed citation content, links, filters and complete Publications/All views remain pending. P03, P08, P09, P10 and P12 temporarily reopen for these affected checks; their unrelated complete evidence remains applicable. Whole completion is seventeen of seventy-seven (22.1%); denominator and rolling membership are unchanged. Fresh target review requires renewed sign-in. No deployed pass is claimed from an already loaded document.

@@ -2,7 +2,7 @@
 
 Started October 3, 2026. Follow [workplan.md](workplan.md) and [GOAL.md](GOAL.md). This record defines how Codex and the owner measure successive deployed comparisons. It does not certify historical work or owner acceptance. Exact URLs, records, screenshots, and detailed results stay in the outer workspace.
 
-**Estimated URL-case completion: 18.2% — 14 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
+**Estimated URL-case completion: 22.1% — 17 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
 
 Snapshot: October 5, 2026 at 18:02 America/New_York, first suitable checkpoint after the 18:00 boundary. Completion remains 20/77 (26.0%); the provisional denominator is unchanged. D01 and the repaired portraits retain completed deployed evidence. Latest pushed and loaded revision is `61f0ad1`. TSV corrections pass 302 local tests and all 1,318 saved publication examples against the original serializer; live download and visual checks remain blocked. P11 retains the department membership/title differences under SD02. P12 retains twelve complete individual section states and matching View All interiors, with final boundaries and functional checks still incomplete. Original cutoff remains October 6 at 08:00 America/New_York (12:00 UTC). Next scheduled boundary is midnight local.
 
@@ -42,7 +42,7 @@ Current daily-run evidence includes loaded `88a8548`, evaluated October 5, 2026;
 
 | Observation | Current result | Limit |
 | --- | --- | --- |
-| Whole URL cases currently complete | 14 (D01, ADVANCED01, EMPTY01, O03, O04, E01, ABOUT01, HELP01, FAQ01, HISTORY01, ROADMAP01, HELP_VIZ01, PUBLICATIONS01, TERMS01) | Partial comparisons do not certify a whole URL. |
+| Whole URL cases currently complete | 17 (P01, P04, P07, D01, ADVANCED01, EMPTY01, O03, O04, E01, ABOUT01, HELP01, FAQ01, HISTORY01, ROADMAP01, HELP_VIZ01, PUBLICATIONS01, TERMS01) | Partial comparisons do not certify a whole URL. |
 | First improvement-count batch | 15 deployed verified; 14 lack qualifying examples; 1 before-script check blocked | Keep these states distinct from local tests. |
 | Publication text and inline elements on the original five profiles | Previous full comparison: 278/278 match Rails | Preserved evidence; current selected filter checks also compare visible citation text. |
 | Publication filter states | 35/35 match selected control and visible ordered citations | Ten profiles checked with keyboard selection; full visual/link checks remain separate. |
@@ -142,3 +142,9 @@ October 5, 2026 at 19:22 America/New_York: release `88a8548` is loaded and fully
 
 
 SD06 adds the demonstrated search-history requirement F02a. After an actual search/profile/Back journey, Forward must restore the profile, matching the reference. P01, P03, P04, P07, P08, P09, P10 and P12 temporarily reopen for this new shared check; their complete content, controls, document and visual evidence is retained. Whole completion is fourteen of seventy-seven (18.2%); the provisional denominator and rolling twenty membership are unchanged. Direct and unrelated-referrer entries must still open the default search.
+
+
+SD06 is verified on loaded `6ede886`. Thirty-six actual search/default/Back/Forward journeys and four repeated-filter/Page1 journeys pass at both widths. All nine rendered section-content sets match; required settled images and fonts load. Eighteen current paired viewport views are manually inspected; premature portrait captures are excluded and replaced. Earlier complete page, document and navigation evidence remains applicable because only the search-return action changed. P01, P03, P04, P07, P08, P09, P10 and P12 regain Complete. Whole completion returns to twenty-two of seventy-seven (28.6%); denominator and membership are unchanged. P13 retains its separate blocked department and incomplete CV checks; current served bytes and resources pass.
+
+
+SD07 reproduces the reference publication-link wrapper even when a citation has no outgoing links. The missing empty wrapper causes a narrow citation to be one line shorter. A private local browser comparison reproduces the old and corrected heights; all 302 tests, changed-file Ruff and project Pyright checks pass. Deployed citation content, links, filters and complete Publications/All views remain pending. P03, P08, P09, P10 and P12 temporarily reopen for these affected checks; their unrelated complete evidence remains applicable. Whole completion is seventeen of seventy-seven (22.1%); denominator and rolling membership are unchanged. Fresh target review requires renewed sign-in. No deployed pass is claimed from an already loaded document.
