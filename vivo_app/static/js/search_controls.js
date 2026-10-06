@@ -4,10 +4,10 @@
   function facetRow(item) {
     var row = document.createElement('li');
     var link = document.createElement('a');
-    var label = document.createElement('textarea');
-    // Decode label entities once while keeping the filter value and URL intact.
+    var label = document.createElement('template');
+    // Read rendered label text without changing the raw filter value or URL.
     label.innerHTML = item.text;
-    var text = label.value;
+    var text = label.content.textContent;
     link.href = item.url;
     if (item.selected) {
       row.appendChild(document.createTextNode(text + ' (' + item.count + ') '));
