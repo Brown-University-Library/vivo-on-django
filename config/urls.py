@@ -170,6 +170,7 @@ urlpatterns = [
     path('search/advanced/', vivo_views.advanced_search, name='advanced_search_slash'),
     path('search_facets/', vivo_views.search_facets, name='search_facets'),
     # Reports
+    path('reports/subject-lib', vivo_views.subject_lib_list, name='subject_lib_list_public'),
     path('reports/subject-lib/', vivo_views.subject_lib_list, name='subject_lib_list'),
     path('reports/subject-lib/<str:list_id>/', vivo_views.subject_lib, name='subject_lib'),
     # Bot detection

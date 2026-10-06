@@ -758,9 +758,17 @@ def prepared_asset(request: HttpRequest, name: str) -> HttpResponse:
 
 
 # Reports
-def subject_lib_list(request):
-    """List subject librarian reports."""
-    return render_or_stub(request, 'reports/subject_lib_list.html')
+def subject_lib_list(request: HttpRequest) -> HttpResponse:
+    """
+    Redirects the public report entry home or renders the sample report list.
+
+    Called by: config.urls report-list routes
+    """
+    if settings.PAGE_DATA_MODE in {'live', 'replay', 'prepared'}:
+        response = redirect(reverse('home'))
+    else:
+        response = render_or_stub(request, 'reports/subject_lib_list.html')
+    return response
 
 
 def subject_lib(request, list_id):

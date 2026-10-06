@@ -70,6 +70,7 @@ class LocalPageDataMiddleware:
             'error_check',
             'version',
             'bot_detect_challenge',
+            'subject_lib_list',
         }
         if settings.PAGE_DATA_MODE in {'live', 'replay'}:
             supported.update({'advanced_search', 'display_index'})
