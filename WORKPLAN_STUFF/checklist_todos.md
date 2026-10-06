@@ -16,6 +16,8 @@ Initialized October 3, 2026 from the approved [endpoint scope](public_endpoint_s
 
 ## Required URLs and variations
 
+Current source limitation: separate target services produce demonstrated data differences. Verify independent behavior now and retain exact content/order comparisons for the later production Django versus production Rails check after the owner's deployment. The owner has not accepted those differences as parity. See [current_batch.md](current_batch.md) for the affected comparisons; do not request a current source-setting change again.
+
 Each `S` entry covers one row of the settled scope table. Keep its required behavior below when splitting it. Associate each concrete case with the original entry. Record local result, deployed revision, comparison date, outcome, evidence label, and next action for each case. Move only verified cases to [checklist_completed.md](checklist_completed.md); leave a scope entry pending until all required variations are verified. Exact identifiers and record details stay private.
 
 **Every required URL-pattern endpoint must eventually be confirmed visually against Rails before completion.** Record visual evidence for each endpoint and required variation, including the relevant displayed response, destination, download, or consuming page for endpoints without their own page layout. Track visual results separately from functional and response checks.

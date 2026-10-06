@@ -34,6 +34,8 @@ Read [next_batch.md](next_batch.md) for the selected cases and concrete next act
 
 Prefer completing one URL before spreading work across URLs. Change shared code when needed, then check affected completed URLs. Record a concrete dependency when moving to another case before completion. The separate Manager and unused editing workflows remain excluded; preserve required external links. Keep the Research Areas download correction deferred under [issue #3](https://github.com/birkin/vivo-on-django/issues/3).
 
+The owner keeps the target’s separate source services for now. Continue checks that can establish behavior and appearance with the available data. Record source-dependent content, counts, order, dates and drawing positions as unresolved. After the owner deploys the updated application in production, compare production Django with production Rails for those remaining checks. Do not request a staging source-setting change again or treat this limitation as acceptance of differences.
+
 ## Batch workflow
 
 1. **Codex recovers the current run and pending verification.** Read `workplan_stuff_README.md`, this file, `GOAL.md`, `public_endpoint_scope.md`, `url_completion_inventory.md`, `progress.md`, `completion_checks.md`, both checklists, `next_batch.md`, `current_batch.md`, `../AGENTS.md`, and the private run checkpoint. Confirm that the previous writer has stopped before another chat edits this checkout. Resolve the daily-start or resumption prompt and its cutoff as described below. Verify pending releases before beginning more implementation; do not wait for an owner deployment message.
