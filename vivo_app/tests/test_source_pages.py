@@ -1638,6 +1638,19 @@ class SourcePageTests(TestCase):
         markup = publication_html({'doi': '10.0000/example&appendix'})
         self.assertIn('href="https://doi.org/10.0000/example&amp;appendix"', markup)
 
+    def test_publication_links_preserve_source_edge_spaces(self) -> None:
+        """
+        Checks citation link addresses keep spaces supplied by the source.
+        """
+        for doi in ('10.0000/example   ', ' https://doi.org/10.0000/example'):
+            with self.subTest(doi=doi):
+                markup = publication_html({'doi': doi})
+                self.assertIn('href="https://doi.org/' + doi + '"', markup)
+        markup = publication_html({'pub_med_id': '12345678 '})
+        self.assertIn('href="http://www.ncbi.nlm.nih.gov/pubmed/?term=12345678 "', markup)
+        markup = publication_html({'url': 'https://example.invalid/item '})
+        self.assertIn('href="https://example.invalid/item "', markup)
+
     def test_repository_root_link_is_full_text(self) -> None:
         """
         Checks the repository root is treated as a full-text link when supplied by a citation.

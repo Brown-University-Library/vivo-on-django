@@ -642,17 +642,17 @@ def publication_html(item: dict[str, object]) -> str:
     citation = (
         '<span class="listDateTime">' + render_citation_html(citation_period(authors)) + ' </span>' if authors else ''
     ) + citation_body
-    doi = first_text(item.get('doi')).strip()
-    external = safe_url(first_text(item.get('url')).strip())
+    doi = first_text(item.get('doi'))
+    external = safe_url(first_text(item.get('url')))
     full_text = (
         external
         if external.startswith('https://repository.library.brown.edu/') or external == 'https://repository.library.brown.edu'
         else ('https://doi.org/' + doi if doi else '')
     )
-    pub_med_id = first_text(item.get('pub_med_id')).strip()
+    pub_med_id = first_text(item.get('pub_med_id'))
     pub_med_url = (
-        'http://www.ncbi.nlm.nih.gov/pubmed/?term=' + quote(pub_med_id, safe='')
-        if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', pub_med_id)
+        'http://www.ncbi.nlm.nih.gov/pubmed/?term=' + quote(pub_med_id, safe=' ')
+        if re.fullmatch(r' *[A-Za-z0-9_-]{1,80} *', pub_med_id)
         else ''
     )
     links = []

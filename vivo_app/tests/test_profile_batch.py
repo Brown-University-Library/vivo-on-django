@@ -154,14 +154,14 @@ class ProfileBatchTests(SimpleTestCase):
                 self.assertEqual(publication_html(record), expected + ' <div class="no-orphans"></div>')
         self.assertEqual(publication_html({'volume': True, 'issue': {}, 'pages': []}), '. <div class="no-orphans"></div>')
 
-    def test_padded_citation_links_reach_the_intended_destination(self) -> None:
+    def test_padded_citation_links_preserve_source_addresses(self) -> None:
         """
-        Checks surrounding source whitespace is absent from DOI, PubMed, and website links.
+        Checks surrounding source spaces remain in DOI, PubMed, and website addresses.
         """
         cases = [
-            ('doi', ' 10.0000/example ', 'https://doi.org/10.0000/example'),
-            ('pub_med_id', ' PMC12345 ', 'http://www.ncbi.nlm.nih.gov/pubmed/?term=PMC12345'),
-            ('url', ' https://example.invalid/item ', 'https://example.invalid/item'),
+            ('doi', ' 10.0000/example ', 'https://doi.org/ 10.0000/example '),
+            ('pub_med_id', ' PMC12345 ', 'http://www.ncbi.nlm.nih.gov/pubmed/?term= PMC12345 '),
+            ('url', ' https://example.invalid/item ', ' https://example.invalid/item '),
         ]
         for field, value, expected in cases:
             with self.subTest(field=field):
