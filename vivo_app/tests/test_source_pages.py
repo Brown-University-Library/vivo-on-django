@@ -16,7 +16,13 @@ from django.urls import get_script_prefix, set_script_prefix
 from tools.source_capture import CapturingReader
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_formats import faculty_item_from_doc, organization_json_data, profile_json_data, publication_entries
+from vivo_app.lib.source_formats import (
+    faculty_item_from_doc,
+    organization_json_data,
+    profile_json_data,
+    profile_json_text,
+    publication_entries,
+)
 from vivo_app.lib.source_graph import visualization_key
 from vivo_app.lib.source_pages import (
     entries,
@@ -1923,6 +1929,64 @@ class SourcePageTests(TestCase):
         prefix = 'http://vivo.brown.edu/ontology/citation#'
         self.assertEqual(publication_export_type({'type': prefix + 'BookSection'}), 'Book Section')
         self.assertEqual(publication_export_type({'type': prefix + 'Citation'}), 'Other')
+
+    def test_profile_json_encoding_preserves_values_and_reference_escaping(self) -> None:
+        """
+        Checks compact profile JSON escapes HTML and separators while preserving Unicode and nested values.
+        """
+        data: dict[str, object] = {
+            'text': '<p>Réseau & "雪"\u00a0</p>\u2028\u2029',
+            'nested': [None, False, {'label': 'literal \\u003c', 'number': 1.0}],
+        }
+        encoded = profile_json_text(data)
+        expected = (
+            '{"text":"\\u003cp\\u003eRéseau \\u0026 \\"雪\\"\u00a0\\u003c/p\\u003e\\u2028\\u2029",'
+            '"nested":[null,false,{"label":"literal \\\\u003c","number":1.0}]}'
+        )
+        self.assertEqual(encoded, expected)
+        self.assertEqual(json.loads(encoded), data)
+
+    def test_profile_json_preserves_nested_reference_field_order(self) -> None:
+        """
+        Checks optional model fields keep source order and calculated fields follow Rails assignments.
+        """
+        raw = {
+            'uri': 'urn:example:person',
+            'education': [{'degree': 'PhD', 'school_name': ' School ', 'date': '2020'}],
+            'on_the_web': [{'text': '', 'url': ' https://example.invalid ', 'uri': 'urn:example:web'}],
+            'collaborators': [{'org_name': 'School', 'name': 'Colleague', 'uri': 'urn:example:colleague'}],
+            'training': [{'country': 'Example', 'name': 'Training', 'start_date': '2020-01-01'}],
+            'contributor_to': [{'title': 'Paper', 'authors': 'Researcher', 'date': '2020'}],
+        }
+        doc: dict[str, object] = {'json_txt': [json.dumps(raw)]}
+        body = faculty_item_from_doc(doc, {}, {})
+        expected = {
+            'education': ['degree', 'school_name', 'date'],
+            'on_the_web': ['text', 'url', 'uri', 'id', 'rank'],
+            'collaborators': ['org_name', 'name', 'uri', 'id'],
+            'training': ['country', 'name', 'start_date', 'end_date'],
+            'contributor_to': ['title', 'authors', 'date', 'year', 'external_url'],
+        }
+        for field, names in expected.items():
+            with self.subTest(field=field):
+                rows = body[field]
+                self.assertIsInstance(rows, list)
+                if isinstance(rows, list):
+                    self.assertEqual(list(rows[0]), names)
+
+    def test_profile_json_routes_use_compact_reference_encoding(self) -> None:
+        """
+        Checks both person JSON route forms use the same compact response without changing parsed values.
+        """
+        data = {'overview': '<p>Made-up & text</p>', 'name': 'Réseau', 'optional': None}
+        with patch('vivo_app.views.profile_json_data', return_value=data):
+            for path in ('/display/invented-a.json', '/display/invented-a?format=json'):
+                with self.subTest(path=path):
+                    response = self.get_page(path)
+                    self.assertEqual(response.status_code, 200)
+                    self.assertEqual(response['Content-Type'], 'application/json')
+                    self.assertEqual(response.content.decode(), profile_json_text(data))
+                    self.assertEqual(json.loads(response.content), data)
 
     def test_sparse_profile_json_uses_graph_availability(self) -> None:
         """

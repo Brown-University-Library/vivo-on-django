@@ -2,6 +2,7 @@
 Builds public structured responses from live or recorded source records.
 """
 
+import json
 from collections.abc import Callable
 from datetime import date
 
@@ -21,6 +22,24 @@ from vivo_app.lib.source_pages import (
 from vivo_app.lib.source_requests import image_path, member_key, profile_export_key, profile_key, read_source, source_origin
 
 FormatReader = Callable[[RequestKey, str], RecordedResponse]
+
+
+def profile_json_text(data: dict[str, object]) -> str:
+    """
+    Encodes profile values with the compact HTML escaping used by Rails.
+
+    Called by: views.display_show(), tests
+    """
+    result = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
+    for character, escaped in (
+        ('<', r'\u003c'),
+        ('>', r'\u003e'),
+        ('&', r'\u0026'),
+        ('\u2028', r'\u2028'),
+        ('\u2029', r'\u2029'),
+    ):
+        result = result.replace(character, escaped)
+    return result
 
 
 def raw_record_json_data(identifier: str, mode: str, reader: FormatReader | None = None) -> dict[str, object]:
@@ -166,7 +185,7 @@ def dated_entries(raw: dict[str, object], field: str, names: tuple[str, ...]) ->
     converted: list[dict[str, object]] = []
     for row in entries(raw, field):
         item = (
-            {name: model_scalar(row[name]) for name in names if name in row}
+            {name: model_scalar(value) for name, value in row.items() if name in names}
             if field == 'training'
             else {name: model_scalar(row.get(name, None if name in {'start_date', 'end_date'} else '')) for name in names}
         )
@@ -212,6 +231,7 @@ def publication_entries(raw: dict[str, object]) -> list[dict[str, object]]:
         'type',
         'doi',
         'pub_med_id',
+        'external_url',
         'book',
         'location_label',
         'publisher_label',
@@ -219,7 +239,7 @@ def publication_entries(raw: dict[str, object]) -> list[dict[str, object]]:
     )
     converted: list[dict[str, object]] = []
     for row in entries(raw, 'contributor_to'):
-        item = {name: model_scalar(row[name]) for name in names if name in row}
+        item = {name: model_scalar(value) for name, value in row.items() if name in names}
         item['title'] = first_text(model_scalar(row.get('title')))
         year = publication_year(item)
         item['year'] = int(year) if year else None
@@ -338,23 +358,22 @@ def faculty_item_from_doc(
     sorted_education.reverse()
     item['education'] = [
         {
-            key: first_text(model_scalar(row[key])).strip() if key == 'school_name' else model_scalar(row[key])
-            for key in ('school_uri', 'date', 'degree', 'school_name')
-            if key in row
+            key: first_text(model_scalar(value)).strip() if key == 'school_name' else model_scalar(value)
+            for key, value in row.items()
+            if key in ('school_uri', 'date', 'degree', 'school_name')
         }
         for row in sorted_education
     ]
     web_pages = entries(raw, 'on_the_web')
-    item['on_the_web'] = [
-        {
-            **{name: model_scalar(row[name]) for name in ('uri',) if name in row},
-            'rank': website_rank(model_scalar(row.get('rank'))),
-            'id': model_scalar(row.get('uri')),
-            'url': first_text(row.get('url')).strip(),
-            'text': website_text(row),
-        }
-        for row in sorted(web_pages, key=lambda row: website_rank(model_scalar(row.get('rank'))))
-    ]
+    websites: list[dict[str, object]] = []
+    for row in sorted(web_pages, key=lambda row: website_rank(model_scalar(row.get('rank')))):
+        website = {name: model_scalar(value) for name, value in row.items() if name in ('uri', 'rank', 'url', 'text')}
+        website['id'] = model_scalar(row.get('uri'))
+        website['rank'] = website_rank(model_scalar(row.get('rank')))
+        website['url'] = first_text(row.get('url')).strip()
+        website['text'] = website_text(row)
+        websites.append(website)
+    item['on_the_web'] = websites
     areas = sorted_profile_text_values(raw.get('research_areas', []))
     item['research_areas'] = [{'label': area, 'rabid': None, 'vivo_id': '', 'id': ''} for area in areas]
     item['teacher_for'] = sorted_profile_text_values(raw.get('teacher_for', []))
@@ -374,7 +393,7 @@ def faculty_item_from_doc(
     )
     item['collaborators'] = [
         {
-            **{name: model_scalar(row[name]) for name in ('uri', 'name', 'title', 'org_name') if name in row},
+            **{name: model_scalar(value) for name, value in row.items() if name in ('uri', 'name', 'title', 'org_name')},
             'id': model_scalar(row.get('uri')),
         }
         for row in sorted(entries(raw, 'collaborators'), key=lambda row: first_text(row.get('name')).lower())

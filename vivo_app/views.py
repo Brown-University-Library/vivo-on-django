@@ -36,7 +36,7 @@ from .lib.prepared_data import MissingRecordError, PageDataError
 from .lib.profile_navigation import profile_search_return
 from .lib.search_errors import ReferenceSearchError
 from .lib.source_documents import document_response
-from .lib.source_formats import organization_json_data, profile_json_data, raw_record_json_data
+from .lib.source_formats import organization_json_data, profile_json_data, profile_json_text, raw_record_json_data
 from .lib.source_graph import graph_csv, graph_page_data, graph_subject_data, visualization_graph
 from .lib.source_org_charts import publication_history_csv, publication_history_data, research_areas_data
 from .lib.source_pages import facet_values_data, organization_publications_data, search_json_data
@@ -349,7 +349,10 @@ def display_show(request, id):
                             extra_member_ids=custom_organization_members(identifier, settings.PAGE_DATA_MODE),
                         )
                     )
-                return JsonResponse(profile_json_data(identifier, settings.PAGE_DATA_MODE))
+                return HttpResponse(
+                    profile_json_text(profile_json_data(identifier, settings.PAGE_DATA_MODE)).encode('utf-8'),
+                    content_type='application/json',
+                )
             saved_response = get_response_data(request.path_info, query_pairs(request.GET))
             if saved_response is not None:
                 return prepared_response(saved_response)
