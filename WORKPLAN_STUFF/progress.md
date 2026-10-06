@@ -2,7 +2,7 @@
 
 **URL-case completion: 36.4% — 28 of 77 known cases complete.**
 
-Recorded snapshot: **October 6, 2026, 13:53 America/New_York — resumption.** The count is unchanged. Authentication is restored and deployed graph verification resumes. Checked local status changes do not complete a URL. The provisional denominator is unchanged. Selected actions are in [next_batch.md](next_batch.md).
+Recorded snapshot: **October 6, 2026, 17:13 America/New_York — resumption.** The count is unchanged. The owner restored the connection and sign-in. Full profile JSON verification awaits the two requested manually opened tabs. The provisional denominator is unchanged. Selected actions are in [next_batch.md](next_batch.md).
 
 This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
@@ -26,6 +26,7 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 6, 08:28 — daily start | 27 / 77 | 35.1% | Counts unchanged; new dated run preserves all case requirements. |
 | October 6, 12:00 — noon checkpoint | 28 / 77 | 36.4% | P06 completion remains applicable; newly verified individual graph and search checks do not complete another case. Denominator unchanged. |
 | October 6, 13:53 — resumption | 28 / 77 | 36.4% | Authentication restored; graph release checks resume. Local status correction remains unpushed. No whole-case or denominator change. |
+| October 6, 17:13 — resumption | 28 / 77 | 36.4% | Connection and sign-in restored; complete profile JSON views still await permitted tabs. No whole-case or denominator change. |
 
 Earlier per-release observations and the original dashboard are preserved in the [historical progress record](previous_workplan_artificts/progress_before_simplification_2026_10_06.md). Detailed release accounting stays in the batch records and private checkpoint.
 
