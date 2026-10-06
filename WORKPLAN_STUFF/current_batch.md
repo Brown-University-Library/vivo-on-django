@@ -6,15 +6,16 @@ Contents: [Status](#status) · [Changes and releases](#changes-and-releases) · 
 
 ## Status
 
-The fixed cutoff is October 7 at 08:00 America/New_York (12:00 UTC); it never moves on resumption or midnight. Expected `eee8e57` is confirmed by response.loaded_version before new work. All preceding implementation changes are accounted for; isolated incomplete comparisons remain incomplete. The coordinating documentation cleanup preserves canonical states, aliases, scope requirements and passing definitions and adds readable patterns. It establishes no application pass. Whole-case completion is in [progress.md](progress.md).
+The fixed cutoff is October 7 at 08:00 America/New_York (12:00 UTC); it never moves on resumption or midnight. Starting `eee8e57` and documentation release `6d69ac8` are confirmed by response.loaded_version. All preceding implementation changes are accounted for; isolated incomplete comparisons remain incomplete. The coordinating documentation cleanup preserves canonical states, aliases, scope requirements and passing definitions and adds readable patterns. It establishes no application pass. Whole-case completion is in [progress.md](progress.md).
 
 ## Changes and releases
 
 | Change | Demonstrated issue / work | Checks and result | Release / next action |
 | --- | --- | --- | --- |
-| 009-01 | Preserve reviewed directory guide, readable inventory, scope assignments and dashboard cleanup; record the new dated pass. | Original scope requirements, case IDs/states, aliases and P01 definitions are preserved; local links exist and directive file fits its line limit. No app behavior changes. | Include with the next appropriate authorized release; verify loaded revision. |
+| 009-01 | Preserve reviewed directory guide, readable inventory, scope assignments and dashboard cleanup; record the new dated pass. | Original scope requirements, case IDs/states, aliases and P01 definitions are preserved; local links exist and directive file fits its line limit. No app behavior changes. | Documentation release `6d69ac8` is loaded and accounted for; no app or asset change. |
+| 009-02 | Extend SD09 to empty coauthor recovery: full explanation and Manager link, heading and alert layout, bare profile addresses, checkbox text and SVG controls. | Checked locally: 315 tests, Ruff check/format and changed-Python type checks pass. Desktop recovery and narrow SVG text/display match; empty collaboration and populated graph drawing/label controls retain their behavior. | Release the focused correction, confirm loaded revision and both edited static assets, then verify every changed view/control and affected graph behavior. Supporting formats and downloaded images remain separate required checks. |
 
-No release has been pushed in this daily run yet. Full revisions, polling and pending checks remain in the private checkpoint.
+Release 01 (`6d69ac8`) is loaded and accounted for. The next checked application group corrects the empty coauthor view. Full revisions, polling and pending checks remain in the private checkpoint.
 
 ## Shared differences
 
