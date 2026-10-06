@@ -1403,6 +1403,20 @@ class SourcePageTests(TestCase):
             [value for _, value in matches], ['<strong>Biology</strong> one', '<strong>Research</strong> three']
         )
 
+    def test_search_matches_preserve_nonbreaking_edge_spaces(self) -> None:
+        """
+        Checks match previews trim ordinary whitespace but retain nonbreaking edge spaces.
+        """
+        fields: dict[str, object] = {
+            'alltext': [' \t\x00\u00a0 - <strong>Science</strong> lecture\u00a0\r\n '],
+        }
+        self.assertEqual(selected_highlights(fields), [('alltext', '\u00a0 - <strong>Science</strong> lecture\u00a0')])
+        doc: dict[str, object] = {'id': 'http://vivo.brown.edu/individual/invented-a'}
+        response: dict[str, object] = {
+            'highlighting': {'vitroIndividual:http://vivo.brown.edu/individual/invented-a': fields},
+        }
+        self.assertEqual(match_html(response, doc), '<p>\u00a0 - <strong>Science</strong> lecture\u00a0</p>')
+
     def test_search_matches_group_fields_with_captions(self) -> None:
         """
         Checks search match details label and join snippets from descriptive fields.

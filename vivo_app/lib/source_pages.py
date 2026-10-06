@@ -222,7 +222,7 @@ def selected_highlights(fields: dict[str, object], limit: int = 5) -> list[tuple
     Called by: match_html(), tests
     """
     hits = [
-        (field, value.strip())
+        (field, value.strip(' \t\r\n\v\f\x00'))
         for field, values in fields.items()
         if isinstance(values, list)
         for value in values
