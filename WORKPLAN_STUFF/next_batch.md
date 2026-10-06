@@ -82,3 +82,6 @@ SD17 supporting regressions reopen five earlier profiles for added literal-link 
 
 
 Release 20 recovery is now confirmed; the earlier stale-asset paragraph is historical. Every group is accounted for with isolated SD12 placement/pointer and public report metadata checks retained. The selected twenty URLs stay unchanged. Checked SD16 and SD17 follow-ups may be pushed, then require actual loaded-version confirmation and focused deployed regression checks.
+
+
+The release 21 SD16 follow-ups are verified. SD17 exact citation addresses remain pending on five supporting profiles because five source addresses contain spaces that Django removed. Change 008-30 corrects those demonstrated values; its deployed link and affected-behavior checks are required. The twenty selected URLs and original dated cutoff remain unchanged.

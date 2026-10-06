@@ -94,3 +94,5 @@ SD07 is verified after deployment on `42eb1e4`. Current citation text, inline fo
 
 
 - [ ] Verify SD17 on the next loaded release: literal DOI and PubMed links, actual offered new-tab behavior and affected profile filters/content. Restore the five reopened profiles only after all required checks pass.
+
+- [ ] Verify 008-30 literal citation addresses and offered new-tab journeys on the five reopened profiles. Retain incomplete checks; do not replace raw address equality with destination normalization.

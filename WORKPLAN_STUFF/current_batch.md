@@ -219,3 +219,12 @@ Both offered SD16 failures and their empty-form recovery are checked at both wid
 
 
 Release 20 is accounted for after static delivery recovery. Focused deployed improvements pass with isolated SD12 and public report metadata checks retained. The next release contains checked response charset, error-button spacing and literal publication-link corrections. All 312 tests and changed-Python checks pass. Source data, blocked formats and incomplete captures do not count as passing.
+
+
+Release 21 is confirmed loaded, and all three current shared assets match. The SD16 follow-ups pass: both offered error responses preserve status, JSON body and charset; ordinary HTML, JSON and facet requests succeed. Both error forms have the reference button width at desktop and narrow sizes, with eight inspected current views and successful empty-query and ordinary-query recovery. Earlier complete footer captures remain applicable.
+
+SD17 has forty-two paired deployed publication states. Visible citation text and all measured row, cell and table dimensions match. The original seventy changed link rows now preserve the reference scheme and punctuation. Five other literal addresses still differ because source spaces were removed. These are not accepted differences; the affected profiles remain pending. The earlier broad comparison included template indentation and hidden-cell text and does not establish visible failures.
+
+| Additional change | Improvement and local validation | Required deployed check |
+| --- | --- | --- |
+| url-batch-008-30 / SD17 | Preserve demonstrated leading and trailing spaces in DOI, PubMed and More Info addresses. Keep link validation and HTML attribute escaping. All 313 tests and changed-file Ruff, formatting and project Pyright pass. | Compare every literal citation address and offered new-tab journeys on the five affected profiles at both widths; preserve previously passing visible text, filtering and geometry. |
