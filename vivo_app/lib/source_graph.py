@@ -86,7 +86,10 @@ def visualization_graph(kind: str, identifier: str, mode: str, reader: GraphRead
     if not value:
         return value
     graph = value.get('graph') if kind == 'collaborators' else value.get('data')
-    if not isinstance(graph, dict) or not isinstance(graph.get('nodes'), list) or not isinstance(graph.get('links'), list):
+    if not isinstance(graph, dict) or (
+        (kind != 'collaborators' or graph)
+        and (not isinstance(graph.get('nodes'), list) or not isinstance(graph.get('links'), list))
+    ):
         raise PageDataError('The visualization service returned an invalid graph.')
     return value
 
@@ -381,6 +384,8 @@ def graph_page_data(
     graph = (value.get('data') if kind == 'coauthors' else value.get('graph')) if value else {'nodes': [], 'links': []}
     if not isinstance(graph, dict):
         raise PageDataError('The visualization graph is unavailable.')
+    if not graph:
+        graph = {'nodes': [], 'links': []}
     source_nodes = graph.get('nodes')
     source_links = graph.get('links')
     if not isinstance(source_nodes, list) or not isinstance(source_links, list):
@@ -423,6 +428,7 @@ def graph_page_data(
         'page_title': subject['page_title'] if subject else identifier,
         'title': subject['title'] if subject else '',
         'type': subject['type'] if subject else 'PEOPLE',
+        'empty_collaboration': kind == 'collaborators' and (subject is None or subject['type'] == 'PEOPLE') and not links,
         'nodes': nodes,
         'links': links,
         'source': graph,

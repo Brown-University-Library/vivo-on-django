@@ -14,4 +14,10 @@
 .network-page .node-text { font-size: 10px; }
 .research-chart-page .node-text { font-size: 14px; }
 .network-page #svgElement circle { stroke: #fff; stroke-width: 1.5px; }
+.network-empty-collaboration #errorMsg { margin-top: 1.4em; margin-left: 1.4em; max-width: 40em; }
+.network-empty-collaboration div.btn-group { margin-top: .7em; margin-left: .7em; float: left; }
+.network-empty-collaboration #svgElement { display: block; margin: 1.67em; float: left; }
+.network-empty-collaboration .network-options > .btn { display: inline-block; white-space: nowrap; }
+.network-empty-collaboration label { font-weight: normal; margin-bottom: 0; }
+.network-empty-collaboration #embedHtmlText { background-color: #f5f5d3; border: 1px solid #999; width: 98%; margin: 5px 0; padding: 1%; }
 @media (max-width: 767px) { .network-page .network-graph { max-width: 100%; height: auto; } }

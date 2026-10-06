@@ -104,6 +104,44 @@ class SourceGraphTests(TestCase):
         with self.assertRaises(PageDataError):
             visualization_graph('collaborators', 'team-example', 'replay', self.read)
 
+    def test_empty_graph_preserves_json_and_renders_recovery_links(self) -> None:
+        """
+        Checks a valid empty graph preserves JSON, the CSV error and its recovery page.
+        """
+        empty = {'graph': {}, 'rabid': 'invented-a', 'updated': '2026-01-02'}
+        self.replies[visualization_key('collaborators', 'invented-a')] = empty
+        with patch('vivo_app.lib.source_graph.read_source', side_effect=self.read):
+            data = self.get_page('/display/invented-a/viz/collab.json')
+            csv = self.get_page('/display/invented-a/viz/collab.csv')
+            query_csv = self.get_page('/display/invented-a/viz/collab?format=csv')
+            page = self.get_page('/display/invented-a/viz/collab')
+        self.assertEqual(json.loads(data.content), empty)
+        self.assertEqual(csv.status_code, 500)
+        self.assertEqual(csv.content, b'error')
+        self.assertEqual(csv['Content-Type'], 'text/plain; charset=utf-8')
+        self.assertEqual(query_csv.status_code, csv.status_code)
+        self.assertEqual(query_csv.content, csv.content)
+        self.assertContains(page, 'No collaboration data is available for this researcher.')
+        self.assertContains(page, 'If this is your profile you can define collaborators via the')
+        self.assertContains(page, '/display/invented-a#Affiliations')
+        self.assertContains(page, 'network-empty-collaboration')
+        graph = graph_page_data(empty, 'collaborators', 'invented-a')
+        self.assertEqual(graph['source'], {'nodes': [], 'links': []})
+        self.assertTrue(graph['empty_collaboration'])
+
+    def test_populated_graph_keeps_its_existing_rendering(self) -> None:
+        """
+        Checks populated graphs retain their nodes and use the populated-page controls.
+        """
+        value = self.replies[visualization_key('collaborators', 'invented-a')]
+        graph = graph_page_data(value, 'collaborators', 'invented-a')
+        self.assertEqual(graph['source'], value['graph'])
+        self.assertFalse(graph['empty_collaboration'])
+        with patch('vivo_app.lib.source_graph.read_source', side_effect=self.read):
+            page = self.get_page('/display/invented-a/viz/collab')
+        self.assertNotContains(page, 'network-empty-collaboration')
+        self.assertContains(page, 'Show Collaborators')
+
     def test_graph_download_and_page_merge_repeated_nodes(self) -> None:
         """
         Checks repeated graph nodes use one display point and the available group.
