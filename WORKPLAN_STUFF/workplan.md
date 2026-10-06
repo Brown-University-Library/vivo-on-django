@@ -36,6 +36,8 @@ Prefer completing one URL before spreading work across URLs. Change shared code 
 
 Do not select, implement or require deployed comparisons for the sixteen local account/editing patterns the owner commented out on October 6, 2026. Use [the exact exclusion list](public_endpoint_scope.md#preserved-links-and-excluded-behavior); retained support endpoints and browser sign-in are separate. These patterns never had counted cases, so this decision changes neither the completion denominator nor the active pass membership.
 
+If existing Rails behavior appears wrong, reproduce it during exact matching and record the concern in `../../post_exact_behavior_review.local.md` for later owner review. Do not repair it as a new feature or silently change a fixed passing condition to make a comparison pass.
+
 The owner keeps the target’s separate source services for now. Continue checks that can establish behavior and appearance with the available data. Record source-dependent content, counts, order, dates and drawing positions as unresolved. After the owner deploys the updated application in production, compare production Django with production Rails for those remaining checks. Do not request a staging source-setting change again or treat this limitation as acceptance of differences.
 
 ## Batch workflow

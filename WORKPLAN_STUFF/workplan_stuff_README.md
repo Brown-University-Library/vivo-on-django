@@ -24,6 +24,8 @@ Contents: [Brief overview](#brief-overview) · [Active files](#active-files) · 
 
 Keep the live global fraction/percentage only in progress.md. The inventory holds case state and readable patterns together; other files hold evidence or next actions and link to the dashboard. Dated historical results and case-specific check counts may remain in their records. Different cases can use the same pattern; completing one example does not complete its endpoint family. Exact bindings and detailed private evidence stay outside Git.
 
+The outer workspace also keeps `../../post_exact_behavior_review.local.md`. It records observed problems in the reference site for owner review after exact matching. It is private, outside Git, and does not add current implementation work or accept differences.
+
 ## Historical files
 
 [previous_workplan_artificts/](previous_workplan_artificts/) preserves earlier plans, batch records and evaluation reports. Its spelling follows the original setup. These files explain past decisions and results; do not update them as current instructions or current totals.
