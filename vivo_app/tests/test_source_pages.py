@@ -899,9 +899,9 @@ class SourcePageTests(TestCase):
         self.assertIn('> Genomics </a>', sections[0]['html'])
         self.assertEqual(sections[0]['html'].count('fq=research_areas%7C'), 1)
 
-    def test_profile_json_keeps_named_research_areas_beside_invalid_entries(self) -> None:
+    def test_profile_json_preserves_nullable_research_areas(self) -> None:
         """
-        Checks structured profiles keep valid research areas from a mixed source list.
+        Checks structured profiles preserve null and empty research areas as Rails does.
         """
         doc = json.loads(self.responses[profile_key('invented-a')].body)['response']['docs'][0]
         person = json.loads(doc['json_txt'][0])
@@ -912,12 +912,11 @@ class SourcePageTests(TestCase):
         areas = result['research_areas']
         if not isinstance(areas, list) or not areas or not isinstance(areas[0], dict):
             self.fail('Structured research areas should be a nonempty list.')
-        self.assertEqual(areas[0]['label'], 'Genomics')
-        self.assertEqual(len(areas), 1)
+        self.assertEqual([area['label'] for area in areas], [None, '', 'Genomics'])
 
     def test_profile_keeps_valid_courses_beside_invalid_entries(self) -> None:
         """
-        Checks readable courses remain in HTML and JSON beside malformed entries.
+        Checks HTML keeps readable courses while JSON preserves null and empty entries.
         """
         key = profile_key('invented-a')
         source = json.loads(self.responses[key].body)
@@ -934,7 +933,33 @@ class SourcePageTests(TestCase):
         teaching = next(section['html'] for section in sections if section['id'] == 'Teaching')
         self.assertEqual(teaching.count('EXMP 1000'), 1)
         structured = faculty_item_from_doc(doc, {}, {})
-        self.assertEqual(structured['teacher_for'], ['EXMP 1000 - Example Course'])
+        self.assertEqual(structured['teacher_for'], [None, '', 'EXMP 1000 - Example Course'])
+
+    def test_profile_json_text_lists_match_reference_defaults(self) -> None:
+        """
+        Checks false entries remain and unsupported entries leave whole JSON fields empty.
+        """
+        cases = [
+            (['Z example', 'A example'], ['A example', 'Z example']),
+            (['Example', False], [False, 'Example']),
+            (['Example', 42], []),
+            (['Example', True], []),
+            ([], []),
+        ]
+        doc = json.loads(self.responses[profile_key('invented-a')].body)['response']['docs'][0]
+        person = json.loads(doc['json_txt'][0])
+        person['uri'] = person['id']
+        for source_values, expected in cases:
+            with self.subTest(source_values=source_values):
+                person['research_areas'] = source_values
+                person['teacher_for'] = source_values
+                doc['json_txt'] = [json.dumps(person)]
+                structured = faculty_item_from_doc(doc, {}, {})
+                areas = structured['research_areas']
+                if not isinstance(areas, list):
+                    self.fail('Structured research areas should be a list.')
+                self.assertEqual([area['label'] for area in areas], expected)
+                self.assertEqual(structured['teacher_for'], expected)
 
     def test_profile_and_organization_json_preserve_blank_website_labels(self) -> None:
         """
@@ -1716,7 +1741,7 @@ class SourcePageTests(TestCase):
 
     def test_profile_keeps_other_content_when_teaching_is_invalid(self) -> None:
         """
-        Checks malformed optional course data does not hide HTML or profile JSON.
+        Checks HTML stays available and JSON retains the Rails empty course field.
         """
         key = profile_key('invented-a')
         response = json.loads(self.responses[key].body)
@@ -1732,7 +1757,7 @@ class SourcePageTests(TestCase):
             self.fail('Profile sections should be a list.')
         self.assertIn('Teaching', [section['id'] for section in sections])
         structured = faculty_item_from_doc(doc, {}, {})
-        self.assertEqual(structured['teacher_for'], ['Valid course'])
+        self.assertEqual(structured['teacher_for'], [])
 
     def test_invalid_optional_record_array_does_not_hide_profile(self) -> None:
         """

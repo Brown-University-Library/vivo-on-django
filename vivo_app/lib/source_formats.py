@@ -131,6 +131,20 @@ def website_text(row: dict[str, object]) -> str:
     return first_text(value).strip()
 
 
+def sorted_profile_text_values(value: object) -> list[str | None | bool]:
+    """
+    Sorts nullable profile text lists with the values accepted by Rails.
+
+    Unsupported entries produce Rails' empty-list result for the entire JSON field.
+
+    Called by: faculty_item_from_doc()
+    """
+    result: list[str | None | bool] = []
+    if isinstance(value, list) and all(item is None or item is False or isinstance(item, str) for item in value):
+        result = sorted(value, key=lambda item: item.lower() if isinstance(item, str) else '')
+    return result
+
+
 def dated_entries(raw: dict[str, object], field: str, names: tuple[str, ...]) -> list[dict[str, object]]:
     """
     Converts and sorts profile entries with optional start and end dates.
@@ -322,16 +336,9 @@ def faculty_item_from_doc(
         }
         for row in sorted(web_pages, key=lambda row: website_rank(row.get('rank')))
     ]
-    areas = raw.get('research_areas', [])
-    areas = [area for area in areas if isinstance(area, str) and area.strip()] if isinstance(areas, list) else []
-    item['research_areas'] = [
-        {'label': area, 'rabid': None, 'vivo_id': '', 'id': ''} for area in sorted(areas, key=str.lower)
-    ]
-    courses = raw.get('teacher_for', [])
-    courses = (
-        [course for course in courses if isinstance(course, str) and course.strip()] if isinstance(courses, list) else []
-    )
-    item['teacher_for'] = sorted(courses, key=str.lower)
+    areas = sorted_profile_text_values(raw.get('research_areas', []))
+    item['research_areas'] = [{'label': area, 'rabid': None, 'vivo_id': '', 'id': ''} for area in areas]
+    item['teacher_for'] = sorted_profile_text_values(raw.get('teacher_for', []))
     item['contributor_to'] = publication_entries(raw)
     item['appointments'] = dated_entries(
         raw, 'appointments', ('uri', 'id', 'org_name', 'name', 'department', 'start_date', 'end_date')
