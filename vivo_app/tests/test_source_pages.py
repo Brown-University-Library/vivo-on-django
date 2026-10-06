@@ -543,7 +543,7 @@ class SourcePageTests(TestCase):
             self.assertContains(filtered, 'Remove filter PEOPLE')
             profile = self.get_page('/display/invented-a')
             self.assertContains(profile, 'Example publication')
-            self.assertContains(profile, 'https://www.ncbi.nlm.nih.gov/pubmed/?term=12345678')
+            self.assertContains(profile, 'http://www.ncbi.nlm.nih.gov/pubmed/?term=12345678')
             self.assertContains(profile, 'Example University')
             self.assertContains(profile, '<a href="https://example.invalid/lab">Example lab</a>')
             self.assertContains(profile, '<a href="https://example.invalid/award">Award</a>')
@@ -1604,7 +1604,7 @@ class SourcePageTests(TestCase):
             {'doi': '10.0000/example', 'pub_med_id': '12345678', 'url': 'https://example.invalid/item'}
         )
         self.assertIn('https://doi.org/10.0000/example', linked)
-        self.assertIn('https://www.ncbi.nlm.nih.gov/pubmed/?term=12345678', linked)
+        self.assertIn('http://www.ncbi.nlm.nih.gov/pubmed/?term=12345678', linked)
         self.assertNotIn('More Info', linked)
         alternate = publication_html({'url': 'https://example.invalid/item'})
         self.assertIn('More Info', alternate)
@@ -1620,7 +1620,23 @@ class SourcePageTests(TestCase):
         Checks a valid source identifier with letters still gets a PubMed link.
         """
         markup = publication_html({'pub_med_id': 'PMC12345'})
-        self.assertIn('https://www.ncbi.nlm.nih.gov/pubmed/?term=PMC12345', markup)
+        self.assertIn('http://www.ncbi.nlm.nih.gov/pubmed/?term=PMC12345', markup)
+
+    def test_publication_doi_links_preserve_source_punctuation(self) -> None:
+        """
+        Checks source DOI punctuation and supplied URL prefixes remain unchanged.
+        """
+        for doi in ('10.0000/example(2)', 'https://doi.org/10.0000/example'):
+            with self.subTest(doi=doi):
+                markup = publication_html({'doi': doi})
+                self.assertIn('href="https://doi.org/' + doi + '"', markup)
+
+    def test_publication_doi_links_escape_ampersands_in_markup(self) -> None:
+        """
+        Checks attribute escaping preserves a source ampersand in the destination.
+        """
+        markup = publication_html({'doi': '10.0000/example&appendix'})
+        self.assertIn('href="https://doi.org/10.0000/example&amp;appendix"', markup)
 
     def test_repository_root_link_is_full_text(self) -> None:
         """

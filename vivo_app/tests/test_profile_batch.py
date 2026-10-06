@@ -160,7 +160,7 @@ class ProfileBatchTests(SimpleTestCase):
         """
         cases = [
             ('doi', ' 10.0000/example ', 'https://doi.org/10.0000/example'),
-            ('pub_med_id', ' PMC12345 ', 'https://www.ncbi.nlm.nih.gov/pubmed/?term=PMC12345'),
+            ('pub_med_id', ' PMC12345 ', 'http://www.ncbi.nlm.nih.gov/pubmed/?term=PMC12345'),
             ('url', ' https://example.invalid/item ', 'https://example.invalid/item'),
         ]
         for field, value, expected in cases:

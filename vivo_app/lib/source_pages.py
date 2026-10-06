@@ -18,8 +18,8 @@ from django.utils import timezone
 
 from vivo_app.lib.prepared_data import MissingRecordError, PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
-from vivo_app.lib.source_citations import citation_append, citation_period, citation_text, citation_title
 from vivo_app.lib.search_errors import check_reference_filter_markup
+from vivo_app.lib.source_citations import citation_append, citation_period, citation_text, citation_title
 from vivo_app.lib.source_html import render_citation_html, render_profile_html
 from vivo_app.lib.source_requests import (
     FACETS,
@@ -647,11 +647,11 @@ def publication_html(item: dict[str, object]) -> str:
     full_text = (
         external
         if external.startswith('https://repository.library.brown.edu/') or external == 'https://repository.library.brown.edu'
-        else ('https://doi.org/' + quote(doi, safe='/') if doi else '')
+        else ('https://doi.org/' + doi if doi else '')
     )
     pub_med_id = first_text(item.get('pub_med_id')).strip()
     pub_med_url = (
-        'https://www.ncbi.nlm.nih.gov/pubmed/?term=' + quote(pub_med_id, safe='')
+        'http://www.ncbi.nlm.nih.gov/pubmed/?term=' + quote(pub_med_id, safe='')
         if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', pub_med_id)
         else ''
     )
