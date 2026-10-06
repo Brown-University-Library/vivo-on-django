@@ -34,6 +34,7 @@ from .lib.page_data import (
 from .lib.page_rendering import data_unavailable, prepared_response, query_pairs, render_or_stub
 from .lib.prepared_data import MissingRecordError, PageDataError
 from .lib.profile_navigation import profile_search_return
+from .lib.search_errors import ReferenceSearchError
 from .lib.source_documents import document_response
 from .lib.source_formats import organization_json_data, profile_json_data, raw_record_json_data
 from .lib.source_graph import graph_csv, graph_page_data, graph_subject_data, visualization_graph
@@ -654,8 +655,12 @@ def web_link_delete(request, faculty_id):
 
 
 # Search
-def search(request):
-    """Handle search requests."""
+def search(request: HttpRequest) -> HttpResponse:
+    """
+    Shows search results or the reference response for a known filter failure.
+
+    Called by: config.urls
+    """
     if 'querytext' in request.GET:
         destination = reverse('search').rstrip('/') + '?' + urlencode({'q': request.GET['querytext']})
         return redirect(destination)
@@ -663,21 +668,32 @@ def search(request):
         if request.GET.get('format') == 'json':
             if settings.PAGE_DATA_MODE in {'live', 'replay'}:
                 pairs = [(key, value) for key, value in query_pairs(request.GET) if key != 'format']
-                return JsonResponse(
-                    search_json_data(pairs, settings.PAGE_DATA_MODE, request.build_absolute_uri(reverse('home'))), safe=False
-                )
+                site_origin = request.build_absolute_uri(reverse('home')) or ''
+                return JsonResponse(search_json_data(pairs, settings.PAGE_DATA_MODE, site_origin), safe=False)
             saved_response = get_response_data(request.path_info, query_pairs(request.GET))
             if saved_response is not None:
                 return prepared_response(saved_response)
         else:
             search_data = get_search_data(request.path_info, query_pairs(request.GET))
             if search_data is not None:
-                request.session['prepared_search_url'] = request.get_full_path()
+                session = getattr(request, 'session', None)
+                if isinstance(session, SessionBase):
+                    session['prepared_search_url'] = request.get_full_path()
                 return render(request, 'search/results.html', search_data)
+    except ReferenceSearchError:
+        logger.error('reference_search_filter_error')
+        if request.GET.get('format') == 'json':
+            return JsonResponse(
+                {'status': 500, 'error': 'Internal Server Error'},
+                status=500,
+                content_type='application/json; charset=UTF-8',
+                json_dumps_params={'separators': (',', ':')},
+            )
+        return render(request, 'search/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500)
     except PageDataError as exc:
         return data_unavailable(exc)
     query = request.GET.get('q', '')
-    context = {'query': query}
+    context: dict[str, object] = {'query': query}
     return render_or_stub(request, 'search/results.html', context)
 
 
@@ -703,8 +719,12 @@ def advanced_search(request: HttpRequest) -> HttpResponse:
     return render(request, 'search/advanced.html', {'name': name, 'title': title})
 
 
-def search_facets(request):
-    """Return search facets."""
+def search_facets(request: HttpRequest) -> HttpResponse:
+    """
+    Returns search facets or the reference null response for a known filter failure.
+
+    Called by: config.urls
+    """
     try:
         if settings.PAGE_DATA_MODE in {'live', 'replay'}:
             if 'f_name' not in request.GET:
@@ -713,6 +733,9 @@ def search_facets(request):
         saved_response = get_response_data(request.path_info, query_pairs(request.GET))
         if saved_response is not None:
             return prepared_response(saved_response)
+    except ReferenceSearchError:
+        logger.error('reference_search_filter_error')
+        return JsonResponse(None, safe=False, status=500)
     except PageDataError as exc:
         return data_unavailable(exc)
     # TODO: Implement facet logic for authentic sources.

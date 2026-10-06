@@ -19,6 +19,7 @@ from django.utils import timezone
 from vivo_app.lib.prepared_data import MissingRecordError, PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_citations import citation_append, citation_period, citation_text, citation_title
+from vivo_app.lib.search_errors import check_reference_filter_markup
 from vivo_app.lib.source_html import render_citation_html, render_profile_html
 from vivo_app.lib.source_requests import (
     FACETS,
@@ -148,6 +149,7 @@ def search_inputs(pairs: list[tuple[str, str]]) -> tuple[str, int, list[tuple[st
                 raise PageDataError('The requested search filter is unsupported.')
             if (field, text) not in filters:
                 filters.append((field, text))
+    check_reference_filter_markup(filters)
     return (queries[0] if queries else ''), (int(pages[0]) if pages else 1), filters
 
 
