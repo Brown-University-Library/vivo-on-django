@@ -119,13 +119,25 @@ def organization_json_data(
     }
 
 
+def model_scalar(value: object) -> object:
+    """
+    Preserves scalar values and takes the first array value as Rails models do.
+
+    Called by: website_text(), dated_entries(), publication_entries(), faculty_item_from_doc()
+    """
+    result = value
+    if isinstance(value, list):
+        result = value[0] if value else None
+    return result
+
+
 def website_text(row: dict[str, object]) -> str:
     """
     Trims website text while preserving explicit blank labels from Rails.
 
     Called by: organization_json_data(), faculty_item_from_doc()
     """
-    value = row.get('text')
+    value = model_scalar(row.get('text'))
     if value is None or value is False:
         value = row.get('url')
     return first_text(value).strip()
@@ -154,9 +166,9 @@ def dated_entries(raw: dict[str, object], field: str, names: tuple[str, ...]) ->
     converted: list[dict[str, object]] = []
     for row in entries(raw, field):
         item = (
-            {name: row[name] for name in names if name in row}
+            {name: model_scalar(row[name]) for name in names if name in row}
             if field == 'training'
-            else {name: row.get(name, None if name in {'start_date', 'end_date'} else '') for name in names}
+            else {name: model_scalar(row.get(name, None if name in {'start_date', 'end_date'} else '')) for name in names}
         )
         if field == 'training':
             item.setdefault('start_date', None)
@@ -169,9 +181,12 @@ def dated_entries(raw: dict[str, object], field: str, names: tuple[str, ...]) ->
                 except ValueError:
                     item[name] = None
         if 'id' in item:
-            item['id'] = first_text(row.get('uri'))
+            item['id'] = model_scalar(row.get('uri', ''))
         if field == 'appointments':
-            item['org_name'] = first_text(row.get('hospital_name')) or first_text(row.get('org_name'))
+            org_name = row.get('hospital_name')
+            if org_name is None or org_name is False:
+                org_name = row.get('org_name')
+            item['org_name'] = '' if org_name is None or org_name is False else org_name
         converted.append(item)
     converted.sort(key=lambda row: str(row.get('start_date') or '1900-01-01'))
     converted.reverse()
@@ -204,9 +219,9 @@ def publication_entries(raw: dict[str, object]) -> list[dict[str, object]]:
     )
     converted: list[dict[str, object]] = []
     for row in entries(raw, 'contributor_to'):
-        item = {name: row[name] for name in names if name in row}
-        item['title'] = first_text(row.get('title'))
-        year = publication_year(row)
+        item = {name: model_scalar(row[name]) for name in names if name in row}
+        item['title'] = first_text(model_scalar(row.get('title')))
+        year = publication_year(item)
         item['year'] = int(year) if year else None
         item['external_url'] = row.get('url')
         converted.append(item)
@@ -293,33 +308,37 @@ def faculty_item_from_doc(
         'has_collaborators': False,
     }
     item = {name: item.get(name, default) for name, default in defaults.items()} | {
-        'id': first_text(raw.get('uri')),
+        'id': raw.get('id'),
         'uri': first_text(raw.get('uri')),
     }
-    item['display_name'] = first_text(doc.get('display_name_s')) or first_text(raw.get('name'))
+    display_name = doc.get('display_name_s')
+    if display_name is None:
+        name = raw.get('name')
+        display_name = '' if name is None or name is False else name
+    item['display_name'] = display_name
     path = image_path(doc.get('thumbnail_file_path_s'))
     item['thumbnail'] = source_origin('images') + path if path else None
-    item['fis_updated'] = first_text(doc.get('fis_updated_s')) or None
-    item['profile_updated'] = first_text(doc.get('profile_updated_s')) or None
+    item['fis_updated'] = doc.get('fis_updated_s')
+    item['profile_updated'] = doc.get('profile_updated_s')
     item['show_visualizations'] = first_text(doc.get('show_visualizations_s')) == 'true'
     cv = entries(raw, 'cv')
-    item['cv_link'] = first_text(cv[0].get('cv_link')) if cv else None
+    item['cv_link'] = cv[0].get('cv_link') if cv else None
     affiliations = entries(raw, 'affiliations')
     item['affiliations'] = [
         {
-            'uri': first_text(row.get('uri')),
-            'name': first_text(row.get('name')),
-            'id': first_text(row.get('uri')),
+            'uri': model_scalar(row.get('uri', '')),
+            'name': model_scalar(row.get('name', '')),
+            'id': model_scalar(row.get('uri', '')),
             'thumbnail': None,
         }
         for row in sorted(affiliations, key=lambda row: first_text(row.get('name')).lower())
     ]
     education = entries(raw, 'education')
-    sorted_education = sorted(education, key=lambda row: first_text(row.get('date')))
+    sorted_education = sorted(education, key=lambda row: first_text(model_scalar(row.get('date'))))
     sorted_education.reverse()
     item['education'] = [
         {
-            key: first_text(row[key]).strip() if key == 'school_name' else row[key]
+            key: first_text(model_scalar(row[key])).strip() if key == 'school_name' else model_scalar(row[key])
             for key in ('school_uri', 'date', 'degree', 'school_name')
             if key in row
         }
@@ -328,13 +347,13 @@ def faculty_item_from_doc(
     web_pages = entries(raw, 'on_the_web')
     item['on_the_web'] = [
         {
-            **{name: row[name] for name in ('uri',) if name in row},
-            'rank': website_rank(row.get('rank')),
-            'id': first_text(row.get('uri')),
+            **{name: model_scalar(row[name]) for name in ('uri',) if name in row},
+            'rank': website_rank(model_scalar(row.get('rank'))),
+            'id': model_scalar(row.get('uri')),
             'url': first_text(row.get('url')).strip(),
             'text': website_text(row),
         }
-        for row in sorted(web_pages, key=lambda row: website_rank(row.get('rank')))
+        for row in sorted(web_pages, key=lambda row: website_rank(model_scalar(row.get('rank'))))
     ]
     areas = sorted_profile_text_values(raw.get('research_areas', []))
     item['research_areas'] = [{'label': area, 'rabid': None, 'vivo_id': '', 'id': ''} for area in areas]
@@ -355,14 +374,16 @@ def faculty_item_from_doc(
     )
     item['collaborators'] = [
         {
-            **{name: row[name] for name in ('uri', 'name', 'title', 'org_name') if name in row},
-            'id': first_text(row.get('uri')),
+            **{name: model_scalar(row[name]) for name in ('uri', 'name', 'title', 'org_name') if name in row},
+            'id': model_scalar(row.get('uri')),
         }
         for row in sorted(entries(raw, 'collaborators'), key=lambda row: first_text(row.get('name')).lower())
     ]
     uri = first_text(raw.get('uri'))
     if not uri:
         raise PageDataError('The source profile has no URI.')
-    item['has_coauthors'] = uri in coauthors
-    item['has_collaborators'] = uri in collaborators if item['collaborators'] else False
+    graph_id = first_text(item['id']).rsplit('/', 1)[-1]
+    graph_key = 'http://vivo.brown.edu/individual/' + graph_id
+    item['has_coauthors'] = graph_key in coauthors
+    item['has_collaborators'] = graph_key in collaborators if item['collaborators'] else False
     return item

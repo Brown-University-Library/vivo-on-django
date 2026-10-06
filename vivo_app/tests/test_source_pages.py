@@ -1946,7 +1946,7 @@ class SourcePageTests(TestCase):
         self.assertEqual(response.status_code, 200)
         body = json.loads(response.content)
         self.assertEqual(body['name'], 'Sparse Researcher')
-        self.assertEqual(body['id'], 'http://vivo.brown.edu/individual/invented-sparse')
+        self.assertIsNone(body['id'])
         self.assertEqual(body['has_coauthors'], False)
         self.assertEqual(body['research_areas'], [])
         self.responses.pop(visualization_key('coauthors'))
@@ -2030,6 +2030,7 @@ class SourcePageTests(TestCase):
         """
         uri = 'http://vivo.brown.edu/individual/invented-nested'
         raw = {
+            'id': uri,
             'uri': uri,
             'name': 'Invented Nested',
             'contributor_to': [
@@ -2085,6 +2086,104 @@ class SourcePageTests(TestCase):
         self.assertEqual(body['on_the_web'][0]['text'], '')
         self.assertTrue(body['has_coauthors'])
         self.assertTrue(body['has_collaborators'])
+
+    def test_profile_json_preserves_empty_metadata(self) -> None:
+        """
+        Checks explicit empty display and update values remain empty in JSON.
+        """
+        doc = json.loads(self.responses[profile_key('invented-a')].body)['response']['docs'][0]
+        person = json.loads(doc['json_txt'][0])
+        person['uri'] = person['id']
+        doc['json_txt'] = [json.dumps(person)]
+        doc.update(display_name_s='', fis_updated_s='', profile_updated_s='')
+        result = faculty_item_from_doc(doc, {}, {})
+        for field in ('display_name', 'fis_updated', 'profile_updated'):
+            self.assertEqual(result[field], '')
+        doc['display_name_s'] = None
+        self.assertEqual(faculty_item_from_doc(doc, {}, {})['display_name'], person['name'])
+
+    def test_profile_json_preserves_null_identifiers_and_optional_values(self) -> None:
+        """
+        Checks null identifiers, names and CV values keep their reference types.
+        """
+        doc = json.loads(self.responses[profile_key('invented-a')].body)['response']['docs'][0]
+        person = json.loads(doc['json_txt'][0])
+        uri = person.pop('id')
+        person['uri'] = uri
+        person['affiliations'] = [{'uri': None, 'name': None}]
+        person['collaborators'] = [{'uri': None, 'name': None}]
+        person['appointments'] = [{'uri': None, 'hospital_name': '', 'org_name': 'Other organization'}]
+        person['credentials'] = [{'uri': None}]
+        person['cv'] = [{'cv_link': None}]
+        doc['json_txt'] = [json.dumps(person)]
+        result = faculty_item_from_doc(doc, {uri: True}, {uri: True})
+        self.assertIsNone(result['id'])
+        self.assertIsNone(result['cv_link'])
+        self.assertFalse(result['has_coauthors'])
+        self.assertFalse(result['has_collaborators'])
+        for field in ('affiliations', 'collaborators', 'appointments', 'credentials'):
+            rows = result[field]
+            if not isinstance(rows, list) or not rows or not isinstance(rows[0], dict):
+                self.fail('Structured optional records should be a nonempty list.')
+            self.assertIsNone(rows[0]['id'])
+            self.assertIsNone(rows[0]['uri'])
+        appointments = result['appointments']
+        assert isinstance(appointments, list)
+        self.assertEqual(appointments[0]['org_name'], '')
+        affiliations = result['affiliations']
+        assert isinstance(affiliations, list)
+        self.assertIsNone(affiliations[0]['name'])
+
+    def test_profile_json_converts_nested_scalar_arrays(self) -> None:
+        """
+        Checks nested array values follow the original Rails model conversions.
+        """
+        doc = json.loads(self.responses[profile_key('invented-a')].body)['response']['docs'][0]
+        person = json.loads(doc['json_txt'][0])
+        person['uri'] = person['id']
+        person['contributor_to'] = [{'title': ['Example paper'], 'authors': ['Example author'], 'date': ['2024-01-01']}]
+        person['appointments'] = [
+            {
+                'uri': ['urn:example:appointment'],
+                'name': ['Example appointment'],
+                'org_name': ['Example organization'],
+                'start_date': ['2020-01-01'],
+            }
+        ]
+        person['credentials'] = [{'uri': ['urn:example:credential'], 'number': ['123'], 'start_date': ['2019-01-01']}]
+        person['training'] = [{'name': ['Example training'], 'city': ['Example City'], 'start_date': ['2018-01-01']}]
+        person['education'] = [{'date': ['2012'], 'degree': ['Example degree'], 'school_name': [' Example school ']}]
+        person['collaborators'] = [{'uri': ['urn:example:person'], 'name': ['Example collaborator']}]
+        person['on_the_web'] = [
+            {'uri': ['urn:example:web'], 'rank': ['2later'], 'url': [' https://example.invalid/ '], 'text': [None]}
+        ]
+        doc['json_txt'] = [json.dumps(person)]
+        result = faculty_item_from_doc(doc, {}, {})
+        expected = {
+            'contributor_to': {'title': 'Example paper', 'authors': 'Example author', 'date': '2024-01-01', 'year': 2024},
+            'appointments': {
+                'id': 'urn:example:appointment',
+                'name': 'Example appointment',
+                'org_name': ['Example organization'],
+                'start_date': '2020-01-01',
+            },
+            'credentials': {'id': 'urn:example:credential', 'number': '123', 'start_date': '2019-01-01'},
+            'training': {'name': 'Example training', 'city': 'Example City', 'start_date': '2018-01-01'},
+            'education': {'date': '2012', 'degree': 'Example degree', 'school_name': 'Example school'},
+            'collaborators': {'id': 'urn:example:person', 'name': 'Example collaborator'},
+            'on_the_web': {
+                'id': 'urn:example:web',
+                'rank': 2,
+                'url': 'https://example.invalid/',
+                'text': 'https://example.invalid/',
+            },
+        }
+        for field, expected_values in expected.items():
+            rows = result[field]
+            if not isinstance(rows, list) or not rows or not isinstance(rows[0], dict):
+                self.fail('Structured optional records should be a nonempty list.')
+            for name, value in expected_values.items():
+                self.assertEqual(rows[0][name], value, f'{field}.{name}')
 
     def test_profile_json_accepts_website_rank_prefix(self) -> None:
         """

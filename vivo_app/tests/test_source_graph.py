@@ -282,6 +282,7 @@ class CustomGraphTests(TestCase):
         """
         prefix = 'http://vivo.brown.edu/individual/'
         self.root: dict[str, object] = {
+            'id': prefix + 'invented-root',
             'uri': prefix + 'invented-root',
             'name': 'Invented Root',
             'title': 'Example Professor',
