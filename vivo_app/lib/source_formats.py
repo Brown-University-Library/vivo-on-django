@@ -95,7 +95,7 @@ def organization_json_data(
             }
         )
     web_pages: list[dict[str, object]] = []
-    for row in sorted(entries(raw, 'web_pages'), key=lambda value: website_rank(value.get('rank'))):
+    for row in entries(raw, 'web_pages'):
         url = first_text(row.get('url')).strip()
         web_pages.append(
             {
@@ -103,7 +103,7 @@ def organization_json_data(
                 'uri': first_text(row.get('uri')),
                 'rank': website_rank(row.get('rank')),
                 'url': url,
-                'text': first_text(row.get('text')).strip() or url,
+                'text': website_text(row),
             }
         )
     return {
@@ -117,6 +117,18 @@ def organization_json_data(
         'web_pages': web_pages,
         'faculty': [],
     }
+
+
+def website_text(row: dict[str, object]) -> str:
+    """
+    Trims website text while preserving explicit blank labels from Rails.
+
+    Called by: organization_json_data(), faculty_item_from_doc()
+    """
+    value = row.get('text')
+    if value is None or value is False:
+        value = row.get('url')
+    return first_text(value).strip()
 
 
 def dated_entries(raw: dict[str, object], field: str, names: tuple[str, ...]) -> list[dict[str, object]]:
@@ -306,7 +318,7 @@ def faculty_item_from_doc(
             'rank': website_rank(row.get('rank')),
             'id': first_text(row.get('uri')),
             'url': first_text(row.get('url')).strip(),
-            'text': first_text(row.get('text')).strip() or first_text(row.get('url')).strip(),
+            'text': website_text(row),
         }
         for row in sorted(web_pages, key=lambda row: website_rank(row.get('rank')))
     ]

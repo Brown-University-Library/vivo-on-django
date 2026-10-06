@@ -936,32 +936,50 @@ class SourcePageTests(TestCase):
         structured = faculty_item_from_doc(doc, {}, {})
         self.assertEqual(structured['teacher_for'], ['EXMP 1000 - Example Course'])
 
-    def test_profile_and_organization_json_label_blank_websites(self) -> None:
+    def test_profile_and_organization_json_preserve_blank_website_labels(self) -> None:
         """
-        Checks structured website links use their address when the label is blank.
+        Checks JSON preserves blank labels and uses the address only for missing labels.
         """
+        websites = [
+            {'url': ' https://example.invalid/website ', 'text': '  '},
+            {'url': ' https://example.invalid/website ', 'text': ''},
+            {'url': ' https://example.invalid/website ', 'text': None},
+            {'url': ' https://example.invalid/website '},
+            {'url': ' https://example.invalid/website ', 'text': ' Example label '},
+            {'url': ' https://example.invalid/website ', 'text': False},
+        ]
+        expected_labels = [
+            '',
+            '',
+            'https://example.invalid/website',
+            'https://example.invalid/website',
+            'Example label',
+            'https://example.invalid/website',
+        ]
         person_doc = json.loads(self.responses[profile_key('invented-a')].body)['response']['docs'][0]
         person = json.loads(person_doc['json_txt'][0])
         person['uri'] = person['id']
-        person['on_the_web'] = [{'url': 'https://example.invalid/person', 'text': '  '}]
+        person['on_the_web'] = websites
         person_doc['json_txt'] = [json.dumps(person)]
         structured_person = faculty_item_from_doc(person_doc, {}, {})
         person_websites = structured_person['on_the_web']
         if not isinstance(person_websites, list) or not person_websites or not isinstance(person_websites[0], dict):
             self.fail('Structured person websites should be a nonempty list.')
-        self.assertEqual(person_websites[0]['text'], 'https://example.invalid/person')
+        self.assertEqual([row['text'] for row in person_websites], expected_labels)
+        self.assertTrue(all(row['url'] == 'https://example.invalid/website' for row in person_websites))
 
         key = profile_key('org-example')
         source = json.loads(self.responses[key].body)
         organization = json.loads(source['response']['docs'][0]['json_txt'][0])
-        organization['web_pages'] = [{'url': 'https://example.invalid/department', 'text': '  '}]
+        organization['web_pages'] = websites
         source['response']['docs'][0]['json_txt'] = [json.dumps(organization)]
         self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
         structured_org = organization_json_data('org-example', 'live', self.read)
         org_websites = structured_org['web_pages']
         if not isinstance(org_websites, list) or not org_websites or not isinstance(org_websites[0], dict):
             self.fail('Structured organization websites should be a nonempty list.')
-        self.assertEqual(org_websites[0]['text'], 'https://example.invalid/department')
+        self.assertEqual([row['text'] for row in org_websites], expected_labels)
+        self.assertTrue(all(row['url'] == 'https://example.invalid/website' for row in org_websites))
 
     def test_affiliation_logo_request_failure_keeps_profile_visible(self) -> None:
         """Uses the placeholder if the optional affiliation lookup fails."""
@@ -1961,9 +1979,9 @@ class SourcePageTests(TestCase):
         self.assertEqual(body['people'][0]['label'], 'Researcher, Invented')
         self.assertEqual(body['people'][0]['thumbnail_url'], 'http://example.invalid/profile-images/123/4/portrait.jpg')
 
-    def test_organization_json_orders_websites_by_rank(self) -> None:
+    def test_organization_json_preserves_source_website_order(self) -> None:
         """
-        Checks organization JSON follows the same website order as its page.
+        Checks organization JSON keeps source website order even when ranks differ.
         """
         key = profile_key('org-example')
         response = json.loads(self.responses[key].body)
@@ -1978,7 +1996,7 @@ class SourcePageTests(TestCase):
             result = self.get_page('/display/org-example.json')
         body = json.loads(result.content)
         self.assertEqual(
-            [row['url'] for row in body['web_pages']], ['https://example.invalid/earlier', 'https://example.invalid/later']
+            [row['url'] for row in body['web_pages']], ['https://example.invalid/later', 'https://example.invalid/earlier']
         )
 
     def test_nested_profile_json_converts_and_sorts_entries(self) -> None:
@@ -2039,7 +2057,7 @@ class SourcePageTests(TestCase):
         self.assertEqual([row['degree'] for row in body['education']], ['Second', 'First'])
         self.assertEqual(body['education'][1]['school_name'], 'Example School')
         self.assertEqual(body['on_the_web'][0]['url'], 'https://example.invalid/')
-        self.assertEqual(body['on_the_web'][0]['text'], 'https://example.invalid/')
+        self.assertEqual(body['on_the_web'][0]['text'], '')
         self.assertTrue(body['has_coauthors'])
         self.assertTrue(body['has_collaborators'])
 
