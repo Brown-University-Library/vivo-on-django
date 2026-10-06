@@ -1307,18 +1307,25 @@ class SourcePageTests(TestCase):
 
     def test_old_search_term_redirects_without_source_request(self) -> None:
         """
-        Checks an old querytext URL redirects to the mounted search route.
+        Checks legacy search redirects preserve spaces and discard other parameters.
         """
         prefix = '/mounted-app'
         previous_prefix = get_script_prefix()
         set_script_prefix(prefix)
         try:
-            with patch('vivo_app.lib.source_pages.read_source') as read:
-                response = self.client.get('/search?querytext=Example+Term', SCRIPT_NAME=prefix)
-            assert isinstance(response, HttpResponse)
-            self.assertEqual(response.status_code, 302)
-            self.assertEqual(response['Location'], prefix + '/search?q=Example+Term')
-            read.assert_not_called()
+            cases = [
+                ('querytext=Example+Term', 'Example%20Term'),
+                ('querytext=Example%20Term', 'Example%20Term'),
+                ('querytext=Example&q=Other&page=2', 'Example'),
+            ]
+            for query, expected in cases:
+                with self.subTest(query=query):
+                    with patch('vivo_app.lib.source_pages.read_source') as read:
+                        response = self.client.get('/search?' + query, SCRIPT_NAME=prefix)
+                    assert isinstance(response, HttpResponse)
+                    self.assertEqual(response.status_code, 302)
+                    self.assertEqual(response['Location'], prefix + '/search?q=' + expected)
+                    read.assert_not_called()
         finally:
             set_script_prefix(previous_prefix)
 

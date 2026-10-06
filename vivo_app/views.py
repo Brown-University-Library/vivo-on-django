@@ -6,7 +6,7 @@ import logging
 import random
 import re
 import sys
-from urllib.parse import quote_plus, urlencode
+from urllib.parse import quote, quote_plus, urlencode
 
 from django.conf import settings
 from django.contrib.sessions.backends.base import SessionBase
@@ -662,7 +662,7 @@ def search(request: HttpRequest) -> HttpResponse:
     Called by: config.urls
     """
     if 'querytext' in request.GET:
-        destination = reverse('search').rstrip('/') + '?' + urlencode({'q': request.GET['querytext']})
+        destination = reverse('search').rstrip('/') + '?' + urlencode({'q': request.GET['querytext']}, quote_via=quote)
         return redirect(destination)
     try:
         if request.GET.get('format') == 'json':
