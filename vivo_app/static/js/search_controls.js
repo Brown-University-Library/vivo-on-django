@@ -44,17 +44,17 @@
         return left < right ? -1 : left > right ? 1 : 0;
       });
       var selected = values.filter(function (item) { return item.text.toUpperCase().includes(query); });
-      pageCount = Math.max(1, Math.ceil(selected.length / 20));
-      page = Math.max(1, Math.min(page, pageCount));
+      pageCount = Math.ceil(selected.length / 20);
       list.replaceChildren();
-      selected.slice((page - 1) * 20, page * 20).forEach(function (item) { list.appendChild(facetRow(item)); });
+      // Preserve the reference pager's keyboard behavior at either boundary.
+      for (var index = (page - 1) * 20; index < Math.min(page * 20, selected.length); index += 1) {
+        list.appendChild(facetRow(selected[index]));
+      }
       dialog.querySelector('.facet-page-status').textContent = selected.length + ' values; page ' + page + ' of ' + pageCount;
       controls.forEach(function (control) {
         var action = control.dataset.facetAction;
-        var disabled = (action === 'previous' && page === 1) || (action === 'next' && page === pageCount);
+        var disabled = (action === 'previous' && page === 1) || (action === 'next' && page >= pageCount);
         control.classList.toggle('disabled', disabled);
-        control.setAttribute('aria-disabled', String(disabled));
-        control.tabIndex = disabled ? -1 : 0;
         if (action === 'alphabetical' || action === 'count') {
           control.classList.toggle('active', action === sort);
           control.setAttribute('aria-pressed', String(action === sort));
@@ -64,15 +64,11 @@
     controls.forEach(function (control) {
       control.addEventListener('click', function (event) {
         event.preventDefault();
-        if (control.getAttribute('aria-disabled') === 'true') return;
         var action = control.dataset.facetAction;
         if (action === 'previous') page -= 1;
         else if (action === 'next') page += 1;
         else { sort = action; page = 1; }
         render();
-      });
-      control.addEventListener('keydown', function (event) {
-        if (event.key === ' ') { event.preventDefault(); control.click(); }
       });
     });
     input.addEventListener('input', function () { page = 1; render(); });
