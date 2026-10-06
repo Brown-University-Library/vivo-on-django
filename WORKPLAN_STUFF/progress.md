@@ -2,7 +2,7 @@
 
 **URL-case completion: 36.4% — 28 of 77 known cases complete.**
 
-Recorded snapshot: **October 6, 2026, 08:58 America/New_York — P06 completion.** P06 completes its remaining desktop CV-viewer comparison; its retained profile and document evidence remains applicable. The provisional denominator is unchanged. The run continues; selected actions are in [next_batch.md](next_batch.md).
+Recorded snapshot: **October 6, 2026, 12:00 America/New_York — noon checkpoint.** The count is unchanged. New graph download and search pointer evidence verifies individual checks; remaining data, response and complete-view differences keep those whole cases pending. The provisional denominator is unchanged. The run continues; selected actions are in [next_batch.md](next_batch.md).
 
 This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
@@ -24,6 +24,7 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 6, 06:00 boundary checkpoint | 25 / 77 | 32.5% | Graph asset delivery recovered; partial graph checks did not complete a case. |
 | October 6, 08:00 — final snapshot | 27 / 77 | 35.1% | Five profiles restored, two cases newly completed; denominator unchanged. |
 | October 6, 08:28 — daily start | 27 / 77 | 35.1% | Counts unchanged; new dated run preserves all case requirements. |
+| October 6, 12:00 — noon checkpoint | 28 / 77 | 36.4% | P06 completion remains applicable; newly verified individual graph and search checks do not complete another case. Denominator unchanged. |
 
 Earlier per-release observations and the original dashboard are preserved in the [historical progress record](previous_workplan_artificts/progress_before_simplification_2026_10_06.md). Detailed release accounting stays in the batch records and private checkpoint.
 
