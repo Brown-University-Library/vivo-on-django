@@ -4,7 +4,7 @@ Initialized October 3, 2026 from the approved [endpoint scope](public_endpoint_s
 
 ## First actions
 
-**Current work:** [next_batch.md](next_batch.md) holds twenty distinct URLs: thirteen carried forward and seven added. The [seventh evaluation](previous_workplan_artificts/url_batch_007_evaluation.md) confirms both filter corrections after static collection. Nineteen whole cases are recorded; E01, P10, P08 and P09 complete during the daily run. P03 and supporting title JSON pass their remaining checks. Source-data differences remain pending. [current_batch.md](current_batch.md) adds a deployment-only collected-file check and the institution-page correction.
+**Current work:** [next_batch.md](next_batch.md) holds twenty distinct URLs: nine carried forward and eleven added. Twenty-five of seventy-seven whole cases are complete (32.5%). Release 19 is code-loaded, but its changed graph assets remain stale; stop further pushes until delivery recovers and every SD09 change is accounted for. P05 passes five functional and ten complete visual criteria, with exact university link addresses awaiting locally committed SD10. Source-data differences and other recorded incomplete checks remain pending. [current_batch.md](current_batch.md) records each release and its required verification.
 
 - [ ] Recover the private daily-run checkpoint, original cutoff and pending release revisions before resuming. Confirm one writer. A daily-start prompt sets a new cutoff; a resumption does not.
 - [ ] Keep unresolved URLs in `next_batch.md` with specific remaining improvements or checks. Refill to twenty only before the cutoff and after moving whole completed URLs to the completed checklist; required variations are checks, not extra URLs used to fill the list.
