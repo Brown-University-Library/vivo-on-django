@@ -2,7 +2,7 @@
 
 Started October 3, 2026. Follow [workplan.md](workplan.md) and [GOAL.md](GOAL.md). This record defines how Codex and the owner measure successive deployed comparisons. It does not certify historical work or owner acceptance. Exact URLs, records, screenshots, and detailed results stay in the outer workspace.
 
-**Estimated URL-case completion: 31.2% — 24 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
+**Estimated URL-case completion: 32.5% — 25 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
 
 Resumption snapshot: October 5, 2026 at 21:19 America/New_York. Seventeen of seventy-seven cases remain complete (22.1%); denominator unchanged. Protected access returns and loaded revision `42eb1e4` is confirmed. The pending citation correction and five affected profiles require current checks. Twenty selected cases and the original October 6 cutoff are unchanged. Next scheduled snapshot is midnight local.
 
@@ -40,13 +40,13 @@ The thirty-eight scope rows contain grouped endpoints. For the provisional estim
 
 ## Current evidence
 
-Completion checkpoint: October 5, 2026 at 22:52 America/New_York. P02 completes six functional and ten complete visual criteria on loaded `40d6657`, advancing the estimate to 24/77 (31.2%). The provisional denominator is unchanged. Release 17 is accounted for. P13 retains only an isolated destination check; P14 retains its destination and desktop document-viewer checks. L07 replaces P02 after a clock check. The fixed cutoff remains October 6 at 08:00 local (12:00 UTC); the next scheduled snapshot remains midnight.
+Completion checkpoint: October 5, 2026 at 23:01 America/New_York. L07 completes four functional and two visual criteria on loaded `98c64bd`, advancing the estimate to 25/77 (32.5%). Denominator unchanged; release 18 is accounted for. V02 replaces L07 after a clock check and retains local SD09 corrections with blocked deployed access. P13 and P14 retain independent checks. Original October 6 08:00 cutoff remains; next scheduled snapshot is midnight.
 
-Current daily-run evidence includes loaded `40d6657`, evaluated October 5, 2026; preceding evidence remains applicable where recorded. See the [seventh URL-batch evaluation](previous_workplan_artificts/url_batch_007_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
+Current daily-run evidence includes loaded `98c64bd`, evaluated October 5, 2026; preceding evidence remains applicable where recorded. See the [seventh URL-batch evaluation](previous_workplan_artificts/url_batch_007_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
 
 | Observation | Current result | Limit |
 | --- | --- | --- |
-| Whole URL cases currently complete | 24; see the named inventory for all completed IDs | Partial comparisons do not certify a whole URL. |
+| Whole URL cases currently complete | 25; see the named inventory for all completed IDs | Partial comparisons do not certify a whole URL. |
 | First improvement-count batch | 15 deployed verified; 14 lack qualifying examples; 1 before-script check blocked | Keep these states distinct from local tests. |
 | Publication text and inline elements on the original five profiles | Previous full comparison: 278/278 match Rails | Preserved evidence; current selected filter checks also compare visible citation text. |
 | Publication filter states | 35/35 match selected control and visible ordered citations | Ten profiles checked with keyboard selection; full visual/link checks remain separate. |
@@ -63,7 +63,7 @@ Current daily-run evidence includes loaded `40d6657`, evaluated October 5, 2026;
 | P03 completion evidence | 6/6 functional criteria pass; 12/12 complete visual views pass | Filtered/paged return, CV bytes, all five rendered pages and signed-in delivery pass; the selected whole case completes. |
 | Expanded-filter deployment outcomes | 2/2 corrected outcomes pass | All applicable named dialogs match tie ordering and 15-pixel settled first-row spacing at both widths. Search source-data differences remain open. |
 | P08/P09 daily-run evidence | Each completes 6/6 functional criteria; P08 14/14 and P09 10/10 complete visual states | Shared document correction passes on `9140ef0`; current applicability observations retain unchanged complete profile evidence and inspected PDF pages. |
-| Current URL-based batch | 20 distinct URLs: 9 carried forward, 11 added | P02 completes and L07 fills its slot after a clock check. Other whole cases and existing blockers remain pending. |
+| Current URL-based batch | 20 distinct URLs: 9 carried forward, 11 added | L07 completes and V02 fills its slot after a clock check. Other whole cases and existing blockers remain pending. |
 
 Measure the same checks before and after deployment. Use content versions on changed assets to avoid reusing older browser resources; verify actual served bytes and rendered behavior rather than assuming the requested version proves delivery. Confirm collected copies during deployment, then refresh without cached resources when the browser still uses older bytes. Source count/order differences stay open until explained and checked.
 

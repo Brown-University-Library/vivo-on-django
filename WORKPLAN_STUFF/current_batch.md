@@ -13,7 +13,7 @@ Contents:
 
 ## Status
 
-Current checkpoint: release 17, `40d6657`, is confirmed loaded and accounted for. P02 completes six functional and ten complete visual criteria, advancing whole cases to 24/77 (31.2%). P13 now passes its complete CV comparison and retains only an isolated destination check. P14 retains an isolated destination and desktop document-viewer checks. A clock check precedes replacing P02 with approved L07; twenty distinct URLs remain.
+Current checkpoint: release 18, `98c64bd`, is confirmed loaded and accounted for. L07 completes four functional and two visual criteria, advancing whole cases to 25/77 (32.5%). V02 replaces it after a clock check. SD09 has checked local corrections; its deployed checks remain pending and ordinary target entry is blocked. Twenty distinct URLs remain; P13 and P14 retain their independent incomplete checks.
 
 The owner deployed `88fb8e4`. Both preceding expanded-filter corrections pass after static collection and a browser refresh without cached resources. Terms of Use, History and Visualization Help complete four functional and two visual checks each; whole cases advance from nine to twelve. P03, Roadmap and Publications Help subsequently complete their defined checks, bringing the total to fifteen. Endpoint families and owner acceptance remain pending.
 
@@ -45,6 +45,7 @@ Follow [handle shared differences once](workplan.md#handle-shared-differences-on
 | SD04 | Verified after deployment: reference nonbreaking space and button dimensions match. | P12/P11 controls, three organization cases and applicable completed-profile regressions. | Private label `daily-run-2026-10-05`; loaded `33ab1be`. Thirty paired control states manually inspected. | Both profile graph entries and organization entry pass; retain unchanged body/CV/asset evidence. Full graph differences remain separate. |
 | SD05 | Verified after deployment: all nine information/institution pages use the reference shared browser title. | Eight information cases and I02; discovered during O03 shared navigation. | Private label `daily-run-2026-10-05`; loaded `88a8548`. Thirty-six canonical observations, eighteen target alias checks and eighteen paired viewport views pass. | Eight information cases return to Complete; retain unchanged complete-body/link/asset evidence. Institution illustration remains pending. |
 | SD07 | Verified after deployment: reference empty citation-link wrapper and layout agree. | P14 and five completed publication profiles; applicable selected profiles. | Private label `daily-run-2026-10-05`; loaded `42eb1e4`. | Retain unaffected evidence; finish independent profile checks. |
+| SD09 | Checked locally: valid empty collaboration data needs recovery rendering, matching offered SVG/PNG behavior and the reference CSV error. | V02 and affected empty/populated graph checks. | Private label `daily-run-2026-10-05`; latest loaded `98c64bd`, correction not yet deployed. | Confirm loaded revision and actual assets, then every recorded changed response/control/view and affected passing behavior; ordinary target entry currently needs permitted access. |
 | SD08 | Verified after deployment: first-page pagination retains the explicit page parameter shown by the reference. | P14/P13 filtered history and shared search pagination. | Private label `daily-run-2026-10-05`; loaded `65af0bd` before and after comparison. | Retain four passing history journeys and actual first/previous-page links. Existing search source differences remain separate. |
 
 ## Changes and deployed checks
@@ -68,7 +69,7 @@ Follow [handle shared differences once](workplan.md#handle-shared-differences-on
 
 ## Local validation
 
-- Latest full Django suite: 302 tests pass. Earlier release checks retain their recorded counts.
+- Latest full Django suite: 304 tests pass. Earlier release checks retain their recorded counts.
 - Latest Ruff lint and formatting pass for the three changed Python files; earlier checked releases retain their results.
 - Latest Pyright uses the project interpreter, Python 3.12 and basic checking: zero errors or warnings in all three changed files.
 - The management command detects 22 stale/missing local copies and gives the documented collection hint; the matching-copy test passes. No local collection is needed for this validation.
@@ -158,3 +159,11 @@ P15 completes on loaded `65af0bd`: all twelve content sets, five filters at both
 P02 completes on loaded `40d6657`: all ten rendered content sets, thirty paired control checks, actual repeated-filter first-page search history, twenty-nine links, forty-eight internal entry/return journeys, complete seven-page CV and five delivery responses, and current resources pass. Thirty-five paired full-view frames are manually inspected through the footer. Invalid raw-text readings and an unsuccessful narrow pointer sequence remain excluded; the corrected keyboard sequence confirms every expected URL. The supporting organization data difference and broader search pointer review remain independent. L07 replaces its slot after the October 6 02:52:29 UTC clock check. Whole completion is 24/77 (31.2%), denominator unchanged.
 
 P13 passes the complete current document: exact bytes, all rendered pages and five delivery responses, including the reference error body. Five of six functional and all twelve visual criteria pass; only its browser-blocked department destination remains pending. I03 normal-state source entry is also browser-blocked, with owner opening as the concrete next action.
+
+
+Release 18 is workflow-only, confirmed loaded and accounted on `98c64bd`. L07 subsequently completes on that revision; V02 fills its slot.
+
+Change `url-batch-008-18` implements SD09. The committed reader rejects a valid empty collaboration graph; local reproduction establishes the failure. The correction preserves source JSON, renders the reference recovery text and layout, keeps the empty graph/date/color state, and matches SVG text, scrolling, fit navigation, PNG filename and the reference CSV error. Changed graph assets use content versions. Seven complete initial local/reference pairs and both revealed SVG views agree; PNG bytes are identical. Sixteen keyboard checkbox observations match. All 304 tests and changed-file checks pass. Ordinary target HTML and source CSV browser entries remain blocked; no deployed pass or whole-case completion is claimed. Required release checks are recorded privately and include actual served assets and affected completed-profile graph behavior. The unusual reference empty-download behavior is retained for review after the exact-behavior work.
+
+
+Release 19 implementation `b5f5edf` contains SD09. The accompanying tracking records preserve L07 completion, V02 selection and all blocked checks. Preceding loaded `98c64bd` is confirmed before the push and release 18 is fully accounted for. Confirm the new loaded revision and actual graph assets before evaluation or another push.
