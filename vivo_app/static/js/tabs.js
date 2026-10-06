@@ -91,7 +91,10 @@
       button.addEventListener('click', function () {
         var type = button.dataset.publicationType;
         rows.forEach(function (row) {
-          row.hidden = type !== 'all' && row.dataset.publicationType !== type;
+          var citation = row.querySelector('td');
+          if (citation) {
+            citation.hidden = type !== 'all' && row.dataset.publicationType !== type;
+          }
         });
         buttons.forEach(function (other) {
           other.classList.toggle('active', other === button);
