@@ -6,6 +6,8 @@ Batch `url-batch-009`, daily run `daily-2026-10-06`, pass 01. Selected October 6
 
 Exact bindings and planned actions are in `../../url_batch_009/urls.json` and `../../current_urls.local.md`, outside Git. The preceding selected list is [archived](previous_workplan_artificts/url_batch_008_final_next_batch_2026_10_06.md).
 
+The owner's October 6 [local account/editing exclusions](public_endpoint_scope.md#preserved-links-and-excluded-behavior) affect none of these twenty cases. Keep their membership and required checks. Do not add the commented routes as replacement URLs or pending comparisons.
+
 ## Selected URLs and remaining actions
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |

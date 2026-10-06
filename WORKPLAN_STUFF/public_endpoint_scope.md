@@ -82,8 +82,18 @@ The table covers required endpoint families, not every possible query combinatio
 
 - Preserve the public `/manager` link and its configured destination. Do not rebuild the separate Manager application.
 - Do not replicate `/edit/{person_id}` or the unfinished editing workflows. The owner explicitly excluded the reviewed edit entry; reproducing its error is not a requirement.
+- On October 6, 2026, the owner explicitly excluded the nine local account routes and seven editing routes commented out in `config/urls.py`. These are not pending implementation or comparison tasks. The table below records their complete patterns. `/admin/`, `/error_check/` and `/version/` remain enabled in the owner's final edits; this decision does not exclude them or remove the deployment revision check. Browser sign-in needed to inspect staging remains a separate access requirement.
 - Keep the VIVO back end and data-management systems as existing dependencies, rather than rebuilding them.
 - Preserve other confirmed external links. Their destinations' workflows and crawler/scanner requests do not become replacement features.
+
+| Excluded route group | Patterns commented out by the owner |
+| --- | --- |
+| Local account registration, login, logout and profile | `/accounts/register/`, `/accounts/login/`, `/accounts/logout/`, `/accounts/profile/` |
+| Local password change and reset | `/accounts/change-password/`, `/accounts/password_reset/`, `/accounts/password_reset/done/`, `/accounts/reset/{uidb64}/{token}/`, `/accounts/reset/done/` |
+| Editing entry and search | `/edit/{person_id}/`, `/edit/fast/search/` |
+| Editing profile fields | `/edit/overview/{person_id}/update`, `/edit/research_area/{person_id}/add`, `/edit/research_area/{person_id}/delete`, `/edit/web_link/{person_id}/save`, `/edit/web_link/{person_id}/delete` |
+
+None of these sixteen patterns had a counted canonical case or a row in the required endpoint table. No counted case is removed or marked complete by this decision. The selected twenty cases and their required checks remain unchanged. Historical plans may mention these routes; they do not reinstate them.
 
 ## Not included in the current scope
 

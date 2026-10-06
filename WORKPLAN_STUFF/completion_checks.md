@@ -8,6 +8,8 @@ Contents: [What to measure](#what-to-measure) · [Primary profile completion che
 
 The main measure is completed required URL cases and endpoint patterns. An endpoint passes only when all its required variations have functional and visual evidence, or the owner explicitly accepts a documented difference. Every required URL-pattern endpoint must eventually receive visual confirmation against Rails. A partially checked page is not complete.
 
+Apply these checks to the approved scope. The sixteen local account/editing routes excluded by the owner on October 6 require no implementation or comparison evidence. See [their exact patterns](public_endpoint_scope.md#preserved-links-and-excluded-behavior). None had a counted case; excluding them changes neither the denominator nor any passing condition for retained cases.
+
 Keep separate totals for:
 
 | Measure | Meaning |

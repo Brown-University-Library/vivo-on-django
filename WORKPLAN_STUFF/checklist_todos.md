@@ -16,6 +16,8 @@ Initialized October 3, 2026 from the approved [endpoint scope](public_endpoint_s
 
 ## Required URLs and variations
 
+The sixteen local account/editing routes the owner commented out on October 6 are excluded from implementation and required comparisons, as listed in [the endpoint scope](public_endpoint_scope.md#preserved-links-and-excluded-behavior). They have no pending checklist entry or counted case. Retained support endpoints and browser sign-in are separate; the current selected cases and their checks remain required.
+
 Current source limitation: separate target services produce demonstrated data differences. Verify independent behavior now and retain exact content/order comparisons for the later production Django versus production Rails check after the owner's deployment. The owner has not accepted those differences as parity. See [current_batch.md](current_batch.md) for the affected comparisons; do not request a current source-setting change again.
 
 Each `S` entry covers one row of the settled scope table. Keep its required behavior below when splitting it. Associate each concrete case with the original entry. Record local result, deployed revision, comparison date, outcome, evidence label, and next action for each case. Move only verified cases to [checklist_completed.md](checklist_completed.md); leave a scope entry pending until all required variations are verified. Exact identifiers and record details stay private.

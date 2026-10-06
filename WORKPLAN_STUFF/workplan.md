@@ -34,6 +34,8 @@ Read [next_batch.md](next_batch.md) for the selected cases and concrete next act
 
 Prefer completing one URL before spreading work across URLs. Change shared code when needed, then check affected completed URLs. Record a concrete dependency when moving to another case before completion. The separate Manager and unused editing workflows remain excluded; preserve required external links. Keep the Research Areas download correction deferred under [issue #3](https://github.com/birkin/vivo-on-django/issues/3).
 
+Do not select, implement or require deployed comparisons for the sixteen local account/editing patterns the owner commented out on October 6, 2026. Use [the exact exclusion list](public_endpoint_scope.md#preserved-links-and-excluded-behavior); retained support endpoints and browser sign-in are separate. These patterns never had counted cases, so this decision changes neither the completion denominator nor the active pass membership.
+
 The owner keeps the target’s separate source services for now. Continue checks that can establish behavior and appearance with the available data. Record source-dependent content, counts, order, dates and drawing positions as unresolved. After the owner deploys the updated application in production, compare production Django with production Rails for those remaining checks. Do not request a staging source-setting change again or treat this limitation as acceptance of differences.
 
 ## Batch workflow

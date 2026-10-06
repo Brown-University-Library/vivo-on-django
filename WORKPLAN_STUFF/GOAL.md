@@ -15,6 +15,7 @@ The running Rails site is the reference for both behavior and appearance. The sa
 - The unfinished Manager functionality embedded in the Rails source, and other unused routes or features.
 - Rebuilding the separate Manager application, the VIVO back end, or related data-management systems. The replacement should continue using the existing services it needs.
 - Redesigning the public site or adding new features as part of this conversion.
+- The nine local account routes and seven editing routes the owner commented out in `config/urls.py` on October 6, 2026. Their exact patterns are in [the endpoint exclusions](public_endpoint_scope.md#preserved-links-and-excluded-behavior). Do not implement or require comparison evidence for these routes.
 
 These boundaries supersede earlier plans to give every Rails route a Django equivalent. Preserving a public link to the separate Manager remains in scope where that link is part of the existing site.
 

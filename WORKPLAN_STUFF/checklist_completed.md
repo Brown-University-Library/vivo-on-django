@@ -2,6 +2,8 @@
 
 Initialized October 3, 2026. Follow [workplan.md](workplan.md). This record separates historical milestones from URL cases verified after deployment. The reorganization did not rerun application tests or compare live pages.
 
+**October 6 scope decision recorded:** the owner excluded the sixteen commented local account/editing routes listed in [the endpoint scope](public_endpoint_scope.md#preserved-links-and-excluded-behavior). This completes recording the exclusion; it is not a deployed URL pass. None had a counted case, so no completion state or denominator changes.
+
 Contents:
 
 - [Workplan reorganization](#workplan-reorganization)

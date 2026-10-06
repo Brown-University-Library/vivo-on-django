@@ -10,6 +10,8 @@ Several cases share a pattern: they check different selected records, content va
 
 The provisional denominator comes from 62 original discovery specifications plus 20 later case names minus five aliases. The net additions are eight publication-profile cases and seven information pages. This does not establish an exhaustive count of distinct URLs, complete endpoint-family coverage, integration success or final owner acceptance. Scope rows and case IDs are different fields even when their spelling matches.
 
+The owner's October 6 exclusion of sixteen commented local account/editing routes removes no canonical case: none was in this inventory. Keep all current rows and states. Do not add these routes as pending cases or count their exclusion as completion. See [the exact excluded patterns](public_endpoint_scope.md#preserved-links-and-excluded-behavior).
+
 ## Known aliases
 
 | Discovery ID | Current canonical case |
