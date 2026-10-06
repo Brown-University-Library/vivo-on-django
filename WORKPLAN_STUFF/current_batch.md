@@ -1,6 +1,6 @@
 # Current batch: twenty URLs
 
-Batch: url-batch-008, October 5, 2026. Follow [workplan.md](workplan.md), [next_batch.md](next_batch.md), and [../AGENTS.md](../AGENTS.md). The initial list contains seventeen carried URLs and three added URLs. The current rolling list contains ten carried URLs and ten additions after the recorded completions and replacements. Exact pairs and evidence stay in `../../url_batch_008/` and `../../current_urls.local.md`, outside Git. The preceding [implementation](previous_workplan_artificts/url_batch_007_current_batch.md), [selected list](previous_workplan_artificts/url_batch_007_next_batch.md), and [evaluation](previous_workplan_artificts/url_batch_007_evaluation.md) are archived.
+Batch: url-batch-008, October 5, 2026. Follow [workplan.md](workplan.md), [next_batch.md](next_batch.md), and [../AGENTS.md](../AGENTS.md). The initial list contains seventeen carried URLs and three added URLs. The current rolling list contains nine carried URLs and eleven additions after the recorded completions and replacements. Exact pairs and evidence stay in `../../url_batch_008/` and `../../current_urls.local.md`, outside Git. The preceding [implementation](previous_workplan_artificts/url_batch_007_current_batch.md), [selected list](previous_workplan_artificts/url_batch_007_next_batch.md), and [evaluation](previous_workplan_artificts/url_batch_007_evaluation.md) are archived.
 
 Contents:
 
@@ -13,7 +13,7 @@ Contents:
 
 ## Status
 
-Current checkpoint: release 16, `65af0bd`, is confirmed loaded and all changes are accounted for. P15 completes six functional and twelve complete visual criteria, advancing whole cases to 23/77 (29.9%). P14 passes four functional and all twelve visual criteria, retaining isolated destination and desktop document-viewer checks. A clock check precedes replacing P15 with the approved normal-state status case I03; twenty distinct URLs remain.
+Current checkpoint: release 17, `40d6657`, is confirmed loaded and accounted for. P02 completes six functional and ten complete visual criteria, advancing whole cases to 24/77 (31.2%). P13 now passes its complete CV comparison and retains only an isolated destination check. P14 retains an isolated destination and desktop document-viewer checks. A clock check precedes replacing P02 with approved L07; twenty distinct URLs remain.
 
 The owner deployed `88fb8e4`. Both preceding expanded-filter corrections pass after static collection and a browser refresh without cached resources. Terms of Use, History and Visualization Help complete four functional and two visual checks each; whole cases advance from nine to twelve. P03, Roadmap and Publications Help subsequently complete their defined checks, bringing the total to fifteen. Endpoint families and owner acceptance remain pending.
 
@@ -153,3 +153,8 @@ SD08 is verified on loaded `65af0bd` before and after comparison. Four actual pr
 
 
 P15 completes on loaded `65af0bd`: all twelve content sets, five filters at both widths, seventy-two control observations, filtered first-page search return, forty-nine links, fifty-two internal journeys, graph entries/returns, CV absence and current resources pass. All seventy paired full-view captures are manually inspected. Excluded loading and measurement attempts are recorded privately. Supporting graph data/date/control differences remain separate. I03 replaces its slot after the October 6 02:28:32 UTC clock check; whole completion is 23/77, with no denominator change.
+
+
+P02 completes on loaded `40d6657`: all ten rendered content sets, thirty paired control checks, actual repeated-filter first-page search history, twenty-nine links, forty-eight internal entry/return journeys, complete seven-page CV and five delivery responses, and current resources pass. Thirty-five paired full-view frames are manually inspected through the footer. Invalid raw-text readings and an unsuccessful narrow pointer sequence remain excluded; the corrected keyboard sequence confirms every expected URL. The supporting organization data difference and broader search pointer review remain independent. L07 replaces its slot after the October 6 02:52:29 UTC clock check. Whole completion is 24/77 (31.2%), denominator unchanged.
+
+P13 passes the complete current document: exact bytes, all rendered pages and five delivery responses, including the reference error body. Five of six functional and all twelve visual criteria pass; only its browser-blocked department destination remains pending. I03 normal-state source entry is also browser-blocked, with owner opening as the concrete next action.

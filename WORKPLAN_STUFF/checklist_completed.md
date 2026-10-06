@@ -30,6 +30,7 @@ These entries summarize historical evidence in [v1](previous_workplan_artificts/
 ## URL cases verified after deployment
 
 - [x] **2026-10-05 — P15.** All six functional criteria and twelve complete desktop/narrow views pass on loaded `65af0bd`. Complete content, all five publication filters, pointer/keyboard/bookmark controls, actual filtered first-page search return, all links and graph entries/returns, CV absence and resources agree. All seventy paired captures are manually inspected through the footer. Supporting graph cases and owner acceptance remain separate. Private evidence: `daily-run-2026-10-05`, P15 results.
+- [x] **2026-10-05 — P02.** Six functional and ten complete visual criteria pass on loaded `40d6657`: full content, pointer/keyboard/bookmark controls, filtered first-page search history, all twenty-nine links and forty-eight internal navigation/return checks, complete seven-page CV and delivery responses, and current resources. All thirty-five paired full-view frames are manually inspected. Supporting organization data and broader search pointer checks remain separate. Private evidence: `daily-run-2026-10-05`, P02 results.
 
 SD05 is verified on `88a8548`: the eight information cases complete the newly added browser-title check and retain their earlier full-page evidence. Institution title correction passes; its illustration remains pending.
 
