@@ -62,6 +62,9 @@
       var target = sections.find(function (s) { return s.id === 'tab' + wanted; });
       if (wanted === 'All') showAll();
       else if (target) showOnly(target.id);
+      else if (['Publications', 'Research', 'Background', 'Affiliations', 'Teaching'].indexOf(wanted) !== -1) {
+        showOnly('tab' + wanted);
+      }
       else {
         showOnly('tabOverview');
         active = $('#tabOverviewBtn');
