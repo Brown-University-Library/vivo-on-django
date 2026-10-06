@@ -95,7 +95,8 @@ SD07 is verified after deployment on `42eb1e4`. Current citation text, inline fo
 
 
 - [ ] Finish SD09 graph cases. On `2b20768`, changed empty-coauthor recovery, controls, complete views, SVG and identical PNG pass. Owner-opened JSON/CSV content and loaded metadata match; the actual offered data-link opener journey remains restricted. Empty collaboration and populated draw/label regressions pass at both widths. All thirteen actual graph assets match, including newly edited files; server command check is not run. V02 supporting formats/image artifact still need their own checks. No whole graph case completes.
-- [ ] Deploy and verify SD18 (009-03): a graph link to an absent profile section hides all sections, as the reference does. Check the offered journey at both widths, plus default, existing, View All and profile/history regressions. Local section behavior and the full 315-test suite pass.
+- [x] Verify SD18 (009-03): loaded `a187d41` matches the graph link to an absent section at both widths, including complete changed views and actual Back/Forward. Default, existing, View All and present-publication selections pass; P06 rendered content/heights match. Actual edited script bytes and all 315 local tests pass. V03 data-link opener behavior remains independent.
+- [ ] Verify SD19 (009-04) after deployment: populated person legend/colors/fonts, fixed narrow canvas, controls, fit/reset, mounted node navigation, hover/drag and SVG/PNG output. Confirm the loaded revision and both edited asset bodies. Repeat affected empty/person and organization controls and export behavior. Keep source date/order, supporting formats and restricted artifacts incomplete until their own checks pass.
 
 
 - [x] Verified SD17 on loaded `7f78c9a`: literal DOI and PubMed links, actual offered new-tab behavior and affected profile filters/content. Restore the five reopened profiles only after all required checks pass.
