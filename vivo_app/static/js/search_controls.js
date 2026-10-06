@@ -4,17 +4,21 @@
   function facetRow(item) {
     var row = document.createElement('li');
     var link = document.createElement('a');
+    var label = document.createElement('textarea');
+    // Decode label entities once while keeping the filter value and URL intact.
+    label.innerHTML = item.text;
+    var text = label.value;
     link.href = item.url;
     if (item.selected) {
-      row.appendChild(document.createTextNode(item.text + ' (' + item.count + ') '));
+      row.appendChild(document.createTextNode(text + ' (' + item.count + ') '));
       var icon = document.createElement('span');
       icon.className = 'glyphicon glyphicon-remove';
       icon.setAttribute('aria-hidden', 'true');
       link.appendChild(icon);
-      link.setAttribute('aria-label', 'Remove facet ' + item.text);
+      link.setAttribute('aria-label', 'Remove facet ' + text);
       row.appendChild(link);
     } else {
-      link.textContent = item.text;
+      link.textContent = text;
       row.appendChild(link);
       row.appendChild(document.createTextNode(' (' + item.count + ')'));
     }
