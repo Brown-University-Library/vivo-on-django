@@ -1,10 +1,14 @@
-# Inventory for the estimated URL-case completion percentage
+# Readable inventory of URL cases
 
-Inventory v1, updated October 6, 2026: **27 of 77 known cases complete — 35.1%.** See [progress.md](progress.md) for the current snapshot and six-hour update procedure. This inventory counts named URL cases with their required behavior; it is a provisional estimate, not a count of every distinct HTTP URL string or a percentage of engineering time.
+Updated October 6, 2026. This is the active list of cases used for the completion estimate. Read each case's description and URL/request pattern beside its current whole-case state. See [progress.md](progress.md) for the single current global fraction and percentage, and [public_endpoint_scope.md](public_endpoint_scope.md#required-endpoints-and-data-sources) for required endpoint families and their case assignments.
 
-Midnight snapshot, October 6, 2026 at 00:00 America/New_York: all case states below remain unchanged, with 25 complete and 77 known. P05 and P14 retain their specific incomplete checks; partial gains do not change whole completion. No new cases or aliases are added. The original daily cutoff remains October 6 at 08:00 local time.
+Contents: [Known aliases](#known-aliases) · [Cases](#cases) · [Maintaining the inventory](#maintaining-the-inventory)
 
-The initial denominator combines 62 case specifications in the private discovery manifest, plus 20 later case names in private batch lists and the completed checklist, minus five aliases. The net additions are eight publication-profile cases and seven information pages. No private URL, record identifier or source response is copied here. The existing evidence in [checklist_completed.md](checklist_completed.md) supplies the completed states. Other rows remain pending even when partial or local evidence exists.
+Paths are relative to the configured site; GET is assumed unless another method is stated. Placeholders stand for private bindings: person, organization, team, missing-record and other record IDs; file IDs, buckets, filenames and paths; query/filter values and page numbers. Repeated `{record_id}` means the same record in both positions. Query values require normal URL encoding. Follow actually offered links and recorded variations rather than inventing a URL by substituting arbitrary values.
+
+Several cases share a pattern: they check different selected records, content variations, controls or entry/return journeys. A case may also include a document or supporting data request. The descriptions summarize its existing checks; they do not replace the passing conditions or permit completion based only on the listed visible page. Whole-case state means all required deployed functional and visual evidence passes, or the owner has explicitly accepted documented differences. Individual fixes and passing entry links do not complete their destination graph or format case.
+
+The provisional denominator comes from 62 original discovery specifications plus 20 later case names minus five aliases. The net additions are eight publication-profile cases and seven information pages. This does not establish an exhaustive count of distinct URLs, complete endpoint-family coverage, integration success or final owner acceptance. Scope rows and case IDs are different fields even when their spelling matches.
 
 ## Known aliases
 
@@ -20,111 +24,92 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 
 ## Cases
 
-| Canonical case | Whole-case state |
-| --- | --- |
-| ABOUT01 | Complete |
-| ADVANCED01 | Complete |
-| BROWSE01 | Pending |
-| C01 | Pending |
-| D01 | Complete |
-| D02 | Pending |
-| D03 | Pending |
-| D04 | Pending |
-| E01 | Complete |
-| EMPTY01 | Complete |
-| FAQ01 | Complete |
-| H01 | Pending |
-| H02 | Pending |
-| H03 | Pending |
-| HELP01 | Complete |
-| HELP_VIZ01 | Complete |
-| HISTORY01 | Complete |
-| I02 | Pending |
-| I03 | Pending |
-| I04 | Pending |
-| L01 | Pending |
-| L02 | Pending |
-| L03 | Pending |
-| L04 | Pending |
-| L05 | Pending |
-| L06 | Pending |
-| L07 | Complete |
-| O01 | Pending |
-| O02 | Complete |
-| O03 | Complete |
-| O04 | Complete |
-| O05 | Pending |
-| O06 | Pending |
-| P01 | Complete |
-| P02 | Complete |
-| P03 | Complete |
-| P04 | Complete |
-| P05 | Complete |
-| P06 | Pending |
-| P07 | Complete |
-| P08 | Complete |
-| P09 | Complete |
-| P10 | Complete |
-| P11 | Pending |
-| P12 | Complete |
-| P13 | Pending |
-| P14 | Pending |
-| P15 | Complete |
-| PUBLICATIONS01 | Complete |
-| R01 | Pending |
-| R02 | Pending |
-| R03 | Pending |
-| ROADMAP01 | Complete |
-| S02 | Pending |
-| S03 | Pending |
-| S04 | Pending |
-| S05 | Pending |
-| S06 | Pending |
-| S07 | Pending |
-| S11 | Pending |
-| S12 | Pending |
-| S13 | Pending |
-| S14 | Pending |
-| S15 | Pending |
-| SEARCH01 | Pending |
-| TERMS01 | Complete |
-| V01 | Pending |
-| V02 | Pending |
-| V03 | Pending |
-| V04 | Pending |
-| V05 | Pending |
-| V06 | Pending |
-| V07 | Pending |
-| V08 | Pending |
-| V09 | Pending |
-| V10 | Pending |
-| V11 | Pending |
+| Canonical case | Human-readable check | URL pattern and required request variation | Whole-case state |
+| --- | --- | --- | --- |
+| ABOUT01 | About page, navigation and illustrations | `/about` | Complete |
+| ADVANCED01 | Advanced search: name-only and combined name/title, then return | `/search/advanced`; submit `search=true`, `name_t={query}`, optionally `title_t={query}` → `/search?q={query}` | Complete |
+| BROWSE01 | Browse without a term, including an empty search submission | `/search` and `/search?q=` | Pending |
+| C01 | Direct browser-challenge page | GET `/challenge`; runtime POST and enforcement checks remain separate scope requirements | Pending |
+| D01 | Linked CV document, delivery and viewer return | Follow `/display/{person_id}` → `/docs/{bucket}/{filename}.pdf` with observed query parameters → return to profile | Complete |
+| D02 | Profile JSON, nested values and flags | `/display/{person_id}.json` | Pending |
+| D03 | Organization publication download, complete TSV and headers | `/display/{organization_id}/publications.tsv` | Pending |
+| D04 | Representative portrait, default portrait and homepage book-cover delivery | Actual linked `/profile-images/{path}`, `/book_cover/{path}` or `/assets/{path}`, inspected with the consuming profile or `/` | Pending |
+| E01 | Missing record, not-found response and recovery | `/display/{missing_record_id}` → home/search recovery; other missing-page variations remain scope checks | Complete |
+| EMPTY01 | No-result search, message and recovery controls | `/search?q={query}` with a privately recorded no-result query | Complete |
+| FAQ01 | FAQ page and every offered anchor | `/faq` and observed section fragments | Complete |
+| H01 | Homepage search, carousel, author links and navigation | `/` → `/search?q={query}` or linked `/display/{person_id}` → return | Pending |
+| H02 | Homepage carousel boundaries, wrap, final short group and keyboard use | `/`; Previous/Next, settled groups and linked images | Pending |
+| H03 | Homepage background selection and reload behavior | `/`; normal reloads and the actually selected background asset | Pending |
+| HELP01 | Help page, navigation and illustrations | `/help` | Complete |
+| HELP_VIZ01 | Visualization help page and links | `/help/viz` | Complete |
+| HISTORY01 | History information page and links | `/history` | Complete |
+| I02 | Institution information page, illustration and internal links | `/brown` and observed slash entry | Pending |
+| I03 | Normal status JSON and required response checks | `/status`; controlled failures and routing ownership remain separate scope checks | Pending |
+| I04 | Public faculty-service trailing-slash redirect | `/services/data/v1/faculty/{person_id}` → same path with trailing slash; service internals are excluded | Pending |
+| L01 | Legacy individual and people/organization entries with rendered destinations | GET `/individual/{record_id}`, Accept `text/html` → `/display/{record_id}`; `/people` and `/ous` → `/search?fq={filter}` | Pending |
+| L02 | Bare display entry redirects to browse search | `/display/` → `/search`; confirm handling of incoming parameters | Pending |
+| L03 | Old search query parameter redirects to the current query | `/search?querytext={query}` → `/search?q={query}` | Pending |
+| L04 | Public report entry redirects to home | `/reports/subject-lib` → `/`; retain recorded entry-state and slash/query checks; authenticated reports are excluded | Pending |
+| L05 | Exact JSON Accept header selects the JSON-LD redirect | GET `/individual/{record_id}`, Accept `application/json` → `/individual/{record_id}/{record_id}.jsonld` | Pending |
+| L06 | Exact Turtle Accept header selects the Turtle redirect | GET `/individual/{record_id}`, Accept `text/turtle` → `/individual/{record_id}/{record_id}.ttl` | Pending |
+| L07 | Old image link redirects to the working portrait | `/file/{file_id}/{filename}` → `/profile-images/{path}` | Complete |
+| O01 | Organization with administrative/faculty role groups and member return | `/display/{organization_id}` → linked `/display/{person_id}` → browser Back | Pending |
+| O02 | Organization entered from filtered search, prose and external links | `/search?fq={filter}` → `/display/{organization_id}` | Complete |
+| O03 | Additional organization overview and role-group variation | `/display/{organization_id}` | Complete |
+| O04 | Additional organization members and visualization-entry variation | `/display/{organization_id}` and offered graph entry | Complete |
+| O05 | Organization with custom membership | `/display/{organization_id}`; configured membership, member links and offered graph entry | Pending |
+| O06 | Approved active-team member list and default image | `/display/{team_id}`; observed member links and offered graph entry | Pending |
+| P01 | Primary profile: sections, View All, search return and linked CV | `/display/{person_id}` and section fragments, including `#All`; linked CV and referring search | Complete |
+| P02 | Profile entered from an organization, sections and return journey | `/display/{organization_id}` → `/display/{person_id}` and `#All` → return to organization | Complete |
+| P03 | Profile entered from search, publication filters and search return | `/search?q={query}` → `/display/{person_id}` and section fragments → referring search | Complete |
+| P04 | Profile with Teaching, View All and an education-institution link | `/display/{person_id}` and `#All` → institution's fielded `/search?q={query}` → browser Back | Complete |
+| P05 | Profile entered from search, scholarly work and View All | `/search?q={query}` → `/display/{person_id}` and `#All` → referring search | Complete |
+| P06 | Profile with Book filtering, View All and linked CV | `/display/{person_id}` and `#All`; offered publication filters and linked `/docs/{bucket}/{filename}.pdf` | Complete |
+| P07 | Sparse profile, portrait and available controls | `/display/{person_id}` and only offered sections | Complete |
+| P08 | Additional full profile, publication filters, graph entries and CV | `/display/{person_id}` and offered section fragments, links and linked CV | Complete |
+| P09 | Additional profile with a CV and its available sections | `/display/{person_id}` and offered section fragments, links and linked CV | Complete |
+| P10 | Additional profile, undated credentials and publication filters | `/display/{person_id}` and offered section fragments and links | Complete |
+| P11 | Additional profile, open appointments, CV and department destinations | `/display/{person_id}` and offered sections → linked `/display/{organization_id}` and CV | Pending |
+| P12 | Additional profile, publication filters and graph-entry controls | `/display/{person_id}` and offered section fragments and links | Complete |
+| P13 | Additional profile, book-citation formatting, CV and department destination | `/display/{person_id}` and offered sections → linked `/display/{organization_id}` and CV | Pending |
+| P14 | Additional profile, quoted citations, CV and department destination | `/display/{person_id}` and offered sections → linked `/display/{organization_id}` and CV | Pending |
+| P15 | Additional profile with publication filters and no CV control | `/display/{person_id}` and offered section fragments, links and graph entries | Complete |
+| PUBLICATIONS01 | Publication help page and links | `/publications`; this is an information page | Complete |
+| R01 | Original VIVO JSON-LD representation | `/individual/{record_id}/{record_id}.jsonld` | Pending |
+| R02 | Original VIVO Turtle representation | `/individual/{record_id}/{record_id}.ttl` | Pending |
+| R03 | Original VIVO RDF/XML representation | `/individual/{record_id}/{record_id}.rdf` | Pending |
+| ROADMAP01 | Roadmap information page and links | `/roadmap` | Complete |
+| S02 | Applying/removing a filter resets the result page | `/search?q={query}&page={page}`; apply/remove the recorded filter | Pending |
+| S03 | Affiliation More dialog: groups, sorting, narrowing and selection | `/search?q={query}`; affiliation dialog and `/search_facets` requests with search inputs and `f_name={filter}` | Pending |
+| S04 | Research/publication More dialogs and filtered no-result search | `/search?q={query}`; research/publication dialogs and `/search_facets` requests with search inputs and `f_name={filter}` | Pending |
+| S05 | Combined filters and removing one while retaining another | `/search?q={query}&fq={filter}&fq={filter}`; repeated `fq` values and recorded selection/removal journey | Pending |
+| S06 | Pagination, last/previous page and browser Back/Forward | `/search?q={query}&page={page}` | Pending |
+| S07 | Later-page search result, profile entry and Back to search | `/search?q={query}&page={page}` → `/display/{person_id}` → original search | Pending |
+| S11 | Search JSON array, record order and response metadata | `/search?q={query}&format=json` | Pending |
+| S12 | Supported Advanced department parameter | `/search/advanced?search=true&department_t={query}` → `/search?q={query}`; no new visible field | Pending |
+| S13 | Title-only Advanced submission and retained form values | `/search/advanced?search=true&name_t=&title_t={query}` → `/search?q={query}` → browser Back | Pending |
+| S14 | Empty Advanced submission stays on the form | `/search/advanced?search=true&name_t=&title_t=`; no redirect to browse results | Pending |
+| S15 | Affiliation More dialog keyboard opening, Escape and focus return | `/search?q={query}`; affiliation dialog keyboard journey | Pending |
+| SEARCH01 | Keyword results, count/order, facets and search-match controls | `/search?q={query}`; recorded filters and page variations use repeated `fq`, `fq_0` and `page` | Pending |
+| TERMS01 | Terms information page and links | `/termsOfUse` | Complete |
+| V01 | Organization collaboration graph, scope/labels and linked JSON | `/display/{organization_id}/viz/collab` and `.json` → organization return | Pending |
+| V02 | Empty person collaboration graph and recovery controls | `/display/{person_id}/viz/collab`, `.json`, `.csv`; empty-data variation, supporting formats and image controls | Pending |
+| V03 | Empty person coauthor graph reached from collaboration | `/display/{person_id}/viz/collab` → `/display/{person_id}/viz/coauthor` and `.json`; empty-data variation | Pending |
+| V04 | Populated person collaboration entry, expansion, labels and fit | `/display/{person_id}` → `/display/{person_id}/viz/collab`, `?fit=1`, `.json`, `.csv` | Pending |
+| V05 | Populated person coauthor graph, expansion and generated SVG | `/display/{person_id}/viz/collab?fit=1` → `/display/{person_id}/viz/coauthor`, `.json`, `.csv` | Pending |
+| V06 | Person coauthor keyboard controls, PNG/SVG and fit reset | `/display/{person_id}/viz/coauthor` and `?fit=1`; browser-generated PNG/SVG, not separate server endpoints | Pending |
+| V07 | Person graph pointer/details, drag, neighbor navigation and exports | `/display/{person_id}/viz/collab` and `/display/{person_id}/viz/coauthor`; neighbor person IDs and browser Back | Pending |
+| V08 | Organization graph keyboard scope controls and SVG/PNG exports | `/display/{organization_id}/viz/collab`; browser-generated SVG/PNG | Pending |
+| V09 | Person coauthor treemap and ordinary coauthor data links | `/display/{person_id}/viz/coauthor_treemap`; `/display/{person_id}/viz/coauthor.json` and `.csv` | Pending |
+| V10 | Organization publication-history chart, ranges and formats | `/display/{organization_id}/viz/publications`, `.json`, `.csv` | Pending |
+| V11 | Organization research-area chart, SVG and supporting JSON | `/display/{organization_id}/viz/research` and `.json`; visible download remains `/display/{organization_id}/viz/collab.json` under the deferred issue | Pending |
 
-## Maintaining the estimate
+## Maintaining the inventory
 
-Before changing a state to Complete, retain all required deployed functional and visual evidence, or the owner's explicit acceptance of a documented difference. Reopen regressions. Individual improvements, screenshots, viewport sizes, fragments and repeated deployments do not create completed cases.
+When a case state, route/request variation or description changes, update that same row. When an approved case is added or an alias is reconciled, preserve required behavior and record the reason in [progress.md](progress.md#update-rules). Keep blocked, partial and unverified cases pending; do not remove them to improve the percentage. Count by column headers rather than a fixed column position.
 
-Some original discovery entries describe overlapping journeys, interactions or supporting formats; reconcile them with the approved endpoint scope before treating this as a final inventory of unique URLs. Preserve required behavior when merging entries, and add newly established required URLs explicitly. Do not infer that a supporting case passes solely because its referring profile passes. Record every denominator change and its reason in the progress snapshot; keep unreconciled and blocked cases pending rather than remove them to improve the percentage.
+Retain passing conditions and detailed evidence in the case records, completed checklist and private workspace. Reopen regressions; preserve applicable evidence for unaffected checks with its revision and reason. Put shared-difference investigations in [current_batch.md](current_batch.md#shared-differences), not appended global snapshots here. Historical state transitions are retained in the checklists, batch records and [pre-cleanup inventory](previous_workplan_artificts/inventory_before_readable_patterns_2026_10_06.md).
 
-Source references from the outer workspace are `public_site_review/planning/public_cases.json`, `url_batch_*/urls.json`, and the repository's completed checklist. Keep exact bindings and detailed evidence outside Git. New workspaces can use this safe list while recovering the separate private inputs. Complete integration, endpoint-family coverage and owner acceptance remain separate requirements.
+Update the scope document when required behavior changes or case assignments are reconciled. Its assignment column does not duplicate case status: current state remains in this table. Supporting formats, runtime challenge/failure behavior, source/asset integration and owner acceptance still need their own evidence. Unassigned variations stay explicitly pending in scope and checklist records; do not infer coverage solely from a complete referring page.
 
-
-SD06 adds the demonstrated search-history requirement F02a. After an actual search/profile/Back journey, Forward must restore the profile, matching the reference. P01, P03, P04, P07, P08, P09, P10 and P12 temporarily reopen for this new shared check; their complete content, controls, document and visual evidence is retained. Whole completion is fourteen of seventy-seven (18.2%); the provisional denominator and rolling twenty membership are unchanged. Direct and unrelated-referrer entries must still open the default search.
-
-
-SD06 is verified on loaded `6ede886`. Thirty-six actual search/default/Back/Forward journeys and four repeated-filter/Page1 journeys pass at both widths. All nine rendered section-content sets match; required settled images and fonts load. Eighteen current paired viewport views are manually inspected; premature portrait captures are excluded and replaced. Earlier complete page, document and navigation evidence remains applicable because only the search-return action changed. P01, P03, P04, P07, P08, P09, P10 and P12 regain Complete. Whole completion returns to twenty-two of seventy-seven (28.6%); denominator and membership are unchanged. P13 retains its separate blocked department and incomplete CV checks; current served bytes and resources pass.
-
-
-SD07 reproduces the reference publication-link wrapper even when a citation has no outgoing links. The missing empty wrapper causes a narrow citation to be one line shorter. A private local browser comparison reproduces the old and corrected heights; all 302 tests, changed-file Ruff and project Pyright checks pass. Deployed citation content, links, filters and complete Publications/All views remain pending. P03, P08, P09, P10 and P12 temporarily reopen for these affected checks; their unrelated complete evidence remains applicable. Whole completion is seventeen of seventy-seven (22.1%); denominator and rolling membership are unchanged. Fresh target review requires renewed sign-in. No deployed pass is claimed from an already loaded document.
-
-
-SD07 is verified after deployment on `42eb1e4`. Current citation text, inline formatting, row geometry and all offered ordered filters agree at both widths. Four affected complete P14 views and every changed citation region are visually inspected. The five reopened profiles also pass their affected boundaries and required resource checks; unchanged complete interiors, navigation and document evidence remain applicable. P03, P08, P09, P10 and P12 regain Complete. Whole completion returns to twenty-two of seventy-seven (28.6%); denominator and rolling membership are unchanged. P14 now passes all twelve visual criteria and its complete content/filter check, while remaining target interactions, links, document delivery and resources are pending. Private evidence label `daily-run-2026-10-05`.
-
-
-October 6, 2026 06:00 America/New_York snapshot: 25 completed / 77 known (32.5%). No cases are added, merged or completed; provisional denominator remains unchanged. Partial SD09 deployment verification does not complete V02.
-
-
-October 6, 2026 at 07:06 America/New_York: SD17 adds the demonstrated literal citation-link requirement F04a. P08, P09, P10, P12 and P15 reopen for this focused deployed check. Earlier complete content, controls, documents and visual evidence remain applicable. Twenty cases remain complete; the denominator stays seventy-seven. Supporting regressions do not alter the rolling twenty URLs or original cutoff.
-
-
-Final comparison checkpoint, October 6: SD17 and its address-space follow-up pass on loaded `7f78c9a`. The five reopened profiles regain Complete after all literal citation addresses, forty-two paired filter/text/geometry states, actual new-tab behavior, resources and affected visual regions pass. Their unchanged complete views, navigation and document evidence remain applicable. P05 and O02 also complete after SD10 exact shared links and current applicability checks. Whole completion is twenty-seven of seventy-seven (35.1%); the denominator is unchanged. The active pass keeps its original twenty members; completed slots are not replaced while finishing this dated run.
+Private sources are `public_site_review/planning/public_cases.json`, its evidence bindings and `url_batch_*/urls.json` in the outer workspace. Recover exact bindings privately in a new workspace. Keep names, actual record IDs, query/filter values, hosts, raw responses and visual artifacts out of tracked files. Maintain safe descriptions and patterns here so people can understand the measure without those inputs.

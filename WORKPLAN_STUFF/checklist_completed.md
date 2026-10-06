@@ -102,6 +102,10 @@ Every required URL-pattern endpoint must have visual confirmation against Rails 
 
 - [x] **2026-10-05 — 008-08 through 008-10 deployed corrections.** Smaller member requests restore both department pages. Original document paths reach the selected source. Three larger portraits load and match desktop views; narrow layouts preserve the reference hiding rule. Affected profile and organization checks pass. Membership/title differences remain open; no intentional difference is accepted.
 
+### Historical shared-check updates
+
+These entries preserve earlier state transitions and evidence. Read [the inventory](url_completion_inventory.md#cases) for current states and [progress.md](progress.md) for the current global estimate; historical totals are not maintained as live summaries.
+
 SD06 adds the demonstrated search-history requirement F02a. After an actual search/profile/Back journey, Forward must restore the profile, matching the reference. P01, P03, P04, P07, P08, P09, P10 and P12 temporarily reopen for this new shared check; their complete content, controls, document and visual evidence is retained. Whole completion is fourteen of seventy-seven (18.2%); the provisional denominator and rolling twenty membership are unchanged. Direct and unrelated-referrer entries must still open the default search.
 
 
@@ -117,3 +121,6 @@ SD07 is verified after deployment on `42eb1e4`. Current citation text, inline fo
 SD17 temporarily reopens P08, P09, P10, P12 and P15 for added F04a literal citation-link checks. Their earlier complete evidence is retained; current completion is 20/77 (26.0%) until the focused deployed correction passes.
 
 - [x] **October 6, 2026 — SD17, P08/P09/P10/P12/P15 restored; P05 and O02 complete.** Loaded `7f78c9a` passes exact citation addresses, forty-two paired publication states, twenty-eight actual new-tab observations across seven address variations, settled resources and inspected affected regions. Earlier complete unaffected evidence remains applicable. P05 and O02 add passing SD10 shared-link checks and current two-width applicability. Whole completion is 27/77; supporting graphs and owner acceptance remain separate.
+
+
+- [x] **2026-10-06 — P06.** All six functional and fourteen full-view criteria pass on loaded `eee8e57`. The remaining desktop CV viewer comparison now passes after both viewers reload at matching dimensions and settings. The native first-page pair is pixel-identical; the final-page raw difference is confined to pointer glow. Prior complete document bytes, eleven pages, response checks, profile views and navigation remain applicable. Twenty-eight current section observations match retained content, styles and dimensions; all literal citation links and eleven requested asset bodies match. Private evidence: `daily-run-2026-10-06`, P06 results.

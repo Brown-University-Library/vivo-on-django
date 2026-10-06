@@ -4,14 +4,14 @@ Initialized October 3, 2026 from the approved [endpoint scope](public_endpoint_s
 
 ## First actions
 
-**Current work:** [next_batch.md](next_batch.md) holds twenty distinct URLs: nine carried forward and eleven added. Twenty-five of seventy-seven whole cases are complete (32.5%). Release 19 is confirmed loaded and delivered; every SD09 change is accounted for, with isolated supporting-format and image-artifact comparisons still blocked. Checked queued releases may proceed while those comparisons remain pending. P05 passes five functional and ten complete visual criteria, with exact university link addresses awaiting locally committed SD10. Source-data differences and other recorded incomplete checks remain pending. [current_batch.md](current_batch.md) records each release and its required verification.
+**Current work:** Use [next_batch.md](next_batch.md) for selected cases and concrete next actions, and [current_batch.md](current_batch.md) for releases, shared differences and verification. Recover the private checkpoint before starting or resuming. See [progress.md](progress.md) for the current global fraction/percentage and [the readable inventory](url_completion_inventory.md#cases) for each case's state. Do not copy their changing summaries here.
 
 - [ ] Recover the private daily-run checkpoint, original cutoff and pending release revisions before resuming. Confirm one writer. A daily-start prompt sets a new cutoff; a resumption does not.
 - [ ] Keep unresolved URLs in `next_batch.md` with specific remaining improvements or checks. Refill to twenty only before the cutoff and after moving whole completed URLs to the completed checklist; required variations are checks, not extra URLs used to fill the list.
 - [ ] Reconcile discovery cases and existing evidence with all required endpoint patterns. Preserve stable IDs and exact private bindings in `../../current_urls.local.md`.
 - [ ] Make as many relevant improvements as reasonably possible on each URL; prefer finishing an individual URL. Record changed behavior, local checks, commits, and required deployed checks in `current_batch.md`.
-- [ ] Confirm automatic deployment through `response.loaded_version` and actual asset delivery, then check every recorded improvement and affected previously passing behavior. Account for all selected URLs at the pass boundary. Track functional, visual, difference and blocked-check totals separately in [progress.md](progress.md).
-- [ ] Keep [url_completion_inventory.md](url_completion_inventory.md) and the progress percentage consistent with whole-case evidence. Refresh the snapshot at the first suitable active-run checkpoint after midnight, 6 a.m., noon and 6 p.m. `America/New_York`; explain changed totals.
+- [ ] Confirm automatic deployment through `response.loaded_version` and actual asset delivery, then check every recorded improvement and affected previously passing behavior. Account for all selected URLs at the pass boundary. Record case-specific functional, visual, difference and blocked results in the batch/evidence records; keep the global percentage only in [progress.md](progress.md).
+- [ ] Keep each inventory row's readable description, safe request pattern and state current. Follow [the progress update rules](progress.md#update-rules), including a concise scheduled table row when totals are unchanged.
 - [ ] Keep fourteen unavailable first-batch source variations and the blocked before-script check pending; do not count them as deployed passes.
 
 ## Required URLs and variations
@@ -77,6 +77,10 @@ Current graph follow-up: profile graph entries pass, but their destination views
 
 - [x] **SD05 — information-page browser titles.** Nine canonical pages at both widths and all target slash aliases pass on loaded `88a8548`. Complete desktop before/after body, headings and links match; current paired views and unchanged full-page evidence account for appearance. Eight information cases return to Complete. Institution illustration delivery remains independent.
 
+
+### Historical shared-check updates
+
+The following entries preserve earlier state transitions and evidence. Read the inventory for current states; do not update historical percentages as new work proceeds.
 
 SD06 adds the demonstrated search-history requirement F02a. After an actual search/profile/Back journey, Forward must restore the profile, matching the reference. P01, P03, P04, P07, P08, P09, P10 and P12 temporarily reopen for this new shared check; their complete content, controls, document and visual evidence is retained. Whole completion is fourteen of seventy-seven (18.2%); the provisional denominator and rolling twenty membership are unchanged. Direct and unrelated-referrer entries must still open the default search.
 
