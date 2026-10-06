@@ -2,7 +2,7 @@
 
 Started October 3, 2026. Follow [workplan.md](workplan.md) and [GOAL.md](GOAL.md). This record defines how Codex and the owner measure successive deployed comparisons. It does not certify historical work or owner acceptance. Exact URLs, records, screenshots, and detailed results stay in the outer workspace.
 
-**Estimated URL-case completion: 16.9% — 13 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
+**Estimated URL-case completion: 18.2% — 14 of 77 known cases complete.** This is the provisional case-based estimate requested for an at-a-glance view. It counts completed cases, not implementation effort or final acceptance. The [named inventory](url_completion_inventory.md) shows the denominator, merged aliases and completed cases. Some discovery entries still need reconciliation with the endpoint scope; explain additions or merges when the estimate changes.
 
 Snapshot: October 5, 2026 at 18:02 America/New_York, first suitable checkpoint after the 18:00 boundary. Completion remains 20/77 (26.0%); the provisional denominator is unchanged. D01 and the repaired portraits retain completed deployed evidence. Latest pushed and loaded revision is `61f0ad1`. TSV corrections pass 302 local tests and all 1,318 saved publication examples against the original serializer; live download and visual checks remain blocked. P11 retains the department membership/title differences under SD02. P12 retains twelve complete individual section states and matching View All interiors, with final boundaries and functional checks still incomplete. Original cutoff remains October 6 at 08:00 America/New_York (12:00 UTC). Next scheduled boundary is midnight local.
 
@@ -38,11 +38,11 @@ The thirty-eight scope rows contain grouped endpoints. For the provisional estim
 
 ## Current evidence
 
-Current daily-run evidence includes loaded `33ab1be`, evaluated October 5, 2026; preceding evidence remains applicable where recorded. See the [seventh URL-batch evaluation](previous_workplan_artificts/url_batch_007_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
+Current daily-run evidence includes loaded `88a8548`, evaluated October 5, 2026; preceding evidence remains applicable where recorded. See the [seventh URL-batch evaluation](previous_workplan_artificts/url_batch_007_evaluation.md). Earlier improvement-count evaluations remain historical evidence.
 
 | Observation | Current result | Limit |
 | --- | --- | --- |
-| Whole URL cases currently complete | 13 (D01, P01, P03, P04, P07, P08, P09, P10, P12, ADVANCED01, EMPTY01, O04, E01) | Partial comparisons do not certify a whole URL. |
+| Whole URL cases currently complete | 14 (D01, ADVANCED01, EMPTY01, O03, O04, E01, ABOUT01, HELP01, FAQ01, HISTORY01, ROADMAP01, HELP_VIZ01, PUBLICATIONS01, TERMS01) | Partial comparisons do not certify a whole URL. |
 | First improvement-count batch | 15 deployed verified; 14 lack qualifying examples; 1 before-script check blocked | Keep these states distinct from local tests. |
 | Publication text and inline elements on the original five profiles | Previous full comparison: 278/278 match Rails | Preserved evidence; current selected filter checks also compare visible citation text. |
 | Publication filter states | 35/35 match selected control and visible ordered citations | Ten profiles checked with keyboard selection; full visual/link checks remain separate. |
@@ -52,14 +52,14 @@ Current daily-run evidence includes loaded `33ab1be`, evaluated October 5, 2026;
 | Shared asset content versions | Present on profiles and About/Help | All observed information-page illustrations load. P07 asset evidence passes; font delivery and byte comparisons explain the export-tool limitation. Other case audits remain pending. |
 | Primary profile completion checks | 8/8 functional passed; 12/12 visual passed | Complete CV bytes, all eleven pages, signed-in delivery behavior, Overview navigation and complete section views pass. Other profile variations remain pending. |
 | Search and organization content | Previously observed count/order and missing-member differences remain open | Fresh complete desktop/narrow baselines inspected; source alignment is unconfirmed. |
-| Information pages | Earlier full-page checks are retained; all eight await the new SD05 title check | Both observed About aliases and every FAQ anchor are confirmed. The separate institution page remains pending. |
+| Information pages | All eight retain complete checks and pass the added SD05 title requirement | Both observed About aliases and every FAQ anchor are confirmed. The separate institution page remains pending. |
 | Search/homepage deployment outcomes | 5/5 complete; long-title HTML and signed-in JSON pass | Permitted read-only Console checks confirm keyword and browse titles. |
 | Cases completed during the preceding review | ADVANCED01, EMPTY01 and O04 each pass 4/4 functional and 2/2 visual checks | These criteria are now explicit; they do not imply an increase on an earlier undefined denominator. |
 | Fresh preceding-batch baseline | 20 URLs, 40 desktop/narrow pairs, 289 frames through all footers | Profile coverage is Overview only; other states remain pending. |
 | P03 completion evidence | 6/6 functional criteria pass; 12/12 complete visual views pass | Filtered/paged return, CV bytes, all five rendered pages and signed-in delivery pass; the selected whole case completes. |
 | Expanded-filter deployment outcomes | 2/2 corrected outcomes pass | All applicable named dialogs match tie ordering and 15-pixel settled first-row spacing at both widths. Search source-data differences remain open. |
 | P08/P09 daily-run evidence | Each completes 6/6 functional criteria; P08 14/14 and P09 10/10 complete visual states | Shared document correction passes on `9140ef0`; current applicability observations retain unchanged complete profile evidence and inspected PDF pages. |
-| Current URL-based batch | 20 distinct URLs: 12 carried forward, 8 added | E01, P10, P08 and P09 complete during the daily run. D01/D02 fill the two latest completed slots after clock checks. Other whole cases and existing blockers remain pending. |
+| Current URL-based batch | 20 distinct URLs: 11 carried forward, 9 added | E01, P10, P08 and P09 complete during the daily run. D01/D02 fill the two latest completed slots after clock checks. Other whole cases and existing blockers remain pending. |
 
 Measure the same checks before and after deployment. Use content versions on changed assets to avoid reusing older browser resources; verify actual served bytes and rendered behavior rather than assuming the requested version proves delivery. Confirm collected copies during deployment, then refresh without cached resources when the browser still uses older bytes. Source count/order differences stay open until explained and checked.
 
@@ -137,3 +137,8 @@ The settled capture method limits native wheel movement to the remaining page he
 October 5, 2026 at 13:19 America/New_York: E01 completes four functional and two complete visual criteria on loaded `95a4f65`, confirmed again after comparison. Whole cases advance to 16/77 (20.8%); denominator unchanged. Institution fallback placement also passes, but illustration delivery remains unavailable. The remote collected-file command is not run; served bytes pass. Next scheduled snapshot remains 18:00 local time.
 
 Title-check checkpoint: SD05 adds a demonstrated browser-title requirement for the nine information/institution pages. Eight previously completed information cases are temporarily pending; their full-page evidence is retained. The provisional denominator stays seventy-seven; current completion is thirteen (16.9%) until the new deployed title checks pass. This change to required checks is separate from the earlier profile completion.
+
+October 5, 2026 at 19:22 America/New_York: release `88a8548` is loaded and fully accounted for. SD05 restores eight information cases after the added title requirement passes; O03 completes four functional and two complete visual criteria. Current completion is 22/77 (28.6%); denominator unchanged. O06 replaces O03 after a clock check. The next scheduled snapshot remains midnight; original October 6 cutoff is unchanged.
+
+
+SD06 adds the demonstrated search-history requirement F02a. After an actual search/profile/Back journey, Forward must restore the profile, matching the reference. P01, P03, P04, P07, P08, P09, P10 and P12 temporarily reopen for this new shared check; their complete content, controls, document and visual evidence is retained. Whole completion is fourteen of seventy-seven (18.2%); the provisional denominator and rolling twenty membership are unchanged. Direct and unrelated-referrer entries must still open the default search.

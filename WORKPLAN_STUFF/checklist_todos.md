@@ -75,4 +75,7 @@ The Research Areas download-link correction remains deferred under [issue #3](ht
 
 Current graph follow-up: profile graph entries pass, but their destination views still differ in calculated date, legend, color assignment and source data. Retain the private recorded destinations as required graph variations under the existing graph review. Do not infer whole graph completion from a passing profile entry.
 
-- [ ] **SD05 — information-page browser titles.** Nine pages inherit a different title than the reference. A focused template correction and existing heading/title test pass locally; verify the loaded revision, canonical/slash routes and unchanged full-page evidence before restoring the eight completed information cases. Institution illustration delivery remains independent.
+- [x] **SD05 — information-page browser titles.** Nine canonical pages at both widths and all target slash aliases pass on loaded `88a8548`. Complete desktop before/after body, headings and links match; current paired views and unchanged full-page evidence account for appearance. Eight information cases return to Complete. Institution illustration delivery remains independent.
+
+
+SD06 adds the demonstrated search-history requirement F02a. After an actual search/profile/Back journey, Forward must restore the profile, matching the reference. P01, P03, P04, P07, P08, P09, P10 and P12 temporarily reopen for this new shared check; their complete content, controls, document and visual evidence is retained. Whole completion is fourteen of seventy-seven (18.2%); the provisional denominator and rolling twenty membership are unchanged. Direct and unrelated-referrer entries must still open the default search.
