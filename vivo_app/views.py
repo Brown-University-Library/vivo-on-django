@@ -735,7 +735,7 @@ def search_facets(request: HttpRequest) -> HttpResponse:
             return prepared_response(saved_response)
     except ReferenceSearchError:
         logger.error('reference_search_filter_error')
-        return JsonResponse(None, safe=False, status=500)
+        return JsonResponse(None, safe=False, status=500, content_type='application/json; charset=utf-8')
     except PageDataError as exc:
         return data_unavailable(exc)
     # TODO: Implement facet logic for authentic sources.

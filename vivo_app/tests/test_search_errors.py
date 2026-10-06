@@ -63,4 +63,5 @@ class ReferenceSearchErrorTests(SimpleTestCase):
                 assert isinstance(facets, HttpResponse)
                 self.assertEqual(facets.status_code, 500)
                 self.assertEqual(facets.content, b'null')
+                self.assertEqual(facets['Content-Type'], 'application/json; charset=utf-8')
                 reader.assert_not_called()
