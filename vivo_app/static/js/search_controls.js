@@ -5,12 +5,23 @@
     var row = document.createElement('li');
     var link = document.createElement('a');
     var label = document.createElement('template');
-    // Read rendered label text without changing the raw filter value or URL.
+    // Read rendered labels without changing the raw filter value or URL.
     label.innerHTML = item.text;
+    // Keep the reference italics; other elements contribute only their contents.
+    label.content.querySelectorAll('*').forEach(function (element) {
+      if (element.tagName === 'I') {
+        Array.from(element.attributes).forEach(function (attribute) {
+          element.removeAttribute(attribute.name);
+        });
+      } else {
+        element.replaceWith.apply(element, Array.from(element.childNodes));
+      }
+    });
     var text = label.content.textContent;
     link.href = item.url;
     if (item.selected) {
-      row.appendChild(document.createTextNode(text + ' (' + item.count + ') '));
+      row.appendChild(label.content);
+      row.appendChild(document.createTextNode(' (' + item.count + ') '));
       var icon = document.createElement('span');
       icon.className = 'glyphicon glyphicon-remove';
       icon.setAttribute('aria-hidden', 'true');
@@ -18,7 +29,7 @@
       link.setAttribute('aria-label', 'Remove facet ' + text);
       row.appendChild(link);
     } else {
-      link.textContent = text;
+      link.appendChild(label.content);
       row.appendChild(link);
       row.appendChild(document.createTextNode(' (' + item.count + ')'));
     }
