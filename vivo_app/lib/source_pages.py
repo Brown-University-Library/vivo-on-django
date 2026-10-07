@@ -1310,7 +1310,7 @@ def organization_data(
             else static('images/org_placeholder_noborder.png')
         ),
         'website_links': websites,
-        'overview_html': '<p>' + render_profile_html(overview) + '</p>' if overview else '',
+        'overview_html': '<p>' + render_profile_html(overview) + '</p>',
         'visualization_url': reverse('visualization_collab', args=[identifier]) if settings.VIZ_ENABLED and members else '',
         'visualization_graph': organization_preview_graph() if settings.VIZ_ENABLED and members else {},
         'administrative_positions': administrative,

@@ -335,6 +335,22 @@ class SourcePageTests(TestCase):
             organization['website_links'], [{'url': 'https://example.invalid/department', 'label': 'Department website'}]
         )
 
+    def test_organization_keeps_empty_overview_paragraph(self) -> None:
+        """
+        Checks an empty organization overview retains the paragraph used by Rails for spacing.
+        """
+        key = profile_key('org-example')
+        response = json.loads(self.responses[key].body)
+        item = json.loads(response['response']['docs'][0]['json_txt'][0])
+        item['overview'] = ''
+        response['response']['docs'][0]['json_txt'] = [json.dumps(item)]
+        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        organization = organization_data('org-example', 'live', self.read)
+        self.assertEqual(organization['overview_html'], '<p></p>')
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            result = self.get_page('/display/org-example')
+        self.assertContains(result, '<div class="organization-overview"><p></p></div>', html=True)
+
     def test_organization_websites_preserve_source_order(self) -> None:
         """
         Checks organization website links keep source order even when ranks differ.
