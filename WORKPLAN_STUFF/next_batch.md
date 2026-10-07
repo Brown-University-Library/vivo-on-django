@@ -10,7 +10,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U07 | V06 | `/display/{person_id}/viz/coauthor`; keyboard scope, label exports and fit reset | Added | Original criteria are fixed before audit. SD40 matches demonstrated shared person option text and export naming. Verify release 44, actual keyboard sequence, SVG/PNG with labels on/off and fit reset. Preserve source-dependent graph/export equality and all required complete views. |
+| U07 | V06 | `/display/{person_id}/viz/coauthor`; keyboard scope, label exports and fit reset | Added | SD40 is verified on loaded release 44. Both-width keyboard, label/detail options, SVG copying, complete PNG delivery and fit resets pass. Verify the remaining SD41 coauthor CSV help-text correction and affected controls on release 45. Preserve source-dependent graph/export equality, all required complete views and accessibility acceptance. |
 
 ## Parked cases
 
