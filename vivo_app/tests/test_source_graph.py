@@ -8,6 +8,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.test import TestCase, override_settings
 
 from tools.source_capture import capture_custom_graph
@@ -27,6 +28,39 @@ from vivo_app.lib.source_requests import graph_root_key, member_details_key, pro
 @override_settings(PAGE_DATA_MODE='live', VIZ_SERVICE_URL='http://example.invalid')
 class SourceGraphTests(TestCase):
     """Checks source graph paths, response shapes, and explicit failures."""
+
+    def test_organization_control_text_preserves_reference_click_behavior(self) -> None:
+        """
+        Checks organization text has no checkbox association while person and team labels remain associated.
+        """
+        for record_type in ('ORGANIZATION', 'PEOPLE', 'TEAM'):
+            with self.subTest(record_type=record_type):
+                page = render_to_string(
+                    'visualization/network_data.html',
+                    {
+                        'graph': {
+                            'id': 'invented-graph',
+                            'name': 'Invented Graph',
+                            'page_title': 'Invented Graph',
+                            'type': record_type,
+                            'kind': 'collaborators',
+                            'links': [{'source': 'invented-a', 'target': 'invented-b'}],
+                        },
+                    },
+                )
+                for checkbox in ('showLabels', 'showDetails', 'forceToFit'):
+                    label = f'<label for="{checkbox}">'
+                    if record_type == 'ORGANIZATION':
+                        self.assertNotIn(label, page)
+                    else:
+                        self.assertIn(label, page)
+                    self.assertIn(f'id="{checkbox}" type="checkbox"', page)
+                scope_name = '...' if record_type == 'ORGANIZATION' else 'Network scope'
+                self.assertIn(f'class="btn-group network-scope" role="group" aria-label="{scope_name}"', page)
+                self.assertIn(
+                    'title="Forces the graph to fit on the screen (useful when some nodes fall outside the display area)"',
+                    page,
+                )
 
     def setUp(self) -> None:
         """
