@@ -16,7 +16,13 @@
     linkedIds.add(link.source);
     linkedIds.add(link.target);
   });
-  var allNodes = personNetwork ? source.nodes.slice() : source.nodes.filter(function (node) { return linkedIds.has(node.id); });
+  var nodesById = new Map();
+  source.nodes.forEach(function (node) {
+    if (!nodesById.has(node.id)) nodesById.set(node.id, node);
+  });
+  var allNodes = personNetwork ? source.nodes.slice() : Array.from(linkedIds, function (id) {
+    return nodesById.get(id);
+  }).filter(function (node) { return node !== undefined; });
   var allLinks = source.links.slice();
   var rootIds = new Set([rootUri, page.id]);
   var directIds = new Set();
@@ -98,7 +104,6 @@
     var people = svg.selectAll('g').data(nodes).enter().append('g');
     var circles = people.append('circle')
       .attr('r', function (node) { return node.localLevel === 0 ? 15 : (node.localLevel === 1 ? 11 : 6); });
-    circles.style('fill', function (node) { return colors(node.group || 'N/A'); });
     if (page.type !== 'PEOPLE') {
       circles.style('stroke', function (node) {
         if (node.localLevel !== 0) return null;
@@ -106,6 +111,7 @@
         return d3.rgb(Math.round(color.r * 0.85), Math.round(color.g * 0.85), Math.round(color.b * 0.85)).toString();
       }).style('stroke-width', function (node) { return node.localLevel === 0 ? 2 : 0; });
     }
+    circles.style('fill', function (node) { return colors(node.group || 'N/A'); });
     var labels = people.append('text').attr('class', 'node-text').text(function (node) { return node.name || ''; });
     labels.style('font-size', function (node) { return node.localLevel === 0 ? '12px' : '8px'; })
       .style('font-weight', function (node) { return node.localLevel === 0 ? 'bold' : 'normal'; });

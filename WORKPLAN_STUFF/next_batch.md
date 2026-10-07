@@ -10,7 +10,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U06 | V08 | `/display/{organization_id}/viz/collab`; keyboard scope and generated exports | Added | Original criteria are saved before audit. SD37 corrects the demonstrated option text-click and scope-name differences. Verify the release and actual Space/scope behavior, complete SVG/PNG delivery and views at both widths. Whole-case source equality remains Pending; useful independent checks proceed while all other candidates retain external dependencies. |
+| U06 | V08 | `/display/{organization_id}/viz/collab`; keyboard scope and generated exports | Added | Original criteria are saved before audit. SD37 is verified. SD38 corrects demonstrated first-link node order and SVG style declarations. Verify the release, served script, affected organization/team/person behavior and complete SVG/PNG delivery and views at both widths. Whole-case source equality remains Pending; useful independent checks proceed while all other candidates retain external dependencies. |
 
 ## Parked cases
 
