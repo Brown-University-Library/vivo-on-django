@@ -1294,7 +1294,7 @@ def organization_data(
         else:
             faculty.append(row)
     websites: list[dict[str, str]] = []
-    for website in sorted(entries(item, 'web_pages'), key=lambda row: website_rank(row.get('rank'))):
+    for website in entries(item, 'web_pages'):
         raw_url = website.get('url')
         url = safe_url(raw_url.strip() if isinstance(raw_url, str) else raw_url)
         if url:

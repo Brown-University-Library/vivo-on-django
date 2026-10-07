@@ -335,9 +335,9 @@ class SourcePageTests(TestCase):
             organization['website_links'], [{'url': 'https://example.invalid/department', 'label': 'Department website'}]
         )
 
-    def test_organization_websites_follow_saved_rank(self) -> None:
+    def test_organization_websites_preserve_source_order(self) -> None:
         """
-        Checks organization website links appear in their saved rank order.
+        Checks organization website links keep source order even when ranks differ.
         """
         key = profile_key('org-example')
         response = json.loads(self.responses[key].body)
@@ -354,7 +354,7 @@ class SourcePageTests(TestCase):
         if not isinstance(websites, list):
             self.fail('Organization websites were not a list.')
         self.assertEqual(
-            [row['url'] for row in websites], ['https://example.invalid/earlier', 'https://example.invalid/later']
+            [row['url'] for row in websites], ['https://example.invalid/later', 'https://example.invalid/earlier']
         )
 
     def test_research_keeps_source_formatting(self) -> None:
