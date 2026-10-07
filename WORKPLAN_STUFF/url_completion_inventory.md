@@ -59,7 +59,7 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | O02 | Organization entered from filtered search, prose and external links | `/search?fq={filter}` → `/display/{organization_id}` | Complete |
 | O03 | Additional organization overview and role-group variation | `/display/{organization_id}` | Complete |
 | O04 | Organization without member rows or a visualization entry | `/display/{organization_id}` with no member groups or graph control | Complete |
-| O05 | Organization with custom membership | `/display/{organization_id}`; configured membership, member links and offered graph entry | Pending |
+| O05 | Organization with custom membership | `/display/{organization_id}`; configured membership, member links and offered graph entry | Complete |
 | O06 | Approved active-team member list and default image | `/display/{team_id}`; observed member links and offered graph entry | Pending |
 | P01 | Primary profile: sections, View All, search return and linked CV | `/display/{person_id}` and section fragments, including `#All`; linked CV and referring search | Complete |
 | P02 | Profile entered from an organization, sections and return journey | `/display/{organization_id}` → `/display/{person_id}` and `#All` → return to organization | Complete |

@@ -1,8 +1,8 @@
 # Progress toward the public-site replacement
 
-**URL-case completion: 40.3% — 31 of 77 known cases complete.**
+**URL-case completion: 41.6% — 32 of 77 known cases complete.**
 
-Recorded snapshot: **October 6, 2026, 22:47 America/New_York — P14 completion.** P14 joins P13 and S14 as complete; O05 and O06 remain active. The provisional denominator is unchanged. Selected actions and dependencies are in [next_batch.md](next_batch.md).
+Recorded snapshot: **October 7, 2026, 00:01 America/New_York — midnight checkpoint.** O05 is complete; totals and the provisional denominator are unchanged since that completion. S13 is active for title-only submission and return checks. O06 remains parked for returned member order. Selected actions and dependencies are in [next_batch.md](next_batch.md).
 
 This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
@@ -31,6 +31,7 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 6, 18:01 — 18:00 checkpoint | 28 / 77 | 36.4% | Owner account/editing exclusions remove no counted case. Partial comparisons remain pending; denominator unchanged. |
 | October 6, 21:26 — resumption with parking | 28 / 77 | 36.4% | Counts unchanged; blocked cases retain their required checks while other approved work enters active slots. |
 | October 6, 22:23 — resumption | 30 / 77 | 39.0% | VPN and sign-in reset; counts and denominator unchanged. P14 and configured organization checks resume. |
+| October 7, 00:01 — 00:00 checkpoint | 32 / 77 | 41.6% | Counts unchanged since O05 completion; S13 checks continue. Original cutoff and denominator unchanged. |
 
 Earlier per-release observations and the original dashboard are preserved in the [historical progress record](previous_workplan_artificts/progress_before_simplification_2026_10_06.md). Detailed release accounting stays in the batch records and private checkpoint.
 
