@@ -70,14 +70,14 @@
       <p>{% if graph.type != 'ORGANIZATION' %}<label for="showDetails">{% endif %}{% if graph.kind == 'coauthors' %}Display{% else %}Show{% endif %} details on mouse hover{% if graph.type != 'ORGANIZATION' %}</label>{% endif %}&nbsp;<input id="showDetails" type="checkbox" checked></p>
       <p>{% if graph.type != 'ORGANIZATION' %}<label for="forceToFit">{% endif %}Force to fit{% if graph.type != 'ORGANIZATION' %}</label>{% endif %}&nbsp;<input id="forceToFit" type="checkbox"{% if force_to_fit %} checked{% endif %} title="Forces the graph to fit on the screen (useful when some nodes fall outside the display area)"></p>
       <p><b>Data</b></p>
-      <p><a href="{% if graph.kind == 'coauthors' %}{% url 'coauthor_csv' graph.id %}{% else %}{% url 'collab_csv' graph.id %}{% endif %}" target="_blank" rel="noopener"{% if graph.type == 'PEOPLE' %} title="Format suitable for Excel and tools."{% endif %}>Download data (CSV)</a></p>
-      <p><a href="{% if graph.kind == 'coauthors' %}{% url 'coauthor_json' graph.id %}{% else %}{% url 'collab_json' graph.id %}{% endif %}" target="_blank" rel="noopener"{% if graph.type == 'PEOPLE' %} title="Format suitable for D3 and other visualization tools."{% endif %}>Download data (JSON)</a></p>
+      <p><a href="{% if graph.kind == 'coauthors' %}{% url 'coauthor_csv' graph.id %}{% else %}{% url 'collab_csv' graph.id %}{% endif %}" target="_blank" rel="noopener"{% if graph.type == 'PEOPLE' %} title="Format suitable for Excel and tools."{% elif graph.type == 'ORGANIZATION' %} title="Format suitable for Excel and other tools."{% endif %}>Download data (CSV)</a></p>
+      <p><a href="{% if graph.kind == 'coauthors' %}{% url 'coauthor_json' graph.id %}{% else %}{% url 'collab_json' graph.id %}{% endif %}" target="_blank" rel="noopener"{% if graph.type == 'PEOPLE' or graph.type == 'ORGANIZATION' %} title="Format suitable for D3 and other visualization tools."{% endif %}>Download data (JSON)</a></p>
       <p><a id="embedHtml" href="#" title="Shows HTML to embed the graph as an SVG element into your own page.">Embed SVG Code</a></p>
       <p><a id="downloadPng" href="#" title="Downlods the graph as an image file in PNG format. This only works in Chrome and Firefox.">Download Image (PNG)</a></p>
       <p id="downloadStatus" class="hidden" role="status"></p>
     </div>
   </div>
-  <div id="embedHtmlDiv" class="row hidden"><div class="col-md-12"><p>Copy the following HTML to embed the SVG into your own page</p><textarea id="embedHtmlText" rows="15" class="htmlSnippet" aria-label="SVG code"></textarea></div><div><p>&nbsp;</p></div></div>
+  <div id="embedHtmlDiv" class="row hidden"><div class="col-md-12"><p>Copy the following HTML to embed the SVG into your own page</p><textarea id="embedHtmlText" rows="15" class="htmlSnippet"{% if graph.type != 'ORGANIZATION' %} aria-label="SVG code"{% endif %}></textarea></div><div><p>&nbsp;</p></div></div>
   <div id="tooltip" class="network-tooltip hidden" role="status"><p id="title" style="margin:0"></p><p id="subtitle" style="margin:0"></p><p id="subtitle2" style="margin:0"></p></div>
 </div>
 {{ graph|json_script:"network-data" }}
