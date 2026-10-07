@@ -10,7 +10,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U04 | O05 | S08 `/display/org-brown-univ-dept148` | Retained; reactivated | Verify custom membership source processing, full content/groups, links, graph entry/return, assets and complete desktop/narrow views. Server setup is reported complete; rendering remains unverified. |
+| U04 | O05 | S08 `/display/org-brown-univ-dept148` | Retained; reactivated | Verify custom membership source processing, full content/groups, links, graph entry/return, assets and complete desktop/narrow views. The page renders; finish the member ordering correction and all remaining fixed checks after deployment. |
 | U12 | O06 | S08 `/display/team-star` | Retained; reactivated | Verify selected team members, groups, placeholder, links, graph entry/return, assets and complete desktop/narrow views. Server setup is reported complete; rendering remains unverified. |
 
 ## Parked cases
