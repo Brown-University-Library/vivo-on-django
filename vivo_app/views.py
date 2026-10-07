@@ -725,7 +725,7 @@ def advanced_search(request: HttpRequest) -> HttpResponse:
         except PageDataError as exc:
             return data_unavailable(exc)
         if query:
-            return redirect(reverse('search').rstrip('/') + '?' + urlencode({'q': query}))
+            return redirect(reverse('search').rstrip('/') + '?q=' + quote(query, safe=':'))
     return render(request, 'search/advanced.html', {'name': name, 'title': title})
 
 

@@ -75,6 +75,25 @@ class AdvancedSearchTests(TestCase):
         """
         self.assertEqual(advanced_search_query('Professor "A"', '  '), 'title_t:"Professor \\"A\\""')
 
+    def test_title_redirect_preserves_browser_query_spelling(self) -> None:
+        """
+        Checks the title destination retains the field separator and percent-encoded spaces.
+        """
+        response = self.client.get('/search/advanced', {'name_t': '', 'title_t': 'Example Professor', 'search': 'true'})
+        assert isinstance(response, HttpResponse)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/search?q=title_t:%22Example%20Professor%22')
+
+    def test_redirect_keeps_delimiters_within_the_entered_title(self) -> None:
+        """
+        Checks query delimiters and non-ASCII text remain in the original field value.
+        """
+        response = self.client.get('/search/advanced', {'title_t': 'Example & Café+Group#A', 'search': 'true'})
+        assert isinstance(response, HttpResponse)
+        destination = urlsplit(response['Location'])
+        self.assertEqual(parse_qs(destination.query), {'q': ['title_t:"Example & Café+Group#A"']})
+        self.assertEqual(destination.fragment, '')
+
     def test_department_submission_joins_the_fielded_search(self) -> None:
         """
         Checks a department supplied in the URL joins the public fielded search.
