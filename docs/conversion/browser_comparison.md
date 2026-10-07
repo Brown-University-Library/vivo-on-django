@@ -6,6 +6,7 @@ Contents:
 
 - [Prepare and run](#prepare-and-run)
 - [Read the results](#read-the-results)
+- [Read actual response headers and bodies](#read-actual-response-headers-and-bodies)
 - [Reuse visual evidence](#reuse-visual-evidence)
 - [Current limits](#current-limits)
 
@@ -59,6 +60,17 @@ When measuring page movement, inspect the scrolling element actually used by the
 For animated dialogs, confirm the intended dialog's title, selected control and settled values before saving a result. Wait for the previous dialog to close before opening another. Preserve source-data differences separately from sorting or spacing results; a corrected control does not establish matching counts or whole-page completion.
 
 Complete each native download Save dialog before starting another browser check. Explicitly choose the current run's private evidence folder and a filename identifying the reference or target artifact; browsers can retain a previous run's folder. Confirm that the dialog closes and the file exists before continuing. A pending Save dialog can obstruct other content and leave a download check waiting; inspect it before treating a download timeout as a failure.
+
+## Read actual response headers and bodies
+
+When ordinary page navigation works but an HTTP helper cannot use browser sign-in, Codex can inspect the request the page already makes through the browser’s Network panel. Preserve existing access restrictions; this does not authorize an alternate request to a rejected destination.
+
+1. Select the intended tab and confirm its address before opening developer tools. Use its Network panel and filter to identify the document or supporting request.
+2. Reload the permitted page or activate its ordinary offered control. Confirm the selected row belongs to that action.
+3. Read the General status and required response-header values. Keep request headers collapsed. Do not copy request headers, authentication values, a request command or a network archive.
+4. For an allowed response-body comparison, select Response and inspect its actual text. A displayed code editor can expose only part of a response. Use ordinary scrolling if needed; verify that the full response parses and its recorded byte count agrees with the resource size before claiming complete-body equality.
+5. Save only the required response values and evidence privately. An empty clipboard, truncated editor, document media type or detected encoding does not prove the original response bytes or full Content-Type.
+6. Close developer tools and restore the required viewport before taking comparison captures. Confirm the bitmap size and the settled page state. A capture can alter scrollbars or scroll position; record that change and compare under matching conditions rather than treating it as an application difference.
 
 ## Reuse visual evidence
 
