@@ -12,6 +12,8 @@ Contents:
 
 ## Prepare and run
 
+Current deployed comparisons use production Rails and production Django. Recover the private comparison bases and prepare current case bindings under Django’s `/vivo_on_django/` prefix; the local/prepared example below remains for offline checks. Preserve earlier staging evidence and confirm its applicability before reuse.
+
 Run `uv sync --locked`, then `uv run playwright install chromium` to install the development dependencies and browser. Alternatively, pass `--browser-executable "$BROWSER_EXECUTABLE"` to use an existing Chromium executable. Use the same browser version for both captures. The command disables GPU rendering because Chrome otherwise gives slightly different pixels to the same JPEG when it loads from two site addresses. Capture a new reference before comparing screenshots made with an older version of this command.
 
 Save a manifest such as this invented example outside Git:

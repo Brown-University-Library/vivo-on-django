@@ -91,7 +91,7 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | S12 | Supported Advanced department parameter | `/search/advanced?search=true&department_t={query}` → `/search?q={query}`; no new visible field | Pending |
 | S13 | Title-only Advanced submission and retained form values | `/search/advanced?search=true&name_t=&title_t={query}` → `/search?q={query}` → browser Back | Pending |
 | S14 | Empty Advanced submission stays on the form | `/search/advanced?search=true&name_t=&title_t=`; no redirect to browse results | Complete |
-| S15 | Affiliation More dialog keyboard opening, Escape and focus return | `/search?q={query}`; affiliation dialog keyboard journey | Pending |
+| S15 | Affiliation More dialog keyboard opening, Escape and focus return | `/search?q={query}`; affiliation dialog keyboard journey | Complete |
 | SEARCH01 | Keyword results, count/order, facets and search-match controls | `/search?q={query}`; recorded filters and page variations use repeated `fq`, `fq_0` and `page` | Pending |
 | TERMS01 | Terms information page and links | `/termsOfUse` | Complete |
 | V01 | Organization collaboration graph, scope/labels and linked JSON | `/display/{organization_id}/viz/collab` and `.json` → organization return | Pending |
