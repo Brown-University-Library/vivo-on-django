@@ -10,7 +10,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U38 | S04 | `/search?q={query}` | Added | Finish Research Areas and Published In dialog groups, sorting, narrowing, selection/removal, filtered no-result submission/recovery, supporting responses and complete both-width views. Release-37 consumer regressions retain their first group and focus; complete the broader fixed case audit. Keep source-dependent differences Pending. |
+| U38 | S04 | `/search?q={query}` | Added | Available both-width research/publication interactions and selected views are recorded. Complete research JSON and both literal response metadata checks pass. Next: capture the full publication response, replace or explicitly justify excluded initial/recovery views, and compare source counts/order when corresponding production data becomes available. Fixed criteria and Pending state remain. |
 
 V11, S02 and S03 are parked with their original evidence and requirements. Release 37 is loaded. Its actual affiliation JSON format, both-width dialog interactions/focus and page-two selection reset are verified; research/publication consumers retain their first group and focus, and every release change is accounted for. S04 is selected after a pre-cutoff clock check with fixed criteria saved before audit.
 
@@ -46,4 +46,4 @@ V11, S02 and S03 are parked with their original evidence and requirements. Relea
 
 ## First actions
 
-Finish S04 fixed interaction, supporting-response and complete-view checks. Release 37 is loaded and accounted for; the broader S04 audit remains active. Select another useful approved case only after a pre-cutoff clock check. Revisit parked dependencies when permitted new evidence or a shared change affects them. Account for every original, parked and replacement case at the pass boundary. Preserve fixed requirements and existing deferred work.
+For the next explicit daily-start prompt, recover S04 fixed criteria and its remaining response/capture checks. Release 38 is loaded and accounted for; the final documentation release requires its own loaded proof. Preserve the existing active row and parked requirements. Revisit parked dependencies when permitted new evidence or a shared change affects them. Account for every original, parked and replacement case at the pass boundary. Preserve fixed requirements and existing deferred work.
