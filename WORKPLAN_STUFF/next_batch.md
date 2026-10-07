@@ -1,5 +1,7 @@
 # Next batch: active and parked URL cases
 
+Release 50 matches two demonstrated coauthor scope help differences. It is checked locally and awaits actual loaded-revision proof and every deployed change check. Release 49 is verified. V06 remains the active partial case; its original whole-case criteria are unchanged.
+
 Batch `url-batch-010`, daily run `daily-2026-10-07`, pass 01. Fixed cutoff October 8, 2026 at 08:00 America/New_York (12:00 UTC). The updated selection rule prefers cases whose remaining checks can pass with current data and permitted access. Preserve all original criteria, scope exclusions, source limitations and deferred work.
 
 Exact selected bindings: `../../url_batch_010/urls.json` and `../../current_urls.local.md`. Whole-case state remains in [the inventory](url_completion_inventory.md); the global percentage is only in [progress.md](progress.md). Earlier private evidence and final handoff remain available; the preceding release is freshly confirmed loaded and fully accounted for.
@@ -10,15 +12,15 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U26 | S15 | `/search?q={query}`; affiliation dialog keyboard and complete views | Previous | Both current desktop views through the footer are inspected. Release 48 verifies its three planned naming removals. Release 49 addresses the remaining plus-glyph exposure; verify native complete names and affected behavior. Original count difference remains Pending. |
+| U07 | V06 | `/display/{person_id}/viz/coauthor`; original complete visual states | Previous | Capture complete direct, expanded, labels-off and fit views at both widths through the footer using recovered tab controls. Preserve existing functional evidence and all source/export/access requirements; no source difference is accepted. |
 
 ## Parked cases
 
 | Case | Blocker | Recovery condition and exact next action | Evidence and remaining checks |
 | --- | --- | --- | --- |
+| S15 | One source count differs. | Compare corresponding production data after the owner makes it available. | Complete dialog views, exact native names, keyboard/filter/focus/return and resources pass available checks on loaded `1c344be`; private S15-results.json retains original criteria. |
 | V09 | Source date/order and restricted response/opener comparisons remain. | Compare corresponding production sources and recover permitted supporting metadata/opener evidence. | Releases 46/47 are verified; current first/final SVG lines and footer are inspected. Original complete-case criteria remain Pending. |
 | V07 | Exact source drawing/export equality and restricted supporting responses remain. | Compare corresponding production sources and recover permitted metadata/opener evidence. | Actual desktop/narrow dragging passes on its recorded revision. Current complete views are inspected; later reloads retain controls/resources but change complete SVG, so exact old artifacts are excluded. Original criteria stay Pending. |
-| V06 | Current graph source/date/order/positions, complete paired exports/views and accessibility acceptance remain unresolved; supporting representations/opener are restricted. | Compare corresponding production sources and recover permitted response/opener evidence. | SD40/SD41 are verified. Preserve all original criteria and qualified evidence in private V06-partial-results.json; independent controls, copying, PNG delivery and fit checks pass. |
 | V08 | Current graph source/date/order/positions and complete exports differ; supporting opener is restricted. | Compare corresponding production sources and recover permitted supporting opener access. | SD37–SD39 are verified; retain all original criteria and qualified complete-view requirements in private V08-partial-results.json. |
 | V03 | Literal supporting response headers and opener remain unavailable. | Permitted actual supporting response capture enables the remaining checks. | Recovered native inspection confirms the normal target graph embeds data and makes no separate JSON request. Existing content, body and visual evidence remains applicable; no restricted endpoint was reloaded. |
 | D04 | Original cover is offered by the reference but absent from the current target book source. | Corresponding book data offers the original cover; finish its metadata, complete bytes and both-width views. | Portrait and default complete files, actual metadata, current dimensions and relevant both-width consumer regions pass in private D04-results.json. Cover requirements remain Pending. |
@@ -52,4 +54,4 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 ## First actions
 
-V09 releases 46 and 47 are verified, including individual native cell exposure, actual Tab/copy and matched first/final SVG lines through the footer. Prior push-retry and environment-update requests are superseded. V07 original desktop and narrow dragging now passes; current complete view observations crossed a revision change and require applicability review. Keep source-dependent drawing/export equality and restricted response/opener comparisons Pending. S15 desktop coverage is now inspected completely. Release 48 and every recorded change are accounted. Verify release 49 complete More-button names and affected shared dialog behavior. Keep original criteria and at most twenty distinct active URLs; check the clock before each selection.
+V09 releases 46 and 47 are verified, including individual native cell exposure, actual Tab/copy and matched first/final SVG lines through the footer. Prior push-retry and environment-update requests are superseded. V07 original desktop and narrow dragging now passes; current complete view observations crossed a revision change and require applicability review. Keep source-dependent drawing/export equality and restricted response/opener comparisons Pending. S15 desktop coverage is now inspected completely. Release 48 and every recorded change are accounted. Release 49 is verified. Finish V06 original complete views under the recovered direct-tab capture condition; retain all independent differences. Keep original criteria and at most twenty distinct active URLs; check the clock before each selection.

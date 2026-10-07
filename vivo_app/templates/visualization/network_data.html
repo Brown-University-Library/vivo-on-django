@@ -43,8 +43,8 @@
       </div>{% endif %}
       {% if graph.links %}<div class="btn-group network-scope" role="group" aria-label="{% if graph.type == 'TEAM' %}Network scope{% else %}...{% endif %}">
         {% if graph.type == 'PEOPLE' %}
-          <div class="btn-group" role="group"><button id="showLess" type="button" class="btn btn-info" title="Include only direct {% if graph.kind == 'coauthors' %}coauthors{% else %}collaborators{% endif %}.">Show {% if graph.kind == 'coauthors' %}Coauthors{% else %}Collaborators{% endif %}</button></div>
-          <div class="btn-group" role="group"><button id="showMore" type="button" class="btn btn-default" title="Include {% if graph.kind == 'coauthors' %}coauthors and their coauthors{% else %}collaborators and their collaborators{% endif %}">Show {% if graph.kind == 'coauthors' %}Coauthors' coauthors{% else %}Collaborators' Collaborators{% endif %}</button></div>
+          <div class="btn-group" role="group"><button id="showLess" type="button" class="btn btn-info" title="Include only {% if graph.kind == 'coauthors' %}coauthors{% else %}direct collaborators{% endif %}.">Show {% if graph.kind == 'coauthors' %}Coauthors{% else %}Collaborators{% endif %}</button></div>
+          <div class="btn-group" role="group"><button id="showMore" type="button" class="btn btn-default" title="Include {% if graph.kind == 'coauthors' %}coauthors and their coauthors.{% else %}collaborators and their collaborators{% endif %}">Show {% if graph.kind == 'coauthors' %}Coauthors' coauthors{% else %}Collaborators' Collaborators{% endif %}</button></div>
         {% else %}
           <div class="btn-group" role="group"><button id="showLevel1" type="button" class="btn btn-info" title="Shows collaboration with anyone at Brown University">Collaboration at Brown</button></div>
           <div class="btn-group" role="group"><button id="showLevel0" type="button" class="btn btn-default" title="Shows collaboration with between department members only">Intradepartmental collaboration</button></div>
