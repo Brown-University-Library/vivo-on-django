@@ -10,9 +10,9 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U31 | V10 | `/display/{organization_id}/viz/publications` | Added | SD31 local checks pass; confirm the release and assets, then compare default/full history, tooltip, mounted navigation and complete views. |
-| U32 | V10 | `/display/{organization_id}/viz/publications.json` | Added | Compare permitted current status, full metadata, complete data/types/order and displayed response. |
-| U33 | V10 | `/display/{organization_id}/viz/publications.csv` | Added | Compare offered delivery/opener, complete rows/serialization and artifact or displayed response. |
+| U31 | V10 | `/display/{organization_id}/viz/publications` | Added | SD31 deployed changes are accounted on `5717091`. Keep narrow pointer journeys, source ordering and unsettled complete views Pending; finish remaining permitted checks. |
+| U32 | V10 | `/display/{organization_id}/viz/publications.json` | Added | SD32 compact UTF-8 correction passes local checks. Verify the next loaded response and literal metadata; preserve exact source-order and complete presentation requirements. |
+| U33 | V10 | `/display/{organization_id}/viz/publications.csv` | Added | Offered CSV delivery is saved; all 53 data rows and 23 fields match by column name. Exact order and literal response metadata remain Pending. |
 
 L01 is parked after its useful deployed checks. V10 is selected after the clock check, with fixed criteria saved before audit. Keep source-dependent values and the deferred Research Areas correction explicit.
 
