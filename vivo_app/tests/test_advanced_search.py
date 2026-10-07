@@ -52,6 +52,7 @@ class AdvancedSearchTests(TestCase):
             self.assertEqual(response.status_code, 302)
             destination = urlsplit(response['Location'])
             self.assertEqual(destination.path, prefix + '/search')
+            self.assertEqual(destination.query, 'q=title_t:%22Professor%22+AND+name_t:%22Example%20Researcher%22')
             self.assertEqual(parse_qs(destination.query), {'q': ['title_t:"Professor" AND name_t:"Example Researcher"']})
             legacy_path = self.client.get('/search/advanced', SCRIPT_NAME=prefix)
             self.assertContains(legacy_path, 'Advanced Search')
@@ -94,6 +95,25 @@ class AdvancedSearchTests(TestCase):
         self.assertEqual(parse_qs(destination.query), {'q': ['title_t:"Example & Café+Group#A"']})
         self.assertEqual(destination.fragment, '')
 
+    def test_combined_redirect_preserves_and_inside_values(self) -> None:
+        """
+        Checks AND text and plus signs inside a field remain distinct from the field separator.
+        """
+        response = self.client.get(
+            '/search/advanced',
+            {'title_t': 'Example AND Other+Group', 'name_t': 'Example & Café', 'search': 'true'},
+        )
+        assert isinstance(response, HttpResponse)
+        destination = urlsplit(response['Location'])
+        self.assertEqual(
+            destination.query,
+            'q=title_t:%22Example%20AND%20Other%2BGroup%22+AND+name_t:%22Example%20%26%20Caf%C3%A9%22',
+        )
+        self.assertEqual(
+            parse_qs(destination.query),
+            {'q': ['title_t:"Example AND Other+Group" AND name_t:"Example & Café"']},
+        )
+
     def test_department_submission_joins_the_fielded_search(self) -> None:
         """
         Checks a department supplied in the URL joins the public fielded search.
@@ -104,6 +124,10 @@ class AdvancedSearchTests(TestCase):
         )
         assert isinstance(response, HttpResponse)
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response['Location'],
+            '/search?q=title_t:%22Professor%22+AND+department_t:%22Biology%22+AND+name_t:%22Example%22',
+        )
         self.assertEqual(
             parse_qs(urlsplit(response['Location']).query),
             {'q': ['title_t:"Professor" AND department_t:"Biology" AND name_t:"Example"']},

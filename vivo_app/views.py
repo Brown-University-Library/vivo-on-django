@@ -721,11 +721,11 @@ def advanced_search(request: HttpRequest) -> HttpResponse:
     department = department_value if isinstance(department_value, str) else ''
     if request.GET.get('search') == 'true':
         try:
-            query = advanced_search_query(title, name, department)
+            query = advanced_search_query(title, name, department, url_encoded=True)
         except PageDataError as exc:
             return data_unavailable(exc)
         if query:
-            return redirect(reverse('search').rstrip('/') + '?q=' + quote(query, safe=':'))
+            return redirect(reverse('search').rstrip('/') + '?q=' + query)
     return render(request, 'search/advanced.html', {'name': name, 'title': title})
 
 
