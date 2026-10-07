@@ -14,6 +14,7 @@ from django.utils.html import escape
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordingError, external_path
 from vivo_app.lib.source_pages import (
+    CUSTOM_ORGANIZATION_IDS,
     SourceReader,
     documents,
     first_text,
@@ -24,8 +25,6 @@ from vivo_app.lib.source_pages import (
     thumbnail_url,
 )
 from vivo_app.lib.source_requests import community_research_members_key, read_source, team_member_key
-
-CUSTOM_ORGANIZATION_IDS = {'org-brown-univ-dept124', 'org-brown-univ-dept148'}
 
 
 def source_definitions() -> dict[str, object]:

@@ -36,6 +36,7 @@ from vivo_app.lib.source_requests import (
 )
 
 SourceReader = Callable[[RequestKey, str], RecordedResponse]
+CUSTOM_ORGANIZATION_IDS = {'org-brown-univ-dept124', 'org-brown-univ-dept148'}
 
 
 def response_object(key: RequestKey, mode: str, reader: SourceReader) -> dict[str, object]:
@@ -1277,8 +1278,10 @@ def organization_data(
             portraits[member_id] = thumbnail_url(member_doc)
     administrative: list[dict[str, str]] = []
     faculty: list[dict[str, str]] = []
+    custom_members = identifier in CUSTOM_ORGANIZATION_IDS
     for member, member_id in sorted(
-        zip(members, member_ids, strict=True), key=lambda pair: first_text(pair[0].get('label')).lower()
+        zip(members, member_ids, strict=True),
+        key=lambda pair: first_text(pair[0].get('label')) if custom_members else first_text(pair[0].get('label')).upper(),
     ):
         row = {
             'name': first_text(member.get('label')),

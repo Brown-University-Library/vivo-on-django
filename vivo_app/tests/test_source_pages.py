@@ -1028,6 +1028,39 @@ class SourcePageTests(TestCase):
         with self.assertRaises(PageDataError):
             profile_data('invented-a', 'replay', self.read_replay)
 
+    def test_organization_preserves_custom_and_ordinary_member_order(self) -> None:
+        """
+        Checks custom labels keep letter case while ordinary labels sort in uppercase.
+        """
+        source = json.loads(self.responses[profile_key('org-example')].body)
+        item = json.loads(source['response']['docs'][0]['json_txt'][0])
+        labels = ['Zulu, Example', 'alpha, Example', '', 'Alpha, Example']
+        item['people'] = [
+            {
+                'faculty_uri': 'http://vivo.brown.edu/individual/invented-a',
+                'label': label,
+                'specific_position': 'Example Professor',
+                'general_position': 'http://vivoweb.org/ontology/core#FacultyPosition',
+            }
+            for label in labels
+        ]
+        source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
+        self.responses[profile_key('org-example')] = self.solr_response(source['response']['docs'], 1)
+        for custom, expected in [
+            (False, ['', 'alpha, Example', 'Alpha, Example', 'Zulu, Example']),
+            (True, ['', 'Alpha, Example', 'Zulu, Example', 'alpha, Example']),
+        ]:
+            with (
+                self.subTest(custom=custom),
+                patch('vivo_app.lib.source_pages.CUSTOM_ORGANIZATION_IDS', {'org-example'} if custom else set()),
+            ):
+                result = organization_data('org-example', 'live', self.read, extra_member_ids=[])
+                faculty = result['faculty_positions']
+                if not isinstance(faculty, list):
+                    self.fail('Faculty positions should be a list.')
+                self.assertEqual([row['name'] for row in faculty], expected)
+                self.assertEqual(result['administrative_positions'], [])
+
     def test_organization_uses_exact_administrative_role(self) -> None:
         """Keeps lookalike role identifiers in the ordinary faculty group."""
         key = profile_key('org-example')
