@@ -16,7 +16,7 @@
         <span id="calculatedInfo"></span>
       </div>
       <div id="errorMsg" class="alert alert-warning{% if graph.links %} hidden{% endif %}" role="alert">No coauthor data is available for this researcher.</div>
-      <svg id="svgElement" class="network-graph" width="900" height="700" viewBox="0 0 900 700" role="img" aria-label="Coauthor treemap"></svg>
+      <svg id="svgElement" class="network-graph" width="900" height="700" viewBox="0 0 900 700"></svg>
     </div>
     <div class="col-md-3 network-options">
       <a class="btn btn-default btn-lg" role="button" href="{% url 'visualization_coauthor' graph.id %}">Coauthor Network</a>
