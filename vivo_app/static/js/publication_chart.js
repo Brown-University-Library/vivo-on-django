@@ -5,6 +5,8 @@
   if (!dataElement || !window.d3) return;
   var data = JSON.parse(dataElement.textContent);
   var identifier = JSON.parse(document.getElementById('publication-chart-id').textContent);
+  var profileAddress = new URL(document.getElementById('organizationProfile').href);
+  var profileRoot = profileAddress.pathname.slice(0, profileAddress.pathname.indexOf('/display/')) + '/display/';
   var svg = d3.select('#svgElement');
   var tooltip = document.getElementById('tooltip');
   var colors = d3.scaleOrdinal(d3.schemeCategory20);
@@ -19,8 +21,9 @@
     var row = document.createElement('li');
     var swatch = document.createElement('span');
     swatch.style.backgroundColor = colors(id);
+    swatch.textContent = '\u00a0\u00a0\u00a0\u00a0';
     row.appendChild(swatch);
-    row.appendChild(document.createTextNode(person.name));
+    row.appendChild(document.createTextNode('\u00a0' + person.name));
     legend.appendChild(row);
   });
 
@@ -40,27 +43,28 @@
       .rangeRound([0, width]).paddingInner(0.05).align(0.1);
     var y = d3.scaleLinear().domain([0, d3.max(rows, function (row) { return row.total; }) || 1])
       .nice().rangeRound([height, 0]);
-    plot.selectAll('.publication-series').data(d3.stack().keys(data.columns)(rows)).enter()
-      .append('g').attr('class', 'publication-series')
+    plot.append('g').selectAll('g').data(d3.stack().keys(data.columns)(rows)).enter()
+      .append('g')
       .attr('fill', function (series) { return colors(series.key); })
-      .style('cursor', 'pointer')
       .on('mouseover', function (series) {
         d3.select(this).attr('stroke', 'blue').attr('stroke-width', 2);
         if (!document.getElementById('showDetails').checked) return;
         var person = people.get(series.key);
         if (!person) return;
-        tooltip.textContent = person.name + (person.group ? ' — ' + person.group : '');
-        tooltip.style.left = (d3.event.clientX + 12) + 'px';
-        tooltip.style.top = (d3.event.clientY - 24) + 'px';
+        document.getElementById('title').textContent = person.name;
+        document.getElementById('subtitle').textContent = person.group;
+        document.getElementById('subtitle2').textContent = 'Click to view publications for this researcher';
+        tooltip.style.left = d3.event.pageX + 'px';
+        tooltip.style.top = (d3.event.pageY - 28) + 'px';
         tooltip.classList.remove('hidden');
       })
       .on('mouseout', function () {
-        d3.select(this).attr('stroke', null).attr('stroke-width', null);
+        d3.select(this).attr('stroke', '').attr('stroke-width', 0);
         tooltip.classList.add('hidden');
       })
       .on('click', function (series) {
         if (/^[A-Za-z0-9_-]{1,80}$/.test(series.key)) {
-          window.location.assign('/display/' + series.key + '#Publications');
+          window.location.assign(profileRoot + series.key + '#Publications');
         }
       })
       .selectAll('rect').data(function (series) { return series; }).enter().append('rect')
@@ -70,26 +74,28 @@
       .attr('width', x.bandwidth());
     plot.append('g').attr('class', 'axis').attr('transform', 'translate(0,' + height + ')')
       .call(d3.axisBottom(x));
-    plot.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(null, 's'));
-    plot.append('text').attr('x', 2).attr('y', 4).attr('font-weight', 'bold')
-      .attr('font-size', 10).text('Publications');
+    plot.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(null, 's'))
+      .append('text').attr('x', 2).attr('y', y(y.ticks().pop()) + 0.5)
+      .attr('dy', '0.32em').attr('fill', '#000').attr('font-weight', 'bold')
+      .attr('text-anchor', 'start').text('Publications');
   }
   document.getElementById('showLevel1').addEventListener('click', function () { level = 1; draw(); });
   document.getElementById('showLevel2').addEventListener('click', function () { level = 2; draw(); });
 
   function svgCode() {
-    var image = document.getElementById('svgElement').cloneNode(true);
-    image.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    return new XMLSerializer().serializeToString(image);
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="700">\r\n' +
+      '<rect width="100%" height="100%" fill="white"/>\r\n' +
+      document.getElementById('svgElement').innerHTML + '\r\n</svg>';
   }
   document.getElementById('embedHtml').addEventListener('click', function () {
-    document.getElementById('embedHtmlText').value = svgCode();
+    document.getElementById('embedHtmlText').value = '<svg width="960" height="700">\r\n' +
+      document.getElementById('svgElement').innerHTML + '\r\n</svg>';
     document.getElementById('embedHtmlDiv').classList.remove('hidden');
+    $('html, body').animate({scrollTop: $(document).height() - $(window).height()}, 1400, 'swing');
   });
   document.getElementById('downloadPng').addEventListener('click', function () {
     var status = document.getElementById('downloadStatus');
     status.textContent = 'Preparing image…';
-    status.classList.remove('hidden');
     var image = new Image();
     image.onload = function () {
       var canvas = document.createElement('canvas');
@@ -107,7 +113,7 @@
         var url = URL.createObjectURL(blob);
         var download = document.createElement('a');
         download.href = url;
-        download.download = 'publications_' + identifier + '.png';
+        download.download = 'collabs_' + identifier + '.png';
         document.body.appendChild(download);
         download.click();
         download.remove();

@@ -47,4 +47,13 @@
 .treemap-page .network-options > .btn { display: inline-block; clear: left; white-space: nowrap; }
 .treemap-page #legendList span { display: inline; width: auto; height: auto; margin-right: 0; }
 .treemap-page #embedHtmlText { background-color: #f5f5d3; border: 1px solid #999; width: 98%; margin: 5px 0; padding: 1%; }
+.publication-chart-page div.btn-group { margin-top: .7em; margin-left: .7em; float: left; }
+.publication-chart-page #svgElement { max-width: none; height: 700px; }
+.publication-chart-page .network-options > .btn { display: inline-block; clear: left; white-space: nowrap; }
+.publication-chart-page label { font-weight: normal; margin-bottom: 0; }
+.publication-chart-page #legendList span { display: inline; width: auto; height: auto; margin-right: 0; }
+.publication-chart-page #embedHtmlText { background-color: #f5f5d3; border: 1px solid #999; width: 98%; margin: 5px 0; padding: 1%; }
+.publication-chart-page .network-tooltip { position: absolute; z-index: auto; padding: 5px; border: 0; border-radius: 10px; box-shadow: 4px 4px 10px rgba(0, 0, 0, .4); }
+.publication-chart-page #title { font-weight: bold; }
+.publication-chart-page #subtitle2 { font-size: small; font-style: italic; }
 @media (max-width: 767px) { .network-page .network-graph { max-width: 100%; height: auto; } }
