@@ -17,7 +17,7 @@
       <div class="decorative-bar"></div>
       <div class="organization-title">
         <h2>{{ organization.name }}</h2>
-        {% if organization.website_links %}<ul>{% for link in organization.website_links %}<li><a href="{{ link.url }}">{{ link.label }}</a></li>{% endfor %}</ul>{% endif %}
+        <ul>{% for link in organization.website_links %}<li><a href="{{ link.url }}">{{ link.label }}</a></li>{% endfor %}</ul>
       </div>
       <div class="col-md-8 col-sm-12 col-xs-12" id="section_overview">
         <div class="organization-overview">{{ organization.overview_html|safe }}</div>
