@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static asset_urls %}
 {% block title %}{{ graph.page_title }} Coauthor treemap{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/network_graph.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% versioned_static 'css/network_graph.css' %}">{% endblock %}
 {% block content %}
 {% include "includes/prepared_search.html" %}
 <div class="network-page treemap-page">
@@ -11,7 +11,7 @@
     <div class="col-md-9">
       <div id="descriptionMsg">
         The coauthor treemap is created with the information available for this researcher under the
-        <a href="{% url 'display_show' graph.id %}#Publications">Publications tab of their profile</a>.
+        <a href="{% url 'display_show_public' graph.id %}#Publications">Publications tab of their profile</a>.
         Only publications where more than one researcher at Brown has confirmed authorship are considered in this network.
         <span id="calculatedInfo"></span>
       </div>
@@ -19,23 +19,23 @@
       <svg id="svgElement" class="network-graph" width="900" height="700" viewBox="0 0 900 700" role="img" aria-label="Coauthor treemap"></svg>
     </div>
     <div class="col-md-3 network-options">
-      <a class="btn btn-default btn-lg" href="{% url 'visualization_coauthor' graph.id %}">Coauthor Network</a>
-      <a class="btn btn-primary btn-lg" href="{% url 'visualization_coauthor_treemap' graph.id %}">Coauthor Treemap</a>
-      <a class="btn btn-default btn-lg" href="{% url 'visualization_collab' graph.id %}">Collaborator Network</a>
+      <a class="btn btn-default btn-lg" role="button" href="{% url 'visualization_coauthor' graph.id %}">Coauthor Network</a>
+      <a class="btn btn-primary btn-lg" role="button" href="{% url 'visualization_coauthor_treemap' graph.id %}">Coauthor Treemap</a>
+      <a class="btn btn-default btn-lg" role="button" href="{% url 'visualization_collab' graph.id %}">Collaborator Network</a>
       <p>&nbsp;</p>
       <div id="legend"><p><b>Legend</b></p><ul id="legendList" class="legend"></ul></div>
       <p><b>Options</b></p>
-      <p><a href="{% url 'display_show' graph.id %}">Go to Researcher's Profile</a></p>
+      <p><a href="{% url 'display_show_public' graph.id %}">Go to Researcher's Profile</a></p>
       <p><b>Data</b></p>
-      <p><a href="{% url 'coauthor_csv' graph.id %}" target="_blank" rel="noopener">Download data (CSV)</a></p>
-      <p><a href="{% url 'coauthor_json' graph.id %}" target="_blank" rel="noopener">Download data (JSON)</a></p>
-      <p><button id="embedHtml" class="network-link-button" type="button">Embed SVG Code</button></p>
-      <p><button id="downloadPng" class="network-link-button" type="button">Download Image (PNG)</button></p>
+      <p><a href="{% url 'coauthor_csv' graph.id %}" target="_blank" rel="noopener" title="Format suitable for Excel and other tools.">Download data (CSV)</a></p>
+      <p><a href="{% url 'coauthor_json' graph.id %}" target="_blank" rel="noopener" title="Format suitable for D3 and other visualization tools.">Download data (JSON)</a></p>
+      <p><a id="embedHtml" href="#" title="Shows HTML to embed the graph as an SVG element into your own page.">Embed SVG Code</a></p>
+      <p><a id="downloadPng" href="#" title="Downlods the graph as an image file in PNG format. This only works in Chrome and Firefox.">Download Image (PNG)</a></p>
       <p id="downloadStatus" class="hidden" role="status"></p>
     </div>
   </div>
-  <div id="embedHtmlDiv" class="hidden"><p>Copy the following HTML to embed the SVG into your own page</p><textarea id="embedHtmlText" rows="10" aria-label="SVG code"></textarea></div>
+  <div id="embedHtmlDiv" class="row hidden"><div class="col-md-12"><p>Copy the following HTML to embed the SVG into your own page</p><textarea id="embedHtmlText" rows="15" class="htmlSnippet" aria-label="SVG code"></textarea></div><div><p>&nbsp;</p></div></div>
 </div>
 {{ graph|json_script:"treemap-data" }}
 {% endblock %}
-{% block extra_js %}<script src="{% static 'js/d3.v4.min.js' %}"></script><script src="{% static 'js/treemap_graph.js' %}"></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'js/d3.v4.min.js' %}"></script><script src="{% versioned_static 'js/treemap_graph.js' %}"></script>{% endblock %}

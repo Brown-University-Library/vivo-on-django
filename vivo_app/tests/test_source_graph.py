@@ -269,6 +269,12 @@ class SourceGraphTests(TestCase):
             csv_response = self.get_page('/display/invented-a/viz/coauthor_treemap?format=csv')
         self.assertContains(page, 'The coauthor treemap is created')
         self.assertContains(page, 'treemap_graph.js')
+        self.assertContains(page, 'href="/display/invented-a#Publications"')
+        self.assertContains(page, 'href="/display/invented-a"')
+        self.assertContains(page, 'role="button" href="/display/invented-a/viz/coauthor"')
+        self.assertContains(page, '<a id="embedHtml" href="#"')
+        self.assertContains(page, '<a id="downloadPng" href="#"')
+        self.assertContains(page, 'rows="15" class="htmlSnippet"')
         self.assertEqual(json.loads(json_response.content), self.replies[visualization_key('coauthors', 'invented-a')])
         self.assertIn('invented-a,Invented A,Example Group,invented-b,3', csv_response.content.decode())
 

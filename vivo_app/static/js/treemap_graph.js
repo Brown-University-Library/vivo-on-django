@@ -47,13 +47,15 @@
   d3.treemap().tile(d3.treemapResquarify).size([900, 700]).round(true).paddingInner(1)(root);
   var svg = d3.select('#svgElement');
   var cell = svg.selectAll('g').data(root.leaves()).enter().append('g')
-    .attr('transform', function (node) { return 'translate(' + node.x0 + ',' + node.y0 + ')'; })
-    .style('cursor', 'pointer');
+    .attr('transform', function (node) { return 'translate(' + node.x0 + ',' + node.y0 + ')'; });
   cell.append('rect')
+    .attr('id', function (node) { return 'Publications with ' + node.data.name; })
     .attr('width', function (node) { return node.x1 - node.x0; })
     .attr('height', function (node) { return node.y1 - node.y0; })
     .attr('fill', function (node) { return colors(node.data.group); });
-  cell.append('text').selectAll('tspan')
+  cell.append('clipPath').attr('id', function (node) { return 'clip-Publications with ' + node.data.name; });
+  cell.append('text').attr('clip-path', function (node) { return 'url(#clip-Publications with ' + node.data.name + ')'; })
+    .selectAll('tspan')
     .data(function (node) { return node.data.name.split(/(?=[A-Z][^A-Z])/g); })
     .enter().append('tspan').attr('x', 4)
     .attr('y', function (part, index) { return 13 + index * 10; })
@@ -64,12 +66,14 @@
   cell.on('click', function (node) {
     var shortId = node.data.id.split('/').pop();
     if (/^[A-Za-z0-9_-]{1,80}$/.test(shortId)) {
-      window.location.assign('/display/' + shortId + '/viz/coauthor_treemap');
+      var destination = new URL(window.location.href);
+      destination.pathname = destination.pathname.replace('/display/' + page.id + '/viz/', '/display/' + shortId + '/viz/');
+      window.location.assign(destination.toString());
     }
   }).on('mouseover', function () {
     d3.select(this).select('rect').attr('stroke', 'blue').attr('stroke-width', 2);
   }).on('mouseout', function () {
-    d3.select(this).select('rect').attr('stroke', null).attr('stroke-width', null);
+    d3.select(this).select('rect').attr('stroke', '').attr('stroke-width', 0);
   });
   var legend = document.getElementById('legendList');
   Array.from(new Set(Array.from(children.values()).map(function (node) { return node.group; }))).sort()
@@ -77,24 +81,25 @@
       var row = document.createElement('li');
       var swatch = document.createElement('span');
       swatch.style.backgroundColor = colors(group);
+      swatch.textContent = '\u00a0\u00a0\u00a0\u00a0';
       row.appendChild(swatch);
-      row.appendChild(document.createTextNode(group));
+      row.appendChild(document.createTextNode('\u00a0' + group));
       legend.appendChild(row);
     });
 
   function svgCode() {
-    var image = document.getElementById('svgElement').cloneNode(true);
-    image.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    return new XMLSerializer().serializeToString(image);
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="700">\r\n' +
+      document.getElementById('svgElement').innerHTML + '\r\n</svg>';
   }
   document.getElementById('embedHtml').addEventListener('click', function () {
-    document.getElementById('embedHtmlText').value = svgCode();
+    document.getElementById('embedHtmlText').value = '<svg width="900" height="700">\r\n' +
+      document.getElementById('svgElement').innerHTML + '\r\n</svg>';
     document.getElementById('embedHtmlDiv').classList.remove('hidden');
+    $('html, body').animate({scrollTop: $(document).height() - $(window).height()}, 1400, 'swing');
   });
   document.getElementById('downloadPng').addEventListener('click', function () {
     var status = document.getElementById('downloadStatus');
     status.textContent = 'Preparing image…';
-    status.classList.remove('hidden');
     var image = new Image();
     image.onload = function () {
       var canvas = document.createElement('canvas');
