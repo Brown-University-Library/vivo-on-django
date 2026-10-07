@@ -2,7 +2,7 @@
 
 **URL-case completion: 42.9% — 33 of 77 known cases complete.**
 
-Recorded snapshot: **October 7, 2026, 08:52 America/New_York — verification checkpoint.** H03 background selection completes its fixed checks. The provisional denominator remains unchanged; blocked cases retain their requirements. Selected actions are in [next_batch.md](next_batch.md).
+Recorded snapshot: **October 7, 2026, 12:07 America/New_York — 12:00 checkpoint.** Counts and the provisional denominator remain unchanged. Newly verified graph controls and export help text are partial checks; source and access differences retain their original requirements. Selected actions are in [next_batch.md](next_batch.md).
 
 This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
@@ -39,6 +39,7 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 7, 08:00 — final daily-run snapshot | 32 / 77 | 41.6% | Five more cases complete than at daily start. Latest partial checks change no case state; denominator remains unchanged. Frozen pass records and handoff preserve remaining work. |
 | October 7, 08:22 — daily start | 32 / 77 | 41.6% | Counts and denominator unchanged. Cases with unavailable source/access dependencies are parked; representative images selected. |
 | October 7, 08:52 — verification checkpoint | 33 / 77 | 42.9% | H03 background selection, complete image delivery and relevant both-width views pass; denominator unchanged. Home book-data differences and restricted representations remain Pending. |
+| October 7, 12:07 — 12:00 checkpoint | 33 / 77 | 42.9% | Counts and denominator unchanged. Graph controls and export help text are verified; whole graph cases retain source, access and complete-view requirements. |
 
 Earlier per-release observations and the original dashboard are preserved in the [historical progress record](previous_workplan_artificts/progress_before_simplification_2026_10_06.md). Detailed release accounting stays in the batch records and private checkpoint.
 
