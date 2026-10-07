@@ -1,14 +1,14 @@
-<button type="button" class="btn btn-link btn-sm search-toggle-more-categories" data-toggle="modal" data-target="#modal_form_{{ facet.name }}" title="Show more categories for this facet"><small class="glyphicon glyphicon-plus" aria-hidden="true"></small>&nbsp;<span>More…</span><span class="sr-only"> {{ facet.title }}</span></button>
+<button type="button" class="btn btn-link btn-sm search-toggle-more-categories" data-toggle="modal" data-target="#modal_form_{{ facet.name }}" title="Show more categories for this facet"><small class="glyphicon glyphicon-plus" aria-hidden="true"></small>&nbsp;<span>More…</span></button>
 <div id="modal_form_{{ facet.name }}" class="modal fade prepared-facet-dialog" role="dialog" tabindex="-1" data-facet-name="{{ facet.name }}" data-facet-url="{{ facet.more_url|default:'' }}">
   <div class="modal-dialog"><div class="modal-content">
-    <div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button><h4 class="modal-title" id="modal_title_{{ facet.name }}">{{ facet.title }}</h4></div>
+    <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title" id="modal_title_{{ facet.name }}">{{ facet.title }}</h4></div>
     <div class="modal-body"><p class="facet-load-status" role="status"></p><ul id="modal_form_{{ facet.name }}_items"></ul><p class="sr-only facet-page-status" aria-live="polite"></p></div>
     <div class="modal-footer">
       <a href="#" class="btn btn-default pull-left" role="button" data-facet-action="previous" title="See previous group of facets">« Previous</a>
       <a href="#" class="btn btn-default pull-left" role="button" data-facet-action="next" title="See next group of facets">Next »</a>
       <a href="#" class="btn btn-default pull-left" role="button" data-facet-action="alphabetical" title="Sort facets alphabetically (ascending)" aria-pressed="false">A-Z</a>
       <a href="#" class="btn btn-default pull-left active" role="button" data-facet-action="count" title="Sort facets by count (descending)" aria-pressed="true">9-0</a>
-      <input id="modal_form_{{ facet.name }}_filter" placeholder="narrow your search" title="narrow your search" aria-label="Narrow {{ facet.title }}" value="" class="pull right">
+      <input id="modal_form_{{ facet.name }}_filter" placeholder="narrow your search" title="narrow your search" value="" class="pull right">
     </div>
   </div></div>
 </div>
