@@ -1,6 +1,6 @@
 # Next batch: active and parked URL cases
 
-Batch `url-batch-009`, daily run `daily-2026-10-06`, pass 01. The original October 7 cutoff remains unchanged. Twenty-one cases are parked with their IDs, Pending states, fixed criteria and valid evidence intact. O05 completes its profile criteria, including actual offered graph entry at both widths. O06 completes all available checks but remains Pending for SD24 returned member order. Select another useful approved case after checking the clock; keep at most twenty distinct active URLs.
+Batch `url-batch-009`, daily run `daily-2026-10-06`, pass 01. The original October 7 cutoff remains unchanged. Twenty-two cases are parked with their IDs, Pending states, fixed criteria and valid evidence intact. O05 completes its profile criteria, including actual offered graph entry at both widths. O06 completes all available checks but remains Pending for SD24 returned member order. Select another useful approved case after checking the clock; keep at most twenty distinct active URLs.
 
 Exact bindings remain in `../../url_batch_009/urls.json` and `../../current_urls.local.md`. Keep parked cases in the completion denominator. Current whole-case states are in [the inventory](url_completion_inventory.md); the global percentage is only in [progress.md](progress.md). Separate target source services remain the owner's choice; carry exact data differences to the later production comparison. Excluded account/editing routes and the deferred Research Areas download correction are not replacement work.
 
@@ -10,11 +10,10 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U31 | V10 | `/display/{organization_id}/viz/publications` | Added | Both-width panned hover/node/Back, settled SVG and actual PNG downloads pass. Keep original-position narrow range selection and exact source order Pending. |
-| U32 | V10 | `/display/{organization_id}/viz/publications.json` | Added | SD32 current compact UTF-8 body verifies on `33d8ee0`, preserving all values/order. Literal authenticated metadata and prescribed complete supporting views remain Pending. |
-| U33 | V10 | `/display/{organization_id}/viz/publications.csv` | Added | All 53 data rows and 23 fields agree by column name. SD33 download-header correction passes local checks; verify the next release and offered CSV. Exact order and literal target metadata remain Pending. |
+| U34 | V11 | `/display/{organization_id}/viz/research` | Added | SD34 checked locally: drawing, labels, intrinsic canvas, controls and SVG display match available reference behavior. Confirm its loaded release and assets; verify actual hover/leave/navigation, complete both-width views and SVG export. Preserve the deferred visible collaboration JSON link. |
+| U35 | V11 | `/display/{organization_id}/viz/research.json` | Added | Compare permitted current status, literal metadata, complete values/types/order and supporting presentation. Retain separate source and unavailable opener observations. |
 
-L01 is parked after its useful deployed checks. V10 is selected after the clock check, with fixed criteria saved before audit. Keep source-dependent values and the deferred Research Areas correction explicit.
+V10 is parked after its useful deployed checks. V11 is selected after the clock check, with fixed criteria saved before audit. Preserve exact source data and the deferred Research Areas download destination.
 
 ## Parked cases
 
@@ -41,7 +40,8 @@ L01 is parked after its useful deployed checks. V10 is selected after the clock 
 | S15 | One source-count difference and complete matched desktop footer capture remain. | Compare corresponding production data later and capture the complete desktop dialog under matching conditions. | Role, Enter/filter focus, twenty choices, unchanged URL and settled Escape return pass at both widths. Complete narrow views through the footer are inspected; private S15-results.json retains exclusions and remaining evidence. |
 | V09 | Graph date, restricted supporting responses and valid paired final-line narrow SVG capture remain. | Compare corresponding production data later; recover permitted response/opener evidence and a correctly sized final-line capture. | SD28 and SD29 fixes pass available deployed checks. Private V09-results.json preserves all fixed criteria, valid views and excluded captures. |
 | L01 | Source-dependent listing content and unavailable complete literal metadata remain. | Compare corresponding production data later and obtain permitted complete headers; retain all three entry bindings. | SD30, complete desktop/narrow destinations, resources and all actual Enter/Back journeys pass available checks. Private L01-results.json preserves original criteria and exclusions. |
+| V10 | Exact author order, covered original-position narrow range selection, literal authenticated metadata, opener state and complete supporting presentation remain. | Compare corresponding production data later; obtain permitted full metadata/opener and prescribed-size views. Keep the original criteria and all three bindings. | SD31–SD33 fixes and every release change are accounted. Actual both-width panned hover/node/Back, SVG/PNG delivery and current compact JSON/CSV bytes pass available checks; private V10-results.json preserves exclusions and remaining requirements. |
 
 ## First actions
 
-Select another useful approved open case before the cutoff. Revisit parked dependencies when new evidence or a shared change affects them. Account for every original, parked and replacement case at the pass boundary. No pending deployment exists at resumption; loaded revision is confirmed privately. Preserve all fixed functional and visual requirements and perform affected regression checks.
+Begin V11 current graph and supporting JSON comparisons. Select another useful approved open case only after a clock check before the cutoff. Revisit parked dependencies when new evidence or a shared change affects them. Account for every original, parked and replacement case at the pass boundary. No pending deployment exists at resumption; loaded revision is confirmed privately. Preserve all fixed functional and visual requirements and perform affected regression checks.
