@@ -14,7 +14,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U03 | P11 | Profile `/display/{person_id}` | Previous | Production member/title content resolves earlier SD02 data differences. Release 55 website-order correction is checked locally; verify both-width changed destinations and retained original profile/CV/visual evidence before completion. |
+| U03 | P11 | Profile `/display/{person_id}` | Previous | Production member/title content resolves earlier SD02 data differences. Release55 website ordering is verified. Release56 empty-overview spacing is checked locally; verify affected destinations and retained original profile/CV/visual evidence before completion. |
 
 
 ## Parked cases

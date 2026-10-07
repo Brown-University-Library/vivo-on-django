@@ -2,7 +2,7 @@
 
 **URL-case completion: 44.2% — 34 of 77 known cases complete.**
 
-Recorded snapshot: **October 7, 2026, 17:32 America/New_York — production verification.** S15 completes its original dialog requirements against corresponding production data, with actual loaded revision confirmed before and after. The provisional denominator remains unchanged. Parent search and other parked cases retain their independent requirements.
+Recorded snapshot: **October 7, 2026, 18:00 America/New_York — 18:00 checkpoint.** Counts and the provisional denominator remain unchanged. S15 is Complete; S12 retains its original anonymous-access check. Production release55 is loaded; its changed website ordering and remaining profile requirements are being verified.
 
 This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
@@ -44,6 +44,7 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 7, 15:15 — blocked-run handoff | 33 / 77 | 42.9% | Available independent checks are finished; remaining original source/access/configuration dependencies prevent useful continuation. Daily run remains unfinished, with its original dated cutoff preserved. |
 | October 7, 17:13 — production resumption | 33 / 77 | 42.9% | Original cutoff and denominator unchanged. Reassess parked cases against corresponding production sources; deployment remains manual until confirmed. |
 | October 7, 17:32 — production verification | 34 / 77 | 44.2% | S15 original functional and complete both-width dialog checks pass; before/after loaded proof agrees. Denominator unchanged. |
+| October 7, 18:00 — 18:00 checkpoint | 34 / 77 | 44.2% | Counts and denominator unchanged. Automatic production deployment is confirmed; ordered website correction is loaded and under verification. Original unverified case requirements remain Pending. |
 
 Earlier per-release observations and the original dashboard are preserved in the [historical progress record](previous_workplan_artificts/progress_before_simplification_2026_10_06.md). Detailed release accounting stays in the batch records and private checkpoint.
 
