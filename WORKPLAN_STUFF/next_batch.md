@@ -1,6 +1,6 @@
 # Next batch: active and parked URL cases
 
-Batch `url-batch-009`, daily run `daily-2026-10-06`, pass 01. The original October 7 cutoff remains unchanged. Nineteen cases are parked with their IDs, Pending states, fixed criteria and valid evidence intact. O05 completes its profile criteria, including actual offered graph entry at both widths. O06 completes all available checks but remains Pending for SD24 returned member order. Select another useful approved case after checking the clock; keep at most twenty distinct active URLs.
+Batch `url-batch-009`, daily run `daily-2026-10-06`, pass 01. The original October 7 cutoff remains unchanged. Twenty-one cases are parked with their IDs, Pending states, fixed criteria and valid evidence intact. O05 completes its profile criteria, including actual offered graph entry at both widths. O06 completes all available checks but remains Pending for SD24 returned member order. Select another useful approved case after checking the clock; keep at most twenty distinct active URLs.
 
 Exact bindings remain in `../../url_batch_009/urls.json` and `../../current_urls.local.md`. Keep parked cases in the completion denominator. Current whole-case states are in [the inventory](url_completion_inventory.md); the global percentage is only in [progress.md](progress.md). Separate target source services remain the owner's choice; carry exact data differences to the later production comparison. Excluded account/editing routes and the deferred Research Areas download correction are not replacement work.
 
@@ -10,11 +10,11 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U28 | L01 | `/individual/{record_id}`, HTML | Added | Confirm actual 303 and mounted profile destination, current metadata and both-width navigation/views; retain applicable profile evidence. |
-| U29 | L01 | `/people` | Added | SD30 is checked locally; confirm the release and literal People-filtered browser destination, then repeat both-width navigation/views. |
-| U30 | L01 | `/ous` | Added | SD30 is checked locally; confirm the literal Organization-filtered browser destination and affected behavior. Preserve source order limits. |
+| U31 | V10 | `/display/{organization_id}/viz/publications` | Added | SD31 local checks pass; confirm the release and assets, then compare default/full history, tooltip, mounted navigation and complete views. |
+| U32 | V10 | `/display/{organization_id}/viz/publications.json` | Added | Compare permitted current status, full metadata, complete data/types/order and displayed response. |
+| U33 | V10 | `/display/{organization_id}/viz/publications.csv` | Added | Compare offered delivery/opener, complete rows/serialization and artifact or displayed response. |
 
-V09 is parked after its available deployed checks. Three legacy-entry URLs are selected after the clock check; ADVANCED01 remains Complete.
+L01 is parked after its useful deployed checks. V10 is selected after the clock check, with fixed criteria saved before audit. Keep source-dependent values and the deferred Research Areas correction explicit.
 
 ## Parked cases
 
@@ -40,6 +40,7 @@ V09 is parked after its available deployed checks. Three legacy-entry URLs are s
 | S13 | Returned first-page ordering and one boundary member differ under separate source services. | Compare corresponding production data after the owner's later deployment; preserve returned order. | Title-only redirect, metadata, pointer/keyboard/Back and resources pass. Complete desktop and narrow results are inspected through the footer; source-dependent views remain Pending in private S13-results.json. |
 | S15 | One source-count difference and complete matched desktop footer capture remain. | Compare corresponding production data later and capture the complete desktop dialog under matching conditions. | Role, Enter/filter focus, twenty choices, unchanged URL and settled Escape return pass at both widths. Complete narrow views through the footer are inspected; private S15-results.json retains exclusions and remaining evidence. |
 | V09 | Graph date, restricted supporting responses and valid paired final-line narrow SVG capture remain. | Compare corresponding production data later; recover permitted response/opener evidence and a correctly sized final-line capture. | SD28 and SD29 fixes pass available deployed checks. Private V09-results.json preserves all fixed criteria, valid views and excluded captures. |
+| L01 | Source-dependent listing content and unavailable complete literal metadata remain. | Compare corresponding production data later and obtain permitted complete headers; retain all three entry bindings. | SD30, complete desktop/narrow destinations, resources and all actual Enter/Back journeys pass available checks. Private L01-results.json preserves original criteria and exclusions. |
 
 ## First actions
 
