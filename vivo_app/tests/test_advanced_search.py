@@ -26,8 +26,12 @@ class AdvancedSearchTests(TestCase):
                 self.assertContains(page, 'Researcher Name')
                 self.assertContains(page, 'Researcher Title')
                 self.assertContains(page, 'action="/search/advanced"')
+                self.assertContains(page, '<input name="utf8" type="hidden" value="✓">', html=True)
                 self.assertContains(page, 'href="/search"')
-            blank = self.client.get('/search/advanced/?name_t=+&title_t=&search=true')
+            blank = self.client.get('/search/advanced/', {'utf8': '✓', 'name_t': '', 'title_t': '', 'search': 'true'})
+            assert isinstance(blank, HttpResponse)
+            self.assertEqual(blank.status_code, 200)
+            self.assertNotIn('Location', blank)
             self.assertContains(blank, 'Advanced Search')
             read.assert_not_called()
 
@@ -41,14 +45,14 @@ class AdvancedSearchTests(TestCase):
         try:
             response = self.client.get(
                 '/search/advanced/',
-                {'name_t': 'Fairbrother', 'title_t': 'Professor', 'search': 'true'},
+                {'utf8': '✓', 'name_t': 'Example Researcher', 'title_t': 'Professor', 'search': 'true'},
                 SCRIPT_NAME=prefix,
             )
             assert isinstance(response, HttpResponse)
             self.assertEqual(response.status_code, 302)
             destination = urlsplit(response['Location'])
             self.assertEqual(destination.path, prefix + '/search')
-            self.assertEqual(parse_qs(destination.query), {'q': ['title_t:"Professor" AND name_t:"Fairbrother"']})
+            self.assertEqual(parse_qs(destination.query), {'q': ['title_t:"Professor" AND name_t:"Example Researcher"']})
             legacy_path = self.client.get('/search/advanced', SCRIPT_NAME=prefix)
             self.assertContains(legacy_path, 'Advanced Search')
             self.assertContains(legacy_path, f'action="{prefix}/search/advanced"')

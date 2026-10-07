@@ -9,6 +9,7 @@
     </div>
     <h2>Advanced Search</h2>
     <form action="{% url 'advanced_search' %}" method="get">
+      <input name="utf8" type="hidden" value="✓">
       <div class="form-group">
         <label for="name_t">Researcher Name</label>
         <input class="form-control" id="name_t" name="name_t" type="text" value="{{ name }}" autofocus>
