@@ -581,7 +581,7 @@ def visualization_publications(request: HttpRequest, id: str, fmt: str = '') -> 
             raise PageDataError('The publication chart request is unsupported.')
         name, data = publication_history_data(id, settings.PAGE_DATA_MODE)
         if fmt == 'json':
-            return JsonResponse(data)
+            return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
         if fmt == 'csv':
             return HttpResponse(
                 publication_history_csv(data).encode(),

@@ -26,9 +26,9 @@ FormatReader = Callable[[RequestKey, str], RecordedResponse]
 
 def profile_json_text(data: dict[str, object]) -> str:
     """
-    Encodes profile values with the compact HTML escaping used by Rails.
+    Encodes public profile and chart values with Rails' compact HTML escaping.
 
-    Called by: views.display_show(), tests
+    Called by: views.display_show(), views.visualization_publications(), tests
     """
     result = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
     for character, escaped in (

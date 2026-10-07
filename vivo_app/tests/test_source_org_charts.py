@@ -253,3 +253,34 @@ class OrganizationChartTests(TestCase):
         self.responses.pop(chart_member_key(['invented-a', 'invented-b', 'invented-c']))
         with self.assertRaisesRegex(PageDataError, 'recording is missing'):
             publication_history_data('org-example', 'replay', self.read)
+
+    def test_publication_json_preserves_compact_utf8_and_reference_escaping(self) -> None:
+        """
+        Checks chart JSON retains literal Unicode, compact punctuation and escaped HTML.
+        """
+        chart: dict[str, object] = {
+            'matrix': [{'year': 2020, 'total': 1, 'invented-a': 1}],
+            'years': ['2020'],
+            'columns': ['invented-a'],
+            'nodes': [{'faculty_id': 'invented-a', 'name': 'Invented É <A>&', 'group': 'Professor'}],
+        }
+        with patch('vivo_app.views.publication_history_data', return_value=('Example Organization', chart)):
+            response = self.client.get('/display/org-example/viz/publications.json')
+        assert isinstance(response, HttpResponse)
+        self.assertEqual(response['Content-Type'], 'application/json; charset=utf-8')
+        self.assertEqual(json.loads(response.content), chart)
+        self.assertEqual(
+            response.content.decode('utf-8'),
+            '{"matrix":[{"year":2020,"total":1,"invented-a":1}],"years":["2020"],"columns":["invented-a"],'
+            '"nodes":[{"faculty_id":"invented-a","name":"Invented É \\u003cA\\u003e\\u0026","group":"Professor"}]}',
+        )
+
+    def test_publication_json_retains_unavailable_source_response(self) -> None:
+        """
+        Checks a missing chart source keeps its existing unavailable response.
+        """
+        with patch('vivo_app.views.publication_history_data', side_effect=PageDataError('The chart is unavailable.')):
+            response = self.client.get('/display/org-example/viz/publications.json')
+        assert isinstance(response, HttpResponse)
+        self.assertEqual(response.status_code, 503)
+        self.assertContains(response, 'Page data unavailable:', status_code=503)
