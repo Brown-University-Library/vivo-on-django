@@ -14,7 +14,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| — | — | — | — | Preparing the checked workflow release; select the least remaining production case before the fixed cutoff. |
+| U03 | P11 | Profile `/display/{person_id}` | Previous | Production member/title content resolves earlier SD02 data differences. Release 55 website-order correction is checked locally; verify both-width changed destinations and retained original profile/CV/visual evidence before completion. |
 
 
 ## Parked cases
@@ -31,7 +31,6 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 | D04 | Original cover is offered by the reference but absent from the current target book source. | Corresponding book data offers the original cover; finish its metadata, complete bytes and both-width views. | Portrait and default complete files, actual metadata, current dimensions and relevant both-width consumer regions pass in private D04-results.json. Cover requirements remain Pending. |
 | D03 | Target TSV artifact and actual download metadata unavailable. | Owner supplies the permitted current download; compare complete artifact and headers. | Existing case criteria/results in private daily-run evidence; [shared changes and pass records](current_batch.md). Original remaining actions preserved privately in `next-batch-before-parking.md`. |
 | D02 | Two source values, nested website order and dependent complete-view differences remain. | Later production comparison provides corresponding source inputs and complete response. | Existing case criteria/results in private daily-run evidence; [shared changes and pass records](current_batch.md). Original remaining actions preserved privately in `next-batch-before-parking.md`. |
-| P11 | SD02 missing member and title differ under separate source data. | Corresponding production data permits destination comparison. | Existing case criteria/results in private daily-run evidence; [shared changes and pass records](current_batch.md). Original remaining actions preserved privately in `next-batch-before-parking.md`. |
 | I03 | Normal reference response lacks permitted owner-opened access. | Permitted current response and literal metadata become available; retain local failure checks. | Existing case criteria/results in private daily-run evidence; [shared changes and pass records](current_batch.md). Original remaining actions preserved privately in `next-batch-before-parking.md`. |
 | V02 | Supporting JSON/CSV entry is restricted. | Permitted supporting response views and actual headers/opener evidence become available. | Existing case criteria/results in private daily-run evidence; [shared changes and pass records](current_batch.md). Original remaining actions preserved privately in `next-batch-before-parking.md`. |
 | L03 | Destination count/order/content differ because of source data. | Corresponding production data permits remaining destination comparison. | Existing case criteria/results in private daily-run evidence; [shared changes and pass records](current_batch.md). Original remaining actions preserved privately in `next-batch-before-parking.md`. |
