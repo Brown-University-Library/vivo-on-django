@@ -24,11 +24,11 @@ from vivo_app.lib.source_requests import image_path, member_key, profile_export_
 FormatReader = Callable[[RequestKey, str], RecordedResponse]
 
 
-def profile_json_text(data: dict[str, object]) -> str:
+def profile_json_text(data: dict[str, object] | list[dict[str, object]]) -> str:
     """
-    Encodes public profile and chart values with Rails' compact HTML escaping.
+    Encodes public profile, chart and facet values with Rails' compact HTML escaping.
 
-    Called by: views.display_show(), views.visualization_publications(), views.visualization_research(), tests
+    Called by: views.display_show(), views.visualization_publications(), views.visualization_research(), views.search_facets(), tests
     """
     result = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
     for character, escaped in (

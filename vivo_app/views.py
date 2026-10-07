@@ -739,7 +739,8 @@ def search_facets(request: HttpRequest) -> HttpResponse:
         if settings.PAGE_DATA_MODE in {'live', 'replay'}:
             if 'f_name' not in request.GET:
                 return JsonResponse(None, safe=False)
-            return JsonResponse(facet_values_data(query_pairs(request.GET), settings.PAGE_DATA_MODE), safe=False)
+            values = facet_values_data(query_pairs(request.GET), settings.PAGE_DATA_MODE)
+            return HttpResponse(profile_json_text(values).encode('utf-8'), content_type='application/json; charset=utf-8')
         saved_response = get_response_data(request.path_info, query_pairs(request.GET))
         if saved_response is not None:
             return prepared_response(saved_response)
