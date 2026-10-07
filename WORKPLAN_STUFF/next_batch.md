@@ -1,6 +1,6 @@
 # Next batch: active and parked URL cases
 
-Batch `url-batch-009`, daily run `daily-2026-10-06`, pass 01. The original October 7 cutoff remains unchanged. Seventeen cases are parked with their IDs, Pending states, fixed criteria and valid evidence intact. O05 completes its profile criteria, including actual offered graph entry at both widths. O06 completes all available checks but remains Pending for SD24 returned member order. Select another useful approved case after checking the clock; keep at most twenty distinct active URLs.
+Batch `url-batch-009`, daily run `daily-2026-10-06`, pass 01. The original October 7 cutoff remains unchanged. Eighteen cases are parked with their IDs, Pending states, fixed criteria and valid evidence intact. O05 completes its profile criteria, including actual offered graph entry at both widths. O06 completes all available checks but remains Pending for SD24 returned member order. Select another useful approved case after checking the clock; keep at most twenty distinct active URLs.
 
 Exact bindings remain in `../../url_batch_009/urls.json` and `../../current_urls.local.md`. Keep parked cases in the completion denominator. Current whole-case states are in [the inventory](url_completion_inventory.md); the global percentage is only in [progress.md](progress.md). Separate target source services remain the owner's choice; carry exact data differences to the later production comparison. Excluded account/editing routes and the deferred Research Areas download correction are not replacement work.
 
@@ -10,7 +10,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U24 | S13 | S05 `/search/advanced`; title-only submission | Added | SD25 browser destination correction passes local checks; verify it after deployment. Actual redirect/status/type, desktop pointer/keyboard and returned full form pass. Complete result views retain source ordering and one differing page-one record. Finish narrow views and shared form regressions without accepting the source differences. |
+| U25 | ADVANCED01 | S05 `/search/advanced`; combined name/title submission | Reopened | SD26 restores the reference separator spelling between encoded fields. Local checks pass; verify actual combined pointer and Enter submissions, mount, retained values and Back at both widths. Keep unchanged complete form and result evidence only after current applicability checks. |
 
 ## Parked cases
 
@@ -33,6 +33,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 | V03 | Literal supporting response headers and actual data-link opener remain unavailable. | Permitted response header capture and offered-link journey become available. | Existing case criteria/results in private daily-run evidence; [shared changes and pass records](current_batch.md). Original remaining actions preserved privately in `next-batch-before-parking.md`. |
 | V04 | Source date/order/positions differ; supporting formats unavailable. | Corresponding data and permitted supporting response evidence become available. | Existing case criteria/results in private daily-run evidence; [shared changes and pass records](current_batch.md). Original remaining actions preserved privately in `next-batch-before-parking.md`. |
 | O06 | SD24 returned member order and dependent stripes differ under separate source services. | Compare corresponding production source results after the owner's later deployment; preserve returned order. | All available content, portraits, member/search/return, offered graph entry and resource checks pass. SD23 spacing is verified at both widths; fixed F01 and complete visual agreement remain Pending in private O06-results.json. |
+| S13 | Returned first-page ordering and one boundary member differ under separate source services. | Compare corresponding production data after the owner's later deployment; preserve returned order. | Title-only redirect, metadata, pointer/keyboard/Back and resources pass. Complete desktop and narrow results are inspected through the footer; source-dependent views remain Pending in private S13-results.json. |
 
 ## First actions
 

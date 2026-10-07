@@ -29,7 +29,7 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | Canonical case | Human-readable check | URL pattern and required request variation | Whole-case state |
 | --- | --- | --- | --- |
 | ABOUT01 | About page, navigation and illustrations | `/about` | Complete |
-| ADVANCED01 | Advanced search: name-only and combined name/title, then return | `/search/advanced`; submit `search=true`, `name_t={query}`, optionally `title_t={query}` → `/search?q={query}` | Complete |
+| ADVANCED01 | Advanced search: name-only and combined name/title, then return | `/search/advanced`; submit `search=true`, `name_t={query}`, optionally `title_t={query}` → `/search?q={query}` | Pending |
 | BROWSE01 | Browse without a term, including an empty search submission | `/search` and `/search?q=` | Pending |
 | C01 | Direct browser-challenge page | GET `/challenge`; runtime POST and enforcement checks remain separate scope requirements | Pending |
 | D01 | Linked CV document, delivery and viewer return | Follow `/display/{person_id}` → `/docs/{bucket}/{filename}.pdf` with observed query parameters → return to profile | Complete |
