@@ -37,11 +37,11 @@
         No {% if graph.kind == 'coauthors' %}coauthor{% else %}collaboration{% endif %} data is available for this {% if graph.type == 'PEOPLE' %}researcher{% else %}organization{% endif %}.
         {% endif %}
       </div>
-      {% if graph.empty_network %}<div class="btn-group network-empty-scope" role="group" aria-label="Network scope">
+      {% if graph.empty_network %}<div class="btn-group network-empty-scope" role="group" aria-label="{% if graph.type == 'PEOPLE' %}...{% else %}Network scope{% endif %}">
         <div class="btn-group" role="group"><button id="showLess" type="button" class="btn btn-info hidden">Show {% if graph.kind == 'coauthors' %}Coauthors{% else %}Collaborators{% endif %}</button></div>
         <div class="btn-group" role="group"><button id="showMore" type="button" class="btn btn-default hidden">Show {% if graph.kind == 'coauthors' %}Coauthors' coauthors{% else %}Collaborators' Collaborators{% endif %}</button></div>
       </div>{% endif %}
-      {% if graph.links %}<div class="btn-group network-scope" role="group" aria-label="{% if graph.type == 'ORGANIZATION' %}...{% else %}Network scope{% endif %}">
+      {% if graph.links %}<div class="btn-group network-scope" role="group" aria-label="{% if graph.type == 'TEAM' %}Network scope{% else %}...{% endif %}">
         {% if graph.type == 'PEOPLE' %}
           <div class="btn-group" role="group"><button id="showLess" type="button" class="btn btn-info" title="Include only direct {% if graph.kind == 'coauthors' %}coauthors{% else %}collaborators{% endif %}.">Show {% if graph.kind == 'coauthors' %}Coauthors{% else %}Collaborators{% endif %}</button></div>
           <div class="btn-group" role="group"><button id="showMore" type="button" class="btn btn-default" title="Include {% if graph.kind == 'coauthors' %}coauthors and their coauthors{% else %}collaborators and their collaborators{% endif %}">Show {% if graph.kind == 'coauthors' %}Coauthors' coauthors{% else %}Collaborators' Collaborators{% endif %}</button></div>
@@ -66,9 +66,9 @@
       <div id="legend"><p><b>Legend</b></p><ul id="legendList" class="legend"></ul></div>
       <p><b>Options</b></p>
       {% if graph.type != 'TEAM' %}<p><a href="{% url 'display_show_public' graph.id %}">Go to {% if graph.type == 'PEOPLE' %}Researcher's{% else %}Organization's{% endif %} Profile</a></p>{% endif %}
-      <p>{% if graph.type != 'ORGANIZATION' %}<label for="showLabels">{% endif %}{% if graph.kind == 'coauthors' %}Display{% else %}Show{% endif %} labels{% if graph.type != 'ORGANIZATION' %}</label>{% endif %}&nbsp;<input id="showLabels" type="checkbox" checked></p>
-      <p>{% if graph.type != 'ORGANIZATION' %}<label for="showDetails">{% endif %}{% if graph.kind == 'coauthors' %}Display{% else %}Show{% endif %} details on mouse hover{% if graph.type != 'ORGANIZATION' %}</label>{% endif %}&nbsp;<input id="showDetails" type="checkbox" checked></p>
-      <p>{% if graph.type != 'ORGANIZATION' %}<label for="forceToFit">{% endif %}Force to fit{% if graph.type != 'ORGANIZATION' %}</label>{% endif %}&nbsp;<input id="forceToFit" type="checkbox"{% if force_to_fit %} checked{% endif %} title="Forces the graph to fit on the screen (useful when some nodes fall outside the display area)"></p>
+      <p>{% if graph.type == 'TEAM' %}<label for="showLabels">{% endif %}{% if graph.kind == 'coauthors' %}Display{% else %}Show{% endif %} labels{% if graph.type == 'TEAM' %}</label>{% endif %}&nbsp;<input id="showLabels" type="checkbox" checked></p>
+      <p>{% if graph.type == 'TEAM' %}<label for="showDetails">{% endif %}{% if graph.kind == 'coauthors' %}Display{% else %}Show{% endif %} details on mouse hover{% if graph.type == 'TEAM' %}</label>{% endif %}&nbsp;<input id="showDetails" type="checkbox" checked></p>
+      <p>{% if graph.type == 'TEAM' %}<label for="forceToFit">{% endif %}Force to fit{% if graph.type == 'TEAM' %}</label>{% endif %}&nbsp;<input id="forceToFit" type="checkbox"{% if force_to_fit %} checked{% endif %} title="Forces the graph to fit on the screen (useful when some nodes fall outside the display area)"></p>
       <p><b>Data</b></p>
       <p><a href="{% if graph.kind == 'coauthors' %}{% url 'coauthor_csv' graph.id %}{% else %}{% url 'collab_csv' graph.id %}{% endif %}" target="_blank" rel="noopener"{% if graph.type == 'PEOPLE' %} title="Format suitable for Excel and tools."{% elif graph.type == 'ORGANIZATION' %} title="Format suitable for Excel and other tools."{% endif %}>Download data (CSV)</a></p>
       <p><a href="{% if graph.kind == 'coauthors' %}{% url 'coauthor_json' graph.id %}{% else %}{% url 'collab_json' graph.id %}{% endif %}" target="_blank" rel="noopener"{% if graph.type == 'PEOPLE' or graph.type == 'ORGANIZATION' %} title="Format suitable for D3 and other visualization tools."{% endif %}>Download data (JSON)</a></p>
@@ -77,7 +77,7 @@
       <p id="downloadStatus" class="hidden" role="status"></p>
     </div>
   </div>
-  <div id="embedHtmlDiv" class="row hidden"><div class="col-md-12"><p>Copy the following HTML to embed the SVG into your own page</p><textarea id="embedHtmlText" rows="15" class="htmlSnippet"{% if graph.type != 'ORGANIZATION' %} aria-label="SVG code"{% endif %}></textarea></div><div><p>&nbsp;</p></div></div>
+  <div id="embedHtmlDiv" class="row hidden"><div class="col-md-12"><p>Copy the following HTML to embed the SVG into your own page</p><textarea id="embedHtmlText" rows="15" class="htmlSnippet"{% if graph.type == 'TEAM' %} aria-label="SVG code"{% endif %}></textarea></div><div><p>&nbsp;</p></div></div>
   <div id="tooltip" class="network-tooltip hidden" role="status"><p id="title" style="margin:0"></p><p id="subtitle" style="margin:0"></p><p id="subtitle2" style="margin:0"></p></div>
 </div>
 {{ graph|json_script:"network-data" }}

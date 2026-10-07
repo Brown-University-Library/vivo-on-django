@@ -29,9 +29,9 @@ from vivo_app.lib.source_requests import graph_root_key, member_details_key, pro
 class SourceGraphTests(TestCase):
     """Checks source graph paths, response shapes, and explicit failures."""
 
-    def test_organization_control_text_preserves_reference_click_behavior(self) -> None:
+    def test_network_control_text_preserves_reference_click_behavior(self) -> None:
         """
-        Checks organization text has no checkbox association while person and team labels remain associated.
+        Checks person and organization text match reference behavior while team labels remain unchanged.
         """
         for record_type in ('ORGANIZATION', 'PEOPLE', 'TEAM'):
             with self.subTest(record_type=record_type):
@@ -50,12 +50,12 @@ class SourceGraphTests(TestCase):
                 )
                 for checkbox in ('showLabels', 'showDetails', 'forceToFit'):
                     label = f'<label for="{checkbox}">'
-                    if record_type == 'ORGANIZATION':
+                    if record_type != 'TEAM':
                         self.assertNotIn(label, page)
                     else:
                         self.assertIn(label, page)
                     self.assertIn(f'id="{checkbox}" type="checkbox"', page)
-                scope_name = '...' if record_type == 'ORGANIZATION' else 'Network scope'
+                scope_name = 'Network scope' if record_type == 'TEAM' else '...'
                 self.assertIn(f'class="btn-group network-scope" role="group" aria-label="{scope_name}"', page)
                 self.assertIn(
                     'title="Forces the graph to fit on the screen (useful when some nodes fall outside the display area)"',
@@ -179,7 +179,7 @@ class SourceGraphTests(TestCase):
         self.assertContains(page, 'network-empty-coauthor')
         self.assertContains(page, 'href="/display/invented-a#Publications"')
         self.assertContains(page, 'href="/display/invented-a"')
-        self.assertContains(page, 'Display labels</label>&nbsp;')
+        self.assertContains(page, 'Display labels&nbsp;')
         self.assertContains(page, '<a id="embedHtml" href="#"')
         graph = graph_page_data({}, 'coauthors', 'invented-a')
         self.assertTrue(graph['empty_network'])
