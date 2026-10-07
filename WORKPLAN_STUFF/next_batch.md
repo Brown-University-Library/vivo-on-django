@@ -10,8 +10,8 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U34 | V11 | `/display/{organization_id}/viz/research` | Added | SD34 checked locally: drawing, labels, intrinsic canvas, controls and SVG display match available reference behavior. Confirm its loaded release and assets; verify actual hover/leave/navigation, complete both-width views and SVG export. Preserve the deferred visible collaboration JSON link. |
-| U35 | V11 | `/display/{organization_id}/viz/research.json` | Added | Compare permitted current status, literal metadata, complete values/types/order and supporting presentation. Retain separate source and unavailable opener observations. |
+| U34 | V11 | `/display/{organization_id}/viz/research` | Added | SD34 available deployed checks verify on `f764879`: actual assets, hover/leave/navigation and complete both-width graph/SVG views. Retain source-dependent members/order/colors/positions and the covered original narrow pointer state. Preserve the deferred visible collaboration JSON link. |
+| U35 | V11 | `/display/{organization_id}/viz/research.json` | Added | SD35 compact UTF-8 response and existing503 behavior pass local checks. Confirm its loaded release and permitted actual response evidence. Ordinary JSON navigation is blocked on both sites; preserve full metadata/body/presentation and separate source/opener requirements. |
 
 V10 is parked after its useful deployed checks. V11 is selected after the clock check, with fixed criteria saved before audit. Preserve exact source data and the deferred Research Areas download destination.
 
