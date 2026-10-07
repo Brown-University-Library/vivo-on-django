@@ -12,6 +12,7 @@ from django.core.management.base import CommandError
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.urls import get_script_prefix, set_script_prefix
+from django.utils import translation
 
 from tools.source_capture import CapturingReader
 from vivo_app.lib.prepared_data import PageDataError
@@ -350,6 +351,23 @@ class SourcePageTests(TestCase):
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
             result = self.get_page('/display/org-example')
         self.assertContains(result, '<div class="organization-overview"><p></p></div>', html=True)
+
+    def test_organization_preview_preserves_coordinate_precision(self) -> None:
+        """
+        Checks the rendered decorative SVG retains full reference decimals in either locale.
+        """
+        for language in ('en', 'fr'):
+            with self.subTest(language=language), translation.override(language):
+                with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+                    result = self.get_page('/display/org-example')
+                self.assertContains(
+                    result,
+                    '<line x1="502.673652104801" y1="350.68520459323065" '
+                    'x2="402.7251593479398" y2="416.5887723542673" '
+                    'style="stroke: rgb(204, 204, 204); stroke-width: 1;"></line>',
+                    html=True,
+                )
+                self.assertContains(result, 'transform="translate(429.54751433822946,302.8619812431097)"')
 
     def test_organization_websites_preserve_source_order(self) -> None:
         """
