@@ -17,7 +17,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load quoted strings from .env; convert booleans, ports, and JSON below.
 load_dotenv()
 
 ## django PROJECT settings ------------------------------------------
@@ -34,7 +34,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-key-change-me-i
 
 # Keep debug enabled for ordinary local runserver so Django serves CSS, scripts, and images.
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
+DEBUG = os.getenv('DJANGO_DEBUG', 'true').lower() == 'true'
 
 ALLOWED_HOSTS = json.loads(os.environ['ALLOWED_HOSTS_JSON'])
 
@@ -49,7 +49,7 @@ LOGOUT_REDIRECT_URL = 'home'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.example.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'true').lower() == 'true'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'webmaster@example.com')
@@ -233,7 +233,7 @@ BOOK_COVER_DB_PORT = int(os.getenv('BOOK_COVER_DB_PORT', '3306'))
 BOOK_COVER_DB_NAME = os.getenv('BOOK_COVER_DB_NAME', '')
 BOOK_COVER_DB_USER = os.getenv('BOOK_COVER_DB_USER', '')
 BOOK_COVER_DB_PASSWORD = os.getenv('BOOK_COVER_DB_PASSWORD', '')
-TURNSTILE_ENABLED = os.getenv('TURNSTILE_ENABLED', 'False').lower() == 'true'
+TURNSTILE_ENABLED = os.getenv('TURNSTILE_ENABLED', 'false').lower() == 'true'
 CF_TURNSTILE_SITEKEY = os.getenv('CF_TURNSTILE_SITEKEY', '')
 CF_TURNSTILE_SECRET_KEY = os.getenv('CF_TURNSTILE_SECRET_KEY', '')
 ALLOWED_IP_RANGES = os.getenv('ALLOWED_IP_RANGES', '')

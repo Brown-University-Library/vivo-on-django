@@ -48,11 +48,13 @@ Install Git and uv, and ensure you can access this repository. uv manages the in
 3. Create `../.env` in your editor, or update it if it already exists. Use the following as the minimum local configuration, choosing your own local development secret:
 
    ```dotenv
-   DJANGO_SECRET_KEY=replace-with-your-local-development-secret
-   DJANGO_DEBUG=True
-   ALLOWED_HOSTS_JSON=["localhost", "127.0.0.1"]
-   STATIC_URL=/static/
-   STATIC_ROOT=../staticfiles
+   DJANGO_SECRET_KEY="replace-with-your-local-development-secret"
+   # Django converts this string to a boolean.
+   DJANGO_DEBUG="true"
+   # Django parses this string as a JSON list of hostnames.
+   ALLOWED_HOSTS_JSON='["localhost", "127.0.0.1"]'
+   STATIC_URL="/static/"
+   STATIC_ROOT="../staticfiles"
    ```
 
    [config/settings.py](config/settings.py) loads environment values through `python-dotenv`. Keep the file in the outer directory, outside the Git checkout. Preserve any existing settings you need. The checked-in [example.env](example.env) explains the available settings; its commented source-connection keys are not implemented yet. `STATIC_URL` is a browser URL prefix, while `STATIC_ROOT` names a local output directory.
