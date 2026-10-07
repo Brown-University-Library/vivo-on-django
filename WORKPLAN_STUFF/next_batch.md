@@ -10,7 +10,9 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U25 | ADVANCED01 | S05 `/search/advanced`; combined name/title submission | Reopened | SD26 restores the reference separator spelling between encoded fields. Local checks pass; verify actual combined pointer and Enter submissions, mount, retained values and Back at both widths. Keep unchanged complete form and result evidence only after current applicability checks. |
+| U26 | S15 | S06 `/search?q={query}`; affiliation More keyboard journey | Added | SD27 role-label correction passes local checks. Verify it after deployment with Enter/filter focus, twenty choices, unchanged URL, settled Escape/opener return and affected shared dialogs at both widths. Source counts differ by one; finish valid complete dialog captures and retain that difference. |
+
+S15 is selected after the clock check. ADVANCED01 completes the corrected separator and affected checks on `166612b`.
 
 ## Parked cases
 

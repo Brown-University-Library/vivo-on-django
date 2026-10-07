@@ -1,8 +1,8 @@
 # Progress toward the public-site replacement
 
-**URL-case completion: 40.3% — 31 of 77 known cases complete.**
+**URL-case completion: 41.6% — 32 of 77 known cases complete.**
 
-Recorded snapshot: **October 7, 2026, 00:24 America/New_York — regression checkpoint.** O05 remains complete. ADVANCED01 temporarily reopens for the newly demonstrated combined-query separator spelling, reducing the complete count by one; the provisional denominator stays unchanged. S13 is parked for source ordering and one boundary member. O06 remains parked for returned member order. Selected actions and dependencies are in [next_batch.md](next_batch.md).
+Recorded snapshot: **October 7, 2026, 00:28 America/New_York — verification checkpoint.** ADVANCED01 returns to Complete after SD26 deployed checks, restoring one case; the provisional denominator stays unchanged. O05 remains complete. S13 and O06 retain their source-order differences. Selected actions and dependencies are in [next_batch.md](next_batch.md).
 
 This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
@@ -33,6 +33,7 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 6, 22:23 — resumption | 30 / 77 | 39.0% | VPN and sign-in reset; counts and denominator unchanged. P14 and configured organization checks resume. |
 | October 7, 00:01 — 00:00 checkpoint | 32 / 77 | 41.6% | Counts unchanged since O05 completion; S13 checks continue. Original cutoff and denominator unchanged. |
 | October 7, 00:24 — regression checkpoint | 31 / 77 | 40.3% | ADVANCED01 reopens for demonstrated combined-query separator spelling; unchanged historical checks remain applicable. Denominator unchanged. |
+| October 7, 00:28 — verification checkpoint | 32 / 77 | 41.6% | SD26 deployed verification restores ADVANCED01; independent source-result differences remain. Denominator unchanged. |
 
 Earlier per-release observations and the original dashboard are preserved in the [historical progress record](previous_workplan_artificts/progress_before_simplification_2026_10_06.md). Detailed release accounting stays in the batch records and private checkpoint.
 
