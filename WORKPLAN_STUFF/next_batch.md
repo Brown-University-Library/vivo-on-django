@@ -1,6 +1,6 @@
 # Next batch: active and parked URL cases
 
-Releases through 51 are confirmed running; every recorded change is accounted. A fresh V06 narrow comparison resolves the earlier small geometry observation: matching positions, styles and stable top/footer captures. V06 and the environment-dependent C01 review are parked with their original requirements. No active URL currently offers further useful permitted work under the recorded dependencies.
+Releases through 52 are confirmed running; every recorded change is accounted. A fresh V06 narrow comparison resolves the earlier small geometry observation: matching positions, styles and stable top/footer captures. V06 and the environment-dependent C01 review are parked with their original requirements. No active URL currently offers further useful permitted work under the recorded dependencies. The third consecutive dependency audit leaves a blocked-run handoff; the daily run remains unfinished and its original cutoff is unchanged.
 
 Batch `url-batch-010`, daily run `daily-2026-10-07`, pass 01. Fixed cutoff October 8, 2026 at 08:00 America/New_York (12:00 UTC). The updated selection rule prefers cases whose remaining checks can pass with current data and permitted access. Preserve all original criteria, scope exclusions, source limitations and deferred work.
 

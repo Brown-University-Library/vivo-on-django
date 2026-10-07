@@ -2,7 +2,7 @@
 
 **URL-case completion: 42.9% — 33 of 77 known cases complete.**
 
-Recorded snapshot: **October 7, 2026, 14:53 America/New_York — blocked-work checkpoint.** Counts and the provisional denominator remain unchanged. All recorded releases through 50 are verified; partial graph and dialog checks complete no additional whole case. Remaining source, access and configuration requirements are preserved. Selected and parked actions are in [next_batch.md](next_batch.md).
+Recorded snapshot: **October 7, 2026, 15:15 America/New_York — blocked-run handoff.** Counts and the provisional denominator remain unchanged. H03 is the only whole case completed in this dated run. All recorded implementation releases are verified; the final independent narrow geometry observation is resolved. Original source, access and configuration requirements remain Pending. Selected and parked actions are in [next_batch.md](next_batch.md).
 
 This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
@@ -41,6 +41,7 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 7, 08:52 — verification checkpoint | 33 / 77 | 42.9% | H03 background selection, complete image delivery and relevant both-width views pass; denominator unchanged. Home book-data differences and restricted representations remain Pending. |
 | October 7, 12:07 — 12:00 checkpoint | 33 / 77 | 42.9% | Counts and denominator unchanged. Graph controls and export help text are verified; whole graph cases retain source, access and complete-view requirements. |
 | October 7, 14:53 — blocked-work checkpoint | 33 / 77 | 42.9% | Verified releases and additional complete-view evidence change no whole-case state. No further useful permitted work currently remains under recorded dependencies; original cutoff and denominator unchanged. |
+| October 7, 15:15 — blocked-run handoff | 33 / 77 | 42.9% | Available independent checks are finished; remaining original source/access/configuration dependencies prevent useful continuation. Daily run remains unfinished, with its original dated cutoff preserved. |
 
 Earlier per-release observations and the original dashboard are preserved in the [historical progress record](previous_workplan_artificts/progress_before_simplification_2026_10_06.md). Detailed release accounting stays in the batch records and private checkpoint.
 
