@@ -58,7 +58,7 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | O01 | Organization with administrative/faculty role groups and member return | `/display/{organization_id}` → linked `/display/{person_id}` → browser Back | Pending |
 | O02 | Organization entered from filtered search, prose and external links | `/search?fq={filter}` → `/display/{organization_id}` | Complete |
 | O03 | Additional organization overview and role-group variation | `/display/{organization_id}` | Complete |
-| O04 | Additional organization members and visualization-entry variation | `/display/{organization_id}` and offered graph entry | Complete |
+| O04 | Organization without member rows or a visualization entry | `/display/{organization_id}` with no member groups or graph control | Complete |
 | O05 | Organization with custom membership | `/display/{organization_id}`; configured membership, member links and offered graph entry | Pending |
 | O06 | Approved active-team member list and default image | `/display/{team_id}`; observed member links and offered graph entry | Pending |
 | P01 | Primary profile: sections, View All, search return and linked CV | `/display/{person_id}` and section fragments, including `#All`; linked CV and referring search | Complete |
@@ -73,8 +73,8 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | P10 | Additional profile, undated credentials and publication filters | `/display/{person_id}` and offered section fragments and links | Complete |
 | P11 | Additional profile, open appointments, CV and department destinations | `/display/{person_id}` and offered sections → linked `/display/{organization_id}` and CV | Pending |
 | P12 | Additional profile, publication filters and graph-entry controls | `/display/{person_id}` and offered section fragments and links | Complete |
-| P13 | Additional profile, book-citation formatting, CV and department destination | `/display/{person_id}` and offered sections → linked `/display/{organization_id}` and CV | Pending |
-| P14 | Additional profile, quoted citations, CV and department destination | `/display/{person_id}` and offered sections → linked `/display/{organization_id}` and CV | Pending |
+| P13 | Additional profile, book-citation formatting, CV and department destination | `/display/{person_id}` and offered sections → linked `/display/{organization_id}` and CV | Complete |
+| P14 | Additional profile, quoted citations, CV and department destination | `/display/{person_id}` and offered sections → linked `/display/{organization_id}` and CV | Complete |
 | P15 | Additional profile with publication filters and no CV control | `/display/{person_id}` and offered section fragments, links and graph entries | Complete |
 | PUBLICATIONS01 | Publication help page and links | `/publications`; this is an information page | Complete |
 | R01 | Original VIVO JSON-LD representation | `/individual/{record_id}/{record_id}.jsonld` | Pending |
@@ -90,7 +90,7 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | S11 | Search JSON array, record order and response metadata | `/search?q={query}&format=json` | Pending |
 | S12 | Supported Advanced department parameter | `/search/advanced?search=true&department_t={query}` → `/search?q={query}`; no new visible field | Pending |
 | S13 | Title-only Advanced submission and retained form values | `/search/advanced?search=true&name_t=&title_t={query}` → `/search?q={query}` → browser Back | Pending |
-| S14 | Empty Advanced submission stays on the form | `/search/advanced?search=true&name_t=&title_t=`; no redirect to browse results | Pending |
+| S14 | Empty Advanced submission stays on the form | `/search/advanced?search=true&name_t=&title_t=`; no redirect to browse results | Complete |
 | S15 | Affiliation More dialog keyboard opening, Escape and focus return | `/search?q={query}`; affiliation dialog keyboard journey | Pending |
 | SEARCH01 | Keyword results, count/order, facets and search-match controls | `/search?q={query}`; recorded filters and page variations use repeated `fq`, `fq_0` and `page` | Pending |
 | TERMS01 | Terms information page and links | `/termsOfUse` | Complete |
