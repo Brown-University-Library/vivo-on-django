@@ -1,6 +1,6 @@
 # Next batch: active and parked URL cases
 
-Release 50 matches two demonstrated coauthor scope help differences. It is checked locally and awaits actual loaded-revision proof and every deployed change check. Release 49 is verified. V06 remains the active partial case; its original whole-case criteria are unchanged.
+Release 50 is verified before and after on loaded `382767b`; every recorded change is accounted. V06 and the environment-dependent C01 review are parked with their original requirements. No active URL currently offers further useful permitted work under the recorded dependencies.
 
 Batch `url-batch-010`, daily run `daily-2026-10-07`, pass 01. Fixed cutoff October 8, 2026 at 08:00 America/New_York (12:00 UTC). The updated selection rule prefers cases whose remaining checks can pass with current data and permitted access. Preserve all original criteria, scope exclusions, source limitations and deferred work.
 
@@ -12,12 +12,14 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U07 | V06 | `/display/{person_id}/viz/coauthor`; original complete visual states | Previous | Capture complete direct, expanded, labels-off and fit views at both widths through the footer using recovered tab controls. Preserve existing functional evidence and all source/export/access requirements; no source difference is accepted. |
+| — | — | — | — | No active case. Refill before the fixed cutoff only when an approved case offers useful permitted work. |
 
 ## Parked cases
 
 | Case | Blocker | Recovery condition and exact next action | Evidence and remaining checks |
 | --- | --- | --- | --- |
+| V06 | Original source/date/positions, full graph/export equality and supporting response/opener differences remain. | Compare corresponding production sources after the owner makes them available; recover permitted supporting response evidence. | Release 50 exact help and all affected controls pass; original four states at both widths are reviewed with capture exclusions and geometry qualifications in private V06-current-complete-view-partial-results.json. |
+| C01 | Corresponding configured direct challenge page remains unavailable. | Enabled private configuration and permitted direct view enable the original checks. | One ordinary direct check after the deployed environment update still shows an error; no configuration change or CAPTCHA solving. Private C01-after-env-results.json preserves the original requirements. |
 | S15 | One source count differs. | Compare corresponding production data after the owner makes it available. | Complete dialog views, exact native names, keyboard/filter/focus/return and resources pass available checks on loaded `1c344be`; private S15-results.json retains original criteria. |
 | V09 | Source date/order and restricted response/opener comparisons remain. | Compare corresponding production sources and recover permitted supporting metadata/opener evidence. | Releases 46/47 are verified; current first/final SVG lines and footer are inspected. Original complete-case criteria remain Pending. |
 | V07 | Exact source drawing/export equality and restricted supporting responses remain. | Compare corresponding production sources and recover permitted metadata/opener evidence. | Actual desktop/narrow dragging passes on its recorded revision. Current complete views are inspected; later reloads retain controls/resources but change complete SVG, so exact old artifacts are excluded. Original criteria stay Pending. |
@@ -54,4 +56,4 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 ## First actions
 
-V09 releases 46 and 47 are verified, including individual native cell exposure, actual Tab/copy and matched first/final SVG lines through the footer. Prior push-retry and environment-update requests are superseded. V07 original desktop and narrow dragging now passes; current complete view observations crossed a revision change and require applicability review. Keep source-dependent drawing/export equality and restricted response/opener comparisons Pending. S15 desktop coverage is now inspected completely. Release 48 and every recorded change are accounted. Release 49 is verified. Finish V06 original complete views under the recovered direct-tab capture condition; retain all independent differences. Keep original criteria and at most twenty distinct active URLs; check the clock before each selection.
+All releases through 50 are running and every recorded change is accounted. Review the private checkpoint and parked dependencies before selecting another URL. When the owner makes corresponding production Django and Rails available, begin with the least remaining source-dependent case. Other parked work needs the recorded permitted response/artifact access or configuration. Keep every original criterion, scope exclusion and deferred change; check the clock before selection and preserve the original dated cutoff. Do not repeat unchanged unavailable checks or claim completion from partial controls.
