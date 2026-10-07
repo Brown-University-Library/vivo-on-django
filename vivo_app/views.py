@@ -586,7 +586,7 @@ def visualization_publications(request: HttpRequest, id: str, fmt: str = '') -> 
             return HttpResponse(
                 publication_history_csv(data).encode(),
                 content_type='text/csv',
-                headers={'Content-Disposition': f'attachment; filename="{id}.csv"'},
+                headers={'Content-Disposition': f'attachment; filename="{id}.csv"; filename*=UTF-8\'\'{id}.csv'},
             )
         return render(request, 'visualization/publications_data.html', {'id': id, 'name': name, 'chart': data})
     except PageDataError as exc:

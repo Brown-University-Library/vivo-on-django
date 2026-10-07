@@ -241,7 +241,10 @@ class OrganizationChartTests(TestCase):
         assert isinstance(research_json, HttpResponse)
         self.assertEqual(json.loads(json_response.content)['years'], ['2020', '2021'])
         self.assertEqual(csv_response['Content-Type'], 'text/csv')
-        self.assertIn('attachment;', csv_response['Content-Disposition'])
+        self.assertEqual(
+            csv_response['Content-Disposition'],
+            'attachment; filename="org-example.csv"; filename*=UTF-8\'\'org-example.csv',
+        )
         self.assertContains(research_page, 'research areas and how common')
         self.assertContains(research_page, '/display/org-example/viz/collab.json')
         self.assertEqual(len(json.loads(research_json.content)['links']), 2)
