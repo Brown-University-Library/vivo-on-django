@@ -10,7 +10,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U27 | V09 | S31 `/display/{person_id}/viz/coauthor_treemap` | Added | Follow the offered Treemap control, inspect all rectangles/labels and full desktop/narrow views, required links and cell destinations, SVG/PNG behavior and shared resource loading. SD28 is checked locally: mounted cell destinations, profile paths, control roles, legend and SVG export. Confirm the release and served assets, then verify these changes at both widths; preserve source and supporting-format limitations. |
+| U27 | V09 | S31 `/display/{person_id}/viz/coauthor_treemap` | Added | SD28 links, roles, legend and exports pass available deployed checks on `551aaa6`; PNG artifacts match exactly. Narrow rectangle navigation is blocked by SD29 canvas/control layout, now checked locally. Confirm the next release and CSS, then repeat complete views, the actual cell journey and affected controls. Keep source name/date, supporting formats and incomplete paired desktop captures Pending. |
 
 S15 is parked after all available changed behavior checks. V09 is selected after the clock check; ADVANCED01 remains Complete.
 
