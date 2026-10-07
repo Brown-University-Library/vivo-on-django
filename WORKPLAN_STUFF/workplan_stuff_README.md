@@ -35,6 +35,7 @@ The outer workspace also keeps `../../post_exact_behavior_review.local.md`. It r
 | `PLAN__workplan.md`, `PLAN__workplan_v2.md` | Earlier workflow versions. |
 | `batch_*_current_batch.md`, `batch_*_evaluation.md` | Earlier work counted by individual improvements. |
 | `url_batch_*_current_batch.md`, `url_batch_*_next_batch.md`, `url_batch_*_evaluation.md` | Earlier URL-based selections, changes and review outcomes. |
+| `url_batch_*_final_current_batch_*.md`, `url_batch_*_final_next_batch_*.md` | Final pass accounting and unfinished selections preserved when a new dated run begins. |
 | `progress_before_simplification_*.md` | Detailed history and measurements from the original progress page. |
 | `inventory_before_readable_patterns_*.md` | The original case states, aliases and historical shared-check updates before adding readable patterns. |
 

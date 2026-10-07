@@ -1,6 +1,6 @@
 # Readable inventory of URL cases
 
-Updated October 6, 2026. This is the active list of cases used for the completion estimate. Read each case's description and URL/request pattern beside its current whole-case state. See [progress.md](progress.md) for the single current global fraction and percentage, and [public_endpoint_scope.md](public_endpoint_scope.md#required-endpoints-and-data-sources) for required endpoint families and their case assignments.
+Updated October 7, 2026. This is the active list of cases used for the completion estimate. Read each case's description and URL/request pattern beside its current whole-case state. See [progress.md](progress.md) for the single current global fraction and percentage, and [public_endpoint_scope.md](public_endpoint_scope.md#required-endpoints-and-data-sources) for required endpoint families and their case assignments.
 
 Contents: [Known aliases](#known-aliases) · [Cases](#cases) · [Maintaining the inventory](#maintaining-the-inventory)
 
@@ -41,7 +41,7 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | FAQ01 | FAQ page and every offered anchor | `/faq` and observed section fragments | Complete |
 | H01 | Homepage search, carousel, author links and navigation | `/` → `/search?q={query}` or linked `/display/{person_id}` → return | Pending |
 | H02 | Homepage carousel boundaries, wrap, final short group and keyboard use | `/`; Previous/Next, settled groups and linked images | Pending |
-| H03 | Homepage background selection and reload behavior | `/`; normal reloads and the actually selected background asset | Pending |
+| H03 | Homepage background selection and reload behavior | `/`; normal reloads and the actually selected background asset | Complete |
 | HELP01 | Help page, navigation and illustrations | `/help` | Complete |
 | HELP_VIZ01 | Visualization help page and links | `/help/viz` | Complete |
 | HISTORY01 | History information page and links | `/history` | Complete |
