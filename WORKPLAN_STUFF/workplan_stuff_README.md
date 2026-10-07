@@ -17,7 +17,7 @@ Contents: [Brief overview](#brief-overview) · [Active files](#active-files) · 
 | [progress.md](progress.md) | Shows the single current global completion percentage and concise snapshot history. | Case totals change or a scheduled/start/resumption/handoff snapshot is due. |
 | [completion_checks.md](completion_checks.md) | Explains the measures and preserves fixed completion definitions, including the original P01 checks. | A demonstrated requirement or agreed check definition changes. |
 | [current_batch.md](current_batch.md) | Records the current pass's changes, shared differences, releases and verification results. | A change is recorded, released, verified or blocked by a new finding. |
-| [next_batch.md](next_batch.md) | Lists selected cases and their concrete remaining actions. | Membership changes or a case finishes a group of checks. |
+| [next_batch.md](next_batch.md) | Lists up to twenty active cases and their concrete actions; keeps a separate parked list with blockers, recovery conditions and evidence pointers. | Active membership changes, a case is parked or can resume, or remaining actions change. |
 | [checklist_todos.md](checklist_todos.md) | Tracks pending scope comparisons, integration checks and final acceptance tasks. | Work is added, completed, reopened or gains a different next action. |
 | [checklist_completed.md](checklist_completed.md) | Records completed work and evidence; identifies reopened cases. | Whole cases or other tracked milestones complete or reopen. |
 | [workplan_stuff_README.md](workplan_stuff_README.md) | Explains every top-level file's job and distinguishes active records from history. | A file is added, retired, moved or changes purpose. |

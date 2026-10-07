@@ -2,7 +2,7 @@
 
 **URL-case completion: 36.4% — 28 of 77 known cases complete.**
 
-Recorded snapshot: **October 6, 2026, 18:01 America/New_York — 18:00 boundary checkpoint.** The count is unchanged. The owner excluded sixteen local account/editing routes that never had counted cases; the provisional denominator and selected twenty cases remain unchanged. Partial deployed comparisons still do not complete a case. Selected actions are in [next_batch.md](next_batch.md).
+Recorded snapshot: **October 6, 2026, 21:26 America/New_York — resumption with parking.** Counts and the provisional denominator are unchanged. Parking preserves every required case; independent approved work resumes. Selected actions and dependencies are in [next_batch.md](next_batch.md).
 
 This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
@@ -29,6 +29,7 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 6, 17:13 — resumption | 28 / 77 | 36.4% | Connection and sign-in restored; complete profile JSON views still await permitted tabs. No whole-case or denominator change. |
 | October 6, 17:44 — resumption checkpoint | 28 / 77 | 36.4% | Manually restored JSON is readable; partial deployed checks do not complete a case. Denominator unchanged. |
 | October 6, 18:01 — 18:00 checkpoint | 28 / 77 | 36.4% | Owner account/editing exclusions remove no counted case. Partial comparisons remain pending; denominator unchanged. |
+| October 6, 21:26 — resumption with parking | 28 / 77 | 36.4% | Counts unchanged; blocked cases retain their required checks while other approved work enters active slots. |
 
 Earlier per-release observations and the original dashboard are preserved in the [historical progress record](previous_workplan_artificts/progress_before_simplification_2026_10_06.md). Detailed release accounting stays in the batch records and private checkpoint.
 
