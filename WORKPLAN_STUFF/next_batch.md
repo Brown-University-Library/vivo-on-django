@@ -1,6 +1,6 @@
 # Next batch: active and parked URL cases
 
-Batch `url-batch-009`, daily run `daily-2026-10-06`, pass 01. The original October 7 cutoff remains unchanged. Eighteen cases are parked with their IDs, Pending states, fixed criteria and valid evidence intact. O05 completes its profile criteria, including actual offered graph entry at both widths. O06 completes all available checks but remains Pending for SD24 returned member order. Select another useful approved case after checking the clock; keep at most twenty distinct active URLs.
+Batch `url-batch-009`, daily run `daily-2026-10-06`, pass 01. The original October 7 cutoff remains unchanged. Nineteen cases are parked with their IDs, Pending states, fixed criteria and valid evidence intact. O05 completes its profile criteria, including actual offered graph entry at both widths. O06 completes all available checks but remains Pending for SD24 returned member order. Select another useful approved case after checking the clock; keep at most twenty distinct active URLs.
 
 Exact bindings remain in `../../url_batch_009/urls.json` and `../../current_urls.local.md`. Keep parked cases in the completion denominator. Current whole-case states are in [the inventory](url_completion_inventory.md); the global percentage is only in [progress.md](progress.md). Separate target source services remain the owner's choice; carry exact data differences to the later production comparison. Excluded account/editing routes and the deferred Research Areas download correction are not replacement work.
 
@@ -10,9 +10,9 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U26 | S15 | S06 `/search?q={query}`; affiliation More keyboard journey | Added | SD27 role-label correction passes local checks. Verify it after deployment with Enter/filter focus, twenty choices, unchanged URL, settled Escape/opener return and affected shared dialogs at both widths. Source counts differ by one; finish valid complete dialog captures and retain that difference. |
+| U27 | V09 | S31 `/display/{person_id}/viz/coauthor_treemap` | Added | Follow the offered Treemap control, inspect all rectangles/labels and full desktop/narrow views, required links and cell destinations, SVG/PNG behavior and shared resource loading. SD28 is checked locally: mounted cell destinations, profile paths, control roles, legend and SVG export. Confirm the release and served assets, then verify these changes at both widths; preserve source and supporting-format limitations. |
 
-S15 is selected after the clock check. ADVANCED01 completes the corrected separator and affected checks on `166612b`.
+S15 is parked after all available changed behavior checks. V09 is selected after the clock check; ADVANCED01 remains Complete.
 
 ## Parked cases
 
@@ -36,6 +36,7 @@ S15 is selected after the clock check. ADVANCED01 completes the corrected separa
 | V04 | Source date/order/positions differ; supporting formats unavailable. | Corresponding data and permitted supporting response evidence become available. | Existing case criteria/results in private daily-run evidence; [shared changes and pass records](current_batch.md). Original remaining actions preserved privately in `next-batch-before-parking.md`. |
 | O06 | SD24 returned member order and dependent stripes differ under separate source services. | Compare corresponding production source results after the owner's later deployment; preserve returned order. | All available content, portraits, member/search/return, offered graph entry and resource checks pass. SD23 spacing is verified at both widths; fixed F01 and complete visual agreement remain Pending in private O06-results.json. |
 | S13 | Returned first-page ordering and one boundary member differ under separate source services. | Compare corresponding production data after the owner's later deployment; preserve returned order. | Title-only redirect, metadata, pointer/keyboard/Back and resources pass. Complete desktop and narrow results are inspected through the footer; source-dependent views remain Pending in private S13-results.json. |
+| S15 | One source-count difference and complete matched desktop footer capture remain. | Compare corresponding production data later and capture the complete desktop dialog under matching conditions. | Role, Enter/filter focus, twenty choices, unchanged URL and settled Escape return pass at both widths. Complete narrow views through the footer are inspected; private S15-results.json retains exclusions and remaining evidence. |
 
 ## First actions
 
