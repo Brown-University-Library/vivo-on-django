@@ -12,12 +12,14 @@ BLOCKED_TAGS = {'script', 'style', 'iframe', 'object', 'svg', 'math', 'template'
 
 def safe_profile_link(value: str) -> bool:
     """
-    Accepts an absolute web link without control characters.
+    Accepts an absolute web link or an email link without control characters.
 
     Called by: ProfileHTML.handle_starttag()
     """
     parsed = urlsplit(value)
-    return parsed.scheme in {'http', 'https'} and bool(parsed.netloc) and not any(ord(char) < 32 for char in value)
+    web_link = parsed.scheme in {'http', 'https'} and bool(parsed.netloc)
+    email_link = parsed.scheme == 'mailto' and bool(parsed.path) and not parsed.netloc
+    return (web_link or email_link) and not any(ord(char) < 32 for char in value)
 
 
 class ProfileHTML(HTMLParser):
@@ -105,7 +107,7 @@ class ProfileHTML(HTMLParser):
 
 def render_profile_html(raw: str) -> str:
     """
-    Keeps basic source formatting and web links for a profile text field.
+    Keeps basic source formatting, web links and email links for a profile text field.
 
     Called by: source_pages.profile_sections()
     """

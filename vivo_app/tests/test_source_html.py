@@ -32,3 +32,30 @@ class SourceHTMLTests(SimpleTestCase):
             '<script>run()</script><img src="x" onerror="run()"></p>'
         )
         self.assertEqual(html, '<p>A &amp; B bad <a href="https://example.invalid/?q=&quot;x&quot;">good</a></p>')
+
+    def test_email_link_preserves_destination_and_visible_formatting(self) -> None:
+        """
+        Checks an overview retains its email destination while escaping attributes.
+        """
+        html = render_profile_html(
+            '<p>Contact <a href="mailto:editor@example.invalid?subject=A&amp;body=&quot;B&quot;" '
+            'onclick="run()"><strong>the editor</strong></a>.</p>'
+        )
+        self.assertEqual(
+            html,
+            '<p>Contact <a href="mailto:editor@example.invalid?subject=A&amp;body=&quot;B&quot;">'
+            '<strong>the editor</strong></a>.</p>',
+        )
+
+    def test_empty_email_and_non_email_destinations_keep_only_visible_text(self) -> None:
+        """
+        Checks empty email addresses, unexpected authorities and controls are rejected.
+        """
+        for href in (
+            'mailto:',
+            'mailto:?subject=Hello',
+            'mailto://example.invalid/editor',
+            'mailto:\neditor@example.invalid',
+        ):
+            with self.subTest(href=href):
+                self.assertEqual(render_profile_html(f'<a href="{href}">Contact</a>'), 'Contact')
