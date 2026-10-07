@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static asset_urls %}
 {% block title %}{{ name }} Collaborator network{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/network_graph.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% versioned_static 'css/network_graph.css' %}">{% endblock %}
 {% block content %}
 {% include "includes/prepared_search.html" %}
 <div class="network-page research-chart-page">
@@ -10,20 +10,21 @@
     <div class="col-md-9">
       <div id="descriptionMsg">This visualization shows research areas and how common they are among researchers for an organization. Only those research areas indicated in more than one researcher profile for this organization are shown.</div>
       <div id="errorMsg" class="alert alert-warning{% if chart.links %} hidden{% endif %}" role="alert">No collaboration data is available for this organization.</div>
-      <svg id="svgElement" class="network-graph" width="960" height="700" viewBox="0 0 960 700" role="img" aria-label="Shared research areas"></svg>
+      <svg id="svgElement" class="network-graph" width="960" height="700" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Shared research areas"></svg>
     </div>
     <div class="col-md-3 network-options">
-      <a class="btn btn-default btn-lg" href="{% url 'visualization_collab' id %}">Collaboration Network</a>
-      {% if not is_team %}<a class="btn btn-default btn-lg" href="{% url 'visualization_publications' id %}">Publication History</a>{% endif %}
-      <a class="btn btn-primary btn-lg" href="{% url 'visualization_research' id %}">Research Areas</a>
-      {% if not is_team %}<p><b>Options</b></p><p><a href="{% url 'display_show' id %}">View Organization's Profile</a></p>{% endif %}
+      <a class="btn btn-default btn-lg" role="button" href="{% url 'visualization_collab' id %}">Collaborator Network</a>
+      {% if not is_team %}<a class="btn btn-default btn-lg" role="button" href="{% url 'visualization_publications' id %}">Publication History</a>{% endif %}
+      <a class="btn btn-primary btn-lg" role="button" href="{% url 'visualization_research' id %}">Research Areas</a>
+      <div id="legend"></div>
+      {% if not is_team %}<p><b>Options</b></p><p><a href="{% url 'display_show_public' id %}">View Organization's Profile</a></p>{% endif %}
       <p><b>Data</b></p>
-      <p><a href="{% url 'collab_json' id %}" target="_blank" rel="noopener">Download data (JSON)</a></p>
-      <p><button id="embedHtml" class="network-link-button" type="button">Embed SVG Code</button></p>
+      <p><a href="{% url 'collab_json' id %}" target="_blank" rel="noopener" title="Format suitable for D3 and other visualization tools.">Download data (JSON)</a></p>
+      <p><a id="embedHtml" href="#" title="Shows HTML to embed the graph as an SVG element into your own page.">Embed SVG Code</a></p>
     </div>
   </div>
-  <div id="embedHtmlDiv" class="hidden"><p>Copy the following HTML to embed the SVG into your own page</p><textarea id="embedHtmlText" rows="10" aria-label="SVG code"></textarea></div>
+  <div id="embedHtmlDiv" class="row hidden"><div class="col-md-12"><p>Copy the following HTML to embed the SVG into your own page</p><textarea id="embedHtmlText" rows="15" class="htmlSnippet" aria-label="SVG code"></textarea></div><div><p>&nbsp;</p></div></div>
 </div>
 {{ chart|json_script:"research-chart-data" }}
 {% endblock %}
-{% block extra_js %}<script src="{% static 'js/d3.v4.min.js' %}"></script><script src="{% static 'js/research_chart.js' %}"></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'js/d3.v4.min.js' %}"></script><script src="{% versioned_static 'js/research_chart.js' %}"></script>{% endblock %}

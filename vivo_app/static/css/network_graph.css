@@ -12,7 +12,6 @@
 .network-page #embedHtmlText { width: 100%; }
 .network-page .network-tooltip { position: fixed; z-index: 10; padding: 8px; background: #fff; border: 1px solid #ccc; pointer-events: none; }
 .network-page .node-text { font-size: 10px; }
-.research-chart-page .node-text { font-size: 14px; }
 .network-page #svgElement circle { stroke: #fff; stroke-width: 1.5px; }
 .network-empty #errorMsg { margin-top: 1.4em; margin-left: 1.4em; max-width: 40em; }
 .network-empty div.btn-group { margin-top: .7em; margin-left: .7em; float: left; }
@@ -56,4 +55,10 @@
 .publication-chart-page .network-tooltip { position: absolute; z-index: auto; padding: 5px; border: 0; border-radius: 10px; box-shadow: 4px 4px 10px rgba(0, 0, 0, .4); }
 .publication-chart-page #title { font-weight: bold; }
 .publication-chart-page #subtitle2 { font-size: small; font-style: italic; }
+.research-chart-page #svgElement { max-width: none; height: auto; }
+.research-chart-page .network-options > .btn { display: inline-block; clear: left; white-space: nowrap; }
+.research-chart-page #embedHtmlText { background-color: #f5f5d3; border: 1px solid #999; width: 98%; margin: 5px 0; padding: 1%; }
+.research-chart-page .node { stroke: none; }
+.research-chart-page .link { fill: none; stroke: #000; }
+.research-chart-page .link.on { opacity: .9; stroke-dasharray: 3px; stroke-linecap: square; }
 @media (max-width: 767px) { .network-page .network-graph { max-width: 100%; height: auto; } }
