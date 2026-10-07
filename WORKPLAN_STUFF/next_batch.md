@@ -10,7 +10,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U26 | S15 | `/search?q={query}`; affiliation dialog keyboard and complete views | Previous | Both current desktop views through the footer are inspected. Release 48 matches three shared control names; verify loaded revision, both-width actual names, keyboard/focus/return and affected dialog consumers. Original count difference remains Pending. |
+| U26 | S15 | `/search?q={query}`; affiliation dialog keyboard and complete views | Previous | Both current desktop views through the footer are inspected. Release 48 verifies its three planned naming removals. Release 49 addresses the remaining plus-glyph exposure; verify native complete names and affected behavior. Original count difference remains Pending. |
 
 ## Parked cases
 
@@ -52,4 +52,4 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 ## First actions
 
-V09 releases 46 and 47 are verified, including individual native cell exposure, actual Tab/copy and matched first/final SVG lines through the footer. Prior push-retry and environment-update requests are superseded. V07 original desktop and narrow dragging now passes; current complete view observations crossed a revision change and require applicability review. Keep source-dependent drawing/export equality and restricted response/opener comparisons Pending. S15 desktop coverage is now inspected completely. Verify release 48 changed control names and affected shared dialog behavior. Keep original criteria and at most twenty distinct active URLs; check the clock before each selection.
+V09 releases 46 and 47 are verified, including individual native cell exposure, actual Tab/copy and matched first/final SVG lines through the footer. Prior push-retry and environment-update requests are superseded. V07 original desktop and narrow dragging now passes; current complete view observations crossed a revision change and require applicability review. Keep source-dependent drawing/export equality and restricted response/opener comparisons Pending. S15 desktop coverage is now inspected completely. Release 48 and every recorded change are accounted. Verify release 49 complete More-button names and affected shared dialog behavior. Keep original criteria and at most twenty distinct active URLs; check the clock before each selection.
