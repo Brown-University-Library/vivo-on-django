@@ -842,11 +842,18 @@ def bot_detect_challenge(request: HttpRequest) -> HttpResponse:
 
 
 # Legacy VIVO URLs
-def people(request):
-    """Legacy people listing."""
+def people(request: HttpRequest) -> HttpResponse:
+    """
+    Redirects the legacy people entry to its fixed search filter.
+
+    Called by: config.urls
+    """
     if settings.PAGE_DATA_MODE in {'live', 'replay'}:
-        destination = reverse('search').rstrip('/') + '?' + urlencode({'fq': 'record_type|PEOPLE'})
-        return redirect(destination)
+        search_url = request.build_absolute_uri(reverse('search').rstrip('/'))
+        if search_url is None:
+            return data_unavailable(PageDataError('The search destination is unavailable.'))
+        destination = search_url + '?fq=record_type|PEOPLE'
+        return HttpResponse(status=302, headers={'Location': destination})
     try:
         saved_response = get_response_data(request.path_info, query_pairs(request.GET))
         if saved_response is not None:
@@ -856,11 +863,18 @@ def people(request):
     return render_or_stub(request, 'legacy/people.html')
 
 
-def organizations(request):
-    """Legacy organizations listing."""
+def organizations(request: HttpRequest) -> HttpResponse:
+    """
+    Redirects the legacy organization entry to its fixed search filter.
+
+    Called by: config.urls
+    """
     if settings.PAGE_DATA_MODE in {'live', 'replay'}:
-        destination = reverse('search').rstrip('/') + '?' + urlencode({'fq': 'record_type|ORGANIZATION'})
-        return redirect(destination)
+        search_url = request.build_absolute_uri(reverse('search').rstrip('/'))
+        if search_url is None:
+            return data_unavailable(PageDataError('The search destination is unavailable.'))
+        destination = search_url + '?fq=record_type|ORGANIZATION'
+        return HttpResponse(status=302, headers={'Location': destination})
     try:
         saved_response = get_response_data(request.path_info, query_pairs(request.GET))
         if saved_response is not None:

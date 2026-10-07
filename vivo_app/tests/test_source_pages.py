@@ -1419,10 +1419,14 @@ class SourcePageTests(TestCase):
         previous_prefix = get_script_prefix()
         set_script_prefix(prefix)
         try:
-            response = self.client.get('/people', SCRIPT_NAME=prefix)
-            assert isinstance(response, HttpResponse)
-            self.assertEqual(response.status_code, 302)
-            self.assertEqual(response['Location'], prefix + '/search?fq=record_type%7CPEOPLE')
+            for path in ['/people', '/people/?fq=record_type%7CORGANIZATION&q=Other&page=2']:
+                with self.subTest(path=path):
+                    with patch('vivo_app.lib.source_pages.read_source') as read:
+                        response = self.client.get(path, SCRIPT_NAME=prefix)
+                    assert isinstance(response, HttpResponse)
+                    self.assertEqual(response.status_code, 302)
+                    self.assertEqual(response['Location'], 'http://testserver' + prefix + '/search?fq=record_type|PEOPLE')
+                    read.assert_not_called()
         finally:
             set_script_prefix(previous_prefix)
 
@@ -1434,10 +1438,16 @@ class SourcePageTests(TestCase):
         previous_prefix = get_script_prefix()
         set_script_prefix(prefix)
         try:
-            response = self.client.get('/ous', SCRIPT_NAME=prefix)
-            assert isinstance(response, HttpResponse)
-            self.assertEqual(response.status_code, 302)
-            self.assertEqual(response['Location'], prefix + '/search?fq=record_type%7CORGANIZATION')
+            for path in ['/ous', '/ous/?fq=record_type%7CPEOPLE&q=Other&page=2']:
+                with self.subTest(path=path):
+                    with patch('vivo_app.lib.source_pages.read_source') as read:
+                        response = self.client.get(path, SCRIPT_NAME=prefix)
+                    assert isinstance(response, HttpResponse)
+                    self.assertEqual(response.status_code, 302)
+                    self.assertEqual(
+                        response['Location'], 'http://testserver' + prefix + '/search?fq=record_type|ORGANIZATION'
+                    )
+                    read.assert_not_called()
         finally:
             set_script_prefix(previous_prefix)
 
