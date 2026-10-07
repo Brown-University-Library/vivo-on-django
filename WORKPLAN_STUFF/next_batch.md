@@ -1,6 +1,6 @@
 # Next batch: active and parked URL cases
 
-Release 50 is verified before and after on loaded `382767b`; every recorded change is accounted. V06 and the environment-dependent C01 review are parked with their original requirements. No active URL currently offers further useful permitted work under the recorded dependencies.
+Releases through 51 are confirmed running; every recorded change is accounted. A fresh V06 narrow comparison resolves the earlier small geometry observation: matching positions, styles and stable top/footer captures. V06 and the environment-dependent C01 review are parked with their original requirements. No active URL currently offers further useful permitted work under the recorded dependencies.
 
 Batch `url-batch-010`, daily run `daily-2026-10-07`, pass 01. Fixed cutoff October 8, 2026 at 08:00 America/New_York (12:00 UTC). The updated selection rule prefers cases whose remaining checks can pass with current data and permitted access. Preserve all original criteria, scope exclusions, source limitations and deferred work.
 
@@ -18,7 +18,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Case | Blocker | Recovery condition and exact next action | Evidence and remaining checks |
 | --- | --- | --- | --- |
-| V06 | Original source/date/positions, full graph/export equality and supporting response/opener differences remain. | Compare corresponding production sources after the owner makes them available; recover permitted supporting response evidence. | Release 50 exact help and all affected controls pass; original four states at both widths are reviewed with capture exclusions and geometry qualifications in private V06-current-complete-view-partial-results.json. |
+| V06 | Original source/date/positions, full graph/export equality and supporting response/opener differences remain. | Compare corresponding production sources after the owner makes them available; recover permitted supporting response evidence. | Release 50 exact help and all affected controls pass; original four states at both widths are reviewed with capture exclusions and geometry qualifications in private V06-current-complete-view-partial-results.json. Fresh paired geometry is recorded in V06-geometry-followup-results.json; source and full export requirements stay Pending. |
 | C01 | Corresponding configured direct challenge page remains unavailable. | Enabled private configuration and permitted direct view enable the original checks. | One ordinary direct check after the deployed environment update still shows an error; no configuration change or CAPTCHA solving. Private C01-after-env-results.json preserves the original requirements. |
 | S15 | One source count differs. | Compare corresponding production data after the owner makes it available. | Complete dialog views, exact native names, keyboard/filter/focus/return and resources pass available checks on loaded `1c344be`; private S15-results.json retains original criteria. |
 | V09 | Source date/order and restricted response/opener comparisons remain. | Compare corresponding production sources and recover permitted supporting metadata/opener evidence. | Releases 46/47 are verified; current first/final SVG lines and footer are inspected. Original complete-case criteria remain Pending. |
