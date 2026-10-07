@@ -287,3 +287,32 @@ class OrganizationChartTests(TestCase):
         assert isinstance(response, HttpResponse)
         self.assertEqual(response.status_code, 503)
         self.assertContains(response, 'Page data unavailable:', status_code=503)
+
+    def test_research_json_preserves_compact_utf8_and_reference_escaping(self) -> None:
+        """
+        Checks research JSON retains Unicode, escaped HTML and ordered numeric links.
+        """
+        chart: dict[str, object] = {
+            'nodes': [[{'id': 0, 'display': 'Invented É <A>&'}], [{'id': 1, 'nodeName': 'Area A'}]],
+            'links': [{'source': 0, 'target': 1, 'value': 1}],
+        }
+        with patch('vivo_app.views.research_areas_data', return_value=('Example Organization', chart)):
+            response = self.client.get('/display/org-example/viz/research.json')
+        assert isinstance(response, HttpResponse)
+        self.assertEqual(response['Content-Type'], 'application/json; charset=utf-8')
+        self.assertEqual(json.loads(response.content), chart)
+        self.assertEqual(
+            response.content.decode('utf-8'),
+            '{"nodes":[[{"id":0,"display":"Invented É \\u003cA\\u003e\\u0026"}],[{"id":1,"nodeName":"Area A"}]],'
+            '"links":[{"source":0,"target":1,"value":1}]}',
+        )
+
+    def test_research_json_retains_unavailable_source_response(self) -> None:
+        """
+        Checks unavailable research data keeps its existing status and explanation.
+        """
+        with patch('vivo_app.views.research_areas_data', side_effect=PageDataError('The chart is unavailable.')):
+            response = self.client.get('/display/org-example/viz/research.json')
+        assert isinstance(response, HttpResponse)
+        self.assertEqual(response.status_code, 503)
+        self.assertContains(response, 'Page data unavailable:', status_code=503)

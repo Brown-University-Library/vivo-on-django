@@ -611,7 +611,7 @@ def visualization_research(request: HttpRequest, id: str, fmt: str = '') -> Http
             raise PageDataError('The research chart request is unsupported.')
         name, data = research_areas_data(id, settings.PAGE_DATA_MODE)
         if fmt == 'json':
-            return JsonResponse(data)
+            return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
         return render(
             request,
             'visualization/research_data.html',

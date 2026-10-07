@@ -28,7 +28,7 @@ def profile_json_text(data: dict[str, object]) -> str:
     """
     Encodes public profile and chart values with Rails' compact HTML escaping.
 
-    Called by: views.display_show(), views.visualization_publications(), tests
+    Called by: views.display_show(), views.visualization_publications(), views.visualization_research(), tests
     """
     result = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
     for character, escaped in (
