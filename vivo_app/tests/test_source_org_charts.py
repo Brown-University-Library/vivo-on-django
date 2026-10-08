@@ -180,6 +180,60 @@ class OrganizationChartTests(TestCase):
                 _, chart = publication_history_data('team-example', 'live', self.read)
         self.assertEqual(chart['columns'], ['invented-b', 'invented-a'])
 
+    def test_organization_charts_keep_sorted_twenty_member_batches(self) -> None:
+        """
+        Checks sorted member batches preserve returned order in both chart formats.
+        """
+        prefix = 'http://vivo.brown.edu/individual/'
+        identifiers = [f'invented-{index:02}' for index in range(24)]
+        people = [
+            {'faculty_uri': prefix + identifier, 'label': f'{"a" if index % 2 else "A"}{index:02}'}
+            for index, identifier in enumerate(identifiers)
+        ]
+        self.responses[profile_key('org-example')] = self.response(
+            [
+                {
+                    'id': prefix + 'org-example',
+                    'record_type': 'ORGANIZATION',
+                    'json_txt': json.dumps({'name': 'Example Organization', 'people': [*reversed(people), people[0]]}),
+                }
+            ]
+        )
+        expected: list[str] = []
+        for start in (0, 20):
+            batch = identifiers[start : start + 20]
+            returned = list(reversed(batch))
+            expected.extend(returned)
+            self.responses[chart_member_key(batch)] = self.response(
+                [
+                    {
+                        'id': prefix + identifier,
+                        'record_type': 'PEOPLE',
+                        'json_txt': json.dumps(
+                            {
+                                'name': identifier,
+                                'title': 'Professor',
+                                'contributor_to': [{'date': '2020-01-01'}],
+                                'research_areas': ['Shared area'],
+                            }
+                        ),
+                    }
+                    for identifier in returned
+                ]
+            )
+        _, publications = publication_history_data('org-example', 'live', self.read)
+        _, research = research_areas_data('org-example', 'live', self.read)
+        self.assertEqual(publications['columns'], expected)
+        self.assertEqual(publication_history_csv(publications).splitlines()[0], 'year,year_total,' + ','.join(expected))
+        groups = research['nodes']
+        if not isinstance(groups, list) or not isinstance(groups[0], list):
+            self.fail('Research chart nodes should contain a researcher list.')
+        self.assertEqual([node['nodeName'] for node in groups[0]], expected)
+        self.assertEqual(
+            [key for key, _ in self.requested if key.service == 'solr' and key != profile_key('org-example')],
+            [chart_member_key(identifiers[:20]), chart_member_key(identifiers[20:])] * 2,
+        )
+
     def test_chart_reads_publication_year_after_leading_space(self) -> None:
         """Counts the year accepted by the public publication parser."""
         key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])

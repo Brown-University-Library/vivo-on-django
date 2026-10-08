@@ -10,6 +10,7 @@ from collections import Counter
 
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.source_pages import (
+    CUSTOM_ORGANIZATION_IDS,
     SourceReader,
     documents,
     first_text,
@@ -44,14 +45,23 @@ def organization_chart_members(
         name = first_text(organization.get('name')) or first_text(docs[0].get('display_name_s'))
         extras = custom_organization_members(identifier, mode, reader)
         members = organization_members(organization, extras, mode, reader)
+        members = sorted(
+            members,
+            key=lambda row: (
+                first_text(row.get('label'))
+                if identifier in CUSTOM_ORGANIZATION_IDS
+                else first_text(row.get('label')).upper()
+            ),
+        )
         member_ids = list(dict.fromkeys(record_id({'id': first_text(row.get('faculty_uri'))}) for row in members))
     if not name or len(member_ids) > 500:
         raise PageDataError('The chart organization has no usable member list.')
     found: dict[str, tuple[dict[str, object], str]] = {}
-    for start in range(0, len(member_ids), 100):
+    ## preserves the reference's twenty-member batches and each response's faculty order.
+    for start in range(0, len(member_ids), 20):
         if start and mode == 'live':
             time.sleep(0.25)
-        batch = member_ids[start : start + 100]
+        batch = member_ids[start : start + 20]
         response = response_object(chart_member_key(batch), mode, reader)
         docs, _ = documents(response)
         for doc in docs:
