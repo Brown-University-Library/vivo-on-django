@@ -1417,9 +1417,9 @@ class SourcePageTests(TestCase):
             first = self.get_page('/search?q=Example')
             second = self.get_page('/search?q=Example&page=2')
         self.assertContains(first, '<h2 class="sr-only">Pagination</h2>')
-        self.assertContains(first, '<a href="/search?q=Example&amp;page=1" aria-current="page">1</a>')
-        self.assertContains(first, '<a href="/search?q=Example&amp;page=2" aria-label="Next page">')
-        self.assertContains(second, '<a href="/search?q=Example&amp;page=1" aria-label="Previous page">')
+        self.assertContains(first, '<li class="active"><a href="/search?q=Example&amp;page=1">1</a>')
+        self.assertContains(first, '<a href="/search?q=Example&amp;page=2">')
+        self.assertContains(second, '<a href="/search?q=Example&amp;page=1">')
 
     def test_old_search_term_redirects_without_source_request(self) -> None:
         """

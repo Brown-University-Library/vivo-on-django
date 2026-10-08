@@ -149,7 +149,7 @@ class PreparedDataTests(TestCase):
             response = self.get_page('/search?q=Example&page=1')
             self.assertContains(response, 'Invented Researcher')
             self.assertTemplateUsed(response, 'search/results.html')
-            self.assertContains(response, 'aria-current="page"')
+            self.assertContains(response, '<li class="active"><a href="/search?q=Example&amp;page=1">1</a>')
             response = self.client.get('/display/invented-a', HTTP_REFERER='http://testserver/search?q=Example&page=1')
             assert isinstance(response, HttpResponse)
             self.assertContains(response, 'Invented overview.')

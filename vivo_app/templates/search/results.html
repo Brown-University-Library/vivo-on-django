@@ -10,7 +10,7 @@
       <div class="result-nums-breadcrumbs-wrapper">
         <div id="search-result-count" class="text-muted">
           <span class="search-result-previous{% if previous_url %} is-active{% endif %}">
-            {% if previous_url %}<a href="{{ previous_url }}" aria-label="Previous page">{% endif %}
+            {% if previous_url %}<a href="{{ previous_url }}">{% endif %}
               <span class="glyphicon glyphicon-chevron-left{% if not previous_url %} is-inactive{% endif %}" aria-hidden="true"></span>
               <span class="chevron-nav-title"> Previous{% if previous_url %} {% endif %}</span>
             {% if previous_url %}</a>{% endif %}
@@ -19,7 +19,7 @@
             <span id="search-page-start">{{ start }}</span> - <span id="search-page-end">{{ end }}</span> of <span id="search-total-matching">{{ total }}</span> search results
           </span>
           <span class="search-result-next{% if next_url %} is-active{% endif %}">
-            {% if next_url %}<a href="{{ next_url }}" aria-label="Next page">{% endif %}
+            {% if next_url %}<a href="{{ next_url }}">{% endif %}
               <span class="chevron-nav-title">Next </span>
               <span class="glyphicon glyphicon-chevron-right{% if not next_url %} is-inactive{% endif %}" aria-hidden="true"></span>
             {% if next_url %}</a>{% endif %}
@@ -44,11 +44,11 @@
         </article>
         {% endfor %}
       </div>
-      <nav class="pagination-wrapper col-lg-12 col-md-12 col-sm-12 col-xs-12" aria-label="Search result pages"><h2 class="sr-only">Pagination</h2><ul class="pagination pagination-lg">
-        {% if previous_url %}<li><a href="{{ previous_url }}" aria-label="Previous page"><span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span><span class="sr-only">Previous page</span></a></li>{% endif %}
-        {% for item in pagination %}<li{% if item.current %} class="active"{% endif %}><a href="{{ item.url }}"{% if item.current %} aria-current="page"{% endif %}>{{ item.label }}</a></li>{% endfor %}
-        {% if next_url %}<li><a href="{{ next_url }}" aria-label="Next page"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span><span class="sr-only">Next page</span></a></li>{% endif %}
-      </ul></nav>
+      <div class="pagination-wrapper col-lg-12 col-md-12 col-sm-12 col-xs-12"><div class="text-center hidden-print"><h2 class="sr-only">Pagination</h2><ul class="pagination pagination-lg">
+        {% if previous_url %}<li><a href="{{ previous_url }}"><span class="glyphicon glyphicon-chevron-left"></span><span class="sr-only">Previous page</span></a></li>{% endif %}
+        {% for item in pagination %}<li{% if item.current %} class="active"{% endif %}><a href="{{ item.url }}">{{ item.label }}</a></li>{% endfor %}
+        {% if next_url %}<li><a href="{{ next_url }}"><span class="glyphicon glyphicon-chevron-right"></span><span class="sr-only">Next page</span></a></li>{% endif %}
+      </ul></div></div>
     </div>
     {% if total %}<aside class="col-lg-3 col-lg-pull-9 col-md-3 col-md-pull-9 col-sm-4 col-sm-pull-8 hidden-print" id="search-facets">
       <h2 class="sr-only">Refine</h2><div id="facet-4" class="facet"><div class="panel panel-default">
