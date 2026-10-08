@@ -14,7 +14,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U31–U33 | V10 | `/display/{organization_id}/viz/publications`, JSON and CSV | Previous | Useful partial work: release 58 matches complete publication formats, faculty order, drawing, legends and exports. Correct the independent research-area tie order and verify affected behavior. Actual JSON opener agrees; retain original narrow pointer and complete supporting-view requirements. |
+| U31–U33 | V10 | `/display/{organization_id}/viz/publications`, JSON and CSV | Previous | Useful partial work: release 58 matches complete publication formats, faculty order, drawing, legends and exports. Release 59 also verifies full research data, drawing and SVG. Match demonstrated chart names and checkbox text behavior; verify all affected controls and views. Actual JSON opener agrees; retain original narrow pointer and complete supporting-view requirements. |
 
 
 ## Parked cases
