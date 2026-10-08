@@ -2,7 +2,7 @@
 
 **URL-case completion: 48.1% — 37 of 77 known cases complete.**
 
-Recorded snapshot: **October 8, 2026, 08:05 America/New_York — new daily-run start.** Counts and provisional denominator remain unchanged. The previous pass is accounted; the legacy query redirect is selected for current production rechecks. Unfinished original checks and unexplained rendering differences retain their Pending states and evidence.
+Recorded snapshot: **October 8, 2026, 12:10 America/New_York — first suitable noon checkpoint.** Counts and provisional denominator remain unchanged. Current legacy HTML redirect headers, corresponding listing content and actual return journeys pass available checks. Original complete-view qualifications and other unfinished requirements remain Pending.
 
 This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
@@ -59,6 +59,8 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 8, 07:58 — previous-run final handoff | 37 / 77 | 48.1% | Deployed header correction accounted; original blocked/partial checks remain Pending. No case or denominator change. |
 
 | October 8, 08:05 — daily start | 37 / 77 | 48.1% | Previous run accounted; current legacy-query preflight clears its old data dependency. No case or denominator change. |
+
+| October 8, 12:10 — 12:00 checkpoint | 37 / 77 | 48.1% | Inventory reassessment prioritizes legacy HTML entries; current headers and corresponding content agree. Complete-view qualifications remain Pending; denominator unchanged. |
 
 Earlier per-release observations and the original dashboard are preserved in the [historical progress record](previous_workplan_artificts/progress_before_simplification_2026_10_06.md). Detailed release accounting stays in the batch records and private checkpoint.
 
