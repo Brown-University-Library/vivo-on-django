@@ -453,7 +453,10 @@ def visualization_graph_json(request: HttpRequest, id: str, kind: str) -> HttpRe
             raise PageDataError('This visualization is unavailable.')
         if request.GET:
             raise PageDataError('Visualization query options are unsupported.')
-        return JsonResponse(visualization_graph(kind, id, settings.PAGE_DATA_MODE))
+        return HttpResponse(
+            profile_json_text(visualization_graph(kind, id, settings.PAGE_DATA_MODE)).encode('utf-8'),
+            content_type='application/json; charset=utf-8',
+        )
     except PageDataError as exc:
         return data_unavailable(exc)
 
@@ -503,7 +506,7 @@ def visualization_coauthor_treemap(request: HttpRequest, id: str) -> HttpRespons
         data = visualization_graph('coauthors', id, settings.PAGE_DATA_MODE)
         response_format = request.GET.get('format')
         if response_format == 'json':
-            return JsonResponse(data)
+            return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
         if response_format == 'csv':
             return HttpResponse(graph_csv(data, 'coauthors').encode(), content_type='text/plain; charset=utf-8')
         subject = graph_subject_data('coauthors', id, settings.PAGE_DATA_MODE)
@@ -547,7 +550,7 @@ def visualization_network(request: HttpRequest, identifier: str, kind: str) -> H
         data = visualization_graph(kind, identifier, settings.PAGE_DATA_MODE)
         response_format = request.GET.get('format')
         if response_format == 'json':
-            return JsonResponse(data)
+            return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
         if response_format == 'csv':
             if kind == 'collaborators' and data.get('graph') == {}:
                 ## Matches the reference CSV error for its valid empty collaboration response.

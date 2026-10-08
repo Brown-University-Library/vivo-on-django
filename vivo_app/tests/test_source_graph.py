@@ -126,6 +126,41 @@ class SourceGraphTests(TestCase):
         self.assertEqual(json.loads(coauthor.content), self.replies[visualization_key('coauthors', 'invented-a')])
         self.assertEqual(missing.status_code, 503)
 
+    def test_graph_json_preserves_reference_utf8_and_compact_text(self) -> None:
+        """
+        Checks every public graph JSON route preserves Unicode, HTML escaping and unchanged source data.
+        """
+        graph = {
+            'nodes': [{'id': 'invented-a', 'name': 'Café <Example>&\u2028'}],
+            'links': [],
+        }
+        graph_text = '{"nodes":[{"id":"invented-a","name":"Café \\u003cExample\\u003e\\u0026\\u2028"}],"links":[]}'
+        for kind, field, paths in (
+            (
+                'collaborators',
+                'graph',
+                ('/display/invented-a/viz/collab.json', '/display/invented-a/viz/collab?format=json'),
+            ),
+            (
+                'coauthors',
+                'data',
+                (
+                    '/display/invented-a/viz/coauthor.json',
+                    '/display/invented-a/viz/coauthor?format=json',
+                    '/display/invented-a/viz/coauthor_treemap?format=json',
+                ),
+            ),
+        ):
+            self.replies[visualization_key(kind, 'invented-a')] = {field: graph, 'rabid': 'invented-a'}
+            expected = ('{"' + field + '":' + graph_text + ',"rabid":"invented-a"}').encode('utf-8')
+            for path in paths:
+                with self.subTest(path=path), patch('vivo_app.lib.source_graph.read_source', side_effect=self.read):
+                    response = self.get_page(path)
+                    self.assertEqual(response.status_code, 200)
+                    self.assertEqual(response['Content-Type'], 'application/json; charset=utf-8')
+                    self.assertEqual(response.content, expected)
+                    self.assertEqual(json.loads(response.content), self.replies[visualization_key(kind, 'invented-a')])
+
     def test_invalid_graph_shape_is_rejected(self) -> None:
         """
         Checks a successful JSON response still needs graph nodes and links.
