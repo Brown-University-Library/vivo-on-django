@@ -2,7 +2,7 @@
 
 These definitions keep comparisons consistent between releases. They were moved from [progress.md](progress.md) on October 6, 2026. Detailed current case results belong in [current_batch.md](current_batch.md), [checklist_completed.md](checklist_completed.md) and private evidence. The [case inventory](url_completion_inventory.md) holds whole-case state; the progress page holds the current global percentage.
 
-Contents: [What to measure](#what-to-measure) · [Primary profile completion checks](#primary-profile-completion-checks)
+Contents: [What to measure](#what-to-measure) · [Approved procedure for repeated checks](#approved-procedure-for-repeated-checks) · [Primary profile completion checks](#primary-profile-completion-checks)
 
 ## What to measure
 
@@ -22,9 +22,19 @@ Keep separate totals for:
 | Blocked, unavailable, partial, and not-yet-run checks | Checks with insufficient evidence; none count as passing. |
 | Changes since the previous deployment | Newly passing checks, resolved differences, and regressions on the same defined checks. |
 
-Use stable IDs for scope rows, URL cases, and individual checks. Scope IDs and discovery case IDs are different fields; some use the same letters and numbers. Before each implementation batch, fix the selected case's passing conditions. Preserve them across deployments. An explicit owner decision under [the reference-problem procedure](workplan.md#ask-the-owner-about-reference-problems) may replace only the affected passing condition. Retain its original definition and historical evidence and record the approved condition, decision date, reason and verification in [accepted_differences.md](accepted_differences.md). Record newly discovered requirements and changes to the number of checks separately. Do not report one percentage combining local tests, implemented fixes, deployed behavior, and visual coverage.
+Use stable IDs for scope rows, URL cases, and individual checks. Scope IDs and discovery case IDs are different fields; some use the same letters and numbers. Before each implementation batch, fix the selected case's passing conditions. Preserve their original definitions across deployments. Record any approved repeated-check revision under [RC01](#approved-procedure-for-repeated-checks). An explicit owner decision under [the reference-problem procedure](workplan.md#ask-the-owner-about-reference-problems) may replace only the affected passing condition. Retain its original definition and historical evidence and record the approved condition, decision date, reason and verification in [accepted_differences.md](accepted_differences.md). Record newly discovered requirements and changes to the number of checks separately. Do not report one percentage combining local tests, implemented fixes, deployed behavior, and visual coverage.
 
 The scope rows contain grouped endpoints. [url_completion_inventory.md](url_completion_inventory.md) explains the provisional case denominator and aliases; [checklist_completed.md](checklist_completed.md) retains whole-case evidence. Selected profiles, interactions and supporting formats still need reconciliation with complete endpoint coverage. Do not count screenshots, fragments, commits or individual fixes as additional completed cases.
+
+## Approved procedure for repeated checks
+
+**RC01 — approved October 8, 2026:** Follow [the repeated-data and control procedure](workplan.md#check-repeated-data-and-controls-efficiently) when equivalent items use the same rendering and control behavior. Compare all current data and destination addresses. Exercise first, middle and last groups for each offered sort order at both widths, plus short final groups, longest labels, disabled boundaries and distinct markup. Check the applicable filtering, selection/removal, empty-result recovery, keyboard/pointer, focus and animation behavior. Expand coverage when an example fails or uses different code or layout. Reuse applicable existing evidence; this approval does not require building a helper.
+
+Before applying RC01 to a case, Codex records its case/check IDs, original and revised passing conditions, approval date and reason, chosen examples, complete-data evidence, applicable earlier results and remaining gaps in the private case result. Add a safe summary to the batch record. Preserve the original definitions and historical evidence. Do not lower counts or mark a check complete merely because the procedure changed.
+
+Every required endpoint, distinct layout and required interaction state still receives visual inspection at both widths through its footer. Repeated equivalent groups use the recorded examples. Specifically configured original journeys, unresolved named regressions, response metadata, resources, accessibility, complete downloads/documents and deployment checks keep their requirements. Each distinct destination behavior needs a real journey; a shared control does not require a full audit of every equivalent destination record. Separately required destination cases retain their own completion checks.
+
+RC01 changes the verification procedure; it accepts no behavior or visual difference. Record individual owner-approved choices separately in [accepted_differences.md](accepted_differences.md). Unexplained differences and insufficient evidence remain Pending. The original P01 table below remains unchanged.
 
 ## Primary profile completion checks
 

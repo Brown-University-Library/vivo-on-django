@@ -16,7 +16,7 @@ Contents: [Brief overview](#brief-overview) · [Active files](#active-files) · 
 | [public_endpoint_scope.md](public_endpoint_scope.md) | Lists approved endpoint patterns, required behavior, sources, case assignments and exclusions. | A requirement, known dependency or case assignment changes. |
 | [url_completion_inventory.md](url_completion_inventory.md) | Lists each counted case, readable URL/request pattern, required variation, current state and aliases. | A case's state, description, pattern, variation or alias changes. |
 | [progress.md](progress.md) | Shows the single current global completion percentage and concise snapshot history. | Case totals change or a scheduled/start/resumption/handoff snapshot is due. |
-| [completion_checks.md](completion_checks.md) | Explains the measures and preserves fixed completion definitions, including the original P01 checks. | A demonstrated requirement or agreed check definition changes. |
+| [completion_checks.md](completion_checks.md) | Explains the measures, records the approved RC01 procedure for repeated checks and preserves original definitions, including P01. | A demonstrated requirement or agreed check definition changes. |
 | [current_batch.md](current_batch.md) | Records the current pass's changes, shared differences, releases and verification results. | A change is recorded, released, verified or blocked by a new finding. |
 | [next_batch.md](next_batch.md) | Lists up to twenty active cases and their concrete actions; keeps a separate parked list with blockers, recovery conditions and evidence pointers. | Active membership changes, a case is parked or can resume, or remaining actions change. |
 | [checklist_todos.md](checklist_todos.md) | Tracks pending scope comparisons, integration checks and final acceptance tasks. | Work is added, completed, reopened or gains a different next action. |
@@ -26,6 +26,10 @@ Contents: [Brief overview](#brief-overview) · [Active files](#active-files) · 
 Keep the live global fraction/percentage only in progress.md. The inventory holds case state and readable patterns together; other files hold evidence or next actions and link to the dashboard. Dated historical results and case-specific check counts may remain in their records. Different cases can use the same pattern; completing one example does not complete its endpoint family. Exact bindings and detailed private evidence stay outside Git.
 
 The outer workspace also keeps `../../post_exact_behavior_review.local.md`. It holds pending reference-problem observations and detailed private evidence for the owner's choice between reproducing Rails and implementing a specific expected outcome. Earlier deferral wording is historical unless it records an explicit owner decision that still applies. The file remains outside Git; accepted choices receive safe summaries in [accepted_differences.md](accepted_differences.md). Pending observations alone authorize no implementation or acceptance.
+
+The private [../../owner_review_queue.local.md](../../owner_review_queue.local.md) stores prepared comparisons, stable review IDs, pending decisions and the last unsolicited notice timestamp and announced items. Follow [optional owner comparison reviews](workplan.md#optional-owner-comparison-reviews) for the rolling hourly limit and owner-led review. Saved evidence and exact URLs stay outside Git; precisely scoped accepted choices belong in accepted_differences.md. Available reviews do not pause independent work or complete a case.
+
+Follow [repeated data and controls](workplan.md#check-repeated-data-and-controls-efficiently) before another exhaustive audit of equivalent items. Complete data comparisons stay required. Codex records affected check revisions, selects normal and edge examples at both widths, preserves valid evidence and finishes remaining distinct-state checks. This procedure accepts no difference or whole case by itself.
 
 ## Historical files
 

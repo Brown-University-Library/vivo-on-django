@@ -4,7 +4,9 @@ Replace the Rails front end for Researchers@Brown (R@B) with a Django applicatio
 
 This document defines the intended outcome and boundaries. The [workplan](workplan.md) describes the current sequence of work, batch workflow, and implementation choices.
 
-When Rails behavior appears wrong, Codex first applies the owner's recorded conditional guidance under [the owner-decision procedure](workplan.md#ask-the-owner-about-reference-problems). Ask the owner when that guidance does not resolve the case or its expected outcome. Record each applicable choice in [accepted_differences.md](accepted_differences.md). An owner-approved correction is a narrow exception to exact matching and the exclusion of new behavior; it does not authorize a broader redesign. Approval of this procedure alone accepts no individual difference.
+When Rails behavior appears wrong, Codex first applies the owner's recorded conditional guidance under [the owner-decision procedure](workplan.md#ask-the-owner-about-reference-problems). Queue a nonurgent owner question under [optional comparison reviews](workplan.md#optional-owner-comparison-reviews) when that guidance does not resolve the case or its expected outcome. Record each applicable choice in [accepted_differences.md](accepted_differences.md). An owner-approved correction is a narrow exception to exact matching and the exclusion of new behavior; it does not authorize a broader redesign. Approval of this procedure alone accepts no individual difference.
+
+Verification of equivalent repeated data and controls follows [RC01](completion_checks.md#approved-procedure-for-repeated-checks). Codex compares complete data and destination addresses, then checks selected normal and edge examples at both widths. Every required endpoint and distinct state retains its visual and behavior requirements. Record affected check revisions before applying this procedure; it accepts no individual difference and changes no completion state by itself.
 
 ## Scope
 

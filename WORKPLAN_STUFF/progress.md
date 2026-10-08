@@ -2,7 +2,7 @@
 
 **URL-case completion: 48.1% — 37 of 77 known cases complete.**
 
-Recorded snapshot: **October 8, 2026, 12:10 America/New_York — first suitable noon checkpoint.** Counts and provisional denominator remain unchanged. Current legacy HTML redirect headers, corresponding listing content and actual return journeys pass available checks. Original complete-view qualifications and other unfinished requirements remain Pending.
+Recorded snapshot: **October 8, 2026, 16:10 America/New_York — replacement-chat resumption.** Counts and provisional denominator remain unchanged. Existing comparisons and prepared owner reviews remain valid within their recorded qualifications. Current deployment confirmation is unavailable; further pushes wait for permitted verification. No whole case completes at resumption.
 
 This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
@@ -61,6 +61,7 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 8, 08:05 — daily start | 37 / 77 | 48.1% | Previous run accounted; current legacy-query preflight clears its old data dependency. No case or denominator change. |
 
 | October 8, 12:10 — 12:00 checkpoint | 37 / 77 | 48.1% | Inventory reassessment prioritizes legacy HTML entries; current headers and corresponding content agree. Complete-view qualifications remain Pending; denominator unchanged. |
+| October 8, 16:10 — replacement-chat resumption | 37 / 77 | 48.1% | Counts and denominator unchanged. Saved evidence and Pending reviews recovered; deployment confirmation is unavailable. |
 
 Earlier per-release observations and the original dashboard are preserved in the [historical progress record](previous_workplan_artificts/progress_before_simplification_2026_10_06.md). Detailed release accounting stays in the batch records and private checkpoint.
 
