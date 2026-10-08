@@ -65,14 +65,12 @@
       for (var index = (page - 1) * 20; index < Math.min(page * 20, selected.length); index += 1) {
         list.appendChild(facetRow(selected[index]));
       }
-      dialog.querySelector('.facet-page-status').textContent = selected.length + ' values; page ' + page + ' of ' + pageCount;
       controls.forEach(function (control) {
         var action = control.dataset.facetAction;
         var disabled = (action === 'previous' && page === 1) || (action === 'next' && page >= pageCount);
         control.classList.toggle('disabled', disabled);
         if (action === 'alphabetical' || action === 'count') {
           control.classList.toggle('active', action === sort);
-          control.setAttribute('aria-pressed', String(action === sort));
         }
       });
     }
