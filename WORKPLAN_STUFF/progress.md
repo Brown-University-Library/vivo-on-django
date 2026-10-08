@@ -1,8 +1,8 @@
 # Progress toward the public-site replacement
 
-**URL-case completion: 44.2% — 34 of 77 known cases complete.**
+**URL-case completion: 45.5% — 35 of 77 known cases complete.**
 
-Recorded snapshot: **October 7, 2026, 18:00 America/New_York — 18:00 checkpoint.** Counts and the provisional denominator remain unchanged. S15 is Complete; S12 retains its original anonymous-access check. Production release55 is loaded; its changed website ordering and remaining profile requirements are being verified.
+Recorded snapshot: **October 7, 2026, 21:56 America/New_York — representative-image verification.** D04 completes its original three-image delivery and both-width consumer checks on production. The provisional denominator remains unchanged; unresolved image-rendering differences in other cases remain Pending.
 
 This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
@@ -45,6 +45,8 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 7, 17:13 — production resumption | 33 / 77 | 42.9% | Original cutoff and denominator unchanged. Reassess parked cases against corresponding production sources; deployment remains manual until confirmed. |
 | October 7, 17:32 — production verification | 34 / 77 | 44.2% | S15 original functional and complete both-width dialog checks pass; before/after loaded proof agrees. Denominator unchanged. |
 | October 7, 18:00 — 18:00 checkpoint | 34 / 77 | 44.2% | Counts and denominator unchanged. Automatic production deployment is confirmed; ordered website correction is loaded and under verification. Original unverified case requirements remain Pending. |
+| October 7, 21:44 — evening resumption | 34 / 77 | 44.2% | VPN and sign-in restored. Original cutoff, counts and denominator unchanged; remaining image comparisons resume. |
+| October 7, 21:56 — representative-image verification | 35 / 77 | 45.5% | D04 original portrait, default and cover responses, complete files and both-width image consumers pass. Denominator unchanged; other image cases remain Pending. |
 
 Earlier per-release observations and the original dashboard are preserved in the [historical progress record](previous_workplan_artificts/progress_before_simplification_2026_10_06.md). Detailed release accounting stays in the batch records and private checkpoint.
 

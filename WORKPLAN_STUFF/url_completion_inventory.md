@@ -35,7 +35,7 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | D01 | Linked CV document, delivery and viewer return | Follow `/display/{person_id}` → `/docs/{bucket}/{filename}.pdf` with observed query parameters → return to profile | Complete |
 | D02 | Profile JSON, nested values and flags | `/display/{person_id}.json` | Pending |
 | D03 | Organization publication download, complete TSV and headers | `/display/{organization_id}/publications.tsv` | Pending |
-| D04 | Representative portrait, default portrait and homepage book-cover delivery | Actual linked `/profile-images/{path}`, `/book_cover/{path}` or `/assets/{path}`, inspected with the consuming profile or `/` | Pending |
+| D04 | Representative portrait, default portrait and homepage book-cover delivery | Actual linked `/profile-images/{path}`, `/book_cover/{path}` or `/assets/{path}`, inspected with the consuming profile or `/` | Complete |
 | E01 | Missing record, not-found response and recovery | `/display/{missing_record_id}` → home/search recovery; other missing-page variations remain scope checks | Complete |
 | EMPTY01 | No-result search, message and recovery controls | `/search?q={query}` with a privately recorded no-result query | Complete |
 | FAQ01 | FAQ page and every offered anchor | `/faq` and observed section fragments | Complete |
