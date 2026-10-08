@@ -10,7 +10,7 @@
     <div class="col-md-9">
       <div id="descriptionMsg">This visualization shows research areas and how common they are among researchers for an organization. Only those research areas indicated in more than one researcher profile for this organization are shown.</div>
       <div id="errorMsg" class="alert alert-warning{% if chart.links %} hidden{% endif %}" role="alert">No collaboration data is available for this organization.</div>
-      <svg id="svgElement" class="network-graph" width="960" height="700" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Shared research areas"></svg>
+      <svg id="svgElement" class="network-graph" width="960" height="700" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
     <div class="col-md-3 network-options">
       <a class="btn btn-default btn-lg" role="button" href="{% url 'visualization_collab' id %}">Collaborator Network</a>
@@ -23,7 +23,7 @@
       <p><a id="embedHtml" href="#" title="Shows HTML to embed the graph as an SVG element into your own page.">Embed SVG Code</a></p>
     </div>
   </div>
-  <div id="embedHtmlDiv" class="row hidden"><div class="col-md-12"><p>Copy the following HTML to embed the SVG into your own page</p><textarea id="embedHtmlText" rows="15" class="htmlSnippet" aria-label="SVG code"></textarea></div><div><p>&nbsp;</p></div></div>
+  <div id="embedHtmlDiv" class="row hidden"><div class="col-md-12"><p>Copy the following HTML to embed the SVG into your own page</p><textarea id="embedHtmlText" rows="15" class="htmlSnippet"></textarea></div><div><p>&nbsp;</p></div></div>
 </div>
 {{ chart|json_script:"research-chart-data" }}
 {% endblock %}
