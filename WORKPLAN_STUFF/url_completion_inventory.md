@@ -60,7 +60,7 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | O03 | Additional organization overview and role-group variation | `/display/{organization_id}` | Complete |
 | O04 | Organization without member rows or a visualization entry | `/display/{organization_id}` with no member groups or graph control | Complete |
 | O05 | Organization with custom membership | `/display/{organization_id}`; configured membership, member links and offered graph entry | Complete |
-| O06 | Approved active-team member list and default image | `/display/{team_id}`; observed member links and offered graph entry | Pending |
+| O06 | Approved active-team member list and default image | `/display/{team_id}`; observed member links and offered graph entry | Complete |
 | P01 | Primary profile: sections, View All, search return and linked CV | `/display/{person_id}` and section fragments, including `#All`; linked CV and referring search | Complete |
 | P02 | Profile entered from an organization, sections and return journey | `/display/{organization_id}` → `/display/{person_id}` and `#All` → return to organization | Complete |
 | P03 | Profile entered from search, publication filters and search return | `/search?q={query}` → `/display/{person_id}` and section fragments → referring search | Complete |
@@ -71,7 +71,7 @@ These names refer to the same already tracked cases; count each once. Scope-row 
 | P08 | Additional full profile, publication filters, graph entries and CV | `/display/{person_id}` and offered section fragments, links and linked CV | Complete |
 | P09 | Additional profile with a CV and its available sections | `/display/{person_id}` and offered section fragments, links and linked CV | Complete |
 | P10 | Additional profile, undated credentials and publication filters | `/display/{person_id}` and offered section fragments and links | Complete |
-| P11 | Additional profile, open appointments, CV and department destinations | `/display/{person_id}` and offered sections → linked `/display/{organization_id}` and CV | Pending |
+| P11 | Additional profile, open appointments, CV and department destinations | `/display/{person_id}` and offered sections → linked `/display/{organization_id}` and CV | Complete |
 | P12 | Additional profile, publication filters and graph-entry controls | `/display/{person_id}` and offered section fragments and links | Complete |
 | P13 | Additional profile, book-citation formatting, CV and department destination | `/display/{person_id}` and offered sections → linked `/display/{organization_id}` and CV | Complete |
 | P14 | Additional profile, quoted citations, CV and department destination | `/display/{person_id}` and offered sections → linked `/display/{organization_id}` and CV | Complete |

@@ -1,8 +1,8 @@
 # Progress toward the public-site replacement
 
-**URL-case completion: 45.5% — 35 of 77 known cases complete.**
+**URL-case completion: 48.1% — 37 of 77 known cases complete.**
 
-Recorded snapshot: **October 7, 2026, 21:56 America/New_York — representative-image verification.** D04 completes its original three-image delivery and both-width consumer checks on production. The provisional denominator remains unchanged; unresolved image-rendering differences in other cases remain Pending.
+Recorded snapshot: **October 7, 2026, 23:03 America/New_York — profile and team verification.** P11 and O06 complete their original checks on production. Fresh profile image and changed-region captures supplement qualified full-section evidence; complete fresh team views match exactly. The provisional denominator remains unchanged. The visualization button-height follow-up belongs to existing scope, and other unresolved cases remain Pending.
 
 This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
@@ -47,6 +47,8 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 7, 18:00 — 18:00 checkpoint | 34 / 77 | 44.2% | Counts and denominator unchanged. Automatic production deployment is confirmed; ordered website correction is loaded and under verification. Original unverified case requirements remain Pending. |
 | October 7, 21:44 — evening resumption | 34 / 77 | 44.2% | VPN and sign-in restored. Original cutoff, counts and denominator unchanged; remaining image comparisons resume. |
 | October 7, 21:56 — representative-image verification | 35 / 77 | 45.5% | D04 original portrait, default and cover responses, complete files and both-width image consumers pass. Denominator unchanged; other image cases remain Pending. |
+| October 7, 22:58 — additional-profile verification | 36 / 77 | 46.8% | P11 original functional, CV and fourteen visual checks pass with explicit fresh captures and qualified evidence reuse. Denominator unchanged; independent visualization checks remain Pending. |
+| October 7, 23:03 — team verification | 37 / 77 | 48.1% | O06 original functional checks and complete both-width views pass; all desktop portraits match exactly. Denominator unchanged. |
 
 Earlier per-release observations and the original dashboard are preserved in the [historical progress record](previous_workplan_artificts/progress_before_simplification_2026_10_06.md). Detailed release accounting stays in the batch records and private checkpoint.
 
