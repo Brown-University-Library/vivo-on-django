@@ -85,9 +85,9 @@
     {% endfor %}
 {% endif %}
 
-<main id="wrapper-content">
+<{% if request.path_info == '/' %}div{% else %}main{% endif %} id="wrapper-content">
     {% block content %}{% endblock %}
-</main>
+</{% if request.path_info == '/' %}div{% else %}main{% endif %}>
 
 <footer role="contentinfo" class="footer col-sm-12">
     <div class="row">

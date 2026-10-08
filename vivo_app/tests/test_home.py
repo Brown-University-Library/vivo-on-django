@@ -14,15 +14,17 @@ from django.urls import reverse
 class HomePageTests(TestCase):
     """Tests homepage rendering and primary elements."""
 
-    def test_homepage_renders_ok(self):
+    def test_homepage_renders_ok(self) -> None:
         """
-        Returns 200 and contains primary sections and headings.
+        Checks primary sections and the reference's single main landmark.
         """
         resp = self.client.get('/')
         assert isinstance(resp, HttpResponse)
         self.assertEqual(resp.status_code, 200)
         # Key headings/markers
-        self.assertContains(resp, 'Welcome to Researchers@Brown')
+        self.assertContains(resp, 'role="main"', count=1)
+        self.assertNotContains(resp, '<main')
+        self.assertNotContains(resp, 'Welcome to Researchers@Brown')
         self.assertContains(resp, 'Recent faculty books')
         self.assertContains(resp, 'Search for a Researcher')
         self.assertContains(resp, 'Did You Know?')
