@@ -12,6 +12,7 @@ Contents: [Brief overview](#brief-overview) · [Active files](#active-files) · 
 | --- | --- | --- |
 | [GOAL.md](GOAL.md) | Defines the intended outcome, exclusions and final acceptance requirements. | The owner changes the goal or accepts a scope decision. |
 | [workplan.md](workplan.md) | Explains who performs each step, where results belong, and how work continues and stops. | The workflow changes. |
+| [accepted_differences.md](accepted_differences.md) | Records explicit owner choices about reference problems and precisely scoped visual differences, separately from implementation and verification. | The owner decides an individual case, approves an affected check definition or its implementation/verification state changes. |
 | [public_endpoint_scope.md](public_endpoint_scope.md) | Lists approved endpoint patterns, required behavior, sources, case assignments and exclusions. | A requirement, known dependency or case assignment changes. |
 | [url_completion_inventory.md](url_completion_inventory.md) | Lists each counted case, readable URL/request pattern, required variation, current state and aliases. | A case's state, description, pattern, variation or alias changes. |
 | [progress.md](progress.md) | Shows the single current global completion percentage and concise snapshot history. | Case totals change or a scheduled/start/resumption/handoff snapshot is due. |
@@ -24,7 +25,7 @@ Contents: [Brief overview](#brief-overview) · [Active files](#active-files) · 
 
 Keep the live global fraction/percentage only in progress.md. The inventory holds case state and readable patterns together; other files hold evidence or next actions and link to the dashboard. Dated historical results and case-specific check counts may remain in their records. Different cases can use the same pattern; completing one example does not complete its endpoint family. Exact bindings and detailed private evidence stay outside Git.
 
-The outer workspace also keeps `../../post_exact_behavior_review.local.md`. It records observed problems in the reference site for owner review after exact matching. It is private, outside Git, and does not add current implementation work or accept differences.
+The outer workspace also keeps `../../post_exact_behavior_review.local.md`. It holds pending reference-problem observations and detailed private evidence for the owner's choice between reproducing Rails and implementing a specific expected outcome. Earlier deferral wording is historical unless it records an explicit owner decision that still applies. The file remains outside Git; accepted choices receive safe summaries in [accepted_differences.md](accepted_differences.md). Pending observations alone authorize no implementation or acceptance.
 
 ## Historical files
 

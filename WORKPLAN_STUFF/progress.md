@@ -2,7 +2,7 @@
 
 **URL-case completion: 48.1% — 37 of 77 known cases complete.**
 
-Recorded snapshot: **October 8, 2026, 00:01 America/New_York — midnight boundary checkpoint.** Counts remain unchanged. Complete supporting-response views pass for V10, but its original narrow interactions remain Pending. Profile/search JSON access and public-service routing requirements remain unresolved. S06 pagination checks continue. The provisional denominator remains unchanged; parked cases remain in it and no new case is added.
+Recorded snapshot: **October 8, 2026, 07:47 America/New_York — previous-run resumption and accounting.** Counts and denominator remain unchanged. Finish only the saved header correction and pending checks under the owner-amended previous cutoff before the new dated run. Rendering investigations remain Pending under the revised limit; no individual difference is accepted.
 
 This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
@@ -50,6 +50,11 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 7, 22:58 — additional-profile verification | 36 / 77 | 46.8% | P11 original functional, CV and fourteen visual checks pass with explicit fresh captures and qualified evidence reuse. Denominator unchanged; independent visualization checks remain Pending. |
 | October 7, 23:03 — team verification | 37 / 77 | 48.1% | O06 original functional checks and complete both-width views pass; all desktop portraits match exactly. Denominator unchanged. |
 | October 8, 00:01 — 00:00 checkpoint | 37 / 77 | 48.1% | Counts and denominator unchanged. Completed supporting-response checks do not complete V10; restricted JSON and routing cases remain Pending. S06 pagination review continues; original cutoff unchanged. |
+| October 8, 06:01 — 06:00 checkpoint | 37 / 77 | 48.1% | Counts and denominator unchanged. S05 original filter journeys, corresponding content and delivered assets pass available checks; complete views retain portrait differences. Capture qualifications and the fixed cutoff remain. |
+
+| October 8, 07:04 — early-pause handoff | 37 / 77 | 48.1% | Owner requests wind-down. S07 partial checks and checked local header edit change no whole-case state; denominator and original cutoff remain unchanged. |
+
+| October 8, 07:47 — previous-run resumption | 37 / 77 | 48.1% | Account for saved local correction and unfinished checks; no whole-case or denominator change. |
 
 Earlier per-release observations and the original dashboard are preserved in the [historical progress record](previous_workplan_artificts/progress_before_simplification_2026_10_06.md). Detailed release accounting stays in the batch records and private checkpoint.
 

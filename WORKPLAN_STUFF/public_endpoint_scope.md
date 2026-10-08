@@ -13,6 +13,8 @@ Contents:
 - [Turnstile configuration requirement](#turnstile-configuration-requirement)
 - [Source trace and remaining work](#source-trace-and-remaining-work)
 
+Owner-approved exceptions to reference behavior are recorded in [accepted_differences.md](accepted_differences.md) under [the workplan's decision procedure](workplan.md#ask-the-owner-about-reference-problems). Approval of that procedure does not change the endpoint scope or accept an individual difference.
+
 Current case status is in the [readable inventory](url_completion_inventory.md#cases); the global fraction and percentage are in [progress.md](progress.md). This scope document remains active. Its evidence column records approval/reference observations and implementation considerations, not a current passing-status list.
 
 ## How to read the data sources
