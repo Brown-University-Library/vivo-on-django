@@ -88,7 +88,8 @@
   }
 
   function draw() {
-    if (simulation) simulation.stop();
+    // Reference organization redraws let earlier simulations finish.
+    if (simulation && page.type !== 'ORGANIZATION') simulation.stop();
     svg.selectAll('*').remove();
     var nodes = allNodes.filter(function (node) { return node.localLevel <= scope; });
     var visible = new Set(nodes.map(function (node) { return node.id; }));
