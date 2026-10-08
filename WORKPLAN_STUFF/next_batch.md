@@ -14,7 +14,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U06 | V08 | `/display/{organization_id}/viz/collab` keyboard and exports | Previous | Fresh settled graph and complete SVG/PNG exports match; Space-key scope and copying pass at both widths. SD58 corrects the demonstrated rapid-switch simulation difference locally. Verify it after deployment, then finish detail/fit/resources/errors and remaining complete-view differences. This case's fixed requirements do not depend on V01's separate linked JSON check. |
+| U06 | V08 | `/display/{organization_id}/viz/collab` keyboard and exports | Previous | Release 67 is running and every change is accounted. Current complete SVG, labels/details restoration, desktop tooltip and fit checks pass; actual prior PNG/copy evidence remains applicable. Fresh complete initial/selected/export views are captured and inspected. Narrow views match; small desktop graph-glyph and button-corner pixels remain despite equal complete drawing values. A controlled minimum-height comparison does not reproduce the button pixels. Resolve the original full-view differences and corresponding rapid drawings; keep the reference's narrow pointer limitation documented. This case's fixed requirements do not depend on V01's separate linked JSON check. |
 
 
 
