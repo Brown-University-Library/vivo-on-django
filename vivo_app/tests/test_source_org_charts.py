@@ -154,6 +154,36 @@ class OrganizationChartTests(TestCase):
             self.fail('Research chart nodes should contain an area list.')
         self.assertEqual([node['nodeName'] for node in groups[1]], ['Area A'])
 
+    def test_research_chart_reverses_equal_count_area_order(self) -> None:
+        """
+        Checks descending counts reverse first appearance when research areas tie.
+        """
+        key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
+        source = json.loads(self.responses[key].body)
+        for index, doc in enumerate(source['response']['docs']):
+            person = json.loads(doc['json_txt'])
+            person['research_areas'] = ['Area A', 'Area B', 'Area C'] if index < 2 else ['Area C']
+            doc['json_txt'] = json.dumps(person)
+        self.responses[key] = self.response(source['response']['docs'])
+        _, chart = research_areas_data('org-example', 'live', self.read)
+        groups = chart['nodes']
+        if not isinstance(groups, list) or not isinstance(groups[1], list):
+            self.fail('Research chart nodes should contain an area list.')
+        self.assertEqual([node['nodeName'] for node in groups[1]], ['Area C', 'Area B', 'Area A'])
+        self.assertEqual([node['nodeValue'] for node in groups[1]], [3, 2, 2])
+        self.assertEqual(
+            chart['links'],
+            [
+                {'source': 1, 'target': 6, 'value': 1},
+                {'source': 1, 'target': 5, 'value': 1},
+                {'source': 1, 'target': 4, 'value': 1},
+                {'source': 2, 'target': 6, 'value': 1},
+                {'source': 2, 'target': 5, 'value': 1},
+                {'source': 2, 'target': 4, 'value': 1},
+                {'source': 3, 'target': 4, 'value': 1},
+            ],
+        )
+
     def test_chart_skips_listed_member_missing_from_solr(self) -> None:
         """Uses available members when a listed person has no Solr record."""
         key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
