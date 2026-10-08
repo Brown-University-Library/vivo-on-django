@@ -14,7 +14,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Row | Case | Scope / safe URL | Previous or added | Required work and current result |
 | --- | --- | --- | --- | --- |
-| U37 | S03 | `/search?q={query}`; affiliation More dialog | Previous | Current production preflight corresponds. Finish original groups/sorting/narrowing/selection/removal, actual supporting response and complete both-width views. Preserve every fixed criterion. |
+| U38 | V01 | `/display/{organization_id}/viz/collab` and linked JSON | Previous | Recheck current production source/date/order, then original scope/labels, linked response, organization return and complete both-width views. Preserve every fixed criterion. |
 
 
 
@@ -22,6 +22,7 @@ Contents: [Active URLs and actions](#active-urls-and-actions) · [Parked cases](
 
 | Case | Recorded blocker and target | Recovery condition and exact next action | Evidence and remaining checks |
 | --- | --- | --- | --- |
+| S03 | Complete dialog/result visual requirements retain differences and unsettled captures. | Account for stationary rendering and finish original complete initial/selected/removed surfaces. | Release 65 shared exposure and original affiliation controls pass; actual normal supporting metadata and complete ordered rows agree. Whole case stays Pending. |
 | S06 | Complete current views retain unexplained portrait pixels and several immediate wheel frames move. | Explain actual portrait rendering and replace excluded frames; then finish original complete visual requirements. | Original pagination/history, current metadata and all SD55 controls pass on release 64 at both widths. Full three-state order and complete inspected views are retained privately; whole case stays Pending. |
 | S11 | Public target redirects to sign-in; ordinary signed-in production JSON entry is blocked by the browser. | Permitted current target response enables actual JSON metadata, complete array/order and both-width view checks. | Reference current successful JSON response contains twenty objects and is saved privately. Target criteria remain Pending; no alternate access. |
 | I04 | Existing public service entry returns its required trailing-slash redirect; the mounted entry redirects to sign-in. | Owner clarifies whether to keep only the existing service entry or add a Django redirect to that service. Confirm routing ownership before changes; backend stays excluded. | Current public status and exact destination saved privately; no backend request or configuration change. Whole case stays Pending. |
