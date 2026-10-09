@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 
-{% block title %}Traffic control and bot detection{% endblock %}
+{% block body_class %}bot-detect-challenge{% endblock %}
+
+{% block extra_css %}<style>.bot-detect-challenge #wrapper-content { min-height: 0; }</style>{% endblock %}
 
 {% block head_extra %}<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script><meta name="robots" content="noindex">{% endblock %}
 
 {% block content %}
-<div class="container">
-  <h1>Traffic control and bot detection...</h1>
+  <h1 class="brand-alt-h1 mb-4">Traffic control and bot detection...</h1>
   <div id="turnstile-challenge" class="cf-turnstile" data-sitekey="{{ turnstile_sitekey }}" data-callback="turnstileCallback"></div>
   <form hidden>{% csrf_token %}</form>
-  <noscript><div class="alert alert-danger">Sorry, Javascript is required to be enabled for our traffic check.</div></noscript>
-  <p>We strive to make our content freely available. If this check is preventing access, enable cookies and try again.</p>
-</div>
+  <noscript><div class="alert alert-danger">Sorry, Javascript is required to be enabled for our traffic check, and does not appear available.</div></noscript>
+  <p>We strive to make our content freely available. If this check is preventing you from making use of our resources, make sure you have cookies enabled. If you still have trouble, please <a href="{{ contact_us_url }}">get in touch</a>.</p>
 <script>
 async function turnstileCallback(token) {
   const error = document.getElementById('turnstile-challenge');
@@ -28,7 +28,7 @@ async function turnstileCallback(token) {
     }
     window.location.replace(dest);
   } catch (failure) {
-    error.outerHTML = '<div class="alert alert-danger" role="alert">Check failed. Please refresh and try again.</div>';
+    error.outerHTML = '<div class="alert alert-danger" role="alert"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Check failed. Sorry, something has gone wrong, or your traffic looks unusual to us. You can try refreshing this page to try again.</div>';
   }
 }
 </script>

@@ -818,13 +818,14 @@ def subject_lib(request, list_id):
 @require_http_methods(['GET', 'POST'])
 def bot_detect_challenge(request: HttpRequest) -> HttpResponse:
     """
-    Shows or verifies a Turnstile challenge when search protection is enabled.
+    Shows or verifies a configured Turnstile challenge outside offline data modes.
 
     Called by: config.urls
     """
-    if not settings.TURNSTILE_ENABLED:
+    configured: bool = bool(settings.CF_TURNSTILE_SITEKEY and settings.CF_TURNSTILE_SECRET_KEY)
+    if settings.PAGE_DATA_MODE in {'prepared', 'replay'} or (not settings.TURNSTILE_ENABLED and not configured):
         return HttpResponseNotFound()
-    if not settings.CF_TURNSTILE_SITEKEY or not settings.CF_TURNSTILE_SECRET_KEY:
+    if not configured:
         return data_unavailable(PageDataError('The browser challenge is not configured.'))
     if request.method == 'POST':
         session = getattr(request, 'session', None)
@@ -842,7 +843,11 @@ def bot_detect_challenge(request: HttpRequest) -> HttpResponse:
                 'ip': request.META.get('REMOTE_ADDR', ''),
             }
         return JsonResponse({'success': success, 'redirect_for_challenge': bool(success)})
-    return render(request, 'bot_detect/challenge.html', {'turnstile_sitekey': settings.CF_TURNSTILE_SITEKEY})
+    return render(
+        request,
+        'bot_detect/challenge.html',
+        {'turnstile_sitekey': settings.CF_TURNSTILE_SITEKEY, 'source_page_styles': True},
+    )
 
 
 # Legacy VIVO URLs
