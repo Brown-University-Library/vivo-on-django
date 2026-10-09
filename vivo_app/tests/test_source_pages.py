@@ -1913,9 +1913,53 @@ class SourcePageTests(TestCase):
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
             response = self.get_page('/search?q=Example&format=json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
+        self.assertEqual(response['Content-Type'], 'application/json; charset=utf-8')
+        self.assertEqual(response.content.decode(), profile_json_text(rows))
         self.assertEqual(json.loads(response.content), rows)
         self.assertEqual(search_json_data([('q', 'none')], 'live', 'http://127.0.0.1/', self.read), [])
+
+    def test_search_json_encoding_preserves_highlights_and_unicode(self) -> None:
+        """
+        Checks live and replay downloads escape HTML without changing decoded search values.
+        """
+        data: list[dict[str, object]] = [
+            {
+                'name': 'Réseau 雪',
+                'highlights': {
+                    'highlights': [
+                        {'field': 'title', 'values': ['Professor of <strong>Example</strong> & text\u2028\u2029']}
+                    ]
+                },
+                'literal': r'\u003c',
+                'optional': None,
+            }
+        ]
+        expected = (
+            '[{"name":"Réseau 雪","highlights":{"highlights":[{"field":"title","values":'
+            '["Professor of \\u003cstrong\\u003eExample\\u003c/strong\\u003e \\u0026 text\\u2028\\u2029"]}]},'
+            '"literal":"\\\\u003c","optional":null}]'
+        )
+        for mode in ('live', 'replay'):
+            with (
+                self.subTest(mode=mode),
+                override_settings(PAGE_DATA_MODE=mode, UPSTREAM_RECORDING_MANIFEST='invented-manifest.json'),
+                patch('vivo_app.views.search_json_data', return_value=data),
+            ):
+                response = self.get_page('/search?q=Example&format=json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response['Content-Type'], 'application/json; charset=utf-8')
+            self.assertEqual(response.content.decode(), expected)
+            self.assertEqual(json.loads(response.content), data)
+
+    def test_search_json_encoding_preserves_empty_results(self) -> None:
+        """
+        Checks a search with no results still returns an empty JSON array.
+        """
+        with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+            response = self.get_page('/search?q=none&format=json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b'[]')
+        self.assertEqual(response['Content-Type'], 'application/json; charset=utf-8')
 
     def test_organization_publications_tsv_uses_member_records(self) -> None:
         """

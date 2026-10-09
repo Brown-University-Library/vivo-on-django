@@ -682,7 +682,8 @@ def search(request: HttpRequest) -> HttpResponse:
             if settings.PAGE_DATA_MODE in {'live', 'replay'}:
                 pairs = [(key, value) for key, value in query_pairs(request.GET) if key != 'format']
                 site_origin = request.build_absolute_uri(reverse('home')) or ''
-                return JsonResponse(search_json_data(pairs, settings.PAGE_DATA_MODE, site_origin), safe=False)
+                data = search_json_data(pairs, settings.PAGE_DATA_MODE, site_origin)
+                return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
             saved_response = get_response_data(request.path_info, query_pairs(request.GET))
             if saved_response is not None:
                 return prepared_response(saved_response)
