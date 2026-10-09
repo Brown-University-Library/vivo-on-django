@@ -1954,6 +1954,73 @@ class SourcePageTests(TestCase):
         self.assertLess(body.index('\tAlpha\t'), body.index('\t Zeta\t'))
         self.assertIn('\tOld\t\t\tArticle\t', body)
 
+    def test_organization_export_sorts_members_before_request_batches(self) -> None:
+        """
+        Checks regular and custom exports sort members before batching and retain Solr response order.
+        """
+        ids = [f'invented-{number:02d}' for number in range(25)]
+        people = [
+            {
+                'faculty_uri': f'http://vivo.brown.edu/individual/{identifier}',
+                'label': ('a' if number % 2 == 0 else 'B') + identifier,
+            }
+            for number, identifier in enumerate(ids)
+        ]
+        original = json.loads(self.responses[profile_key('org-example')].body)['response']['docs'][0]
+        for identifier, custom in (('org-example', False), ('org-brown-univ-dept124', True)):
+            with self.subTest(custom=custom):
+                organization = dict(original)
+                organization['id'] = f'http://vivo.brown.edu/individual/{identifier}'
+                item = json.loads(organization['json_txt'][0])
+                item['people'] = list(reversed(people)) + [people[0]]
+                organization['json_txt'] = [json.dumps(item)]
+                self.responses[profile_key(identifier)] = self.solr_response([organization], 1)
+                ordered = sorted(people, key=lambda person: person['label'] if custom else person['label'].upper())
+                ordered_ids = [person['faculty_uri'].rsplit('/', 1)[-1] for person in ordered]
+                expected_ids: list[str] = []
+                for start in range(0, len(ordered_ids), 20):
+                    batch = ordered_ids[start : start + 20]
+                    response_ids = list(reversed(batch))
+                    expected_ids.extend(response_ids)
+                    docs = [
+                        {
+                            'id': f'http://vivo.brown.edu/individual/{member_id}',
+                            'record_type': ['PEOPLE'],
+                            'json_txt': [
+                                json.dumps({'name': member_id, 'contributor_to': [{'title': member_id, 'date': '2024'}]})
+                            ],
+                        }
+                        for member_id in response_ids
+                    ]
+                    self.responses[member_details_key(batch)] = self.solr_response(docs, len(docs))
+                body = organization_publications_data(identifier, 'live', self.read)
+                actual_ids = [row.split('\t')[0].rsplit('/', 1)[-1] for row in body.splitlines()[1:]]
+                self.assertEqual(actual_ids, expected_ids)
+                self.assertEqual(len(actual_ids), len(ids))
+
+    def test_organization_export_preserves_unicode_spaces_when_sorting_titles(self) -> None:
+        """
+        Checks export sorting preserves Unicode spaces without changing profile publication sorting.
+        """
+        key = member_details_key(['invented-a'])
+        response = json.loads(self.responses[key].body)
+        person = json.loads(response['response']['docs'][0]['json_txt'][0])
+        person['contributor_to'] = [
+            {'title': '\u2007Alpha', 'date': '2024'},
+            {'title': 'Zulu', 'date': '2024'},
+            {'title': ' Beta ', 'date': '2024'},
+            {'title': '\u00a0Alpha', 'date': '2024'},
+            {'title': 'Newest', 'date': '2025'},
+        ]
+        response['response']['docs'][0]['json_txt'] = [json.dumps(person)]
+        self.responses[key] = self.solr_response(response['response']['docs'], 1)
+        body = organization_publications_data('org-example', 'live', self.read)
+        titles = [row.split('\t')[2] for row in body.splitlines()[1:]]
+        self.assertEqual(titles, ['Newest', ' Beta ', 'Zulu', '\u00a0Alpha', '\u2007Alpha'])
+        profile_publications, _ = publications(person)
+        self.assertIn('Alpha', profile_publications[1]['html'])
+        self.assertIn('Zulu', profile_publications[-1]['html'])
+
     def test_organization_publications_tsv_preserves_source_tabs_and_line_breaks(self) -> None:
         """
         Checks the download retains the reference's original field separators.
@@ -2445,7 +2512,7 @@ class SourcePageTests(TestCase):
         existing = json.loads(self.responses[member_details_key(['invented-a'])].body)['response']['docs'][0]
         self.responses[team_member_key(['invented-b'])] = self.solr_response([added], 1)
         self.responses[member_key(['invented-a', 'invented-b'])] = self.solr_response([existing, added], 2)
-        self.responses[member_details_key(['invented-a', 'invented-b'])] = self.solr_response([existing, added], 2)
+        self.responses[member_details_key(['invented-b', 'invented-a'])] = self.solr_response([existing, added], 2)
         with TemporaryDirectory() as directory:
             manifest = Path(directory) / 'members.json'
             manifest.write_text(

@@ -731,7 +731,7 @@ def ordered_publication_rows(item: dict[str, object]) -> list[dict[str, object]]
     """
     Orders source publications by valid year and trimmed title.
 
-    Called by: publications(), organization_publications_data()
+    Called by: publications()
     """
     raw = entries(item, 'contributor_to')
     raw.sort(
@@ -1335,6 +1335,10 @@ def organization_publications_data(
         raise PageDataError('The requested source record is not an organization.')
     organization = record_data(docs[0])
     members = organization_members(organization, extra_member_ids or [], mode, reader)
+    custom_members = identifier in CUSTOM_ORGANIZATION_IDS
+    members.sort(
+        key=lambda member: first_text(member.get('label')) if custom_members else first_text(member.get('label')).upper()
+    )
     member_ids = list(dict.fromkeys(record_id({'id': first_text(member.get('faculty_uri'))}) for member in members))
     member_docs: list[dict[str, object]] = []
     for start in range(0, len(member_ids), 20):
@@ -1350,7 +1354,14 @@ def organization_publications_data(
         if first_text(doc.get('record_type')) != 'PEOPLE':
             raise PageDataError('Solr returned an unrelated organization member.')
         person = record_data(doc)
-        publications_data = ordered_publication_rows(person)
+        ## Rails trims ASCII whitespace when sorting export titles, preserving Unicode spaces.
+        publications_data = sorted(
+            entries(person, 'contributor_to'),
+            key=lambda row: (
+                -int(publication_year(row) or 0),
+                first_text(row.get('title')).strip(' \t\r\n\v\f\x00').lower(),
+            ),
+        )
         for publication in publications_data:
             kind = publication_export_type(publication)
             fields = (
