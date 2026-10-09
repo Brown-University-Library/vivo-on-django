@@ -417,7 +417,8 @@ def search_json_data(
             if path
             else ('person_placeholder.jpg' if kind == 'PEOPLE' else 'org_placeholder.png')
         )
-        title = first_text(item.get('title'))
+        raw_title = item.get('title')
+        title = first_text(raw_title) if raw_title is not None else None
         result.append(
             {
                 'id': first_text(doc.get('id')),
@@ -425,8 +426,8 @@ def search_json_data(
                 'uri': site_origin.rstrip('/') + '/display/' + identifier,
                 'name': name,
                 'thumbnail': thumbnail,
-                'title': title[:48] + '...' if len(title) > 50 else title,
-                'email': first_text(item.get('email')),
+                'title': title[:48] + '...' if title is not None and len(title) > 50 else title,
+                'email': first_text(item.get('email')) if item.get('email') is not None else None,
                 'type': kind,
                 'highlights': {'highlights': hits},
             }

@@ -1906,6 +1906,8 @@ class SourcePageTests(TestCase):
         self.assertEqual(rows[0]['vivo_id'], 'invented-a')
         self.assertEqual(rows[0]['uri'], 'http://127.0.0.1/display/invented-a')
         self.assertEqual(rows[0]['thumbnail'], 'http://example.invalid/profile-images/123/4/portrait.jpg')
+        self.assertEqual(rows[0]['title'], 'Example Professor')
+        self.assertEqual(rows[0]['email'], 'invented@example.invalid')
         self.assertEqual(
             rows[0]['highlights'],
             {'highlights': [{'field': 'short_id_s', 'values': ['<strong>Example</strong> <script>unsafe</script>']}]},
@@ -1917,6 +1919,39 @@ class SourcePageTests(TestCase):
         self.assertEqual(response.content.decode(), profile_json_text(rows))
         self.assertEqual(json.loads(response.content), rows)
         self.assertEqual(search_json_data([('q', 'none')], 'live', 'http://127.0.0.1/', self.read), [])
+
+    def test_search_json_preserves_null_and_empty_title_and_email(self) -> None:
+        """
+        Checks missing and null fields return JSON null while explicit empty strings remain empty.
+        """
+        key = search_key('Example', 1, [])
+        original = self.responses[key]
+        cases: tuple[tuple[str, dict[str, object], str | None], ...] = (
+            ('missing', {}, None),
+            ('null', {'title': None, 'email': None}, None),
+            ('empty', {'title': '', 'email': ''}, ''),
+        )
+        for kind in ('PEOPLE', 'ORGANIZATION'):
+            for label, fields, expected in cases:
+                with self.subTest(kind=kind, fields=label):
+                    source = json.loads(original.body)
+                    doc = source['response']['docs'][0]
+                    raw = json.loads(doc['json_txt'][0])
+                    raw.pop('title', None)
+                    raw.pop('email', None)
+                    raw.update(fields)
+                    doc['json_txt'] = [json.dumps(raw)]
+                    doc['record_type'] = [kind]
+                    self.responses[key] = RecordedResponse(200, (), json.dumps(source).encode())
+                    with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+                        response = self.get_page('/search?q=Example&format=json')
+                    self.assertEqual(response.status_code, 200)
+                    result = json.loads(response.content)
+                    self.assertEqual(result[0]['title'], expected)
+                    self.assertEqual(result[0]['email'], expected)
+                    if expected is None:
+                        self.assertIn(b'"title":null', response.content)
+                        self.assertIn(b'"email":null', response.content)
 
     def test_search_json_encoding_preserves_highlights_and_unicode(self) -> None:
         """
