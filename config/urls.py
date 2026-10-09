@@ -171,6 +171,9 @@ urlpatterns = [
     path('reports/subject-lib', vivo_views.subject_lib_list, name='subject_lib_list_public'),
     path('reports/subject-lib/', vivo_views.subject_lib_list, name='subject_lib_list'),
     path('reports/subject-lib/<str:list_id>/', vivo_views.subject_lib, name='subject_lib'),
+    # Existing public data service, outside the Django application mount
+    path('services/data/v1/faculty/<str:id>', vivo_views.faculty_service_redirect, name='faculty_service'),
+    path('services/data/v1/faculty/<str:id>/', vivo_views.faculty_service_redirect, name='faculty_service_slash'),
     # Bot detection
     path('challenge', vivo_views.bot_detect_challenge, name='bot_detect_challenge'),
     path('challenge/', vivo_views.bot_detect_challenge),

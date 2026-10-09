@@ -907,6 +907,23 @@ def old_image(request: HttpRequest, id: str, file_name: str) -> HttpResponse:
     return HttpResponse(status=301, headers={'Location': location})
 
 
+# Existing public data service
+@require_http_methods(['GET', 'HEAD'])
+def faculty_service_redirect(request: HttpRequest, id: str) -> HttpResponse:
+    """
+    Redirects faculty data requests to the existing service at the site root.
+
+    Called by: config.urls
+    """
+    destination = f'/services/data/v1/faculty/{quote(id, safe="")}/'
+    query = request.META.get('QUERY_STRING', '')
+    if query:
+        destination += '?' + query
+    response = HttpResponse(status=301, headers={'Location': request.build_absolute_uri(destination)})
+    response['Access-Control-Allow-Origin'] = '*'
+    return response
+
+
 # Legacy VIVO individual handlers
 def individual_redirect(request: HttpRequest, id: str) -> HttpResponse:
     """

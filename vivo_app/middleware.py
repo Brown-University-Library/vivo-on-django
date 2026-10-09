@@ -62,6 +62,7 @@ class LocalPageDataMiddleware:
             'organizations',
             'individual_redirect',
             'individual_export',
+            'faculty_service_redirect',
             'old_image',
             'prepared_asset',
             'prepared_document',
