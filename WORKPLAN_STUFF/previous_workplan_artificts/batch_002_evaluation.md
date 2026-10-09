@@ -1,6 +1,6 @@
 # Batch 002 deployed evaluation
 
-October 3, 2026. The owner confirmed deployment. Loaded revision `2ba9b1f`; application commit `75269fc`. Private evidence label: `batch-002-profile-checks`. Exact bindings and detailed evidence remain outside Git. This evaluation records every implemented outcome; it does not certify whole URLs or owner acceptance.
+October 3, 2026. The owner confirmed deployment. Loaded revision `2ba9b1f`; application commit `75269fc`. Private comparison record label: `batch-002-profile-checks`. Exact bindings and detailed check records remain outside Git. This evaluation records every implemented outcome; it does not certify whole URLs or owner acceptance.
 
 ## Per-improvement results
 

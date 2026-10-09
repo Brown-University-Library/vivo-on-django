@@ -17,9 +17,9 @@ Application commits `fafaff3` support partial PDF requests and `a51fcfa` match O
 
 ## Changes and deployed checks
 
-| Change ID | Cases and change | Local evidence | Required check after deployment |
+| Change ID | Cases and change | Local check results | Required check after deployment |
 | --- | --- | --- | --- |
-| url-batch-005-01 | P01 linked CV and required PDF endpoints: support a single requested byte range, accurate lengths, and body-free HEAD responses. Complete downloads retain every byte. | Reference binary delivery supports a single byte range; the existing handler returns the whole document. Focused helper and endpoint tests cover closed/open/suffix ranges, unsatisfied requests, full downloads, HEAD, invalid/multiple fields, and unconfirmed If-Range. | Confirm a signed-in CV opens and displays every page; compare the downloaded document and delivery metadata. Verify a single range returns the requested bytes with 206 and Content-Range; full GET/HEAD remain correct. Do not count an unauthenticated sign-in redirect as document-handler evidence. |
+| url-batch-005-01 | P01 linked CV and required PDF endpoints: support a single requested byte range, accurate lengths, and body-free HEAD responses. Complete downloads retain every byte. | Reference binary delivery supports a single byte range; the existing handler returns the whole document. Focused helper and endpoint tests cover closed/open/suffix ranges, unsatisfied requests, full downloads, HEAD, invalid/multiple fields, and unconfirmed If-Range. | Confirm a signed-in CV opens and displays every page; compare the downloaded document and delivery metadata. Verify a single range returns the requested bytes with 206 and Content-Range; full GET/HEAD remain correct. Do not count an unauthenticated sign-in redirect as document-handler check results. |
 | url-batch-005-02 | P04 and affected profiles: returning to Overview or opening its explicit bookmark removes the section name from the fragment, matching the reference. | Fresh keyboard and bookmark comparisons expose the difference; reference implementation confirms the expected fragment. The correction retains the selected control and existing section behavior. JavaScript syntax checking passes. | Check keyboard and pointer navigation back to Overview and fresh Overview bookmarks at both widths. Confirm active controls, visible panels, other fragments, and profile content remain correct; recheck P01 and completed P07. |
 
 ## Local validation
@@ -28,7 +28,7 @@ Application commits `fafaff3` support partial PDF requests and `a51fcfa` match O
 - Ruff lint and formatting: all four changed Python files pass.
 - Pyright: all four changed Python files pass with zero errors/warnings using the project interpreter, Python 3.12, and basic checking. Pylance is unavailable.
 - JavaScript: `node --check vivo_app/static/js/tabs.js` passes.
-- All twenty-four workplan Markdown files and 256 relative links/anchors pass validation. Twenty distinct selected cases and all thirty-eight pending scope rows remain. `git diff --check` passes. Private evidence stays outside Git.
+- All twenty-four workplan Markdown files and 256 relative links/anchors pass validation. Twenty distinct selected cases and all thirty-eight pending scope rows remain. `git diff --check` passes. Private check records stays outside Git.
 
 ## Remaining work
 

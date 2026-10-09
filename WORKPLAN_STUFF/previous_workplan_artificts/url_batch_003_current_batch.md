@@ -19,18 +19,18 @@ Application commits `3672e4f` restore information-page content and `eb3e62d` ena
 
 ## Changes and deployed checks
 
-| Change ID | Cases and change | Local evidence | Required check after deployment |
+| Change ID | Cases and change | Local check results | Required check after deployment |
 | --- | --- | --- | --- |
 | url-batch-003-01 | ABOUT01/HELP01 and shared navigation: enable FAQ, History, Roadmap, publication help, Terms of Use, and visualization help in live, replay, and prepared modes. | All six handlers render real templates in each mode without source access. Unrelated unconverted pages remain unavailable. | Follow About/Help and footer links. Confirm all six destinations render full pages, including existing illustrations and shared presentation. |
 | url-batch-003-02 | Use the reference's bare public paths for these six destinations, retaining slash aliases. Keep the Roadmap visualization-help link inside a mounted application. | Canonical reverses, both path forms, and mounted About/Help/Roadmap navigation pass tests. | Follow each actual link; verify expected paths, fragments, and application prefix. Recheck bare About behavior separately. |
-| url-batch-003-03 | Restore reference text, punctuation, lists, headings, anchors, illustrations, and spacing on the six supporting information pages. | Full rendered text matches at desktop/narrow widths. Forty paired screenshot frames match at the measured pixel threshold and were visually inspected. FAQ's twelve in-page links and publication help's six links have targets; sampled clicks reach the final sections. Existing generic sample-illustration text and new-tab link protection are retained. | Repeat complete content and desktop/narrow visual comparisons. Check FAQ and publication-help anchors, Roadmap's link, observed images, and required assets. Record any difference instead of counting local evidence as deployed completion. |
+| url-batch-003-03 | Restore reference text, punctuation, lists, headings, anchors, illustrations, and spacing on the six supporting information pages. | Full rendered text matches at desktop/narrow widths. Forty paired screenshot frames match at the measured pixel threshold and were visually inspected. FAQ's twelve in-page links and publication help's six links have targets; sampled clicks reach the final sections. Existing generic sample-illustration text and new-tab link protection are retained. | Repeat complete content and desktop/narrow visual comparisons. Check FAQ and publication-help anchors, Roadmap's link, observed images, and required assets. Record any difference instead of counting local check results as deployed completion. |
 
 ## Local validation
 
 - Full Django suite: 276 tests pass.
 - Ruff lint and formatting: all four changed Python files pass.
 - Pyright: all four changed Python files pass with zero errors/warnings using the project interpreter, Python 3.12, and basic checking. Pylance is unavailable.
-- Six supporting pages: matching rendered text and paired full-content/footer screenshots at 1280×720 and 390×844. Forty measured pairs have no pixels differing by more than twelve color levels. This is local evidence only.
+- Six supporting pages: matching rendered text and paired full-content/footer screenshots at 1280×720 and 390×844. Forty measured pairs have no pixels differing by more than twelve color levels. This is local check results only.
 - All twenty-two Markdown files and 274 relative links/anchors pass validation; twenty distinct selected cases and all thirty-eight pending scope rows remain. `git diff --check` passes.
 - The temporary review server is stopped and viewport overrides are reset. Private records and screenshots remain outside Git.
 
@@ -38,4 +38,4 @@ Application commits `3672e4f` restore information-page content and `eb3e62d` ena
 
 Keep all twenty cases in [next_batch.md](../next_batch.md), with concrete remaining checks. Finish ABOUT01/HELP01 navigation after this deployment. Finish P07's asset and Terms destination checks and repeat any capture that had not settled before assessing whole completion. Continue P01's links, CV, assets, Overview, and long Research/View All comparisons. Other profiles need remaining links, interactions, and full views despite passing selected content/filter checks.
 
-Search count/order and the missing organization member require source alignment evidence; do not force counts, ordering, or membership to match one recorded snapshot. Other information endpoints need separate deployed evidence. Every required URL-pattern endpoint must eventually be visually confirmed against Rails.
+Search count/order and the missing organization member require source alignment checks; do not force counts, ordering, or membership to match one recorded snapshot. Other information endpoints need separate deployed check results. Every required URL-pattern endpoint must eventually be visually confirmed against Rails.

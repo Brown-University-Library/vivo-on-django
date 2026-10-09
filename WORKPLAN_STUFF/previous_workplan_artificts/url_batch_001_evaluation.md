@@ -1,6 +1,6 @@
 # First twenty-URL batch: deployed evaluation
 
-Evaluated October 3, 2026, on loaded revision `6088911`. The owner confirmed deployment. Follow [workplan.md](../workplan.md) and the [implementation record](url_batch_001_current_batch.md). Exact pairs and observations remain outside Git under private evidence label `url-batch-002-review`.
+Evaluated October 3, 2026, on loaded revision `6088911`. The owner confirmed deployment. Follow [workplan.md](../workplan.md) and the [implementation record](url_batch_001_current_batch.md). Exact pairs and observations remain outside Git under private comparison record label `url-batch-002-review`.
 
 ## Each implemented outcome
 
@@ -18,6 +18,6 @@ All fifteen profile button lists match, and no broken images were observed on th
 
 The owner opened About and Help manually in Brave. Both display the application's unavailable-page response; they are no longer classified solely as browser-blocked checks. The middleware excludes these static handlers in source modes. The next batch enables their existing content and checks presentation locally.
 
-P01 keyboard section selection matches at desktop and narrow widths. Paired screenshots cover all six states and their lower content/footer. Background and Teaching match fully at both widths: four visual checks now pass. Other states remain open: Affiliations heading spacing differs by eleven pixels; Overview has small image differences; long Research content differs in height by about one to two pixels, and View All includes those differences. Preserve these observations rather than treating all captures as passes. Earlier exploratory or interrupted captures are not completion evidence.
+P01 keyboard section selection matches at desktop and narrow widths. Paired screenshots cover all six states and their lower content/footer. Background and Teaching match fully at both widths: four visual checks now pass. Other states remain open: Affiliations heading spacing differs by eleven pixels; Overview has small image differences; long Research content differs in height by about one to two pixels, and View All includes those differences. Preserve these observations rather than treating all captures as passes. Earlier exploratory or interrupted captures are not completion check results.
 
-Whole URLs completed: zero. Twenty URLs carry forward; zero new URLs are added. Every required URL-pattern endpoint still needs its own functional and visual completion evidence.
+Whole URLs completed: zero. Twenty URLs carry forward; zero new URLs are added. Every required URL-pattern endpoint still needs its own functional and visual completion check results.

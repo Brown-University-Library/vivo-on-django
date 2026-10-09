@@ -109,7 +109,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 
 - Do not use hard line-breaks in markdown files; let paragraphs wrap naturally.
 - When creating a Markdown file with more than three top-level `##` headings, add a table of contents near the top with links to those `##` headings.
-- Use plain, direct language. Explain who does what, in what order, and why; describe command behavior and failure recovery with concrete actions.
+- Use friendly, plain-speaking language. Explain who does what, in what order, and why; name concrete materials such as check results, screenshots, and saved comparisons. Avoid jargon unless a precise term is needed.
 - Say "made-up names and records in repository examples; real data stays outside Git" instead of "invented and non-identifying examples."
 
 
@@ -249,7 +249,7 @@ When implementing a change (especially from an issue/task):
 - Start with `WORKPLAN_STUFF/workplan.md` for the active workflow and checklists, then `WORKPLAN_STUFF/GOAL.md` for scope. `WORKPLAN_STUFF/next_batch.md` selects twenty distinct URLs; make as many relevant improvements as reasonably possible for each, and retain unfinished URLs with specific next actions. The running public Rails application is the reference for required behavior and appearance; historical routes and prototype tests alone do not establish current requirements.
 - `codex-plan.md`, `OLD_gpt5_conversion_plan.md`, `OLD_windsurf_conversion_plan.md`, and `docs/routes_mapping.md` describe earlier, broader work. Follow `WORKPLAN_STUFF/GOAL.md` when they disagree.
 - When the enclosing workspace is available, `../stuff_README.md` locates its materials. `../vivo-on-rails/` contains Rails source for comparison, including `config/routes.rb`, controllers, views, and assets.
-- `../rab_primary_url_paths.md` and `../apache_log_analysis.md` contain historical URL evidence. `../REPORT__previous_work.md`, `../REPORT__consolidation.md`, and `../previous_work/` supply local background. Review privately; do not copy raw records or operational details into tracked files.
+- `../rab_primary_url_paths.md` and `../apache_log_analysis.md` contain historical URL records. `../REPORT__previous_work.md`, `../REPORT__consolidation.md`, and `../previous_work/` supply local background. Review privately; do not copy raw records or operational details into tracked files.
 - These adjacent files are not part of a standalone checkout. Background links in `WORKPLAN_STUFF/GOAL.md` point to files in the enclosing workspace.
 
 ### Code locations

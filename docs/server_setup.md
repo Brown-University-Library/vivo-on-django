@@ -47,7 +47,7 @@ uv run ./manage.py collectstatic --noinput
 uv run ./manage.py check --deploy --tag staticfiles
 ```
 
-Run `collectstatic` after every code update, before calling deployment complete. It copies changed static files into `STATIC_ROOT`; new asset version queries alone do not update those copies. The scheduled update caller performs collection as part of automatic deployment. Confirm that its static-collection option is enabled. Codex follows [the workplan's automatic checks](../WORKPLAN_STUFF/workplan.md#automatic-deployment-and-verification) without waiting for an owner message. When authorized server access exists, run the command checks below; otherwise record them as not run and retain separate browser delivery evidence.
+Run `collectstatic` after every code update, before calling deployment complete. It copies changed static files into `STATIC_ROOT`; new asset version queries alone do not update those copies. The scheduled update caller performs collection as part of automatic deployment. Confirm that its static-collection option is enabled. Codex follows [the workplan's automatic checks](../WORKPLAN_STUFF/workplan.md#automatic-deployment-and-verification) without waiting for an owner message. When authorized server access exists, run the command checks below; otherwise record them as not run and retain separate browser delivery checks.
 
 `check --deploy --tag staticfiles` reads the application's CSS and JavaScript source files and compares their contents with the collected copies. It reports an error when a copy is missing, unreadable, or stale. It contacts no server and changes no files or application data. Ordinary startup checks skip this comparison. After an error, run `collectstatic` and repeat the check.
 

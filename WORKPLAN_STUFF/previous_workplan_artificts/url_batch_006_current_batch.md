@@ -17,7 +17,7 @@ Application commits `d031a63` and `7302dd3` contain the next search and homepage
 
 ## Changes and deployed checks
 
-| Change ID | Cases and change | Local evidence | Required check after deployment |
+| Change ID | Cases and change | Local check results | Required check after deployment |
 | --- | --- | --- | --- |
 | url-batch-006-01 | ADVANCED01, H01, EMPTY01, BROWSE01, SEARCH01, and shared forms: generate bare search and advanced-search paths while retaining slash aliases. | Both form aliases render; application-prefix tests pass. Local browser form action, Back to search, homepage search, and empty submission use the bare paths. | Confirm generated links/actions under the deployed prefix, both direct aliases, keyboard/pointer form submission, browser Back restoration, and affected profile/organization search controls. |
 | url-batch-006-02 | Search and profile Advanced search links retain the current query string, including repeated filters and page. | Reference link and Rails include retain the query; rendered-link tests preserve repeated values and HTML escaping. Local browser navigation retains the complete decoded query. | Follow the link from EMPTY01, SEARCH01, filtered/paged search and any profile variation that exposes this link. Confirm path/query, field behavior, and browser return. |

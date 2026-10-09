@@ -103,7 +103,7 @@ This inventory compares declarations in [pyproject.toml](pyproject.toml), use in
 
 ### Application packages
 
-| Package | Purpose and evidence |
+| Package | Purpose and where it is used |
 | --- | --- |
 | `Django` | Serves pages, handles URLs, renders templates, and provides database and authentication support. Used throughout [config/](config/) and [vivo_app/](vivo_app/). |
 | `python-dotenv` | Loads local environment configuration through `load_dotenv()` in [config/settings.py](config/settings.py). |

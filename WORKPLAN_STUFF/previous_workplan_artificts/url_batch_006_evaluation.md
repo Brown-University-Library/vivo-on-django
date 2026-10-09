@@ -1,12 +1,12 @@
 # Deployed evaluation: URL batch 006
 
-Evaluated October 5, 2026 on loaded revision `dedf2c8`. Exact URLs, records, screenshots, and detailed observations remain outside Git under private evidence label `url-batch-007-review`. Follow [progress.md](../progress.md) and [the next list](../next_batch.md).
+Evaluated October 5, 2026 on loaded revision `dedf2c8`. Exact URLs, records, screenshots, and detailed observations remain outside Git under private comparison record label `url-batch-007-review`. Follow [progress.md](../progress.md) and [the next list](../next_batch.md).
 
 Contents:
 
 - [Recorded changes](#recorded-changes)
 - [Whole URL results](#whole-url-results)
-- [Evidence and limits](#evidence-and-limits)
+- [Check results and limits](#check-results-and-limits)
 - [Next implementation](#next-implementation)
 
 ## Recorded changes
@@ -23,7 +23,7 @@ Four outcomes pass and one is partial. Do not count the pending JSON portion as 
 
 ## Whole URL results
 
-Three cases complete this review; the total advances from six to nine. Their four functional criteria are now explicit; this does not imply a numerical increase on an older undefined denominator. Earlier department-submission evidence is retained because the fielded-query behavior did not change. Endpoint families and final owner acceptance remain pending.
+Three cases complete this review; the total advances from six to nine. Their four functional criteria are now explicit; this does not imply a numerical increase on an older undefined denominator. Earlier department-submission check results are retained because the fielded-query behavior did not change. Endpoint families and final owner acceptance remain pending.
 
 | Case | Functional criteria F01–F04 | Result |
 | --- | --- | --- |
@@ -33,7 +33,7 @@ Three cases complete this review; the total advances from six to nine. Their fou
 
 V01 is the complete settled 1280×720 view; V02 is the complete settled 390×844 view. Each includes relevant content below the first screen and the footer. External feedback links retain their own current-page query. Institution links using HTTP on the reference and HTTPS on the target open the same final HTTPS destination. Configured Manager destinations are preserved without entering or submitting that application.
 
-## Evidence and limits
+## Check results and limits
 
 Every one of the preceding twenty URLs receives a fresh baseline at both widths: eighty site/width views, forty pairs and 289 captured frames, all reaching the footer. All requested images in these baseline views load. Reference homepage jackets without an image source are deferred by its carousel; the separate target group traversal verifies all 98 target images. Profile baselines cover Overview only. Their other sections, content links, keyboard/bookmark variations and linked CV delivery remain pending; these baselines do not complete those profiles.
 

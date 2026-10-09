@@ -339,7 +339,7 @@ def image_difference(expected: Path, actual: Path, output: Path) -> dict[str, ob
 
 def write_report(output: Path, report: dict[str, object], rows: list[dict[str, object]]) -> None:
     """
-    Writes machine-readable results and a readable report with evidence links.
+    Writes machine-readable results and a readable report with links to saved comparisons.
 
     Called by: run(), self_test()
     """
@@ -517,7 +517,7 @@ def run(args: argparse.Namespace) -> bool:
 
     output = external_path(Path(args.output))
     if output.exists() and any(output.iterdir()):
-        raise ValueError('Use a new empty output directory; existing evidence is never overwritten.')
+        raise ValueError('Use a new empty output directory; saved comparison files are never overwritten.')
     output.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as playwright:
         ## Chrome's GPU path can render the same JPEG differently at two site addresses.

@@ -4,7 +4,7 @@
 
 Recorded snapshot: **October 8, 2026, 19:25 America/New_York — blocked-work handoff.** Counts and denominator remain unchanged. Useful original comparison and artifact checks are saved. All remaining approved cases have recorded dependencies; the daily run stays unfinished. Public curl still reports the preceding loaded revision, so further pushes remain stopped.
 
-This measures whole cases with all required evidence. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
+This measures whole cases with all required check results. It estimates neither engineering time nor final site acceptance. Several cases share a URL pattern because they check different records, states or journeys. See the [readable case inventory and statuses](url_completion_inventory.md#cases), [approved endpoint scope](public_endpoint_scope.md) and [directory guide](workplan_stuff_README.md).
 
 [Six-hour snapshots](#six-hour-snapshots) · [Update rules](#update-rules) · [Detailed records](#detailed-records)
 
@@ -40,14 +40,14 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 7, 08:22 — daily start | 32 / 77 | 41.6% | Counts and denominator unchanged. Cases with unavailable source/access dependencies are parked; representative images selected. |
 | October 7, 08:52 — verification checkpoint | 33 / 77 | 42.9% | H03 background selection, complete image delivery and relevant both-width views pass; denominator unchanged. Home book-data differences and restricted representations remain Pending. |
 | October 7, 12:07 — 12:00 checkpoint | 33 / 77 | 42.9% | Counts and denominator unchanged. Graph controls and export help text are verified; whole graph cases retain source, access and complete-view requirements. |
-| October 7, 14:53 — blocked-work checkpoint | 33 / 77 | 42.9% | Verified releases and additional complete-view evidence change no whole-case state. No further useful permitted work currently remains under recorded dependencies; original cutoff and denominator unchanged. |
+| October 7, 14:53 — blocked-work checkpoint | 33 / 77 | 42.9% | Verified releases and additional complete-page comparisons change no whole-case state. No further useful permitted work currently remains under recorded dependencies; original cutoff and denominator unchanged. |
 | October 7, 15:15 — blocked-run handoff | 33 / 77 | 42.9% | Available independent checks are finished; remaining original source/access/configuration dependencies prevent useful continuation. Daily run remains unfinished, with its original dated cutoff preserved. |
 | October 7, 17:13 — production resumption | 33 / 77 | 42.9% | Original cutoff and denominator unchanged. Reassess parked cases against corresponding production sources; deployment remains manual until confirmed. |
 | October 7, 17:32 — production verification | 34 / 77 | 44.2% | S15 original functional and complete both-width dialog checks pass; before/after loaded proof agrees. Denominator unchanged. |
 | October 7, 18:00 — 18:00 checkpoint | 34 / 77 | 44.2% | Counts and denominator unchanged. Automatic production deployment is confirmed; ordered website correction is loaded and under verification. Original unverified case requirements remain Pending. |
 | October 7, 21:44 — evening resumption | 34 / 77 | 44.2% | VPN and sign-in restored. Original cutoff, counts and denominator unchanged; remaining image comparisons resume. |
 | October 7, 21:56 — representative-image verification | 35 / 77 | 45.5% | D04 original portrait, default and cover responses, complete files and both-width image consumers pass. Denominator unchanged; other image cases remain Pending. |
-| October 7, 22:58 — additional-profile verification | 36 / 77 | 46.8% | P11 original functional, CV and fourteen visual checks pass with explicit fresh captures and qualified evidence reuse. Denominator unchanged; independent visualization checks remain Pending. |
+| October 7, 22:58 — additional-profile verification | 36 / 77 | 46.8% | P11 original functional, CV and fourteen visual checks pass with explicit fresh captures and check results and their stated limits reuse. Denominator unchanged; independent visualization checks remain Pending. |
 | October 7, 23:03 — team verification | 37 / 77 | 48.1% | O06 original functional checks and complete both-width views pass; all desktop portraits match exactly. Denominator unchanged. |
 | October 8, 00:01 — 00:00 checkpoint | 37 / 77 | 48.1% | Counts and denominator unchanged. Completed supporting-response checks do not complete V10; restricted JSON and routing cases remain Pending. S06 pagination review continues; original cutoff unchanged. |
 | October 8, 06:01 — 06:00 checkpoint | 37 / 77 | 48.1% | Counts and denominator unchanged. S05 original filter journeys, corresponding content and delivered assets pass available checks; complete views retain portrait differences. Capture qualifications and the fixed cutoff remain. |
@@ -61,7 +61,7 @@ Times use America/New_York. Boundary rows reflect the first suitable checkpoint 
 | October 8, 08:05 — daily start | 37 / 77 | 48.1% | Previous run accounted; current legacy-query preflight clears its old data dependency. No case or denominator change. |
 
 | October 8, 12:10 — 12:00 checkpoint | 37 / 77 | 48.1% | Inventory reassessment prioritizes legacy HTML entries; current headers and corresponding content agree. Complete-view qualifications remain Pending; denominator unchanged. |
-| October 8, 16:10 — replacement-chat resumption | 37 / 77 | 48.1% | Counts and denominator unchanged. Saved evidence and Pending reviews recovered; deployment confirmation is unavailable. |
+| October 8, 16:10 — replacement-chat resumption | 37 / 77 | 48.1% | Counts and denominator unchanged. Saved check results and Pending reviews recovered; deployment confirmation is unavailable. |
 
 | October 8, 18:03 — 18:00 checkpoint | 37 / 77 | 48.1% | Counts and denominator unchanged. Current graph checks are preserved; original metadata, source and visual qualifications remain Pending. Deployment remains unconfirmed. |
 
@@ -71,7 +71,7 @@ Earlier per-release observations and the original dashboard are preserved in the
 
 ## Update rules
 
-1. When whole-case evidence changes, update that case's state in [url_completion_inventory.md](url_completion_inventory.md). Keep its readable description and safe request pattern in the same row. Retain evidence in the completed checklist or batch record; reopen regressions. A local fix, push, screenshot or partial comparison does not complete a case.
+1. When whole-case check results change, update that case's state in [url_completion_inventory.md](url_completion_inventory.md). Keep its readable description and safe request pattern in the same row. Retain check results in the completed checklist or batch record; reopen regressions. A local fix, push, screenshot or partial comparison does not complete a case.
 2. Count each canonical case once, using the **Canonical case** and **Whole-case state** column headers, including IDs with underscores. Divide Complete rows by all canonical rows and round the percentage to one decimal place. Keep blocked, partial and unverified cases in the denominator. Preserve aliases and explain every approved addition, merge or exclusion.
 3. Replace the headline, recorded time and short change note at each scheduled/start/resumption/handoff snapshot, and at a suitable checkpoint after a state or denominator change. If the count is unchanged, update the time and say so. Do not append checkpoint paragraphs above the links. This page is the only live global fraction/percentage; other active files link here. Case-specific results and historical dated figures remain in their own records.
 4. While active, add one concise table row at daily start, resumption, final handoff and the first suitable checkpoint after 00:00, 06:00, 12:00 and 18:00. An unchanged percentage still gets a row. Update an existing row for the same run/event rather than add duplicates. If work was interrupted across boundaries, record the actual resumption result once; do not invent missed historical results. No idle-time task or new comparison is required solely for this table.
@@ -83,7 +83,7 @@ A newly required case or reopened regression may lower the percentage. Explain t
 
 - [Completion definitions and original P01 checks](completion_checks.md)
 - [Current pass, shared differences and release checks](current_batch.md)
-- [Completed work and evidence](checklist_completed.md)
+- [Completed work and check results](checklist_completed.md)
 - [Pending scope, integration and acceptance work](checklist_todos.md)
 - [Next selected URLs and concrete actions](next_batch.md)
 - [Workflow and continuation rules](workplan.md#batch-workflow)

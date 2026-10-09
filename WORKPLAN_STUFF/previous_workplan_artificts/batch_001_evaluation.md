@@ -1,6 +1,6 @@
 # Batch 001 deployed evaluation
 
-October 3, 2026. Application commit `9b9b739`; deployed revision `e0cec5a`. The owner confirmed deployment and browser sign-in. Private evidence label: `batch-001-profile-checks`; exact bindings and detailed observations remain outside Git. This report records available evidence, not owner acceptance or whole URL completion.
+October 3, 2026. Application commit `9b9b739`; deployed revision `e0cec5a`. The owner confirmed deployment and browser sign-in. Private comparison record label: `batch-001-profile-checks`; exact bindings and detailed observations remain outside Git. This report records available check results, not owner acceptance or whole URL completion.
 
 Contents:
 
@@ -11,7 +11,7 @@ Contents:
 
 ## Results
 
-Fifteen of thirty improvements have direct deployed evidence. Fourteen remain checked locally only because no qualifying current variation was available in the selected cases or saved sources. One before-JavaScript check remains blocked. No planned improvement was demonstrated to fail; absence of an example is not a deployed pass.
+Fifteen of thirty improvements have direct deployed check results. Fourteen remain checked locally only because no qualifying current variation was available in the selected cases or saved sources. One before-JavaScript check remains blocked. No planned improvement was demonstrated to fail; absence of an example is not a deployed pass.
 
 The original three profiles contain no publications. Added eight publication cases for specific source variations. Compared 278 citations across P08–P12: 273 match Rails and five chapter-collection spacing differences remain. P13–P15 provide targeted checks for editor punctuation, book quotation marks, and a displayed padded website link. Do not add their unreviewed citations to the 278 comparison count.
 
@@ -19,7 +19,7 @@ All thirty improvements passed local regression checks. The focused rerun passed
 
 ## Per-improvement checks
 
-| Improvement | Cases | Deployed outcome and evidence | Next action |
+| Improvement | Cases | Deployed outcome and check results | Next action |
 | --- | --- | --- | --- |
 | batch-001-01 | P10 | Verified after deployment. Article page punctuation matches Rails on a period-terminated source value. | Retain the result; finish whole URL comparisons separately. |
 | batch-001-02 | Selected variation cases | Checked locally only. No chapter pages already ending in a period. | Wait for a qualifying real source variation; do not alter live records. |
@@ -50,7 +50,7 @@ All thirty improvements passed local regression checks. The focused rerun passed
 | batch-001-27 | P08–P12 | Verified after deployment. Education descriptions and search queries match Rails; an institution search loads and browser Back restores the section. | Retain the result; finish whole URL comparisons separately. |
 | batch-001-28 | P08, P11 | Verified after deployment. Appointment descriptions and search queries match Rails; an institution search loads and browser Back restores the section. | Retain the result; finish whole URL comparisons separately. |
 | batch-001-29 | P01, P08 | Verified after deployment. All section controls, View All, bookmarks, and keyboard selection set the expected active state. | Retain the result; finish whole URL comparisons separately. |
-| batch-001-30 | P01, P08 | Blocked before scripts run. Ordinary initial Overview visibility and controls pass. | Keep the specific before-script condition unverified; retain local evidence. |
+| batch-001-30 | P01, P08 | Blocked before scripts run. Ordinary initial Overview visibility and controls pass. | Keep the specific before-script condition unverified; retain local check results. |
 
 ## Visual comparisons and remaining differences
 
@@ -75,4 +75,4 @@ Before-JavaScript visibility remains blocked: automatic browser approval review 
 1. Resume P01 supporting-link and remaining section appearance comparisons when browser automation is available. The later batch record explains the current browser dependency. Prefer completing this individual URL over spreading another feature across profiles.
 2. Preserve fourteen absent variation checks and the blocked before-script check as pending; never report all thirty as deployed verified.
 3. Prepare focused fixes for the demonstrated collection-title spacing and sparse-profile empty-section behavior when implementation resumes. Recheck applicable publication and full-profile cases after those changes.
-4. Keep S07 and all whole profile cases pending until their required functional and visual comparisons pass or the owner explicitly accepts documented differences. Maintain endpoint-by-endpoint visual evidence across the full scope.
+4. Keep S07 and all whole profile cases pending until their required functional and visual comparisons pass or the owner explicitly accepts documented differences. Maintain endpoint-by-endpoint saved visual checks across the full scope.

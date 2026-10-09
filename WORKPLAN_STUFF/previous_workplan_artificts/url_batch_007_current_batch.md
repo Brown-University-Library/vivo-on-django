@@ -17,7 +17,7 @@ Two expanded-filter corrections are checked locally and await deployment. Applic
 
 ## Changes and deployed checks
 
-| Change ID | Cases and change | Local evidence | Required check after deployment |
+| Change ID | Cases and change | Local check results | Required check after deployment |
 | --- | --- | --- | --- |
 | url-batch-007-01 | SEARCH01 and BROWSE01 expanded filters: retain alphabetical ordering among tied counts when switching from A–Z to 9–0. Sort the maintained values before narrowing instead of sorting a new filtered copy. | Settled reference/target interaction demonstrates the difference. Local browser keyboard sorting retains tied order; paging, case-insensitive narrowing, page reset and empty results pass. | Open each applicable More dialog, switch A–Z then 9–0, compare tied entries with the reference, and repeat after narrowing and paging. Check keyboard controls and reopening. |
 | url-batch-007-02 | SEARCH01 and BROWSE01 expanded filters: hide the empty loading-status paragraph so settled rows have the reference spacing. Keep nonempty loading and failure messages visible. | Settled deployed comparison shows the extra spacing. Local desktop/narrow views, async loading, displayed failure and successful retry pass; the empty status has zero height. | Compare settled first-row spacing at both widths. Observe loading and failure messages when applicable; successful retry must show rows and hide the cleared status. Recheck nearby controls and footer. |
@@ -34,4 +34,4 @@ Two expanded-filter corrections are checked locally and await deployment. Applic
 
 All twenty selected URLs retain specific work in [next_batch.md](../next_batch.md). The preceding twenty URLs receive fresh complete baseline captures at both widths, with profile coverage limited to Overview. Finish the other profile sections, interactions, links and supporting documents. Source count/order, membership and book ordering remain different; source alignment is unconfirmed. Supporting JSON title confirmation is still pending.
 
-Every required endpoint eventually needs visual confirmation. The separate Manager remains excluded. The earlier before-script source restriction remains in force; no HTML fetch or authentication-cookie extraction is used. Newly added information pages retain their earlier partial evidence and require the explicit checks in the next list.
+Every required endpoint eventually needs visual confirmation. The separate Manager remains excluded. The earlier before-script source restriction remains in force; no HTML fetch or authentication-cookie extraction is used. Newly added information pages retain their earlier partial check results and require the explicit checks in the next list.

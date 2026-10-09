@@ -6,7 +6,7 @@ This is a review list, not a decision to remove files. The current goal is to fi
 
 Keep the Django code that serves required URLs, templates, static files, migrations, runtime settings, dependency declarations, and instructions needed to run and maintain the website. In particular, Solr access is part of the intended live website. `SOLR_URL`, the live source request and response processing under `vivo_app/lib/source_*.py`, and other source connections must remain wherever the accepted pages use them.
 
-Keep useful automated tests, including tests built from made-up records. Tests do not serve visitor requests, but they help maintain the live code safely. If a deployment package should contain only runtime files, exclude development material when building that package rather than removing it from `main` solely to shrink the package. Keep a durable record of conversion decisions and evidence in Git history or a separate archive before removing historical documents from `main`.
+Keep useful automated tests, including tests built from made-up records. Tests do not serve visitor requests, but they help maintain the live code safely. If a deployment package should contain only runtime files, exclude development material when building that package rather than removing it from `main` solely to shrink the package. Keep a durable record of conversion decisions and check results in Git history or a separate archive before removing historical documents from `main`.
 
 ## Items to review for removal from `main`
 

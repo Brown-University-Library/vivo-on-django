@@ -23,12 +23,12 @@ Contents:
 
 ## Where the work stands
 
-The owner's original three stages remain useful: determine the required URLs, gather evidence and data, and implement matching pages and behavior. Evidence gathering and implementation can overlap. V2 adds explicit server milestones and a final acceptance stage, without restarting completed discovery.
+The owner's original three stages remain useful: determine the required URLs, gather check results and data, and implement matching pages and behavior. Check results gathering and implementation can overlap. V2 adds explicit server milestones and a final acceptance stage, without restarting completed discovery.
 
 | Area | Established so far | Still needed |
 | --- | --- | --- |
-| Stage 1: required URLs | Complete. The approved scope includes public pages, supporting formats, assets, and compatibility redirects. The external discovery manifest contains 62 case specifications. | Extend scope only if concrete evidence shows a currently used requirement or a dependency of an included journey. Specifications are not passing comparisons. |
-| Stage 2: public response evidence | Many real Rails responses, browser observations, downloads, and assets have been saved. They already support selected local journeys. | Fill specific endpoint and content-variation gaps; align new captures with the data used for comparison. Do not repeat settled discovery merely to reorganize the plan. |
+| Stage 1: required URLs | Complete. The approved scope includes public pages, supporting formats, assets, and compatibility redirects. The external discovery manifest contains 62 case specifications. | Extend scope only if concrete check results show a currently used requirement or a dependency of an included journey. Specifications are not passing comparisons. |
+| Stage 2: saved public responses | Many real Rails responses, browser observations, downloads, and assets have been saved. They already support selected local journeys. | Fill specific endpoint and content-variation gaps; align new captures with the data used for comparison. Do not repeat settled discovery merely to reorganize the plan. |
 | Stage 2: authentic source processing | A reader validates saved upstream responses. Local search, person profiles, ordinary and specialized organizations, search JSON, organization publication TSV, full facets, supported CV PDFs, nested profile JSON, network graphs, the coauthor treemap, and organization publication and research charts use bounded source processing. Selected organization charts, status, a custom team graph, and one specialized-organization graph have paced live captures and exact replay, including the faculty objects in calculated graph JSON. VIVO JSON-LD, Turtle, and RDF/XML exports now have a paced live capture and byte-exact offline replay. Homepage books and the browser challenge have source-backed implementations and local tests. | Verify the homepage database connection; check Turnstile with keys for the Django hostname; then complete development-server source checks, including that server's VIVO access. |
 | Stage 3: behavior and appearance | Selected search, profile, organization, homepage, and redirect work is implemented. A reusable browser comparison command exists. | Complete all included families and interactions, expand automated coverage, and resolve visual differences. |
 | Server verification and acceptance | Local setup and offline journeys have recorded checks. | Verify restricted server installations, real service access, broader matched queries, and the owner's final walkthrough. |
@@ -55,9 +55,9 @@ The public production visualization service was reachable directly over HTTPS fr
 
 Direct workstation access to the actual Solr index reduces the need to gather more offline data before implementing a page. Prefer a paced live request for a new record or query, then compare Django's response with a public response captured close in time. Replay remains useful for repeatable debugging, tests without service access, and differences caused by changing source data. It covers selected requests, not an offline copy of Solr. Check access separately from each server that will run Django.
 
-Keep these three kinds of evidence distinct:
+Keep these three kinds of check results distinct:
 
-| Evidence | What it tells us | What it does not tell us |
+| Check results | What it tells us | What it does not tell us |
 | --- | --- | --- |
 | Rails public responses and browser captures | What a visitor receives, sees, and can do. | The exact requests Rails makes to Solr or another service. |
 | Prepared page data | Whether selected templates, assets, and interactions can reproduce saved observations. | Whether Django requests and transforms authentic source data correctly. |
@@ -90,7 +90,7 @@ The command writes JSON, Markdown, and HTML reports with comparison images. It c
 
 Extend it in this order, alongside the first source-integration journey:
 
-1. **Make results quick to inspect — complete for current browser cases.** The command prints selected/manifest counts, failures, and the report location. It supports named cases and failed-case reruns. Keep raw bodies, large observations, and screenshots on disk; open only the evidence needed to explain a failure.
+1. **Make results quick to inspect — complete for current browser cases.** The command prints selected/manifest counts, failures, and the report location. It supports named cases and failed-case reruns. Keep raw bodies, large observations, and screenshots on disk; open only the check results needed to explain a failure.
 2. **Unify response and browser coverage.** Reuse one external case inventory with separate HTTP and browser assertions. Preserve methods, repeated query values, relevant Accept headers, every redirect hop, download metadata, and response meaning. Compare bytes where appropriate; compare structured meaning where serialization differences are harmless.
 3. **Use the deployed-site comparison mode — command complete, server run pending.** `compare-target` uses configured reference and target origins and the same cases. The owner still needs to provide an approved way to access the restricted target. The report records the configured data mode, and access failures cannot count as a match. The loopback proof exercised target mode and failed-case selection together.
 4. **Expand visual and interaction checks as each family is implemented.** Add captures after scrolling, full-page or element screenshots where useful, download actions, and graph interactions. Add focused checks for layout measurements only when they help diagnose an actual problem.
@@ -141,16 +141,16 @@ Confirm how the actual server process loads the private environment and `.env`, 
 
 The [scope table](../public_endpoint_scope.md) remains the checklist. Do not reopen unused Manager routes or unobserved formats. Preserve links to separate services and the approved redirect-only boundaries. Keep the Research Areas download-link correction deferred under issue #3. The Django application may also provide the standard `/version/` and `/error_check/` support URLs even though the existing Rails application does not; these are accepted additions rather than Rails-compatibility requirements.
 
-**Completion:** already recorded. A later addition needs evidence of current use or of a dependency required by an included journey.
+**Completion:** already recorded. A later addition needs check results of current use or of a dependency required by an included journey.
 
-### Stage 2 — Evidence, real inputs, and early server verification
+### Stage 2 — Check results, real inputs, and early server verification
 
 Proceed through these milestones while continuing useful local appearance work:
 
 1. **Development-server setup works with prepared data.** Complete the first installation increment and `.env` preparation described above. The owner/system administrator checks that environment; Codex resolves application-side setup problems. Repeat on the production server when available.
 2. **One journey works with authentic inputs — locally complete for selected cases.** Codex has connected a search-to-profile journey to Solr and selected replay responses. Extend the same live processing by required endpoint family. Record particular upstream responses when repeatable offline checking is useful; a broad recording collection is not a prerequisite for further implementation. Include supporting services, such as graph availability, rather than treating Solr as the only possible source.
 3. **That journey compares successfully on the server.** The owner deploys it. Codex or the owner runs matched Rails/Django cases, identifies source-data differences separately, and returns any unexplained behavior to local reproduction. Include a query or record not already present in the prepared bundle to demonstrate real source processing.
-4. **Extend by endpoint family and content variation.** Add organizations and homepage sources, information pages, representations/downloads, visualizations, remaining compatibility behavior, missing-page behavior, and the configured challenge flow. Order individual tasks by their dependencies and the existing scope table. Reuse captured evidence unless it is missing, inconsistent, or too old for the intended check.
+4. **Extend by endpoint family and content variation.** Add organizations and homepage sources, information pages, representations/downloads, visualizations, remaining compatibility behavior, missing-page behavior, and the configured challenge flow. Order individual tasks by their dependencies and the existing scope table. Reuse captured check results unless they are missing, inconsistent, or too old for the intended check.
 
 Select varied science, social-science, and humanities examples from the existing feature table. Check actual differences: optional sections present or absent, publication groups, long content, default portraits, available or absent graphs, role groups, custom membership, no results, repeated filters, and pagination. A subject label is useful for sampling, but it does not prove that the relevant variations are covered.
 
@@ -166,26 +166,26 @@ Font matching is already required by “as exactly as reasonably possible.” Us
 
 Keep views small, source processing under `vivo_app/lib/`, conversion-only commands and comparisons under `tools/`, and public route registration in `config/urls.py`. The Django capture command remains a small entry point for its tool. Add focused behavior and failure tests using Django's test framework or `unittest`. Run the applicable application tests and changed-file Ruff and Pylance checks, using Pyright when Pylance is unavailable. Placeholder text, sample fallback data, or a successful status alone cannot establish a working page.
 
-**Stage 3 complete when:** all required journeys, formats, links, and interactions have functional and visual evidence at the agreed widths, with no unexplained differences hidden by the comparison settings. Source integration and final owner acceptance remain separately required.
+**Stage 3 complete when:** all required journeys, formats, links, and interactions have functional and visual check results at the agreed widths, with no unexplained differences hidden by the comparison settings. Source integration and final owner acceptance remain separately required.
 
 ### Stage 4 — Full comparison, acceptance, and replacement readiness
 
 Run the complete case inventory from a clean setup and compare the required live journeys. Check desktop and narrow layouts, keyboard navigation, focus, Back behavior, downloads, graphs, and noticeable loading delays. Confirm any additional browser coverage with the owner before the final walkthrough.
 
-Give the owner a short coverage report, links to comparison evidence, and any proposed intentional differences. The owner or a regular site user judges whether the result meets the no-noticeable-difference goal. A parallel installation passing its setup checks is not approval to replace the public Rails site; the eventual traffic switch and recovery procedure belong to a separate owner/system-administrator deployment step.
+Give the owner a short coverage report, links to comparison results, and any proposed intentional differences. The owner or a regular site user judges whether the result meets the no-noticeable-difference goal. A parallel installation passing its setup checks is not approval to replace the public Rails site; the eventual traffic switch and recovery procedure belong to a separate owner/system-administrator deployment step.
 
 ## Track URL comparisons and deployed fixes
 
 Codex should maintain one working checklist outside Git for the approved endpoints in [the scope table](../public_endpoint_scope.md). Start from the existing case IDs in the external discovery manifest and feature table. Add a case when a required route has a distinct query, response format, record variation, or browser interaction. This organizes checks of the settled scope; it does not reopen excluded routes or turn every old Rails route into a requirement. Keep real record identifiers, complete URLs, screenshots, responses, and access details outside Git.
 
-For each case, record the case ID, relative route pattern and variation, expected Rails result, local Django check, deployed revision, comparison result, evidence location and date, and the next action. Record implementation, local verification, deployed verification, and owner acceptance separately. A passing local test or a version response showing that new code loaded does not establish that the deployed page matches Rails. Mark an inaccessible page, changing source data, or an untested browser interaction as blocked or needing review; do not count it as a pass.
+For each case, record the case ID, relative route pattern and variation, expected Rails result, local Django check, deployed revision, comparison result, check results location and date, and the next action. Record implementation, local verification, deployed verification, and owner acceptance separately. A passing local test or a version response showing that new code loaded does not establish that the deployed page matches Rails. Mark an inaccessible page, changing source data, or an untested browser interaction as blocked or needing review; do not count it as a pass.
 
 Use this order for each batch of fixes:
 
 1. **Codex selects gaps from the checklist.** Compare Rails and Django close together when possible. Write down the expected result and a specific post-deploy check for each proposed fix before changing code. Include a related regression check when the fix changes shared behavior.
 2. **Codex implements and checks locally.** Record the changed files and, when commits are authorized, the commit for each fix. Note what the local tests or browser checks establish and what still requires the deployed application.
 3. **The owner deploys the batch.** Codex checks the loaded revision, then runs the planned check for every fix on the deployed application. Use a browser for visible content and interactions; use an HTTP request or a management command when that is the meaningful check. Compare with Rails where the expected result depends on Rails behavior.
-4. **Codex records each outcome.** Mark each fix confirmed, different, blocked, or checked locally only, with brief evidence and the next action. A batch is not fully confirmed merely because its revision loaded or a few representative pages looked right. Fix or carry forward every unresolved item before counting it as complete.
+4. **Codex records each outcome.** Mark each fix confirmed, different, blocked, or checked locally only, with brief check results and the next action. A batch is not fully confirmed merely because its revision loaded or a few representative pages looked right. Fix or carry forward every unresolved item before counting it as complete.
 
 After each deployment, report both the per-fix results and coverage of the approved URL cases. Count cases with meaningful deployed comparisons separately from cases that only have local tests; show differences and blocked checks by endpoint family. Use that record, rather than the number of commits or ten-fix batches, when estimating progress. For large batches, prepare the same checks before implementation so that none depend on remembering the conversation after deployment.
 
@@ -193,17 +193,17 @@ After each deployment, report both the per-fix results and coverage of the appro
 
 **Django logging cannot reveal Rails' internal execution.** It can show which requests Django sends, which responses it receives, and how its processing turns them into page data. To understand Rails, Codex must also inspect its source and compare the public output. If those leave a concrete uncertainty about the running Rails implementation, ask for a narrowly selected Rails observation or confirmation from its operator. Installing logging in Django alone cannot answer that uncertainty.
 
-Use this cycle when a difference needs saved upstream evidence or when server access is unavailable. With direct local source access, start a new case with a small live check and capture only what is needed to reproduce or explain it:
+Use this cycle when a difference needs saved upstream check results or when server access is unavailable. With direct local source access, start a new case with a small live check and capture only what is needed to reproduce or explain it:
 
-1. **Codex identifies the missing evidence.** Select a small set of case IDs and list the public responses, upstream requests, assets, and processing observations needed. Match the deployed Rails code/settings to the source being inspected where necessary.
+1. **Codex identifies the missing check results.** Select a small set of case IDs and list the public responses, upstream requests, assets, and processing observations needed. Match the deployed Rails code/settings to the source being inspected where necessary.
 2. **Codex captures a selected response when needed.** Keep capture opt-in and limited by selected cases, request count, size, and duration. Save upstream bytes before transformation, with request method, service-relative path, ordered repeated query values, relevant non-secret headers, status, content type, timestamp, and checksums. Extend the existing GET-only recording format only if a required source needs another method.
 3. **The owner deploys a useful increment.** First deploy to development, then the restricted parallel installation as appropriate. Configure service access privately. Capture is disabled in ordinary operation; reusing it for another selected case should normally require configuration, not another logging-code deployment.
 4. **Codex or the owner runs the selected cases.** Capture Rails public responses and Django results close together, and record the application revision, source configuration version or non-secret label, data mode, and artifact versions. Explicit HTTP requests run sequentially, with at least 0.3 seconds after each response, including redirect hops. Browser assets may load concurrently within the case limits. Stop on access challenges or unavailable required services.
-5. **The owner returns recordings when remote access is unavailable.** Keep response bodies and detailed transformation evidence in dedicated files outside Git. Ordinary logs contain a capture ID, service label, status, timing, and outcome, without raw bodies, credentials, cookies, or identifying query values. Use a private transfer, limited retention, and agreed cleanup for captures.
+5. **The owner returns recordings when remote access is unavailable.** Keep response bodies and detailed transformation check results in dedicated files outside Git. Ordinary logs contain a capture ID, service label, status, timing, and outcome, without raw bodies, credentials, cookies, or identifying query values. Use a private transfer, limited retention, and agreed cleanup for captures.
 6. **Codex reproduces and fixes locally.** Replay the authentic responses through Django's real processing, compare the resulting page data with independently observed Rails output, then inspect browser differences. Keep prepared data separate; missing replay inputs cannot trigger live requests or sample substitutions.
 7. **The owner deploys the checked change.** Repeat only the necessary live checks and relevant regression cases. Keep earlier captures and reports. Record what changed, what passed, what remains unresolved, and the next responsible person.
 
-If capture fails partway through, keep the successfully saved files and label the run incomplete. Do not treat missing evidence as a pass or overwrite the previous usable baseline. Group related observations into one capture session so each suspected field does not require another deploy.
+If capture fails partway through, keep the successfully saved files and label the run incomplete. Do not treat missing check results as a pass or overwrite the previous usable baseline. Group related observations into one capture session so each suspected field does not require another deploy.
 
 ### Keep comparisons trustworthy
 
@@ -229,13 +229,13 @@ After acceptance and a period of ordinary use, review the [possible active-branc
 
 ## Immediate next tasks
 
-1. **Codex: create the private URL checklist.** Map every approved endpoint family and its required variations to the existing external case IDs. Record the evidence already available without treating past local tests or revision checks as deployed comparisons. Identify the cases that still lack a meaningful Rails/Django comparison.
+1. **Codex: create the private URL checklist.** Map every approved endpoint family and its required variations to the existing external case IDs. Record the check results already available without treating past local tests or revision checks as deployed comparisons. Identify the cases that still lack a meaningful Rails/Django comparison.
 2. **Codex: check the current deployed batch case by case.** Use the exact behavior each fix changed. Mark cases that cannot be demonstrated through the available browser or server commands as unconfirmed on the deployed application, even when local tests pass.
 3. **Codex: select the next fixes from recorded gaps.** For each one, prepare its post-deploy check, implement it, run local checks, and record its commit only when that batch has commit authorization.
 4. **Owner, then Codex: deploy and verify.** The owner deploys the batch. Codex confirms the loaded revision and checks each fix and relevant regression case, then reports confirmed differences, blocked checks, and remaining work.
-5. **Codex and owner: review coverage periodically.** Use the checklist to choose further work and to judge readiness against the approved scope. Keep detailed real-case evidence outside Git and update this plan with brief dated milestones.
+5. **Codex and owner: review coverage periodically.** Use the checklist to choose further work and to judge readiness against the approved scope. Keep detailed real-case check results outside Git and update this plan with brief dated milestones.
 
-The initial v2 task added this document. The subsequent review updated its wording, `example.env`, and contributor guidance. The September 27 follow-up added server preparation, comparator improvements, and focused visual findings. The September 30 update adds URL-by-URL and per-fix deployed verification to the current work. Earlier milestone reports remain historical evidence; the immediate tasks above state the current order of work.
+The initial v2 task added this document. The subsequent review updated its wording, `example.env`, and contributor guidance. The September 27 follow-up added server preparation, comparator improvements, and focused visual findings. The September 30 update adds URL-by-URL and per-fix deployed verification to the current work. Earlier milestone reports remain historical check results; the immediate tasks above state the current order of work.
 
 On September 28, network pages gained the public controls and a source-backed heading. The production visualization service supplied five selected responses that were captured outside Git and replayed without service access. An empty graph is preserved as a successful empty response. The coauthor treemap now reads the same graph as the coauthor network page. Team and specialized-organization collaboration graphs calculate from Solr member records, with local tests but no live Solr comparison. Source-backed organization pages gained the fixed decorative preview. In selected desktop browser comparisons, the headings, descriptions, controls, and legends closely matched the public network pages; a selected treemap screenshot differed by about 0.15% of pixels. The moving network layouts and optional failed public resources still require review. These changes do not establish visual acceptance or development-server access.
 

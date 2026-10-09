@@ -1,6 +1,6 @@
 # Current batch: twenty URLs
 
-Follow [workplan.md](../workplan.md) and [../AGENTS.md](../../AGENTS.md). [next_batch.md](../next_batch.md) lists the twenty selected URLs and their specific remaining work. Exact URL pairs remain in `../../../current_urls.local.md` and `../../../url_batch_001/urls.json`, outside Git. Private evidence label: `url-batch-001-checks`. The preceding [implementation record](batch_002_current_batch.md) and [deployed evaluation](batch_002_evaluation.md) are archived.
+Follow [workplan.md](../workplan.md) and [../AGENTS.md](../../AGENTS.md). [next_batch.md](../next_batch.md) lists the twenty selected URLs and their specific remaining work. Exact URL pairs remain in `../../../current_urls.local.md` and `../../../url_batch_001/urls.json`, outside Git. Private comparison record label: `url-batch-001-checks`. The preceding [implementation record](batch_002_current_batch.md) and [deployed evaluation](batch_002_evaluation.md) are archived.
 
 Contents:
 
@@ -13,7 +13,7 @@ Contents:
 ## Status and review coverage
 
 - Batch: url-batch-001, October 3, 2026; the first batch under the twenty-URL workflow.
-- Selection: twenty distinct URLs, eleven carried forward from recent profile batches and nine added to this active list. Older evidence exists for some added URLs.
+- Selection: twenty distinct URLs, eleven carried forward from recent profile batches and nine added to this active list. Older check results exist for some added URLs.
 - Starting branch/revision: `main` / `2ba9b1f`; owner-confirmed deployment and the loaded revision match.
 - State: awaiting owner deployment after Codex confirms the push. Implementation, local checks, and application commits are complete; deployed checks remain pending.
 - Application commits: `fc42808` (citation/date/search matching) and `48c26cc` (asset content versions).
@@ -22,7 +22,7 @@ Contents:
 
 Compared rendered section text, conditional buttons, available citation text/inline elements, and observed images on fifteen profiles. All fifteen conditional-button lists match; 342/345 citation texts and 344/345 inline-element sequences match before this batch. The three text differences are addressed locally; keep this expanded baseline separate from the prior 278-citation sample. Compared two organizations and one search. No observed broken images were found in those eighteen pages, but a complete asset audit is still required. Browser access to About and Help was blocked by a client error; the owner has been asked to make those pages load. These are partial reviews, not full interaction, link, or desktop/narrow coverage.
 
-The preceding batch's 278 selected citation texts and inline elements now match Rails after deployment. Required empty panels exist and conditional controls match; a View All check has partial matching evidence. Fresh empty-section and View All bookmarks still differ in the reviewed browser even though the server supplies the changed script. Asset versioning addresses a possible stale-script cause; only another deployed check can establish whether it resolves the difference.
+The preceding batch's 278 selected citation texts and inline elements now match Rails after deployment. Required empty panels exist and conditional controls match; a View All check has partial matching check results. Fresh empty-section and View All bookmarks still differ in the reviewed browser even though the server supplies the changed script. Asset versioning addresses a possible stale-script cause; only another deployed check can establish whether it resolves the difference.
 
 ## Implemented changes and required deployed checks
 
@@ -39,7 +39,7 @@ The preceding batch's 278 selected citation texts and inline elements now match 
 - Full Django suite: 273 tests pass, up from 267 before this batch.
 - Ruff lint and formatting: all nine changed Python files pass.
 - Pyright: all nine changed Python files pass with zero errors/warnings using the project interpreter and basic checking. Pylance is unavailable.
-- Saved reference comparison: 3,808 citations, 25 text differences before these changes and 2 afterward; 23 newly matching, zero regressions. The two remaining differences involve Unicode whitespace in other saved source cases. This is local evidence, not a deployed pass.
+- Saved reference comparison: 3,808 citations, 25 text differences before these changes and 2 afterward; 23 newly matching, zero regressions. The two remaining differences involve Unicode whitespace in other saved source cases. This is local check results, not a deployed pass.
 - JavaScript section checks: thirteen initial-section cases and return-to-Overview interactions pass using the actual script.
 - Local Brave check: versioned shared assets and the section script load; an empty Teaching bookmark displays Teaching, View All displays all four panels without an All button, and Overview returns to the ordinary panel. The made-up profile's images load. This does not certify live profiles or matched Rails appearance. A screenshot was inspected in the browser tool; a saved paired capture is not available for this local check.
 - Existing source request recordings made with earlier search options need fresh compatible recordings for the changed search request. No automatic live fallback or sample substitution was added.

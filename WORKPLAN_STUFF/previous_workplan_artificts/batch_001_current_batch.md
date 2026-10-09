@@ -1,6 +1,6 @@
 # Current batch and URLs being evaluated
 
-Archived when batch-002 starts; see the [current batch](../current_batch.md) for the active handoff. Follow [workplan.md](../workplan.md). Exact Rails and Django URLs are in `../../../current_urls.local.md`, outside the repository. Detailed evidence uses private label `batch-001-profile-checks`.
+Archived when batch-002 starts; see the [current batch](../current_batch.md) for the active handoff. Follow [workplan.md](../workplan.md). Exact Rails and Django URLs are in `../../../current_urls.local.md`, outside the repository. Detailed check records uses private label `batch-001-profile-checks`.
 
 Contents:
 
@@ -70,7 +70,7 @@ P01/P04/P07 have no publications, so they cannot demonstrate the citation change
 | batch-001-27 | P08–P12 | Restore institution-search descriptions. | `test_institution_links_describe_their_searches`: passed. | `9b9b739` | Verified after deployment: Education descriptions and search queries match Rails; an institution search loads and browser Back restores the section. | Individual improvement verified; whole URL checks remain pending. |
 | batch-001-28 | P08, P11 | Restore appointment-search descriptions. | `test_institution_links_describe_their_searches`: passed. | `9b9b739` | Verified after deployment: Appointment descriptions and search queries match Rails; an institution search loads and browser Back restores the section. | Individual improvement verified; whole URL checks remain pending. |
 | batch-001-29 | P01, P08 | Identify the active profile section for assistive tools. | Initial active-state test; browser tabs, bookmark, and View All: passed. | `9b9b739` | Verified after deployment: All section controls, View All, bookmarks, and keyboard selection set the expected active state. | Individual improvement verified; whole URL checks remain pending. |
-| batch-001-30 | P01, P08 | Hide unselected profile sections before scripts run. | Initial template test and desktop/narrow browser checks: passed. | `9b9b739` | Blocked for the before-JavaScript condition. Ordinary initial visibility and controls pass. | Browser approval review blocked page-source viewing. Preserve the local before-script evidence and this limitation. |
+| batch-001-30 | P01, P08 | Hide unselected profile sections before scripts run. | Initial template test and desktop/narrow browser checks: passed. | `9b9b739` | Blocked for the before-JavaScript condition. Ordinary initial visibility and controls pass. | Browser approval review blocked page-source viewing. Preserve the local before-script check results and this limitation. |
 
 ## Local validation
 
@@ -79,10 +79,10 @@ P01/P04/P07 have no publications, so they cannot demonstrate the citation change
 - Pyright: all seven changed Python files passed with the project interpreter and basic type-checking settings; zero errors or warnings. Pylance was unavailable.
 - Browser checks using made-up names and records: seven groups passed at desktop and narrow widths. Checks covered initial visibility without scripts, bookmarks, every section and View All, citation subscript/superscript display, publication filters, actual filtered-search return, direct entry, inactive names, and visible sections below the first screen. No external requests or script errors occurred. These checks do not establish a deployed Rails/Django visual match.
 - Saved-source citation comparison against the Rails model: 3,808 distinct citations checked. Visible-text differences fell from 119 to 39; 80 additional citations now match, with no newly differing citations. The remaining 39 differences still need review; this comparison does not check outgoing links or deployed appearance.
-- `git diff --check`: passed. Tracked examples use made-up names and records; real data, exact URLs, raw output, and screenshots stay outside Git under private evidence label `batch-001-profile-checks`.
+- `git diff --check`: passed. Tracked examples use made-up names and records; real data, exact URLs, raw output, and screenshots stay outside Git under private comparison record label `batch-001-profile-checks`.
 
 ## Handoff and evaluation
 
-The owner confirmed deployment. Codex evaluated the loaded revision and recorded fifteen direct deployed passes, fourteen absent variations, and one blocked before-script check. All thirty have passing local regression evidence. The focused regression rerun passed nine test methods. Application code and its pushed commits remain unchanged during evaluation.
+The owner confirmed deployment. Codex evaluated the loaded revision and recorded fifteen direct deployed passes, fourteen absent variations, and one blocked before-script check. All thirty have passing local regression check results. The focused regression rerun passed nine test methods. Application code and its pushed commits remain unchanged during evaluation.
 
 See the [evaluation report](batch_001_evaluation.md) and [pending checklist](../checklist_todos.md). Next-batch candidates are the demonstrated chapter-collection spacing differences and sparse-profile empty-section/bookmark differences. First finish the primary profile's remaining supporting-link and visual checks. Do not certify S07, accept unexplained differences, or replace this batch merely because the available improvements passed.

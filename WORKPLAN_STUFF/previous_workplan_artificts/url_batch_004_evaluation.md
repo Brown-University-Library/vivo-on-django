@@ -1,10 +1,10 @@
 # Fourth URL batch: deployed evaluation
 
-Evaluated October 5, 2026, against loaded revision `ee0c95f`. Follow [workplan.md](../workplan.md). Private evidence label: `url-batch-005-review`. Exact URLs, paired screenshots, resource metadata, and identifying observations remain outside Git.
+Evaluated October 5, 2026, against loaded revision `ee0c95f`. Follow [workplan.md](../workplan.md). Private comparison record label: `url-batch-005-review`. Exact URLs, paired screenshots, resource metadata, and identifying observations remain outside Git.
 
 ## Recorded improvements
 
-| Change | Result | Evidence and limits |
+| Change | Result | Check results and limits |
 | --- | --- | --- |
 | url-batch-004-01 ordinary profile text links | Verified after deployment | Research links match reference font size, weight and color at both widths. First list-item height, following content, section views, and footer match in complete settled comparisons. Overview styles also match across twelve additional selected profiles. |
 | url-batch-004-02 research-area spacing | Verified after deployment | Area-link widths, positions, wrapping and decoded queries match in Overview/View All at both widths. All four links activate their expected filtered-search destinations. Local escaped-label regression coverage still passes. |
@@ -15,7 +15,7 @@ P01 advances from 6/8 to 7/8 functional checks and from 6/12 to 12/12 visual che
 
 P04 has ten complete paired state/width views, covering twenty-three frame pairs. Settled fresh bookmarks select matching panels and controls; keyboard navigation exposes the Overview fragment difference corrected in the next implementation. Organization, two institution, default-search, and internal footer destinations work. External/configuration checks remain explicit. Its initial five functional conditions are recorded privately; the two institution destinations add one separately identified requirement rather than silently changing that denominator.
 
-P07's ten previously completed views are rechecked with twenty paired frames and remain matched. No new whole case completes; the whole-case total stays one. Twelve additional profiles receive fresh Overview link-style checks only. Earlier content/filter evidence for those profiles is retained without claiming a fresh complete review. Organization and search source differences are not freshly fully rechecked.
+P07's ten previously completed views are rechecked with twenty paired frames and remain matched. No new whole case completes; the whole-case total stays one. Twelve additional profiles receive fresh Overview link-style checks only. Earlier content/filter check results for those profiles is retained without claiming a fresh complete review. Organization and search source differences are not freshly fully rechecked.
 
 ## Comparison limits and next actions
 
