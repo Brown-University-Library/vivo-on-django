@@ -2,9 +2,7 @@
 
 ## Brief overview
 
-This project builds a Django replacement for the public Researchers@Brown Rails front end. Its goal is to preserve the site's existing URLs, used functionality, and appearance so visitors can follow the same links and use the site in the same way.
-
-This readme will be updated as the project progresses, until it becomes simply an operational readme for the Django webapp.
+This Django webapp serves Researchers@Brown searches, researcher and organization pages, visualizations, downloads, and existing public links. Developers use this repository to run and maintain the application.
 
 ## More info
 
@@ -15,19 +13,15 @@ This readme will be updated as the project progresses, until it becomes simply a
 - [Tests](#tests)
 - [Primary dependencies](#primary-dependencies)
 
-[GOAL.md](WORKPLAN_STUFF/GOAL.md) defines the scope and success criteria. Start with [WORKPLAN_STUFF/workplan.md](WORKPLAN_STUFF/workplan.md) for the current work sequence and the pending and completed checklists. The running public Rails site is the reference for pages, search and browsing, record displays, downloads, visualizations, query parameters, redirects, and supporting assets. Historical route lists and earlier prototypes help identify what to inspect; only functionality confirmed to be in use belongs in the conversion.
+The owner completed the conversion review after the v1.0 release. [Public behavior](docs/public_behavior.md) describes what to preserve. [Source configuration](docs/source_journey.md) explains Solr, images, documents, graph data, VIVO representations, and the separate homepage book database. The webapp uses these existing services; it does not provision them or rebuild Manager or VIVO.
 
-The work preserves links to separate services where the public site uses them. It excludes rebuilding the separate Manager application, unused Manager features in the Rails source, the VIVO back end, and related data-management systems. Redesigns and new features are also outside the conversion's scope.
-
-**Access to Solr is required for the intended application.** Solr supplies the search index used by the existing site. Providing, configuring, populating, and operating that service are currently outside this webapp's scope. The conversion must use the existing Solr service.
-
-The Django implementation is still a prototype. Several pages use sample data, and search, visualization, and other routes include placeholders. The code does not yet provide Solr connection settings or a Solr client. Starting the local app therefore does not establish that real search or the full conversion works. Completion requires functional and visual comparisons against the public Rails site, accounting for changing data and random homepage imagery.
+Use [the documentation index](docs/docs_README.md) for current guides. [Conversion history](historical_conversion_info/README.md) preserves selected methods and decisions. Earlier batch statuses are historical. [Code retained for review](docs/code_retirement_review.md) explains why some older data-mode code remains.
 
 ## Local installation
 
-Install Git and uv, and ensure you can access this repository. uv manages the interpreter required by [pyproject.toml](pyproject.toml). The steps below prepare the current prototype with a local SQLite database; work with real research data also requires separately arranged access to Solr. This repository does not set up that service.
+Install Git and uv, and arrange access to the repository. uv manages the interpreter specified by [pyproject.toml](pyproject.toml).
 
-1. Start in the parent directory where you want to keep the checkout and its local support files:
+1. Start in the parent directory where you want the checkout and its local support files:
 
    ```bash
    mkdir vivo_on_django_stuff
@@ -36,90 +30,81 @@ Install Git and uv, and ensure you can access this repository. uv manages the in
    cd vivo-on-django
    ```
 
-2. Install the locked dependencies and create the directories used by the local settings:
+2. Install the locked packages and create the local database, cache, and log directories:
 
    ```bash
    uv sync --locked
    mkdir -p ../DBs ../cache_dir ../logs
    ```
 
-   uv creates the checkout's `.venv` and may download the interpreter and packages. The other directories sit beside the checkout in `vivo_on_django_stuff` and hold the SQLite database, cached responses, and logs.
+   This may download packages and the interpreter. uv creates `.venv` inside the checkout. Local data and configuration stay beside the checkout.
 
-3. Create `../.env` in your editor, or update it if it already exists. Use the following as the minimum local configuration, choosing your own local development secret:
+3. Create or update `../.env` in your editor. Preserve existing values you need. This minimum configuration starts the retained local sample mode without contacting research-data services:
 
    ```dotenv
    DJANGO_SECRET_KEY="replace-with-your-local-development-secret"
-   # Django converts this string to a boolean.
    DJANGO_DEBUG="true"
-   # Django parses this string as a JSON list of hostnames.
    ALLOWED_HOSTS_JSON='["localhost", "127.0.0.1"]'
    STATIC_URL="/static/"
    STATIC_ROOT="../staticfiles"
+   PAGE_DATA_MODE="prototype"
+   TURNSTILE_ENABLED="false"
    ```
 
-   [config/settings.py](config/settings.py) loads environment values through `python-dotenv`. Keep the file in the outer directory, outside the Git checkout. Preserve any existing settings you need. The checked-in [example.env](example.env) explains the available settings; its commented source-connection keys are not implemented yet. `STATIC_URL` is a browser URL prefix, while `STATIC_ROOT` names a local output directory.
+   [example.env](example.env) documents the available keys. `ALLOWED_HOSTS_JSON` is a JSON list; `STATIC_URL` is a browser URL prefix; `STATIC_ROOT` names a local output directory. `config/settings.py` loads values with python-dotenv; exported shell values take precedence.
 
-4. Create or update the local database tables:
+4. Create or update Django's local tables:
 
    ```bash
    uv run ./manage.py migrate
    ```
 
-   This writes Django's tables to `../DBs/db.sqlite3`. It does not populate research records or create a Solr index. If startup reports a missing environment setting, check `../.env` against the configuration above. If SQLite cannot open its file, check that `../DBs` exists and is writable.
+   This writes `../DBs/db.sqlite3`. It does not populate research records or change a Solr index. If SQLite cannot open its file, check that `../DBs` exists and is writable.
 
 ## Usage
 
-From the `vivo-on-django` checkout, start the local development server:
+From the checkout, start the local development server:
 
 ```bash
 uv run ./manage.py runserver 127.0.0.1:8000
 ```
 
-Open <http://127.0.0.1:8000/> to view the homepage. Informational pages include `/about/`, `/faq/`, and `/help/`. The current `/display/n123/` page uses sample record data; `/display/n123/?format=json` returns that display data as JSON. Stop the server with Ctrl+C.
+Open <http://127.0.0.1:8000/>. Stop the server with Ctrl+C. Keep `DJANGO_DEBUG=true` for ordinary local static-file serving. Local logs and cached responses use `../logs/django.log` and `../cache_dir`.
 
-To render selected searches and profiles from a separately distributed local data bundle, follow [Prepared data for local pages](docs/prepared_data.md). The guide describes mode selection, bundle validation, supported requests, and current limits. Prepared data does not require Solr access.
+For current research data, select `PAGE_DATA_MODE=live` and configure the sources described in [source configuration](docs/source_journey.md). Live mode contacts those sources while serving requests. Homepage books also need PyMySQL; install it locally with `uv sync --locked --group staging`. The staging group also includes Pillow.
 
-The local settings write application logs to `../logs/django.log` and use `../cache_dir` for cached responses. Some unfinished routes return placeholder text. Search is not yet connected to Solr, so a successful page response does not demonstrate a working search against real records.
+Prepared and replay modes remain because live code and tests share their helpers. [Prepared data](docs/prepared_data.md) reads already-arranged pages; [recorded responses](docs/recorded_responses.md) reads existing saved service responses. Both require separate files outside Git. Missing saved inputs produce errors rather than live requests. Prototype mode supplies sample content for local use and the test baseline; it does not demonstrate live integration.
+
+For optional browser comparisons, see [development checks](docs/development_checks.md) and [developer tools](tools/tools_readme.md).
 
 ## Tests
 
-From the checkout, after local installation, run all discovered tests:
+Run all discovered tests from the checkout:
 
 ```bash
 uv run ./run_tests.py
 ```
 
-To run only the Django app tests with each test's name, description, and result:
+To show each app test's name and description:
 
 ```bash
 uv run ./run_tests.py vivo_app -v
 ```
 
-The runner uses Django's test framework and creates and removes a test database when needed. Tests use local or sample data and do not contact external data services. Passing the prototype tests does not establish that the Django site reproduces the public Rails site's behavior and appearance or that Solr works.
+The runner selects prototype mode before loading the private environment. Individual tests override the mode and use made-up source responses. Django creates and removes its test database. These tests do not verify connectivity to real services. See [development checks](docs/development_checks.md) for focused test selection and Python checks.
 
 ## Primary dependencies
 
-This inventory compares declarations in [pyproject.toml](pyproject.toml), use in code and configuration, and supporting packages recorded in [uv.lock](uv.lock). No separate requirements file or older Python package declaration is present in this checkout.
+This list follows declarations in [pyproject.toml](pyproject.toml), imports/configuration, and supporting packages in [uv.lock](uv.lock). There is no separate requirements file.
 
-### Application packages
-
-| Package | Purpose and evidence |
+| Package | Purpose and where it is used |
 | --- | --- |
-| `Django` | Serves pages, handles URLs, renders templates, and provides database and authentication support. Used throughout [config/](config/) and [vivo_app/](vivo_app/). |
-| `python-dotenv` | Loads local environment configuration through `load_dotenv()` in [config/settings.py](config/settings.py). |
+| `Django` | Requests, templates, sessions, tests, and database tables in `config/` and `vivo_app/`. |
+| `python-dotenv` | Environment loading in `config/settings.py`. |
+| `httpx2` | Source and Turnstile HTTP requests in `source_requests.py` and `bot_detect.py`. |
+| `django-browser-reload` | Optional local reload support when both debug and browser reload are enabled. |
+| `pymysql` | Separate homepage book database; supplied by staging and prod. Django's own database uses SQLite. |
+| `playwright`, `pillow` | Browser and image comparisons; Playwright is in local, Pillow in local and staging. |
+| `trio` | Still directly declared. Possible HTTP-backend use needs review before removal; see [the review note](docs/code_retirement_review.md). |
 
-The lockfile also records packages these depend on, including Django's `asgiref` and `sqlparse` requirements. These support the directly used packages; their presence in the lockfile does not imply separate application use.
-
-### Development tools and environment requirements
-
-- `django-browser-reload` is declared with the application packages but serves local development. [config/settings.py](config/settings.py) and [config/urls.py](config/urls.py) enable it only when both `DJANGO_DEBUG=True` and `DJANGO_BROWSER_RELOAD=true`.
-- Tests use Django's test framework and the standard library's `unittest`; no separate test package is declared. uv manages dependencies and runs commands. [ruff.toml](ruff.toml) contains formatter and linter settings, but Ruff is not declared as a dependency.
-- `mysqlclient` is declared in the `staging` and `prod` groups. The checked-in database configuration uses SQLite, so the local setup does not need it. Confirm the intended MySQL configuration before changing those groups.
-- Solr is an external service, separate from the Python dependency list. Access to Solr is required for the intended application; supplying and maintaining it remain outside this webapp's current scope.
-
-### Declarations and older code to review
-
-- `trio` is declared directly, but no direct use was found in the current Python code. The visualization tests use `unittest.IsolatedAsyncioTestCase`. Confirm whether another supported execution path needs Trio before removing it or its supporting packages.
-- Older account templates, including [profile.html](vivo_app/templates/registration/profile.html) and [change_password.html](vivo_app/templates/registration/change_password.html), load `crispy_forms_tags`. The corresponding package is neither declared nor enabled in Django settings. Confirm whether these pages belong in the agreed public-site scope before deciding how to maintain them.
-
-After sustained confirmation that the required functionality works, review uncertain declarations and development-only packages, retain needed runtime support and environment groups, and prefer `package~=1.2.0` constraints with patch zero where appropriate. Keep exact resolved versions in `uv.lock` and validate each affected dependency group when making those changes.
+The lockfile also records supporting packages, including Django's asgiref and sqlparse and the HTTP client's dependencies. Keep the local, staging, and prod groups. Ruff is configured in [ruff.toml](ruff.toml) and supplied separately; tests use Django and unittest.

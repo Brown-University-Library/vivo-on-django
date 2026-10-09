@@ -1,0 +1,20 @@
+# Historical excerpts; see the source revision for imports and class setup.
+
+    def test_validation_command_reads_selected_case(self) -> None:
+        """Checks the development command reads a case and rejects synthetic data when requested."""
+        output = StringIO()
+        with (
+            patch('sys.argv', ['validate_recordings', str(self.manifest_path), '--case', 'SEARCH_DEMO']),
+            redirect_stdout(output),
+        ):
+            validate_recordings()
+        self.assertIn('Validated 1 selected cases (synthetic)', output.getvalue())
+        with (
+            patch(
+                'sys.argv',
+                ['validate_recordings', str(self.manifest_path), '--case', 'SEARCH_DEMO', '--require-recorded'],
+            ),
+            redirect_stderr(StringIO()),
+            self.assertRaises(SystemExit),
+        ):
+            validate_recordings()

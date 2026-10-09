@@ -14,7 +14,7 @@ from tools.compare_sites import Case, compare_snapshots, image_difference, norma
 
 
 class ComparisonTests(SimpleTestCase):
-    """Checks meaningful changes, missing evidence, and portable case inputs."""
+    """Checks meaningful changes, missing comparison records, and portable case inputs."""
 
     def test_url_normalization_retains_repeated_values(self) -> None:
         """
@@ -87,7 +87,7 @@ class ComparisonTests(SimpleTestCase):
 
     def test_manifest_rejects_repeated_case_ids(self) -> None:
         """
-        Checks malformed or repeated identifiers cannot overwrite comparison evidence.
+        Checks malformed or repeated identifiers cannot overwrite saved comparisons.
         """
         case = {
             'id': 'invented',

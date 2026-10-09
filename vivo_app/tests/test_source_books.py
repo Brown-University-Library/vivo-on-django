@@ -4,15 +4,12 @@ Checks homepage books from a saved database response without database access.
 
 import json
 import sys
-from pathlib import Path
-from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, patch
 
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.urls import get_script_prefix, set_script_prefix
 
-from tools.source_capture import capture_homepage_books
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_books import BOOKS_KEY, BOOKS_QUERY, book_rows_response, homepage_books
@@ -149,19 +146,6 @@ class SourceBookTests(TestCase):
             with self.assertRaisesRegex(PageDataError, 'unsupported'):
                 read_source(RequestKey('book_db', '/other'), 'live')
         books.assert_called_once_with()
-
-    def test_capture_replays_the_book_response_offline(self) -> None:
-        """
-        Checks the saved book query can be read without opening the database.
-        """
-        with TemporaryDirectory() as directory:
-            output = Path(directory) / 'books'
-            with patch('tools.source_capture.read_source', side_effect=self.read):
-                self.assertEqual(capture_homepage_books(output), 1)
-            with override_settings(
-                UPSTREAM_RECORDING_MANIFEST=str(output / 'manifest.json'), UPSTREAM_RECORDING_CASE='homepage-books'
-            ):
-                self.assertEqual(read_source(BOOKS_KEY, 'replay'), self.response)
 
     @override_settings(
         BOOK_COVER_DB_HOST='invented-host',

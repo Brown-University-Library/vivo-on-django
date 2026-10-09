@@ -3,15 +3,12 @@ Checks visualization response routing with made-up graph data and no network.
 """
 
 import json
-from pathlib import Path
-from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.test import TestCase, override_settings
 
-from tools.source_capture import capture_custom_graph
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_graph import (
@@ -605,30 +602,6 @@ class CustomGraphTests(TestCase):
             name, members = custom_graph_members(identifier, 'live', self.read)
         self.assertEqual(name, 'Invented Institute')
         self.assertEqual(members, ['invented-root'])
-
-    def test_custom_graph_capture_replays_exact_member_requests(self) -> None:
-        """
-        Checks the bounded capture keeps all Solr responses needed by replay.
-        """
-        with TemporaryDirectory() as directory:
-            output = Path(directory) / 'custom-graph'
-            with (
-                patch('vivo_app.lib.source_graph.team_definition', return_value=('Example Team', ['invented-root'])),
-                patch('tools.source_capture.read_source', side_effect=self.read),
-                patch('tools.source_capture.time.sleep'),
-                patch('vivo_app.lib.source_graph.time.sleep'),
-            ):
-                self.assertEqual(capture_custom_graph('team-example', output), 4)
-            with (
-                override_settings(
-                    UPSTREAM_RECORDING_MANIFEST=str(output / 'manifest.json'), UPSTREAM_RECORDING_CASE='custom-graph'
-                ),
-                patch('vivo_app.lib.source_graph.team_definition', return_value=('Example Team', ['invented-root'])),
-            ):
-                graph = visualization_graph('collaborators', 'team-example', 'replay')
-            self.assertEqual(graph['rabid'], 'team-example')
-        with self.assertRaisesRegex(PageDataError, 'calculated Solr graph'):
-            capture_custom_graph('invented-other', Path(directory) / 'unused')
 
     def test_team_csv_keeps_collaboration_counts(self) -> None:
         """
