@@ -33,7 +33,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 - Dependency / execution tool: `uv`
 - The only dependency groups in `pyproject.toml` are `local`, `staging`, and `prod`. `local` is for laptop-only tools; `staging` is for the development server; `prod` is for the production server. Do not add a `dev` group: `uv sync` and `uv run` install it by default, including on the development server.
 - The repository root contains this file, `.git/`, `manage.py`, and `pyproject.toml`. The enclosing workspace contains separate repositories and local support files.
-- The owner completed the conversion review. Use `docs/public_behavior.md`, `docs/behavior_decisions.md`, and `docs/development_checks.md` for maintenance. Historical conversion records do not define active work.
+- The owner completed the conversion review. Use `docs/public_behavior.md`, `docs/behavior_decisions.md`, and `docs/development_checks.md` for maintenance. Prepared mode is a build artifact the owner plans to remove over time; do not extend it as a current workflow. Historical conversion records do not define active work.
 
 
 ## How to run code
@@ -41,12 +41,14 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 - Assume user is in the project-root directory.
 - Use `uv` to run Python code; do not invoke `python` or `python3` directly.
 - Install the locked dependencies with `uv sync --locked`; use the repository's `.venv` interpreter.
+- Prepare `../.env` and the local directories as described in `README.md` before running Django commands or tests. `example.env` still selects legacy prepared mode; use the README's settings for sample content for a new local checkout.
+- Optional tools and drivers require an explicit group: `uv sync --locked --group local` for browser/image comparisons, or `uv sync --locked --group staging` for local live homepage books. A plain sync installs only the base dependencies and removes packages from unselected groups.
 - Run a script via: `uv run ./path_to_script.py --help`
 - Run tests via: `uv run ./run_tests.py`. This discovers all tests.
 - Run the local Django app tests via: `uv run ./run_tests.py vivo_app -v`.
 - Pass a dotted module, class, or method name for a smaller selection, for example: `uv run ./run_tests.py vivo_app.tests.test_home -v`. The runner's docstring includes examples; `-v` or `--verbose` shows each test's name, docstring, and result.
 - `run_tests.py` initializes Django and uses its configured test runner, including test database setup and cleanup. It uses `config.settings` unless `DJANGO_SETTINGS_MODULE` is already set, runs without interactive prompts, and exits with a nonzero status when tests fail.
-- Keep the full test suite runnable with the application's base dependencies. Playwright belongs in `local`; Pillow is in `local` and `staging` for image comparison checks. Tests may skip only their tool-specific checks when these packages are absent.
+- Keep the full test suite runnable with the application's base dependencies. Playwright belongs in `local`; Pillow is in `local` and `staging` for image comparison checks. The current suite skips its Pillow image check when Pillow is absent; it does not launch Playwright browsers.
 - Run Django management commands via: `uv run ./manage.py THE-COMMAND`.
 - For a standalone helper needing a missing package, use `uv run --no-project --with PACKAGE python SCRIPT ARGS`. Do not add temporary helper dependencies to `pyproject.toml` or install them globally.
 
@@ -117,8 +119,8 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 
 ### View-layer responsibilities
 
-- Use function-based views for application code. Existing Django authentication and admin routes are framework integrations; do not rewrite them solely to apply this convention.
-- Keep application endpoint functions in `vivo_app/views.py`; existing authentication endpoints live in `vivo_app/views_auth.py`.
+- Use function-based views for application code. The Django admin is a framework integration; do not rewrite it solely to apply this convention. Application account/editing routes are commented out in `config/urls.py`; keep them disabled unless explicitly asked to change them.
+- Keep application endpoint functions in `vivo_app/views.py`; retained account handlers live in `vivo_app/views_auth.py`.
 - Register application endpoints in `config/urls.py`. Error handlers are registered there separately. Put new reusable helpers in `vivo_app/lib/`, not in view modules.
 - Views should coordinate these steps:
   - Parse request input (query params, POST body, files)
@@ -150,7 +152,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 ## Tests
 
 - Use Django's test framework for application tests and standard library `unittest` for independent helpers; do not introduce pytest.
-- `vivo_app/tests/` checks routes, home and static pages, display pages, and publications using local or sample data. Django's runner creates and destroys its test database.
+- `vivo_app/tests/` checks routes, rendering, response formats, all retained data modes, source failures, configuration, and developer tools using local files or made-up responses. Django's runner creates and destroys its test database.
 - New behavior should usually come with a focused test covering:
   - the happy path
   - at least one failure / edge case
@@ -255,26 +257,26 @@ When implementing a change (especially from an issue/task):
 
 | Location | What to inspect there |
 | --- | --- |
-| `pyproject.toml`, `uv.lock`, `ruff.toml` | Runtime requirements, dependencies, older inline coding guidance, and formatting settings. |
+| `pyproject.toml`, `uv.lock`, `ruff.toml` | Runtime requirements, declared and locked dependencies, optional groups, and formatting settings. |
 | `run_tests.py` | Django test command, with full discovery, app/module/class/method selection, and optional verbose output. |
 | `config/settings.py` | Environment loading, database, cache, logging, templates, and public-site configuration. |
-| `config/urls.py` | All application routes, framework authentication routes, and error handlers; there is no app-level `urls.py`. |
+| `config/urls.py` | Application routes, Django admin, disabled account/editing route definitions, and error handlers; there is no app-level `urls.py`. |
 | `vivo_app/views.py` | Public request handlers, source-backed pages and responses, and retained sample paths. |
 | `vivo_app/lib/display.py` | Retained sample display helpers imported by views; review shared uses before removal. |
-| `vivo_app/lib/home.py`, `vivo_app/lib/assets.py` | Shared book-cover values, sample pages, and random homepage backgrounds. |
+| `vivo_app/lib/home.py`, `vivo_app/lib/source_books.py`, `vivo_app/lib/assets.py` | Shared book-cover values, sample books, live/replay book reads, and random homepage backgrounds. |
 | `vivo_app/lib/prepared_data.py`, `vivo_app/lib/recorded_responses.py`, `vivo_app/lib/source_*.py` | Readers and processors used while Django serves prepared, replayed, or live pages. |
-| `tools/`, `docs/browser_comparison.md` | Optional browser comparison tool, its tests, and current usage. |
+| `tools/compare_sites.py`, `vivo_app/tests/test_comparison.py`, `docs/browser_comparison.md` | Optional browser comparison tool, its tests, and current usage. |
 | `vivo_app/templates/`, `vivo_app/static/` | Page templates, shared includes, CSS, JavaScript, and images; follow the template actually selected by each view. |
 | `vivo_app/context_processors.py` | Shared template values from settings. |
-| `vivo_app/views_auth.py`, `vivo_app/forms.py`, `vivo_app/models.py`, `vivo_app/migrations/` | Existing authentication and profile code. Its presence does not expand conversion scope. |
+| `vivo_app/views_auth.py`, `vivo_app/forms.py`, `vivo_app/models.py`, `vivo_app/migrations/` | Retained account/profile code and database tables; application account/editing routes remain disabled. |
 | `vivo_app/tests/` | Regression tests for pages, parsing, responses, modes, source failures, and developer commands. |
 
 ### Local configuration and current limitations
 
 - Settings call `load_dotenv()` and require `ALLOWED_HOSTS_JSON`, `STATIC_URL`, and `STATIC_ROOT`. Use `example.env` and `docs/source_journey.md` for current source settings. Keep the actual `.env` outside Git.
 - Local settings use `../DBs/`, `../cache_dir/`, and `../logs/`. Imports create the logs directory, but local database use requires its parent directory to exist. After relocating a checkout, verify `.venv` and use `uv sync --locked` to prepare dependencies as needed.
-- Retained prototype paths can return placeholder text when a template is absent. Check actual content and templates; a status-code assertion alone does not prove correct rendering. Live paths preserve their source-error behavior.
+- Paths serving sample content can return placeholder text when template loading or rendering fails. Check actual content and templates; a status-code assertion alone does not prove correct rendering. The startup mode notice still contains older conversion wording and does not establish endpoint coverage. Live paths preserve their source-error behavior.
 - `?format=json` changes the response for many views; preserve confirmed query-parameter behavior. Keep individual-export URL patterns before the generic individual route.
-- Homepage imagery is randomized. The test runner selects prototype mode; individual tests exercise other modes with made-up data. Local tests do not establish real-service connectivity.
+- Homepage imagery is randomized. The test runner selects sample content; individual tests exercise other modes with made-up data. Local tests do not establish real-service connectivity.
 
 ---
