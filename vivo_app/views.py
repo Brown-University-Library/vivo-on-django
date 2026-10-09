@@ -319,13 +319,13 @@ def display_index(request):
     return render_or_stub(request, 'display/index.html')
 
 
-def display_show(request, id):
-    """Display a single item.
+def display_show(request: HttpRequest, id: str) -> HttpResponse:
+    """
+    Displays a record or returns the shared error page after a live or replay failure.
 
-    Behavior parity considerations:
-    - If `?format=json` is given and the ID type is unknown, return just {"id": id}
-      to preserve existing test expectations and scaffolding behavior.
-    - For known types, build a minimal presenter-like context for progressive parity.
+    Sample mode retains its minimal context and unknown-ID JSON response.
+
+    Called by: config.urls
     """
     try:
         if request.GET.get('format') == 'json_txt' or id.endswith('.json_txt'):
@@ -373,9 +373,17 @@ def display_show(request, id):
                 )
     except MissingRecordError:
         return page_not_found(request)
-    except PageDataError as exc:
-        return data_unavailable(exc)
+    except Exception as exc:
+        if settings.PAGE_DATA_MODE in {'live', 'replay'}:
+            logger.exception('Could not render display record; id, ``%s``', id)
+            return render(
+                request, 'search/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500
+            )
+        if isinstance(exc, PageDataError):
+            return data_unavailable(exc)
+        raise
     entity_type = get_type_for_id(id)
+    context: dict[str, object]
 
     # JSON response handling
     if request.GET.get('format') == 'json':

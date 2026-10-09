@@ -1587,13 +1587,13 @@ class SourcePageTests(TestCase):
         ):
             self.assertEqual(self.get_page('/search?q=Other').status_code, 503)
             self.assertEqual(self.get_page('/search?q=Example&format=xml').status_code, 503)
-            self.assertEqual(self.get_page('/display/other').status_code, 503)
+            self.assertEqual(self.get_page('/display/other').status_code, 500)
             self.assertEqual(self.get_page('/search_facets?q=Example&f_name=bad').status_code, 503)
             self.assertEqual(self.get_page('/display/invented-a/publications/').status_code, 503)
             self.assertEqual(self.get_page('/').status_code, 503)
         self.responses.pop(member_key(['invented-a']))
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
-            self.assertEqual(self.get_page('/display/org-example').status_code, 503)
+            self.assertEqual(self.get_page('/display/org-example').status_code, 500)
         self.assertEqual(self.get_page('/source-documents/docs/../../private.pdf').status_code, 503)
 
     def test_absent_person_and_organization_show_not_found(self) -> None:
@@ -2237,7 +2237,7 @@ class SourcePageTests(TestCase):
             invalid = self.get_page('/display/invented-a?format=json_txt&extra=1')
         self.assertEqual(json.loads(person.content)['name'], 'Invented Researcher')
         self.assertEqual(json.loads(organization.content)['name'], 'Example Department')
-        self.assertEqual(invalid.status_code, 503)
+        self.assertEqual(invalid.status_code, 500)
 
     def test_organization_json_contains_websites_and_members(self) -> None:
         """
