@@ -154,7 +154,7 @@ class RecordedResponses:
         """
         Returns only the responses listed for the selected case.
 
-        Called by: get(), tools.validate_recordings.main(), tests
+        Called by: get(), tests
         """
         if case_id not in self._cases:
             raise RecordingError('The selected case has no recordings.')
@@ -177,7 +177,7 @@ def load_recordings(manifest_path: Path) -> RecordedResponses:
     """
     Reads and validates a complete manifest and all referenced response files.
 
-    Called by: tools.validate_recordings.main(), response consumers, tests
+    Called by: response consumers, tests
     """
     path: Path = external_path(manifest_path)
     try:

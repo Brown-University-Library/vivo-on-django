@@ -27,13 +27,13 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 
 ## Project basics
 
-- Purpose: reproduce the existing public Researchers@Brown Rails application's URLs, behavior, and appearance in Django, as defined in `WORKPLAN_STUFF/GOAL.md`.
+- Purpose: run and maintain the Researchers@Brown Django webapp, preserving the reviewed public behavior described in `docs/public_behavior.md`.
 - Primary language: Python; framework: Django 5.2.
-- Target runtime: Python 3.12 (`pyproject.toml` requires `>=3.12,<3.13`).
+- Target runtime: Python 3.12.14, as required by `pyproject.toml`.
 - Dependency / execution tool: `uv`
 - The only dependency groups in `pyproject.toml` are `local`, `staging`, and `prod`. `local` is for laptop-only tools; `staging` is for the development server; `prod` is for the production server. Do not add a `dev` group: `uv sync` and `uv run` install it by default, including on the development server.
 - The repository root contains this file, `.git/`, `manage.py`, and `pyproject.toml`. The enclosing workspace contains separate repositories and local support files.
-- `WORKPLAN_STUFF/GOAL.md` defines current scope. Older plans and route inventories are historical references; they do not require rebuilding unused features or the separate Manager application.
+- The owner completed the conversion review. Use `docs/public_behavior.md`, `docs/behavior_decisions.md`, and `docs/development_checks.md` for maintenance. Historical conversion records do not define active work.
 
 
 ## How to run code
@@ -83,7 +83,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 
 ### HTTP and networking
 
-- Use `httpx2` for application HTTP calls and new HTTP helpers. Add it as a dependency when source-client implementation begins.
+- Use the declared `httpx2` dependency for application HTTP calls and new HTTP helpers.
 - Do not introduce alternate HTTP libraries (e.g., `requests`, `aiohttp`) unless the repository already depends on them and there is a documented reason.
 
 ### Docstrings
@@ -129,7 +129,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 ### Business logic placement
 
 - Put domain logic, integrations, and reusable operations in `vivo_app/lib/`.
-- Keep conversion-only capture, validation, and browser comparison logic in `tools/`. A Django management command may remain as a small entry point for a tool.
+- Keep optional developer tools in `tools/`. The retained browser comparison tool is documented in `tools/tools_readme.md`; retired source-capture code is historical.
 - If multiple endpoints share logic, move that shared logic into `vivo_app/lib/` and keep each view focused on handling the request and response.
 - Prefer testable functions in `vivo_app/lib/` that accept plain Python values; pass Django request objects only when necessary for a specific reason.
 
@@ -160,7 +160,6 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 
 - For every user prompt, append the prompt and a concise summary of the resulting work or answer to `../PROMPTS.md`, with a local timestamp. Treat it as an archive: do not maintain its contents list. Keep it outside Git and update it efficiently without rereading the whole file unless older context is needed.
 - The owner prefers Sol with High reasoning for routine work. Flag a concrete reason to consider Astra with Extra-high reasoning when a task or unresolved problem would benefit; do not switch models automatically.
-- For ongoing improvement runs, follow `WORKPLAN_STUFF/workplan.md` for automatic deployment checks, the dated cutoff and continuation. Read its "Park blocked cases and choose other work" procedure: a blocked batch must give way to other approved open cases before the cutoff; stop for blockers only when no useful permitted work remains. Recover `../ongoing_run.local.md` before resuming; use its recorded 07:00 cutoff, including explicit owner amendments, and confirm one writer. Use `WORKPLAN_STUFF/workplan_stuff_README.md` for file responsibilities. Apply the workplan's rendering investigation limit and owner choices for apparent reference problems; record explicit decisions in `WORKPLAN_STUFF/accepted_differences.md`. Maintain readable patterns and state together in `url_completion_inventory.md`; keep the current global percentage only in `progress.md` and follow its headline/table update rules, including unchanged six-hour snapshots. The owner's current prompt controls commit/push authorization; the workplan alone does not grant it.
 
 When implementing a change (especially from an issue/task):
 
@@ -246,11 +245,11 @@ When implementing a change (especially from an issue/task):
 
 ### Scope and reference material
 
-- Start with `WORKPLAN_STUFF/workplan.md` for the active workflow and checklists, then `WORKPLAN_STUFF/GOAL.md` for scope. `WORKPLAN_STUFF/next_batch.md` selects twenty distinct URLs; make as many relevant improvements as reasonably possible for each, and retain unfinished URLs with specific next actions. The running public Rails application is the reference for required behavior and appearance; historical routes and prototype tests alone do not establish current requirements.
-- `codex-plan.md`, `OLD_gpt5_conversion_plan.md`, `OLD_windsurf_conversion_plan.md`, and `docs/routes_mapping.md` describe earlier, broader work. Follow `WORKPLAN_STUFF/GOAL.md` when they disagree.
-- When the enclosing workspace is available, `../stuff_README.md` locates its materials. `../vivo-on-rails/` contains Rails source for comparison, including `config/routes.rb`, controllers, views, and assets.
-- `../rab_primary_url_paths.md` and `../apache_log_analysis.md` contain historical URL records. `../REPORT__previous_work.md`, `../REPORT__consolidation.md`, and `../previous_work/` supply local background. Review privately; do not copy raw records or operational details into tracked files.
-- These adjacent files are not part of a standalone checkout. Background links in `WORKPLAN_STUFF/GOAL.md` point to files in the enclosing workspace.
+- Start with `docs/public_behavior.md` for current behavior, `docs/source_journey.md` for sources, and `docs/development_checks.md` for validation.
+- `docs/behavior_decisions.md` explains owner choices. `docs/code_retirement_review.md` identifies shared code retained to protect working behavior. Test uncertain behavior before changing it, or retain the code and update that note.
+- `historical_conversion_info/` explains the build-out. Do not resume old batches, reconstruct pending checklists, or use historical plans as current instructions.
+- The enclosing workspace may contain private archives, saved inputs, and Rails source. These are optional background, not requirements for a standalone checkout. Keep private records outside Git.
+
 
 ### Code locations
 
@@ -260,23 +259,22 @@ When implementing a change (especially from an issue/task):
 | `run_tests.py` | Django test command, with full discovery, app/module/class/method selection, and optional verbose output. |
 | `config/settings.py` | Environment loading, database, cache, logging, templates, and public-site configuration. |
 | `config/urls.py` | All application routes, framework authentication routes, and error handlers; there is no app-level `urls.py`. |
-| `vivo_app/views.py` | Public page handlers and older placeholder endpoints for search, visualization, exports, and editing. |
-| `vivo_app/lib/display.py` | Sample display and publication data; entity types currently come from ID-prefix guesses. |
-| `vivo_app/lib/home.py`, `vivo_app/lib/assets.py` | Sample book-cover pages and random homepage background selection. |
-| `vivo_app/lib/visualization.py` | Visualization helpers that return local sample data. |
+| `vivo_app/views.py` | Public request handlers, source-backed pages and responses, and retained sample paths. |
+| `vivo_app/lib/display.py` | Retained sample display helpers imported by views; review shared uses before removal. |
+| `vivo_app/lib/home.py`, `vivo_app/lib/assets.py` | Shared book-cover values, sample pages, and random homepage backgrounds. |
 | `vivo_app/lib/prepared_data.py`, `vivo_app/lib/recorded_responses.py`, `vivo_app/lib/source_*.py` | Readers and processors used while Django serves prepared, replayed, or live pages. |
-| `tools/`, `docs/conversion/` | Conversion checks, bounded source capture, saved-response validation command, and comparison findings. |
+| `tools/`, `docs/browser_comparison.md` | Optional browser comparison tool, its tests, and current usage. |
 | `vivo_app/templates/`, `vivo_app/static/` | Page templates, shared includes, CSS, JavaScript, and images; follow the template actually selected by each view. |
 | `vivo_app/context_processors.py` | Shared template values from settings. |
 | `vivo_app/views_auth.py`, `vivo_app/forms.py`, `vivo_app/models.py`, `vivo_app/migrations/` | Existing authentication and profile code. Its presence does not expand conversion scope. |
-| `vivo_app/tests/`, `test_visualization.py` | Django page tests and sample visualization checks. |
+| `vivo_app/tests/` | Regression tests for pages, parsing, responses, modes, source failures, and developer commands. |
 
 ### Local configuration and current limitations
 
-- Settings call `load_dotenv()` and require `ALLOWED_HOSTS_JSON`, `STATIC_URL`, and `STATIC_ROOT`. Use `example.env` for current keys and Rails counterparts; later source settings are explicitly commented out. Keep the actual `.env` outside Git.
+- Settings call `load_dotenv()` and require `ALLOWED_HOSTS_JSON`, `STATIC_URL`, and `STATIC_ROOT`. Use `example.env` and `docs/source_journey.md` for current source settings. Keep the actual `.env` outside Git.
 - Local settings use `../DBs/`, `../cache_dir/`, and `../logs/`. Imports create the logs directory, but local database use requires its parent directory to exist. After relocating a checkout, verify `.venv` and use `uv sync --locked` to prepare dependencies as needed.
-- Several routes return placeholders. `render_or_stub()` can return a successful text response when a template fails, so a status-code assertion alone does not prove a page renders correctly. Check content, templates, and browser behavior for affected pages.
+- Retained prototype paths can return placeholder text when a template is absent. Check actual content and templates; a status-code assertion alone does not prove correct rendering. Live paths preserve their source-error behavior.
 - `?format=json` changes the response for many views; preserve confirmed query-parameter behavior. Keep individual-export URL patterns before the generic individual route.
-- Homepage imagery is randomized and several helpers return sample data. Account for those differences during comparisons; passing prototype tests does not demonstrate that the public conversion is complete.
+- Homepage imagery is randomized. The test runner selects prototype mode; individual tests exercise other modes with made-up data. Local tests do not establish real-service connectivity.
 
 ---

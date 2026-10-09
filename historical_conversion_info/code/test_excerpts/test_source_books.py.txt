@@ -1,0 +1,14 @@
+# Historical excerpts; see the source revision for imports and class setup.
+
+    def test_capture_replays_the_book_response_offline(self) -> None:
+        """
+        Checks the saved book query can be read without opening the database.
+        """
+        with TemporaryDirectory() as directory:
+            output = Path(directory) / 'books'
+            with patch('tools.source_capture.read_source', side_effect=self.read):
+                self.assertEqual(capture_homepage_books(output), 1)
+            with override_settings(
+                UPSTREAM_RECORDING_MANIFEST=str(output / 'manifest.json'), UPSTREAM_RECORDING_CASE='homepage-books'
+            ):
+                self.assertEqual(read_source(BOOKS_KEY, 'replay'), self.response)

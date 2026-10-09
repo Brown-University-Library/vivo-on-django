@@ -1,0 +1,46 @@
+# Historical endpoint and source selection
+
+Scope approved September 26, 2026; preserved from revision `8c5c8ce`. These descriptions explain how the conversion selected public functionality. They record the sources traced in Rails, not an active completion checklist. The owner considers the conversion review complete.
+
+| Endpoint | Behavior selected | Source traced during conversion |
+| --- | --- | --- |
+| **S01** — GET `/` | Homepage, search entry, book carousel, author links, navigation, and changing background image. | Database `book_covers` for ordered active books; templates group them by four. `ApplicationHelper#randomized_background_image` selects among local background assets at render time; no Solr lookup is involved in that selection. |
+| **S02** — GET `/search` with `q`, repeated `fq`, `fq_0`, and `page` | Results, facets, highlighting, filters, pagination, empty/no-result searches, and browser return behavior. | Solr through `SearchController` and `Search`. |
+| **S03** — GET `/search?q={query}&format=json` | JSON search results. | Same Solr search as HTML; Rails serializes the result data. |
+| **S04** — GET `/search?querytext={query}` | Preserve the older query parameter by redirecting to the current search URL. | Request parameter; destination search uses Solr. |
+| **S05** — GET `/search/advanced` and submissions with `search=true`, `name_t`, `title_t`, `department_t` | Form and redirect to a fielded search. Retain the department parameter even though it was absent from the inspected form. | Templates and query construction; redirected `/search` uses Solr. |
+| **S06** — GET `/search_facets` with search parameters and `f_name` | Supporting JSON for More dialogs. | Solr search with expanded facet limits. |
+| **S07** — GET `/display/{person_id}` | Profile sections, conditional controls, publication filtering, links, and search return. | Solr record type and faculty document; visualization-service availability lists may also be read; linked assets. |
+| **S08** — GET `/display/{organization_id}` | Organization content, conditional role groups, member links, and portraits. | Solr type/organization/member documents; some custom memberships use an additional Solr research-area query or a code-defined list. Member faculty loading can read graph-availability lists; templates and assets. |
+| **S09** — GET `/display/{person_id}.json` | Profile JSON. | Solr type/faculty data; normal faculty loading can also consult graph-availability lists. |
+| **S10** — GET `/display/{organization_id}/publications.tsv` | Organization publication download. | Solr type, organization membership, and faculty publication content; `PublicationHistory.details` builds rows. Faculty loading can also read graph-availability lists. |
+| **S11** — GET `/display/` | Redirect to search. | Redirect only; destination search uses Solr. |
+| **S12** — GET `/display/{person_id}/viz/collab` | Person collaboration view, including its existing empty/error behavior and visibility conditions. | Solr type/profile data and visualization-service availability lists; the browser requests graph JSON. |
+| **S13** — GET `/display/{person_id}/viz/coauthor` | Person coauthor view. | Solr profile data and visualization-service availability lists; the browser requests graph JSON. SVG/PNG exports are generated in the browser from the displayed graph; PNG uses a canvas and blob download. |
+| **S14** — GET `/display/{organization_id}/viz/collab` | Organization collaboration view, controls, and graph. | Solr type/organization data; browser graph request. |
+| **S15** — GET `/display/{record_id}/viz/collab.json` | Supporting collaboration data for retained person/organization views. | Solr type lookup, then visualization service for ordinary records. Custom membership can instead compute a graph from faculty data. |
+| **S16** — GET `/display/{person_id}/viz/coauthor.json` | Supporting coauthor data for the retained view. | Visualization service through `CoauthorGraph`. |
+| **S17** — GET `/display/{record_id}/viz/collab.csv` | CSV download from retained collaboration views. | Same collaboration inputs as JSON; `EdgeGraph` converts the graph and sets link weights for CSV. |
+| **S18** — GET `/display/{person_id}/viz/coauthor.csv` | CSV download from the retained coauthor view. | Visualization-service coauthor data converted by `EdgeGraph`. |
+| **S19** — GET `/display/{team_id}` for a selected active team | Preserve the observed active-team variation of organization display. | `Team.find_by_id` uses code-defined member IDs and Solr profiles; another branch reads a configured local TSV. |
+| **S20** — GET `/individual/{record_id}` with ordinary browser navigation | Redirect to the display page. | ID and request headers; no Solr lookup in the redirect action itself. |
+| **S21** — GET `/individual/{record_id}/{record_id}.jsonld` | Original VIVO JSON-LD representation. | `IndividualController` → `VitroAPI` → VIVO/Vitro HTTP endpoint configured by `VIVO_BACKEND_URL`. |
+| **S22** — GET `/individual/{record_id}/{record_id}.ttl` | Original VIVO Turtle representation. | Same VIVO/Vitro API, requesting Turtle. |
+| **S23** — GET `/people`, `/ous` | Redirect to people/organization filtered search. | Fixed redirect construction; destination uses Solr. |
+| **S24** — GET `/about`, `/help`, `/faq`, `/history`, `/roadmap`, `/help/viz`, `/publications`, `/termsOfUse` | Information pages and their links/anchors. | Templates and linked illustrations/assets. |
+| **S25** — GET `/brown` | Preserve existing page behavior and appearance. | Template and linked assets. |
+| **S26** — GET `/reports/subject-lib` | Preserve the public entry behavior observed by the owner: redirect to `/`. | Authentication check and redirect; no report dataset is needed to reproduce that observed outcome. |
+| **S27** — GET `/challenge`; POST `/challenge` | Render and verify the browser challenge, with configuration to enable or disable enforcement. | Templates/browser Turnstile script; server-side Cloudflare verification; session state. |
+| **S28** — GET `/docs/{bucket}/{filename}.pdf` with observed query parameters | Preserve linked document access. | Existing document files/asset service; profile data supplies the link. |
+| **S29** — GET `/profile-images/{path}`, `/book_cover/{path}`, `/assets/{path}` and other actually used asset paths | Preserve assets required by retained pages. | Existing files/asset service; Solr supplies portrait references, database rows supply book references, templates supply static references. |
+| **S30** — GET `/display/{missing_record_id}` and other required missing-page behavior | Preserve useful not-found page and recovery links. | Record type lookup for a missing record; templates for unmatched paths. |
+| **S31** — GET `/display/{person_id}/viz/coauthor_treemap` | Reproduce the treemap and its supporting data/download links. | Solr profile context and visualization-service data; browser draws the treemap using ordinary coauthor JSON/CSV. |
+| **S32** — GET `/display/{organization_id}/viz/publications`, `.json`, `.csv` | Reproduce the chart, range controls, and supporting formats. | Solr organization/member publication data aggregated by `PublicationHistory`; browser controls select the history range. |
+| **S33** — GET `/display/{organization_id}/viz/research`, `.json` | Reproduce the view and supporting JSON. Preserve the existing visible download link to collaboration JSON for now. Its correction is deferred in [issue #3](https://github.com/birkin/vivo-on-django/issues/3); do not implement it yet. | Solr organization/member research areas assembled by `AlluvialGraph`; the chart consumes research JSON. |
+| **S34** — GET `/individual/{record_id}/{record_id}.rdf` | Retain the RDF representation alongside the approved JSON-LD and Turtle formats. | HTTP 200 RDF/XML through the VIVO/Vitro proxy. |
+| **S35** — GET `/individual/{record_id}` with exact Accept `application/json` or `text/turtle` | Preserve both format-selection redirects. Other Accept combinations remain unverified. | HTTP 303 to the corresponding approved representation; destination uses VIVO/Vitro. |
+| **S36** — GET `/file/{file_id}/{filename}` | Preserve the old image redirect and working destination. | HTTP 301 to the current image; `ModelUtils.thumbnail_url` constructs its location using `IMAGES_URL`. |
+| **S37** — GET `/status` | Retain the status response. Caller ownership and controlled failure behavior remain implementation checks, not conditions on this approval. | HTTP 200 JSON in the observed normal state; Rails checks Solr for records. |
+| **S38** — GET `/services/data/v1/faculty/{person_id}` | Preserve this trailing-slash redirect and existing destination. This approval does not require rebuilding the service or its JSON backend. Confirm routing ownership before configuration changes. | HTTP 301 to the same URL with a trailing slash; no matching Rails route was found. |
+
+Manager workflows, the VIVO backend, unused Rails features, redesigns, and new features were excluded. Public links to separate services remained in scope. Local account and editing routes were disabled separately. Current behavior is described in [the operational guide](../../docs/public_behavior.md).

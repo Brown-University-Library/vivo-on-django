@@ -8,7 +8,7 @@ Prepared mode reads a separately distributed bundle and renders saved homepage, 
 - [Bundle format](#bundle-format)
 - [Page fields](#page-fields)
 - [Validation and failures](#validation-and-failures)
-- [Current limits](#current-limits)
+- [Supported requests](#supported-requests)
 
 ## Local setup
 
@@ -41,9 +41,9 @@ Ordinary `runserver` serves application CSS, JavaScript, logos, and icons only w
 
 For a deliberate local check with debug disabled, `DJANGO_DEBUG=False uv run ./manage.py runserver --insecure` serves static files without enabling debug. This option is only for local testing. `--nostatic` disables static serving even with debug enabled. The application prints a startup explanation when either configuration would leave the preview without its assets.
 
-Use an exact URL listed in the bundle's manifest. The saved homepage can start selected journeys; unconverted public handlers return 503 in prepared mode. Use the bundle README for its supported journeys and limitations.
+Use an exact URL listed in the bundle's manifest. The saved homepage can start selected journeys; handlers without prepared-mode support return 503. Use the bundle README for its supported journeys and limitations.
 
-`PAGE_DATA_MODE` defaults to `prototype` to retain the existing sample site when no source is selected. This is a temporary, explicitly reported mode. `prepared` requires a valid external bundle. `replay` and `live` now support search, person profiles, ordinary organizations, full facets, and supported CV PDFs; [the source journey guide](source_journey.md) gives their settings and limits. Unknown modes and missing required source settings fail startup checks. A missing prepared state never switches modes.
+`PAGE_DATA_MODE` defaults to `prototype` when no source is selected; the test runner also uses it as its baseline. `prepared` requires a valid external bundle. `replay` and `live` use source processing described in [the source guide](source_journey.md). Unknown modes and missing required source settings fail startup checks. A missing prepared state never switches modes. These older modes remain for the reasons in [the code review note](code_retirement_review.md).
 
 ## Bundle format
 
@@ -97,8 +97,8 @@ Prepared and replay responses restrict automatic browser resources to the local 
 
 Repository tests use temporary invented bundles and block socket connections during the selected journey. Real bundle data, check results, and browser reports remain outside Git. Copy the working checkout and bundle to a separate directory and validate there before distributing them.
 
-## Current limits
+## Supported requests
 
-The current external bundle covers the homepage, selected search pagination and filters, one organization, thirteen profiles with optional sections, supporting facet responses, and nine CV downloads. Three selected journeys include every result profile and support adding the People filter in either order, removing filters, and returning from profiles. The organization shows all 34 observed role rows and six member links reach prepared profiles. The homepage has all 98 observed book covers and one first-cover link reaches a newly prepared profile. Other linked profiles still return 503. Consult the manifest for exact requests and the bundle README for comparison dates and limitations. Preserve repeated filter order when preparing supporting responses as well as HTML pages.
+Each external bundle defines its own saved requests and coverage in its manifest and README. Use those files to choose exact searches, profiles, organizations, supporting responses, and assets. Linked destinations absent from the bundle remain unavailable; prepared mode does not calculate new search states or query live services.
 
-Prepared templates use the Rails public layout rules. Profile titles, contact links, sections, publication groups, saved CVs, More-facet controls, and search-match previews are connected where saved fields are available. The [browser comparison command](conversion/browser_comparison.md) checks selected desktop and narrow cases. Homepage and organization visual comparisons still need review, especially because the homepage background varies by load. Search, person profiles, ordinary organizations, full facets, and supported CVs now use the raw-response reader in replay mode and the same processing for live requests. Other endpoints and source integrations remain unfinished.
+Shared application templates render the saved fields. The [browser comparison tool](browser_comparison.md) can check selected views for future changes. Prepared mode remains temporarily because live code and tests share its helpers; see [the retirement review](code_retirement_review.md). Historical bundle sizes and conversion milestones belong to the conversion archive.

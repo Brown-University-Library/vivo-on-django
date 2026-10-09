@@ -1,6 +1,6 @@
 # Checking saved upstream responses
 
-The runtime reader in [recorded_responses.py](../vivo_app/lib/recorded_responses.py) checks saved GET responses and returns their unchanged bytes. It never opens a network connection, writes files, or substitutes sample data for a missing recording. The separate [validation command](../tools/validate_recordings.py) checks selected cases for development work. Replay mode uses the reader to supply saved upstream responses to page processing.
+The runtime reader in [recorded_responses.py](../vivo_app/lib/recorded_responses.py) checks saved GET responses and returns their unchanged bytes. It never opens a network connection, writes files, or substitutes sample data for a missing recording. Replay mode uses the reader to supply saved upstream responses to page processing. The reader and mode remain because live code shares their request/response helpers; see [code retained for review](code_retirement_review.md).
 
 Keep the manifest and all response bodies in a directory outside every Git checkout. The reader enforces that rule for synthetic examples too. It rejects missing files, changed checksums, duplicate requests, incomplete case references, and files that escape the recording directory. These checks establish file integrity, not that the data is authentic or that every dependency needed by a page has been saved.
 
@@ -9,21 +9,30 @@ Contents:
 - [Run a local check](#run-a-local-check)
 - [Manifest format](#manifest-format)
 - [Use a saved response](#use-a-saved-response)
-- [Current integration and remaining work](#current-integration-and-remaining-work)
+- [Supported use](#supported-use)
 
 ## Run a local check
 
 From the repository root, run:
 
 ```bash
-uv run -m tools.validate_recordings ../recordings/manifest.json --case SEARCH --case PROFILE --require-recorded
+uv run python - <<'PY'
+from pathlib import Path
+from vivo_app.lib.recorded_responses import load_recordings
+
+recordings = load_recordings(Path('../recordings/manifest.json'))
+if recordings.data_kind != 'recorded':
+    raise ValueError('Replay mode requires a manifest marked recorded.')
+print('SEARCH responses:', len(recordings.for_case('SEARCH')))
+print('PROFILE responses:', len(recordings.for_case('PROFILE')))
+PY
 ```
 
-The command reads all entries in the manifest and validates their bodies, then checks the selected case names. It prints the declared data kind and response counts. It exits with a nonzero status for invalid or missing data. `--require-recorded` also rejects a manifest marked `synthetic`; it cannot verify the provenance of a file merely marked `recorded`. Omit that option only when deliberately checking invented examples during tool development.
+Replace the path and case names with those in your external manifest. This check reads all entries and validates their bodies, then checks the selected case names. It prints response counts and exits with a nonzero status for invalid or missing data. It contacts no service and changes no files. A manifest marked `recorded` still needs a trustworthy source; the label alone does not prove where its content came from.
 
 ## Manifest format
 
-Use schema version `1`, a `data_kind` of `recorded` or `synthetic`, a `captured_at` timestamp including its timezone, a `recordings` array, and a `cases` object. Each case maps its identifier to a nonempty list of recording identifiers. Several cases can share a recording. Repeated reads of one request use the same response; a response that changes during a journey requires a separate capture set. This first reader does not model such sequences.
+Use schema version `1`, a `data_kind` of `recorded` or `synthetic`, a `captured_at` timestamp including its timezone, a `recordings` array, and a `cases` object. Each case maps its identifier to a nonempty list of recording identifiers. Several cases can share a recording. Repeated reads of one request use the same response; a response that changes during a journey requires a separate capture set. The reader does not model such sequences.
 
 Each recording contains:
 
@@ -56,10 +65,10 @@ response = recordings.get('SEARCH', request)
 
 The example uses invented search text and requires an exactly matching entry in the external manifest. Inspect `response.status` and `response.headers` before treating its body as successful data. `response.json()` parses JSON and raises `RecordingError` for invalid JSON. Raw bytes remain available as `response.body` for other formats. HTTP errors are preserved as responses; the eventual service parser must apply the application's error behavior.
 
-## Current integration and remaining work
+## Supported use
 
-Prepared page data remains a separate source of already-arranged fields for local layout and interaction work. Do not present it as a raw upstream recording or weaken this reader's checks to accept it. Search, person profiles, ordinary organizations, full facets, and supported CV PDFs now use this reader in replay mode and the same parser for live responses. [The source journey guide](source_journey.md) explains the bounded capture command and supported pages. A missing replay response cannot trigger a live request or sample fallback.
+Prepared page data contains already-arranged fields for local layout and interaction work. It is separate from raw upstream recordings. Search, profiles, organizations, facets, graphs, source images/documents, homepage books, and structured representations use saved responses in replay mode and their source parsers in live mode. [The source guide](source_journey.md) explains the settings. A missing replay response cannot trigger a live request or sample fallback.
 
-Visualization availability lists and ordinary graphs now use the same live and replay reader. A selected production visualization capture was read back without contacting the service. Team and specialized-organization collaboration graphs use Solr member records through that reader; local tests cover exact request equality and missing-recording failures, while live comparison remains. Other source clients, structured representations, and supporting requests remain unfinished. Confirm deployed request settings and align capture dates with public reference checks. Public page JSON is not a substitute for an unchanged upstream response. The checks so far have not shown a need for a local Solr instance.
+The conversion capture commands and standalone validator have been retired. Existing external recordings can still be read. They must contain the exact requests needed by the selected page. Public page JSON is not a substitute for an unchanged upstream response.
 
 Run the reader's tests with `uv run ./run_tests.py vivo_app.tests.test_recorded_responses -v`. They create invented responses in a temporary directory outside the repository. No authentic record or publication content is included.

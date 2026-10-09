@@ -2,7 +2,7 @@
 name = "vivo-on-django-project"
 version = "0.0.0"
 description = "Front-end for VIVO."
-readme = "coming"
+readme = "README.md"
 requires-python = "==3.12.14"
 dependencies = [
     "Django~=5.2.0",

@@ -7,14 +7,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-from django.core.management import call_command
-from django.core.management.base import CommandError
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.urls import get_script_prefix, set_script_prefix
 from django.utils import translation
 
-from tools.source_capture import CapturingReader
 from vivo_app.lib.prepared_data import PageDataError
 from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_formats import (
@@ -1865,38 +1862,6 @@ class SourcePageTests(TestCase):
             self.fail('Profile sections should be a list.')
         self.assertIn('https://example.invalid', sections[0]['html'])
 
-    def test_capture_requires_profile_in_search_results(self) -> None:
-        """
-        Checks capture rejects an unrelated profile before writing any files.
-        """
-        with (
-            patch('tools.source_capture.read_source', side_effect=self.read),
-            patch('tools.source_capture.time.sleep'),
-            patch('tools.source_capture.write_capture') as writer,
-        ):
-            with self.assertRaises(CommandError) as caught:
-                call_command('capture_solr_journey', query='Example', id='other', output=Path('/tmp/unused-capture'))
-            self.assertIn('not in the captured search results', str(caught.exception))
-            writer.assert_not_called()
-
-    def test_capture_spaces_distinct_solr_requests(self) -> None:
-        """
-        Checks repeated reads use the saved response and new Solr reads wait one second.
-        """
-        reader = CapturingReader()
-        first = search_key('Example', 1, [])
-        second = search_key('Example', 1, [('record_type', 'PEOPLE')])
-        with (
-            patch('tools.source_capture.read_source', side_effect=self.read) as read,
-            patch('tools.source_capture.time.monotonic', side_effect=[0.0, 0.2, 0.2]),
-            patch('tools.source_capture.time.sleep') as sleep,
-        ):
-            reader(first, 'live')
-            reader(first, 'live')
-            reader(second, 'live')
-        self.assertEqual(read.call_count, 2)
-        sleep.assert_called_once_with(0.8)
-
     def test_search_json_uses_the_html_search_response(self) -> None:
         """
         Checks search JSON has the public fields without requesting another Solr shape.
@@ -2647,30 +2612,3 @@ class SourcePageTests(TestCase):
                 self.responses[key] = self.solr_response([area_member], 501)
                 with self.assertRaises(PageDataError):
                     custom_organization_members('org-brown-univ-dept148', 'live', self.read)
-
-    def test_capture_includes_organization_facets_and_document(self) -> None:
-        """
-        Checks the extended capture includes the source requests needed by its linked pages.
-        """
-        with (
-            patch('tools.source_capture.read_source', side_effect=self.read),
-            patch('tools.source_capture.time.sleep'),
-            patch('tools.source_capture.write_capture') as writer,
-        ):
-            call_command(
-                'capture_solr_journey',
-                query='Example',
-                id='invented-a',
-                organization_id='org-example',
-                extra_search=['q=none'],
-                output=Path('/tmp/unused-capture'),
-            )
-        writer.assert_called_once()
-        responses = writer.call_args.args[1]
-        self.assertIn(member_key(['invented-a']), responses)
-        self.assertIn(member_details_key(['invented-a']), responses)
-        self.assertIn(search_key('Example', 1, [], -1), responses)
-        self.assertIn(search_key('none', 1, []), responses)
-        self.assertIn(search_key('none', 1, [], -1), responses)
-        self.assertIn(document_key('/docs/i/invented_cv.pdf', (('dt', '1'),)), responses)
-        self.assertIn(image_key('/profile-images/567/8/logo.png'), responses)

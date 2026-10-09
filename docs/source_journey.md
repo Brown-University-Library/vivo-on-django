@@ -1,109 +1,56 @@
-# Source-backed search, profile, organization, and team journeys
-
-The live journey requests a Solr search, opens a person profile and an ordinary linked organization, and looks up member portraits in one additional Solr request. It also serves search JSON, organization publication TSV, full search facet values, organization publication and research charts, a status count, and a supported profile CV PDF. A selected active team uses member IDs kept in a separate file outside Git. Graph JSON routes use a separate visualization source when it is configured. VIVO JSON-LD, Turtle, and RDF exports use a separately configured backend. The homepage reads ordered active books from a separate database in live mode. Replay reads exact saved responses and runs the same page-building code without a network connection. Prepared mode remains available for broader saved coverage.
+# Live sources and retained data modes
 
 ## Contents
 
-- [Configure a local source](#configure-a-local-source)
-- [Additional formats and team data](#additional-formats-and-team-data)
-- [Capture and replay one journey](#capture-and-replay-one-journey)
-- [Capture and replay visualization data](#capture-and-replay-visualization-data)
-- [Capture VIVO exports and homepage books](#capture-vivo-exports-and-homepage-books)
-- [Compare the result](#compare-the-result)
-- [Current limits](#current-limits)
+- [Configure live sources](#configure-live-sources)
+- [Homepage books](#homepage-books)
+- [Teams and custom organizations](#teams-and-custom-organizations)
+- [Retained offline modes](#retained-offline-modes)
+- [Failures and diagnosis](#failures-and-diagnosis)
 
-## Configure a local source
+## Configure live sources
 
-Set `SOLR_URL` to a reachable Solr core or collection URL, including its final name. Set `IMAGES_URL` to the base address that serves profile images. Set `DOCUMENTS_URL` to the origin that serves profile CV PDFs if those links should pass through Django. Set `VIZ_SERVICE_URL` to the chosen visualization service. Exact public-page data comparisons require corresponding sources; when the owner retains separate staging sources, keep those differences pending for the later production comparison. Set `VIVO_BACKEND_URL` to the original VIVO/Vitro origin when export routes need live responses. Keep exact source addresses in the private environment file. The source values in `example.env` are blank deliberately. Check source access from each machine that runs Django; workstation access alone does not prove development-server access.
+Set `PAGE_DATA_MODE=live` to read current source data while serving requests. Keep actual addresses and credentials in the private environment file outside Git.
 
-For live homepage books, set the `BOOK_COVER_DB_*` values for a database account with SELECT access to `book_covers` and set `BOOK_COVER_BASE_PATH` for its image URLs. Install the `staging` or `prod` dependency group to supply PyMySQL. Django reads active rows in publication-date order and groups them into pages of four. The database is separate from Django's session database. A missing connection or missing replay response returns 503; the homepage does not fall back to sample books in source modes.
+| Setting | Used for |
+| --- | --- |
+| `SOLR_URL` | Search, record lookup, membership, facets, and calculated charts/graphs; include the core or collection in the address. |
+| `IMAGES_URL` | Profile and affiliation images through Django's source-images route. |
+| `DOCUMENTS_URL` | Supported CV PDFs and version redirects through source-documents. |
+| `VIZ_SERVICE_URL` | Graph availability lists and ordinary coauthor/collaboration responses. |
+| `VIVO_BACKEND_URL` | Original JSON-LD, Turtle, and RDF/XML representations. |
+| `VIZ_ENABLED` | Organization visualization display switch. |
 
-Use `PAGE_DATA_MODE=live` for live search, person profile, and ordinary organization requests. This mode reads the configured sources at request time. It does not require a prepared bundle. Django startup checks verify configuration without contacting the sources; a successful check alone does not establish connectivity. The supported HTML routes are `/search?q=...` and `/display/ID`; `/search_facets?f_name=FIELD&q=...` returns all values for one supported facet. Search accepts a page number and repeated `fq=FIELD|VALUE` filters for the four listed facets. An unsupported option returns 503 instead of sample content.
+Sources have different responsibilities. Profile JSON is distinct from VIVO JSON-LD. Team/custom graphs can be calculated from Solr member records; ordinary graphs use the visualization service. Organization TSV and charts read membership/faculty data. Keep current ordering, metadata, and empty-state behavior.
 
-## Additional formats and team data
+Startup checks verify required configuration without contacting services. Use live sources appropriate to the installation; changing source addresses is a separate operational decision.
 
-`/search?q=...&format=json` uses the same Solr request as HTML search. `/display/ORG_ID/publications.tsv` makes one additional bounded member-record request and returns the public column names and download headers. A saved public organization TSV and a local source-backed TSV had the same 1,355 data rows by content; their row order differed between capture dates. A second fixed-member organization export matched all 272 public rows by content, again with a different order. The public profile JSON shape requires Solr metadata and visualization-availability lists. `/display/PERSON_ID.json` now converts nested publications, appointments, credentials, training, and collaborators; a made-up local test covers those fields. Three varied nested profiles were compared with saved public JSON and Solr responses. One matched 33 of 35 top-level fields, including all publications, appointments, training, and collaborators in order; its web-link field and update timestamp differed. A second matched 29 of 35 fields after correcting equal-date credential order; all 97 publications present in both responses matched exactly, while the public response contained 14 more publications than Solr. An earlier comparison matched 28 of 35 fields; its older public capture has changed source values and its image URL differs from the local route. One earlier sparse profile matched 34 of 35 public fields; its source update date changed between captures.
+## Homepage books
 
-Scoped active teams and custom organizations read their Rails-defined names and fixed members from `TEAM_SOURCE_MANIFEST`. Prepare that JSON file privately, copy it outside each application checkout and configure its path in the application's environment. Relative paths resolve against that checkout. The file has `teams` entries with `name` and `member_ids`, and `organizations` entries with `extra_member_ids`. Keep the real values outside Git; the tests use made-up members. This setting supplies code-defined membership while the configured source services still supply the current records. The application reports an error when the required file or definition is missing rather than silently omitting members. See [the server checks](server_setup.md#repeatable-checks-after-a-deployment).
+Configure `BOOK_COVER_DB_HOST`, `BOOK_COVER_DB_PORT`, `BOOK_COVER_DB_NAME`, `BOOK_COVER_DB_USER`, `BOOK_COVER_DB_PASSWORD`, and `BOOK_COVER_BASE_PATH`. The last is an image URL prefix.
 
-The file has this shape with made-up names and records in the example:
+The account needs SELECT access to the separate book_covers table. PyMySQL is in the staging/prod groups; for local live books use `uv sync --locked --group staging`. This database is separate from Django's SQLite session/application database. Active rows are ordered by publication date and grouped into carousel pages.
+
+## Teams and custom organizations
+
+`TEAM_SOURCE_MANIFEST` names a JSON file outside Git. Relative paths resolve against the checkout. It supplies configured names and fixed members; source services supply their current records.
+
+Use made-up values when documenting the format:
 
 ```json
 {"teams": {"team-example": {"name": "Example Team", "member_ids": ["invented-a", "invented-b"]}}, "organizations": {"org-example": {"extra_member_ids": ["invented-b"]}}}
 ```
 
-The selected team page requests those members in one Solr call and uses the organization layout. A local replay showed the same four member names and titles as the saved public page, though the order differed between capture dates. One fixed-member organization adds configured people to the members supplied by its Solr record; its 13 displayed members matched the saved public page. A configured ID absent from Solr is skipped, as in Rails. The dynamic research-area organization combines externally defined members with a bounded research-area Solr query; its 74 displayed names matched the saved public page. One title changed between captures. The selected team's calculated collaboration graph has a separate live capture and exact replay, described below. Keep the actual definition file outside Git.
+Missing required definitions produce errors. A configured member absent from Solr is skipped as in the original application. Real files stay outside Git.
 
-`/display/ID/viz/collab.json` and `/display/ID/viz/coauthor.json` use `VIZ_SERVICE_URL` for ordinary live graph data. The corresponding HTML pages read a Solr record for the heading and render source nodes and links in an interactive SVG. The page has the public network-scope, labels, details, fit, embed, and PNG controls; the direct `.csv` paths write the public graph columns as plain text. Selected production person and organization CSV downloads matched Django's replayed output byte for byte after correcting line endings. Direct production checks now cover both availability lists, a populated person coauthor graph, an empty person collaborator response, and an ordinary organization graph. Five upstream responses were captured outside Git and replayed through the same request construction and parsing. The empty collaborator response remains an HTTP 200 `{}` with an empty CSV and a visible empty-state message on the page. Selected person and organization network pages were also compared in a desktop browser. Their headings, descriptions, controls, and legends now align closely with the public pages; moving graph nodes and optional failed public resources still require review. The staging service returned different availability lists and graph contents. Preserve the owner's chosen source services and keep exact differences pending until corresponding data is available for the later production comparison.
+## Retained offline modes
 
-Rails calculates collaboration graphs for teams and two specialized organizations from Solr member records. Django follows that path with bounded member batches, two levels of collaborators, and full faculty objects on root nodes. It reads production visualization availability lists for the faculty flags. Tests check live/replay request equality, page rendering, CSV, and missing-recording failure using made-up records. Fresh paced captures for a selected team and specialized organization replayed without network access. Their node identifiers and link contents matched current public JSON. Organization pages also show the fixed decorative collaboration preview and link when `VIZ_ENABLED=true` and members are present. That preview comes from the reference template, not the visualization-service graph. A missing source setting or required recording returns 503.
+Prepared mode reads already-arranged pages/assets from `PREPARED_FIXTURE_DIR`; see [prepared data](prepared_data.md). Replay reads unchanged existing service responses from `UPSTREAM_RECORDING_MANIFEST`, selecting `UPSTREAM_RECORDING_CASE`; see [recorded responses](recorded_responses.md). Replay runs the same source processing used for live pages. Neither mode silently switches to live requests when an input is missing.
 
-The coauthor treemap reuses the coauthor graph response and Solr heading. Its tiles show publication counts by coauthor and link to that coauthor's treemap. A selected desktop comparison with the public page differed by about 0.15% of pixels, with optional failed public resources still reported separately. The page's CSV and JSON formats use the same graph data as the coauthor network page.
+Prototype is the retained local sample mode and test baseline. These modes remain because of dependencies described in [the review note](code_retirement_review.md). Source-response capture commands are archived; current instructions use existing externally supplied files.
 
-## Capture and replay one journey
+## Failures and diagnosis
 
-With the source connection available, create a new directory outside Git:
+Missing source settings, unusable responses, or missing saved inputs retain their existing errors rather than fall back to sample content. Restart Django after changing environment values or selecting a new prepared bundle; bundles are cached per process.
 
-```bash
-uv run ./manage.py capture_solr_journey --query "$QUERY" --id "$PERSON_ID" --organization-id "$ORGANIZATION_ID" --output ../source_recordings/first-journey
-```
-
-The Django command calls the capture logic in [tools/source_capture.py](../tools/source_capture.py); neither runs while serving visitor requests. The command requires the chosen profile to appear in the first 20 unfiltered results. It then requests a People-filtered search, full facet values for both states, the profile, its affiliation records, and any supported CV PDF. When `--organization-id` is supplied, it also requests the organization, its member portraits, and the member records needed for its TSV. A configured active-team ID instead requests its member records and portraits. Add `--extra-search 'q=TERM&page=2'` up to four times to capture additional exact search states, including their full facets. Finally, it captures images named by the Solr documents. Omit `--organization-id` for a person-only journey. It reuses repeated responses and waits at least one second between distinct Solr requests. It stores unchanged response bytes and SHA-256 checksums in a format the existing recording reader validates. The capture is limited to 120 requests and 60 MB overall; Solr and images have a 3 MB per-response limit, and PDFs have a 10 MB limit. It refuses an existing output directory and any directory inside Git. If a request or write fails, files already written remain; the command writes the manifest last, so an incomplete directory cannot be selected for replay. The command makes no changes to upstream services.
-
-Run the saved journey with the manifest path and replay mode:
-
-```bash
-PAGE_DATA_MODE=replay UPSTREAM_RECORDING_MANIFEST=../source_recordings/first-journey/manifest.json uv run ./manage.py runserver 127.0.0.1:8000
-```
-
-Replay requires an authentic recorded manifest. It matches the service, path, ordered repeated query values, and headers for each request. A missing or altered response fails; it cannot switch to the network, prepared pages, or samples. The local image and PDF routes also read recorded bytes. A supported PDF version redirect stays on the local route. Store real records, images, documents, and comparison output outside every Git checkout.
-
-## Capture and replay visualization data
-
-Set `VIZ_SERVICE_URL` to the production visualization root in the private environment file, then capture one person and optionally one ordinary organization into a new directory outside Git:
-
-```bash
-uv run ./manage.py capture_viz_journey --person-id "$PERSON_ID" --organization-id "$ORGANIZATION_ID" --output ../source_recordings/visualization
-```
-
-The command reads both graph-availability lists, the person's coauthor and collaborator responses, and the organization's collaborator response when supplied. It waits half a second between requests. It writes unchanged bodies and request keys, then reads those recordings through Django's normal replay path and checks that the parsed results match. Omit `--organization-id` for a person-only capture. Team and specialized-organization graphs use Solr records and are intentionally excluded from this visualization-service capture. The output directory must not already exist or be inside Git. If a request fails, no completed manifest is available for replay; any already written files remain in the new directory. This capture alone supplies graph inputs, not the Solr record needed to render a complete graph page.
-
-For a selected team or specialized-organization graph, use the separate capture command. It waits at least one second between distinct Solr requests. It saves full Solr records for root faculty objects, smaller member records for the second graph level, and the production visualization availability lists used by faculty flags:
-
-```bash
-uv run ./manage.py capture_custom_graph --id "$CUSTOM_ORGANIZATION_ID" --output ../source_recordings/custom-graph
-```
-
-Set `UPSTREAM_RECORDING_CASE=custom-graph` and point `UPSTREAM_RECORDING_MANIFEST` to that capture's manifest for replay. The selected specialized organization's member list named 13 people and Solr returned 12; Rails also skipped the missing record. Its replayed graph and current public graph had the same 12 node identifiers, names, groups, titles, levels, update date, and no links. Both CSV downloads were empty. The selected team's replayed graph and current public graph each had 331 nodes and 638 links, with matching node identifiers and link contents; link order differed. Both selected graph responses now include nested faculty objects on root nodes. When Django converted the public response's own Solr documents with the captured production availability lists, every nested faculty item field matched. Differences between fresh Solr replay and public profile field values reflect source records from different environments or capture times. The development server still needs its own live source check.
-
-## Capture VIVO exports and homepage books
-
-When the configured VIVO backend is reachable, capture one selected record's three formats into a new directory outside Git:
-
-```bash
-uv run ./manage.py capture_vivo_exports --id "$PERSON_ID" --output ../source_recordings/vivo-exports
-```
-
-This command makes three GET requests at least 0.3 seconds apart. It requires all three responses to succeed, saves their original bytes, and writes an exact replay manifest last. On September 28, the workstation captured one production record in all three formats through the normal source client. Each response returned HTTP 200 and parsed as 219 RDF triples. Django's replay routes returned the exact saved bytes without contacting VIVO. Earlier public JSON-LD and Turtle captures of the same record each differed by only the generated document date. The development server must verify its own access separately.
-
-When the separate book database is reachable with a read-only account, capture its active ordered rows outside Git:
-
-```bash
-uv run ./manage.py capture_homepage_books --output ../source_recordings/homepage-books
-```
-
-This command runs one SELECT query, saves the returned rows, and writes a replay manifest. Set `UPSTREAM_RECORDING_CASE` to `vivo-exports` or `homepage-books` with the corresponding manifest when checking replay. Both commands refuse an existing output directory or a directory inside Git. The data and credentials stay outside the repository.
-
-Set `TURNSTILE_ENABLED=True` only with site and secret keys configured for the Django hostname. Search GET requests then redirect to `/challenge` until server-side verification succeeds; a pass lasts up to 24 hours for the same visitor address. Set it to `False` for prepared and replay checks. With enforcement off, a direct `/challenge` request returns 404 and no verification request is sent. The enabled and disabled paths are covered by local tests; live verification with real keys has not been checked.
-
-## Compare the result
-
-Use `tools/compare_sites.py` with an external case manifest as described in [the browser comparison guide](conversion/browser_comparison.md). Select matching search, profile, and organization URLs and the same browser viewport for both sites. The browser comparison checks status, selected text, images, and screenshots. It reports any changed pixels for review rather than treating a close visual match as accepted. Compare facet JSON by value and link query parameters, and compare a captured CV with the public PDF bytes. Keep the saved reference, local screenshots, and reports outside Git.
-
-For a manual check, search for the captured term, select and remove the People filter, open the captured profile, follow its organization link, and return to search. Open the full facet values and CV link when present. The chosen search result must link to that profile. A second search term needs its own live request or recorded response; it must not reuse the first result.
-
-## Current limits
-
-This increment covers HTML search, person profiles, ordinary Solr-backed organizations, a selected active team, fixed-member and research-area organizations, search JSON, organization publication TSV, full facet JSON, supported CV PDFs, ordinary visualization graphs, coauthor treemaps, and organization publication and research charts. Nested profile JSON, graph CSV, and selected graph pages have public comparisons; network layout and browser downloads need further checks. An exact organization chart and status recording ran through live processing and offline replay. Selected chart values matched saved public responses by meaning, though member order changes CSV bytes and chart colors. Selected team and specialized-organization graphs now have paced live source captures and exact replay, including nested faculty objects on root nodes. Their node identifiers and link contents matched current public JSON; one team title and the team's link order differed. The source-record values used by the two environments can also differ. Desktop chart screenshots still need visual refinement. VIVO JSON-LD, Turtle, and RDF/XML exports have one successful live capture and byte-exact offline replay from the workstation. Homepage books now read active ordered database rows in live mode and the same saved rows in replay; the database connection has not been verified. The browser challenge has local enabled and disabled tests, but no live key verification. The legacy image redirect is connected, but its live behavior needs checking. Source modes return 503 for unconverted handlers. A CV link outside the configured document source remains an external link. Direct local service access does not prove access from the development server.
-
-The parser converts common person fields, publications, education, appointments, teaching, affiliations, and outgoing links. It escapes source text before inserting it into page sections. Four additional public record shapes and their live Solr journeys were checked locally, including sparse profiles and one with many publications. No-results, later-page, and repeated-filter searches were also captured and replayed. The selected organization had 58 member rows with matching public text and images that all loaded; its source-backed page now includes the fixed visualization preview, but that change has not had a matched screenshot check. Other records and queries need matched checks. The public page can also fail optional analytics or status requests during a browser comparison; record those separately from core content and image differences.
+`uv run ./manage.py check_dev_sources` checks the selected mode without contacting services. Supplying `--source` makes read-only requests to the named live source independently of the selected mode. See [server setup](server_setup.md#source-checks) for arguments and [development checks](development_checks.md) for local tests. Keep detailed returned records and reports outside Git.
