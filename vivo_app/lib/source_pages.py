@@ -1,8 +1,9 @@
 """
-Turns recorded or live Solr documents into the existing page templates' data.
+Turns configured Solr documents into the existing page templates' data.
 """
 
 import json
+import logging
 import math
 import re
 from collections import Counter
@@ -16,8 +17,7 @@ from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 
-from vivo_app.lib.prepared_data import MissingRecordError, PageDataError
-from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
+from vivo_app.lib.page_errors import MissingRecordError, PageDataError
 from vivo_app.lib.search_errors import check_reference_filter_markup
 from vivo_app.lib.source_citations import citation_append, citation_period, citation_text, citation_title
 from vivo_app.lib.source_html import render_citation_html, render_profile_html
@@ -34,18 +34,21 @@ from vivo_app.lib.source_requests import (
     source_origin,
     team_member_key,
 )
+from vivo_app.lib.source_types import RequestKey, SourceResponse
 
-SourceReader = Callable[[RequestKey, str], RecordedResponse]
+SourceReader = Callable[[RequestKey], SourceResponse]
 CUSTOM_ORGANIZATION_IDS = {'org-brown-univ-dept124', 'org-brown-univ-dept148'}
+SEARCH_QUERY_PARAMETERS = frozenset({'q', 'page', 'rows', 'fq'})
+logger = logging.getLogger(__name__)
 
 
-def response_object(key: RequestKey, mode: str, reader: SourceReader) -> dict[str, object]:
+def response_object(key: RequestKey, reader: SourceReader) -> dict[str, object]:
     """
     Requires one valid Solr JSON response with a successful application status.
 
     Called by: search_data(), profile_data(), organization_thumbnail()
     """
-    response = reader(key, mode)
+    response = reader(key)
     try:
         value: object = json.loads(response.body)
     except (ValueError, UnicodeError) as exc:
@@ -132,19 +135,31 @@ def thumbnail_url(doc: dict[str, object], organization: bool = False) -> str:
 
 def search_inputs(pairs: list[tuple[str, str]]) -> tuple[str, int, list[tuple[str, str]]]:
     """
-    Accepts the first journey's query, page, and repeated facet filters.
+    Accepts Rails search parameter names and logs dropped names before building a Solr query.
 
-    Called by: search_data()
+    Called by: search_data(), search_json_data(), facet_values_data()
     """
-    if any(key not in {'q', 'page', 'fq'} and re.fullmatch(r'fq_[0-9]+', key) is None for key, _ in pairs):
-        raise PageDataError('This live search option has not been implemented.')
+    accepted: list[tuple[str, str]] = []
+    dropped: list[str] = []
+    for key, value in pairs:
+        if key in SEARCH_QUERY_PARAMETERS or key.startswith('fq_'):
+            accepted.append((key, value))
+        else:
+            dropped.append(key)
+    if dropped:
+        ## Log names without values, escaping line breaks and other control characters.
+        logger.warning(
+            'Dropped unsupported search parameters; parameter_names, ``%s``', json.dumps(list(dict.fromkeys(dropped)))
+        )
+    pairs = accepted
+    ## Rails accepts rows but overrides it to 20; search_key() fixes that value too.
     queries = [value for key, value in pairs if key == 'q']
     pages = [value for key, value in pairs if key == 'page']
     if len(queries) > 1 or len(pages) > 1 or (pages and re.fullmatch(r'[1-9][0-9]{0,2}', pages[0]) is None):
         raise PageDataError('The requested search query or page is invalid.')
     filters: list[tuple[str, str]] = []
     for key, value in pairs:
-        if key == 'fq' or re.fullmatch(r'fq_[0-9]+', key):
+        if key == 'fq' or key.startswith('fq_'):
             field, separator, text = value.partition('|')
             if not separator or field not in FACETS or not text:
                 raise PageDataError('The requested search filter is unsupported.')
@@ -297,16 +312,16 @@ def match_html(response: dict[str, object], doc: dict[str, object]) -> str:
     return ''.join(paragraphs)
 
 
-def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | None = None) -> dict[str, object]:
+def search_data(pairs: list[tuple[str, str]], reader: SourceReader | None = None) -> dict[str, object]:
     """
-    Supplies a rendered search state from the same parser in live and replay.
+    Supplies a rendered search state from the source response.
 
     Called by: page_data.get_search_data(), tests
     """
     if reader is None:
         reader = read_source
     query, page, filters = search_inputs(pairs)
-    response = response_object(search_key(query, page, filters), mode, reader)
+    response = response_object(search_key(query, page, filters), reader)
     docs, total = documents(response)
     results: list[dict[str, object]] = []
     for doc in docs:
@@ -377,7 +392,7 @@ def search_data(pairs: list[tuple[str, str]], mode: str, reader: SourceReader | 
 
 
 def search_json_data(
-    pairs: list[tuple[str, str]], mode: str, site_origin: str, reader: SourceReader | None = None
+    pairs: list[tuple[str, str]], site_origin: str, reader: SourceReader | None = None
 ) -> list[dict[str, object]]:
     """
     Returns the public search JSON fields from the same Solr request as HTML search.
@@ -387,7 +402,7 @@ def search_json_data(
     if reader is None:
         reader = read_source
     query, page, filters = search_inputs(pairs)
-    response = response_object(search_key(query, page, filters), mode, reader)
+    response = response_object(search_key(query, page, filters), reader)
     docs, _ = documents(response)
     highlighting = response.get('highlighting')
     result: list[dict[str, object]] = []
@@ -435,9 +450,7 @@ def search_json_data(
     return result
 
 
-def facet_values_data(
-    pairs: list[tuple[str, str]], mode: str, reader: SourceReader | None = None
-) -> list[dict[str, object]]:
+def facet_values_data(pairs: list[tuple[str, str]], reader: SourceReader | None = None) -> list[dict[str, object]]:
     """
     Returns every value of one search facet using a full Solr facet response.
 
@@ -449,7 +462,7 @@ def facet_values_data(
     if len(names) != 1 or names[0] not in FACETS:
         raise PageDataError('The requested search facet is unsupported.')
     query, page, filters = search_inputs([(key, value) for key, value in pairs if key != 'f_name'])
-    response = response_object(search_key(query, page, filters, -1), mode, reader)
+    response = response_object(search_key(query, page, filters, -1), reader)
     fields = response.get('facet_counts')
     values = fields.get('facet_fields') if isinstance(fields, dict) else None
     raw = values.get(names[0]) if isinstance(values, dict) else None
@@ -762,7 +775,7 @@ def publications(item: dict[str, object]) -> tuple[list[dict[str, str]], list[di
     return result, filters
 
 
-def organization_thumbnail(uri: str, mode: str, reader: SourceReader) -> str:
+def organization_thumbnail(uri: str, reader: SourceReader) -> str:
     """
     Looks up an affiliation logo using the same Solr source as its profile.
 
@@ -771,15 +784,14 @@ def organization_thumbnail(uri: str, mode: str, reader: SourceReader) -> str:
     identifier = uri.rsplit('/', 1)[-1]
     result = static('images/org_placeholder.png')
     try:
-        response = response_object(profile_key(identifier), mode, reader)
+        response = response_object(profile_key(identifier), reader)
         docs, _ = documents(response)
         if docs:
             if record_id(docs[0]) != identifier or first_text(docs[0].get('record_type')) != 'ORGANIZATION':
                 raise PageDataError('Solr returned an unrelated affiliation logo.')
             result = thumbnail_url(docs[0], True)
     except PageDataError:
-        if mode == 'replay':
-            raise
+        pass
     return result
 
 
@@ -826,7 +838,7 @@ def profile_entries_newest_first(rows: list[dict[str, object]]) -> list[dict[str
 
 
 def profile_sections(
-    item: dict[str, object], mode: str, reader: SourceReader, publication_count: int, collaborator_visualization_url: str
+    item: dict[str, object], reader: SourceReader, publication_count: int, collaborator_visualization_url: str
 ) -> list[dict[str, str]]:
     """
     Builds the visible profile sections from its source fields and lookups.
@@ -849,7 +861,7 @@ def profile_sections(
             uri = first_text(affiliation.get('uri'))
             name = first_text(affiliation.get('name'))
             identifier = uri.rsplit('/', 1)[-1]
-            image = organization_thumbnail(uri, mode, reader)
+            image = organization_thumbnail(uri, reader)
             overview += (
                 '<li><img src="'
                 + escape(image, quote=True)
@@ -1117,7 +1129,7 @@ def profile_panels(sections: list[dict[str, str]]) -> list[dict[str, str]]:
     return panels
 
 
-def profile_data(identifier: str, mode: str, reader: SourceReader | None = None) -> dict[str, object]:
+def profile_data(identifier: str, reader: SourceReader | None = None) -> dict[str, object]:
     """
     Supplies a person profile from one Solr record and required lookups.
 
@@ -1125,7 +1137,7 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
     """
     if reader is None:
         reader = read_source
-    response = response_object(profile_key(identifier), mode, reader)
+    response = response_object(profile_key(identifier), reader)
     docs, _ = documents(response)
     if not docs:
         raise MissingRecordError('The requested profile is absent from Solr.')
@@ -1143,25 +1155,23 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
         from vivo_app.lib.source_graph import visualization_list
 
         try:
-            available_coauthors = visualization_list('coauthors', mode, reader)
+            available_coauthors = visualization_list('coauthors', reader)
             if first_text(doc.get('id')) in available_coauthors:
                 coauthor_visualization_url = reverse('visualization_coauthor', args=[identifier])
         except PageDataError:
-            if mode == 'replay':
-                raise
+            pass
     if settings.VIZ_ENABLED and entries(item, 'collaborators') and first_text(doc.get('show_visualizations_s')) == 'true':
         from vivo_app.lib.source_graph import visualization_list
 
         try:
-            available_collaborators = visualization_list('collaborators', mode, reader)
+            available_collaborators = visualization_list('collaborators', reader)
             if first_text(doc.get('id')) in available_collaborators:
                 collaborator_visualization_url = reverse('visualization_collab', args=[identifier])
         except PageDataError:
-            if mode == 'replay':
-                raise
+            pass
     cv_entries = entries(item, 'cv')
     cv_url = safe_url(cv_entries[0].get('cv_link')) if cv_entries else ''
-    sections = profile_sections(item, mode, reader, len(publications_data), collaborator_visualization_url)
+    sections = profile_sections(item, reader, len(publications_data), collaborator_visualization_url)
     return {
         'id': identifier,
         'name': name,
@@ -1180,7 +1190,7 @@ def profile_data(identifier: str, mode: str, reader: SourceReader | None = None)
 
 
 def organization_members(
-    item: dict[str, object], extra_member_ids: list[str], mode: str, reader: SourceReader
+    item: dict[str, object], extra_member_ids: list[str], reader: SourceReader
 ) -> list[dict[str, object]]:
     """
     Adds the configured faculty that Rails places on a custom organization page.
@@ -1194,7 +1204,7 @@ def organization_members(
     ]
     known = {record_id({'id': first_text(member.get('faculty_uri'))}) for member in members}
     if extra_member_ids:
-        response = response_object(team_member_key(extra_member_ids), mode, reader)
+        response = response_object(team_member_key(extra_member_ids), reader)
         docs, _ = documents(response)
         found: set[str] = set()
         for doc in docs:
@@ -1242,7 +1252,7 @@ def organization_preview_graph() -> dict[str, object]:
 
 
 def organization_data(
-    identifier: str, mode: str, reader: SourceReader | None = None, extra_member_ids: list[str] | None = None
+    identifier: str, reader: SourceReader | None = None, extra_member_ids: list[str] | None = None
 ) -> dict[str, object]:
     """
     Builds an organization and its member portraits from exact Solr responses.
@@ -1251,7 +1261,7 @@ def organization_data(
     """
     if reader is None:
         reader = read_source
-    response = response_object(profile_key(identifier), mode, reader)
+    response = response_object(profile_key(identifier), reader)
     docs, _ = documents(response)
     if not docs:
         raise MissingRecordError('The requested organization is absent from Solr.')
@@ -1262,7 +1272,7 @@ def organization_data(
     name = first_text(item.get('name')) or first_text(doc.get('display_name_s'))
     if not name:
         raise PageDataError('The source organization has no display name.')
-    members = organization_members(item, extra_member_ids or [], mode, reader)
+    members = organization_members(item, extra_member_ids or [], reader)
     member_ids: list[str] = []
     for member in members:
         uri = first_text(member.get('faculty_uri'))
@@ -1271,7 +1281,7 @@ def organization_data(
     portraits: dict[str, str] = {}
     for start in range(0, len(identifiers), 20):
         batch = identifiers[start : start + 20]
-        member_response = response_object(member_key(batch), mode, reader)
+        member_response = response_object(member_key(batch), reader)
         member_docs, _ = documents(member_response)
         for member_doc in member_docs:
             member_id = record_id(member_doc)
@@ -1321,7 +1331,7 @@ def organization_data(
 
 
 def organization_publications_data(
-    identifier: str, mode: str, reader: SourceReader | None = None, extra_member_ids: list[str] | None = None
+    identifier: str, reader: SourceReader | None = None, extra_member_ids: list[str] | None = None
 ) -> str:
     """
     Builds the public TSV download from an organization's Solr member records.
@@ -1330,12 +1340,12 @@ def organization_publications_data(
     """
     if reader is None:
         reader = read_source
-    response = response_object(profile_key(identifier), mode, reader)
+    response = response_object(profile_key(identifier), reader)
     docs, _ = documents(response)
     if not docs or first_text(docs[0].get('record_type')) != 'ORGANIZATION' or record_id(docs[0]) != identifier:
         raise PageDataError('The requested source record is not an organization.')
     organization = record_data(docs[0])
-    members = organization_members(organization, extra_member_ids or [], mode, reader)
+    members = organization_members(organization, extra_member_ids or [], reader)
     custom_members = identifier in CUSTOM_ORGANIZATION_IDS
     members.sort(
         key=lambda member: first_text(member.get('label')) if custom_members else first_text(member.get('label')).upper()
@@ -1344,7 +1354,7 @@ def organization_publications_data(
     member_docs: list[dict[str, object]] = []
     for start in range(0, len(member_ids), 20):
         batch = member_ids[start : start + 20]
-        member_response = response_object(member_details_key(batch), mode, reader)
+        member_response = response_object(member_details_key(batch), reader)
         docs, _ = documents(member_response)
         found = {record_id(doc) for doc in docs}
         if not found.issubset(batch) or len(docs) != len(found):

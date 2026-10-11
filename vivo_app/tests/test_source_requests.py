@@ -6,9 +6,9 @@ from unittest.mock import MagicMock, patch
 
 from django.test import SimpleTestCase, override_settings
 
-from vivo_app.lib.prepared_data import PageDataError
-from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_requests import read_source
+from vivo_app.lib.source_types import RequestKey
 
 
 class SourceRequestDiagnosticsTests(SimpleTestCase):
@@ -29,10 +29,10 @@ class SourceRequestDiagnosticsTests(SimpleTestCase):
             patch('vivo_app.lib.source_requests.httpx2.Client') as client,
         ):
             client.return_value.__enter__.return_value.stream.return_value.__enter__.return_value = response
-            result = read_source(RequestKey('images', '/profile-images/abc/portrait.jpg'), 'live')
+            result = read_source(RequestKey('images', '/profile-images/abc/portrait.jpg'))
             self.assertEqual(result.body, b'x' * 150)
             with self.assertRaisesRegex(PageDataError, 'exceeds the configured size limit'):
-                read_source(RequestKey('solr', '/select'), 'live')
+                read_source(RequestKey('solr', '/select'))
 
     @override_settings(IMAGES_URL='https://source.invalid')
     def test_image_stream_still_stops_at_image_limit(self) -> None:
@@ -49,28 +49,7 @@ class SourceRequestDiagnosticsTests(SimpleTestCase):
         ):
             client.return_value.__enter__.return_value.stream.return_value.__enter__.return_value = response
             with self.assertRaisesRegex(PageDataError, 'exceeds the configured size limit'):
-                read_source(RequestKey('images', '/profile-images/abc/portrait.jpg'), 'live')
-
-    @override_settings(UPSTREAM_RECORDING_MANIFEST='unused-recording.json')
-    def test_recorded_images_use_the_same_separate_limit(self) -> None:
-        """
-        Checks recorded portraits retain their bytes and reject bodies beyond the image limit.
-        """
-        key = RequestKey('images', '/profile-images/abc/portrait.jpg')
-        with (
-            patch('vivo_app.lib.source_requests.MAX_RESPONSE_BYTES', 100),
-            patch('vivo_app.lib.source_requests.MAX_IMAGE_BYTES', 200),
-            patch('vivo_app.lib.source_requests.load_recordings') as load,
-        ):
-            load.return_value.data_kind = 'recorded'
-            load.return_value.get.return_value = RecordedResponse(200, (('content-type', 'image/jpeg'),), b'x' * 150)
-            self.assertEqual(read_source(key, 'replay').body, b'x' * 150)
-            load.return_value.get.return_value = RecordedResponse(200, (('content-type', 'image/jpeg'),), b'x' * 201)
-            with (
-                self.assertLogs('vivo_app.lib.source_requests', level='WARNING'),
-                self.assertRaisesRegex(PageDataError, 'images source returned an unusable response'),
-            ):
-                read_source(key, 'replay')
+                read_source(RequestKey('images', '/profile-images/abc/portrait.jpg'))
 
     @override_settings(SOLR_URL='https://source.invalid/core')
     def test_rejected_response_logs_metadata_without_private_values(self) -> None:
@@ -88,7 +67,7 @@ class SourceRequestDiagnosticsTests(SimpleTestCase):
         ):
             client.return_value.__enter__.return_value.stream.return_value.__enter__.return_value = response
             with self.assertRaisesRegex(PageDataError, '^solr source returned an unusable response.$'):
-                read_source(key, 'live')
+                read_source(key)
         message = '\n'.join(logs.output)
         self.assertIn('status, ``414``', message)
         self.assertIn('query_bytes, ``24``', message)
@@ -110,7 +89,7 @@ class SourceRequestDiagnosticsTests(SimpleTestCase):
             self.assertNoLogs('vivo_app.lib.source_requests', level='WARNING'),
         ):
             client.return_value.__enter__.return_value.stream.return_value.__enter__.return_value = response
-            result = read_source(RequestKey('solr', '/select'), 'live')
+            result = read_source(RequestKey('solr', '/select'))
         self.assertEqual(result.status, 200)
         self.assertEqual(result.headers, (('content-type', 'application/json'),))
         self.assertEqual(result.body, b'{"response":{}}')

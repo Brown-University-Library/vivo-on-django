@@ -10,9 +10,8 @@ from urllib.parse import quote, quote_plus, urlencode
 
 from django.conf import settings
 from django.contrib.sessions.backends.base import SessionBase
-from django.http import Http404, HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse, StreamingHttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse, StreamingHttpResponse
 from django.shortcuts import redirect, render
-from django.templatetags.static import static
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
@@ -20,19 +19,15 @@ from .lib import version_helper
 from .lib.advanced_search import advanced_search_query
 from .lib.assets import get_random_background_relpath
 from .lib.bot_detect import SESSION_KEY, verify_token
-from .lib.display import build_display_context, build_publications_context, get_type_for_id
 from .lib.error_check import IntentionalErrorCheckError
-from .lib.home import BookCover, get_book_cover_pages
 from .lib.page_data import (
-    get_bundle,
     get_home_data,
     get_organization_data,
     get_profile_data,
-    get_response_data,
     get_search_data,
 )
-from .lib.page_rendering import data_unavailable, prepared_response, query_pairs, render_or_stub
-from .lib.prepared_data import MissingRecordError, PageDataError
+from .lib.page_errors import MissingRecordError, PageDataError
+from .lib.page_rendering import data_unavailable, query_pairs, render_or_stub
 from .lib.profile_navigation import profile_search_return
 from .lib.search_errors import ReferenceSearchError
 from .lib.source_documents import document_response
@@ -58,14 +53,12 @@ logger = logging.getLogger(__name__)
 
 def source_image(request: HttpRequest, filename: str) -> HttpResponse:
     """
-    Returns an image from the selected live or recorded source.
+    Returns an image from the configured source.
 
     Called by: config.urls
     """
     try:
-        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            raise PageDataError('Source images require live or replay mode.')
-        result = read_source(image_key('/' + filename), settings.PAGE_DATA_MODE)
+        result = read_source(image_key('/' + filename))
         content_type = next((value for key, value in result.headers if key.lower() == 'content-type'), '')
         if content_type not in {'image/jpeg', 'image/png', 'image/gif', 'image/webp'}:
             raise PageDataError('The image source returned an unsupported content type.')
@@ -78,15 +71,13 @@ def source_image(request: HttpRequest, filename: str) -> HttpResponse:
 
 def source_document(request: HttpRequest, filename: str) -> HttpResponse | StreamingHttpResponse:
     """
-    Serves one recorded or live PDF while keeping a source version redirect local.
+    Serves one configured PDF while keeping a source version redirect local.
 
-    Called by: config.urls, prepared_document()
+    Called by: config.urls, original_document()
     """
     try:
-        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            raise PageDataError('Source documents require live or replay mode.')
         key = document_key('/' + filename, tuple(query_pairs(request.GET)))
-        result = read_source(key, settings.PAGE_DATA_MODE)
+        result = read_source(key)
         headers = dict(result.headers)
         if result.status in {301, 302}:
             location = headers.get('location', '')
@@ -129,11 +120,7 @@ def version(request: HttpRequest) -> HttpResponse:
     gatherer = GatherCommitAndBranchData()
     gatherer.gather()
     version_text: str = f'{gatherer.branch} {gatherer.commit}'
-    context: dict[str, dict[str, str]] = version_helper.make_context(
-        request,
-        request_started,
-        version_text,
-    )
+    context: dict[str, dict[str, str]] = version_helper.make_context(request, request_started, version_text)
     context['response']['loaded_version'] = version_helper.LOADED_VERSION
     output: str = json.dumps(context, sort_keys=True, indent=2)
     logger.debug('version output, ``%s``', output)
@@ -152,41 +139,12 @@ def home_index(request):
 
     try:
         home_data = get_home_data(request.path_info, query_pairs(request.GET))
-        if home_data is not None:
-            backgrounds = home_data['backgrounds']
-            if isinstance(backgrounds, list):
-                home_data['hero_background_url'] = random.choice(backgrounds)
-            return render(request, 'home/index.html', home_data)
+        backgrounds = home_data['backgrounds']
+        if isinstance(backgrounds, list):
+            home_data['hero_background_url'] = random.choice(backgrounds)
+        return render(request, 'home/index.html', home_data)
     except PageDataError as exc:
         return data_unavailable(exc)
-
-    hero_background_relpath: str = get_random_background_relpath()
-    carousel_pages_raw: list[list[BookCover]] = get_book_cover_pages(page_size=4)
-    placeholder_image: str = static('images/vivo_blank_profile.jpg')
-    image_base_path: str = getattr(settings, 'BOOK_COVER_BASE_PATH', '') or ''
-
-    book_covers_paginated: list[list[dict[str, str]]] = []
-    for page in carousel_pages_raw:
-        rendered_page: list[dict[str, str]] = []
-        for cover in page:
-            image_url: str = placeholder_image
-            if image_base_path:
-                image_url = f'{image_base_path.rstrip("/")}/{cover.image_filename}'
-            rendered_page.append(
-                {
-                    'author_url': reverse('display_show', args=[cover.author_id]),
-                    'title': cover.title,
-                    'author_name': cover.author_name,
-                    'image_url': image_url,
-                }
-            )
-        book_covers_paginated.append(rendered_page)
-
-    context: dict[str, object] = {
-        'hero_background_relpath': hero_background_relpath,
-        'book_covers_paginated': book_covers_paginated,
-    }
-    return render_or_stub(request, 'home/index.html', context)
 
 
 def home_about(request: HttpRequest) -> HttpResponse:
@@ -277,16 +235,8 @@ def home_status(request: HttpRequest) -> HttpResponse:
 
     Called by: config.urls
     """
-    mode = settings.PAGE_DATA_MODE
-    if mode == 'prototype':
-        return render_or_stub(request, 'home/status.html', context={})
     try:
-        if mode == 'prepared':
-            saved_response = get_response_data(request.path_info, query_pairs(request.GET))
-            if saved_response is None:
-                raise PageDataError('The status response is unavailable in prepared data.')
-            return prepared_response(saved_response)
-        return JsonResponse(status_data(mode))
+        return JsonResponse(status_data())
     except Exception as exc:
         error_data = status_error_data(exc)
         logger.exception(
@@ -314,104 +264,59 @@ def home_brown_classic(request, name=None):
 # Display functionality
 def display_index(request):
     """Display index page."""
-    if settings.PAGE_DATA_MODE in {'live', 'replay'}:
-        return redirect(reverse('search').rstrip('/'))
-    return render_or_stub(request, 'display/index.html')
+    return redirect(reverse('search').rstrip('/'))
 
 
 def display_show(request: HttpRequest, id: str) -> HttpResponse:
     """
-    Displays a record or returns the shared error page after a live or replay failure.
-
-    Sample mode retains its minimal context and unknown-ID JSON response.
+    Displays a record or returns the shared error page after a source failure.
 
     Called by: config.urls
     """
     try:
         if request.GET.get('format') == 'json_txt' or id.endswith('.json_txt'):
-            if settings.PAGE_DATA_MODE in {'live', 'replay'}:
-                if request.GET and list(query_pairs(request.GET)) != [('format', 'json_txt')]:
-                    raise PageDataError('Raw JSON query options are unsupported.')
-                return JsonResponse(raw_record_json_data(id.removesuffix('.json_txt'), settings.PAGE_DATA_MODE))
-            saved_response = get_response_data(request.path_info, query_pairs(request.GET))
-            if saved_response is not None:
-                return prepared_response(saved_response)
+            if request.GET and list(query_pairs(request.GET)) != [('format', 'json_txt')]:
+                raise PageDataError('Raw JSON query options are unsupported.')
+            return JsonResponse(raw_record_json_data(id.removesuffix('.json_txt')))
         elif request.GET.get('format') == 'json' or id.endswith('.json'):
-            if settings.PAGE_DATA_MODE in {'live', 'replay'}:
-                if any(key != 'format' or value != 'json' for key, value in query_pairs(request.GET)):
-                    raise PageDataError('Profile JSON query options are unsupported.')
-                identifier = id.removesuffix('.json')
-                if identifier.startswith('org-'):
-                    return JsonResponse(
-                        organization_json_data(
-                            identifier,
-                            settings.PAGE_DATA_MODE,
-                            extra_member_ids=custom_organization_members(identifier, settings.PAGE_DATA_MODE),
-                        )
-                    )
-                return HttpResponse(
-                    profile_json_text(profile_json_data(identifier, settings.PAGE_DATA_MODE)).encode('utf-8'),
-                    content_type='application/json; charset=utf-8',
+            if any(key != 'format' or value != 'json' for key, value in query_pairs(request.GET)):
+                raise PageDataError('Profile JSON query options are unsupported.')
+            identifier = id.removesuffix('.json')
+            if identifier.startswith('org-'):
+                return JsonResponse(
+                    organization_json_data(identifier, extra_member_ids=custom_organization_members(identifier))
                 )
-            saved_response = get_response_data(request.path_info, query_pairs(request.GET))
-            if saved_response is not None:
-                return prepared_response(saved_response)
+            return HttpResponse(
+                profile_json_text(profile_json_data(identifier)).encode('utf-8'),
+                content_type='application/json; charset=utf-8',
+            )
         else:
             if id.startswith(('org-', 'team-')):
                 organization_data = get_organization_data(request.path_info, query_pairs(request.GET))
-                if organization_data is not None:
-                    return render(request, 'display/organization_data.html', {'organization': organization_data})
+                return render(request, 'display/organization_data.html', {'organization': organization_data})
             profile_data = get_profile_data(request.path_info, query_pairs(request.GET))
-            if profile_data is not None:
-                return render(
-                    request,
-                    'display/show.html',
-                    {
-                        'profile': profile_data,
-                        'back_to_search': profile_search_return(request),
-                    },
-                )
+            return render(
+                request,
+                'display/show.html',
+                {
+                    'profile': profile_data,
+                    'back_to_search': profile_search_return(request),
+                },
+            )
     except MissingRecordError:
         return page_not_found(request)
-    except Exception as exc:
-        if settings.PAGE_DATA_MODE in {'live', 'replay'}:
-            logger.exception('Could not render display record; id, ``%s``', id)
-            return render(
-                request, 'search/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500
-            )
-        if isinstance(exc, PageDataError):
-            return data_unavailable(exc)
-        raise
-    entity_type = get_type_for_id(id)
-    context: dict[str, object]
-
-    # JSON response handling
-    if request.GET.get('format') == 'json':
-        if entity_type is None:
-            return JsonResponse({'id': id})
-        context = build_display_context(id, entity_type, request)
-        return JsonResponse(context)
-
-    # HTML response handling
-    context = {'id': id} if entity_type is None else build_display_context(id, entity_type, request)
-    return render_or_stub(request, 'display/show.html', context)
+    except Exception:
+        logger.exception('Could not render display record; id, ``%s``', id)
+        return render(request, 'search/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500)
 
 
-def display_publications(request, id):
-    """Display publications for an item.
-
-    Behavior: If `?format=json` is provided, return a JSON structure including
-    a publications list. Otherwise render minimal HTML with the list.
-    Unknown types return an empty list but still include the id.
+def display_publications(request: HttpRequest, id: str) -> HttpResponse:
     """
-    entity_type = get_type_for_id(id)
+    Preserves the unavailable response for this unsupported public route.
 
-    if request.GET.get('format') == 'json':
-        context = build_publications_context(id, entity_type, request)
-        return JsonResponse(context)
-
-    context = build_publications_context(id, entity_type, request)
-    return render_or_stub(request, 'display/publications.html', context)
+    Called by: config.urls
+    """
+    return HttpResponse(b'This endpoint is not connected to source data yet.', status=503, content_type='text/plain')
 
 
 def organization_publications_tsv(request: HttpRequest, id: str) -> HttpResponse:
@@ -421,16 +326,9 @@ def organization_publications_tsv(request: HttpRequest, id: str) -> HttpResponse
     Called by: config.urls
     """
     try:
-        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            saved = get_response_data(request.path_info, query_pairs(request.GET))
-            if saved is not None:
-                return prepared_response(saved)
-            raise PageDataError('The organization publication download is unavailable.')
         if request.GET:
             raise PageDataError('Organization publication query options are unsupported.')
-        body = organization_publications_data(
-            id, settings.PAGE_DATA_MODE, extra_member_ids=custom_organization_members(id, settings.PAGE_DATA_MODE)
-        )
+        body = organization_publications_data(id, extra_member_ids=custom_organization_members(id))
         return HttpResponse(
             body.encode(),
             content_type='text/csv',
@@ -441,29 +339,26 @@ def organization_publications_tsv(request: HttpRequest, id: str) -> HttpResponse
 
 
 # Visualizations
-def visualization_home(request, id):
-    """Home for visualizations."""
-    context = {'id': id}
-    return render_or_stub(request, 'visualization/home.html', context)
+def visualization_home(request: HttpRequest, id: str) -> HttpResponse:
+    """
+    Preserves the unavailable response for this unsupported public route.
+
+    Called by: config.urls
+    """
+    return HttpResponse(b'This endpoint is not connected to source data yet.', status=503, content_type='text/plain')
 
 
 def visualization_graph_json(request: HttpRequest, id: str, kind: str) -> HttpResponse:
     """
-    Returns one unchanged graph object from a recorded or live visualization response.
+    Returns one unchanged graph object from a configured visualization response.
 
     Called by: config.urls
     """
     try:
-        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            saved = get_response_data(request.path_info, query_pairs(request.GET))
-            if saved is not None:
-                return prepared_response(saved)
-            raise PageDataError('This visualization is unavailable.')
         if request.GET:
             raise PageDataError('Visualization query options are unsupported.')
         return HttpResponse(
-            profile_json_text(visualization_graph(kind, id, settings.PAGE_DATA_MODE)).encode('utf-8'),
-            content_type='application/json; charset=utf-8',
+            profile_json_text(visualization_graph(kind, id)).encode('utf-8'), content_type='application/json; charset=utf-8'
         )
     except PageDataError as exc:
         return data_unavailable(exc)
@@ -476,14 +371,9 @@ def visualization_graph_csv(request: HttpRequest, id: str, kind: str) -> HttpRes
     Called by: config.urls
     """
     try:
-        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            saved = get_response_data(request.path_info, query_pairs(request.GET))
-            if saved is not None:
-                return prepared_response(saved)
-            raise PageDataError('This visualization download is unavailable.')
         if request.GET:
             raise PageDataError('Visualization query options are unsupported.')
-        data = visualization_graph(kind, id, settings.PAGE_DATA_MODE)
+        data = visualization_graph(kind, id)
         if kind == 'collaborators' and data.get('graph') == {}:
             ## Matches the reference CSV error for its valid empty collaboration response.
             return HttpResponse(b'error', status=500, content_type='text/plain; charset=utf-8')
@@ -504,25 +394,17 @@ def visualization_coauthor_treemap(request: HttpRequest, id: str) -> HttpRespons
     Called by: config.urls
     """
     try:
-        if settings.PAGE_DATA_MODE == 'prototype':
-            return render_or_stub(request, 'visualization/coauthor_treemap.html', {'id': id})
-        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            raise PageDataError('This visualization is unavailable.')
         pairs = query_pairs(request.GET)
         if len(pairs) > 1 or any(key != 'format' or value not in {'json', 'csv'} for key, value in pairs):
             raise PageDataError('Visualization query options are unsupported.')
-        data = visualization_graph('coauthors', id, settings.PAGE_DATA_MODE)
+        data = visualization_graph('coauthors', id)
         response_format = request.GET.get('format')
         if response_format == 'json':
             return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
         if response_format == 'csv':
             return HttpResponse(graph_csv(data, 'coauthors').encode(), content_type='text/plain; charset=utf-8')
-        subject = graph_subject_data('coauthors', id, settings.PAGE_DATA_MODE)
-        return render(
-            request,
-            'visualization/treemap_data.html',
-            {'graph': graph_page_data(data, 'coauthors', id, subject)},
-        )
+        subject = graph_subject_data('coauthors', id)
+        return render(request, 'visualization/treemap_data.html', {'graph': graph_page_data(data, 'coauthors', id, subject)})
     except PageDataError as exc:
         return data_unavailable(exc)
 
@@ -539,14 +421,6 @@ def visualization_network(request: HttpRequest, identifier: str, kind: str) -> H
     Called by: visualization_coauthor(), visualization_collab()
     """
     try:
-        if settings.PAGE_DATA_MODE == 'prototype':
-            return render_or_stub(
-                request,
-                'visualization/coauthor.html' if kind == 'coauthors' else 'visualization/collab.html',
-                {'id': identifier},
-            )
-        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            raise PageDataError('This visualization is unavailable.')
         pairs = query_pairs(request.GET)
         if len(pairs) > 1 or any(
             (key == 'format' and value not in {'json', 'csv'})
@@ -555,7 +429,7 @@ def visualization_network(request: HttpRequest, identifier: str, kind: str) -> H
             for key, value in pairs
         ):
             raise PageDataError('Visualization query options are unsupported.')
-        data = visualization_graph(kind, identifier, settings.PAGE_DATA_MODE)
+        data = visualization_graph(kind, identifier)
         response_format = request.GET.get('format')
         if response_format == 'json':
             return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
@@ -564,7 +438,7 @@ def visualization_network(request: HttpRequest, identifier: str, kind: str) -> H
                 ## Matches the reference CSV error for its valid empty collaboration response.
                 return HttpResponse(b'error', status=500, content_type='text/plain; charset=utf-8')
             return HttpResponse(graph_csv(data, kind).encode(), content_type='text/plain; charset=utf-8')
-        subject = graph_subject_data(kind, identifier, settings.PAGE_DATA_MODE)
+        subject = graph_subject_data(kind, identifier)
         return render(
             request,
             'visualization/network_data.html',
@@ -581,16 +455,9 @@ def visualization_publications(request: HttpRequest, id: str, fmt: str = '') -> 
     Called by: config.urls
     """
     try:
-        if settings.PAGE_DATA_MODE == 'prototype':
-            return render_or_stub(request, 'visualization/publications.html', {'id': id})
-        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            saved = get_response_data(request.path_info, query_pairs(request.GET))
-            if saved is not None:
-                return prepared_response(saved)
-            raise PageDataError('The publication chart is unavailable.')
         if id.startswith('team-') or fmt not in {'', 'json', 'csv'} or request.GET:
             raise PageDataError('The publication chart request is unsupported.')
-        name, data = publication_history_data(id, settings.PAGE_DATA_MODE)
+        name, data = publication_history_data(id)
         if fmt == 'json':
             return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
         if fmt == 'csv':
@@ -611,16 +478,9 @@ def visualization_research(request: HttpRequest, id: str, fmt: str = '') -> Http
     Called by: config.urls
     """
     try:
-        if settings.PAGE_DATA_MODE == 'prototype':
-            return render_or_stub(request, 'visualization/research.html', {'id': id})
-        if settings.PAGE_DATA_MODE not in {'live', 'replay'}:
-            saved = get_response_data(request.path_info, query_pairs(request.GET))
-            if saved is not None:
-                return prepared_response(saved)
-            raise PageDataError('The research chart is unavailable.')
         if fmt not in {'', 'json'} or request.GET:
             raise PageDataError('The research chart request is unsupported.')
-        name, data = research_areas_data(id, settings.PAGE_DATA_MODE)
+        name, data = research_areas_data(id)
         if fmt == 'json':
             return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
         return render(
@@ -687,21 +547,16 @@ def search(request: HttpRequest) -> HttpResponse:
         return redirect(destination)
     try:
         if request.GET.get('format') == 'json':
-            if settings.PAGE_DATA_MODE in {'live', 'replay'}:
-                pairs = [(key, value) for key, value in query_pairs(request.GET) if key != 'format']
-                site_origin = request.build_absolute_uri(reverse('home')) or ''
-                data = search_json_data(pairs, settings.PAGE_DATA_MODE, site_origin)
-                return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
-            saved_response = get_response_data(request.path_info, query_pairs(request.GET))
-            if saved_response is not None:
-                return prepared_response(saved_response)
+            pairs = [(key, value) for key, value in query_pairs(request.GET) if key != 'format']
+            site_origin = request.build_absolute_uri(reverse('home')) or ''
+            data = search_json_data(pairs, site_origin)
+            return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
         else:
             search_data = get_search_data(request.path_info, query_pairs(request.GET))
-            if search_data is not None:
-                session = getattr(request, 'session', None)
-                if isinstance(session, SessionBase):
-                    session['prepared_search_url'] = request.get_full_path()
-                return render(request, 'search/results.html', search_data)
+            session = getattr(request, 'session', None)
+            if isinstance(session, SessionBase):
+                session['search_url'] = request.get_full_path()
+            return render(request, 'search/results.html', search_data)
     except ReferenceSearchError:
         logger.error('reference_search_filter_error')
         if request.GET.get('format') == 'json':
@@ -714,9 +569,6 @@ def search(request: HttpRequest) -> HttpResponse:
         return render(request, 'search/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500)
     except PageDataError as exc:
         return data_unavailable(exc)
-    query = request.GET.get('q', '')
-    context: dict[str, object] = {'query': query}
-    return render_or_stub(request, 'search/results.html', context)
 
 
 def advanced_search(request: HttpRequest) -> HttpResponse:
@@ -748,91 +600,56 @@ def search_facets(request: HttpRequest) -> HttpResponse:
     Called by: config.urls
     """
     try:
-        if settings.PAGE_DATA_MODE in {'live', 'replay'}:
-            if 'f_name' not in request.GET:
-                return JsonResponse(None, safe=False)
-            values = facet_values_data(query_pairs(request.GET), settings.PAGE_DATA_MODE)
-            return HttpResponse(profile_json_text(values).encode('utf-8'), content_type='application/json; charset=utf-8')
-        saved_response = get_response_data(request.path_info, query_pairs(request.GET))
-        if saved_response is not None:
-            return prepared_response(saved_response)
+        if 'f_name' not in request.GET:
+            return JsonResponse(None, safe=False)
+        values = facet_values_data(query_pairs(request.GET))
+        return HttpResponse(profile_json_text(values).encode('utf-8'), content_type='application/json; charset=utf-8')
     except ReferenceSearchError:
         logger.error('reference_search_filter_error')
         return JsonResponse(None, safe=False, status=500, content_type='application/json; charset=utf-8')
     except PageDataError as exc:
         return data_unavailable(exc)
-    # TODO: Implement facet logic for authentic sources.
-    return JsonResponse({'facets': {}})
 
 
-def prepared_document(request: HttpRequest, filename: str) -> HttpResponse | StreamingHttpResponse:
+def original_document(request: HttpRequest, filename: str) -> HttpResponse | StreamingHttpResponse:
     """
-    Serves the original document path from the selected live, replay or saved source.
+    Serves the original public document path through the configured document source.
 
     Called by: config.urls
     """
-    try:
-        if settings.PAGE_DATA_MODE in {'live', 'replay'}:
-            response = source_document(request, 'docs/' + filename)
-        else:
-            entry = get_response_data(request.path_info, query_pairs(request.GET))
-            if entry is None:
-                raise Http404('Prepared document is unavailable.')
-            response = prepared_response(entry)
-            response['X-Content-Type-Options'] = 'nosniff'
-    except PageDataError as exc:
-        response = data_unavailable(exc)
-    return response
-
-
-def prepared_asset(request: HttpRequest, name: str) -> HttpResponse:
-    """
-    Serves only assets explicitly included in the selected external bundle.
-
-    Called by: config.urls
-    """
-    try:
-        bundle = get_bundle()
-        if bundle is None or name not in bundle.assets:
-            raise Http404('Prepared asset is unavailable.')
-        asset = bundle.assets[name]
-        response = HttpResponse(asset.body, content_type=asset.content_type)
-        response['X-Content-Type-Options'] = 'nosniff'
-    except PageDataError as exc:
-        response = data_unavailable(exc)
-    return response
+    return source_document(request, 'docs/' + filename)
 
 
 # Reports
 def subject_lib_list(request: HttpRequest) -> HttpResponse:
     """
-    Redirects the public report entry home or renders the sample report list.
+    Redirects the public report entry home.
 
     Called by: config.urls report-list routes
     """
-    if settings.PAGE_DATA_MODE in {'live', 'replay', 'prepared'}:
-        response = redirect(reverse('home'))
-    else:
-        response = render_or_stub(request, 'reports/subject_lib_list.html')
+    response = redirect(reverse('home'))
     return response
 
 
-def subject_lib(request, list_id):
-    """View a specific subject librarian report."""
-    context = {'list_id': list_id}
-    return render_or_stub(request, 'reports/subject_lib.html', context)
+def subject_lib(request: HttpRequest, list_id: str) -> HttpResponse:
+    """
+    Preserves the unavailable response for this unsupported public route.
+
+    Called by: config.urls
+    """
+    return HttpResponse(b'This endpoint is not connected to source data yet.', status=503, content_type='text/plain')
 
 
 # Bot detection
 @require_http_methods(['GET', 'POST'])
 def bot_detect_challenge(request: HttpRequest) -> HttpResponse:
     """
-    Shows or verifies a configured Turnstile challenge outside offline data modes.
+    Shows or verifies a Turnstile challenge when configured.
 
     Called by: config.urls
     """
     configured: bool = bool(settings.CF_TURNSTILE_SITEKEY and settings.CF_TURNSTILE_SECRET_KEY)
-    if settings.PAGE_DATA_MODE in {'prepared', 'replay'} or (not settings.TURNSTILE_ENABLED and not configured):
+    if not settings.TURNSTILE_ENABLED and not configured:
         return HttpResponseNotFound()
     if not configured:
         return data_unavailable(PageDataError('The browser challenge is not configured.'))
@@ -866,19 +683,11 @@ def people(request: HttpRequest) -> HttpResponse:
 
     Called by: config.urls
     """
-    if settings.PAGE_DATA_MODE in {'live', 'replay'}:
-        search_url = request.build_absolute_uri(reverse('search').rstrip('/'))
-        if search_url is None:
-            return data_unavailable(PageDataError('The search destination is unavailable.'))
-        destination = search_url + '?fq=record_type|PEOPLE'
-        return HttpResponse(status=302, headers={'Location': destination})
-    try:
-        saved_response = get_response_data(request.path_info, query_pairs(request.GET))
-        if saved_response is not None:
-            return prepared_response(saved_response)
-    except PageDataError as exc:
-        return data_unavailable(exc)
-    return render_or_stub(request, 'legacy/people.html')
+    search_url = request.build_absolute_uri(reverse('search').rstrip('/'))
+    if search_url is None:
+        return data_unavailable(PageDataError('The search destination is unavailable.'))
+    destination = search_url + '?fq=record_type|PEOPLE'
+    return HttpResponse(status=302, headers={'Location': destination})
 
 
 def organizations(request: HttpRequest) -> HttpResponse:
@@ -887,19 +696,11 @@ def organizations(request: HttpRequest) -> HttpResponse:
 
     Called by: config.urls
     """
-    if settings.PAGE_DATA_MODE in {'live', 'replay'}:
-        search_url = request.build_absolute_uri(reverse('search').rstrip('/'))
-        if search_url is None:
-            return data_unavailable(PageDataError('The search destination is unavailable.'))
-        destination = search_url + '?fq=record_type|ORGANIZATION'
-        return HttpResponse(status=302, headers={'Location': destination})
-    try:
-        saved_response = get_response_data(request.path_info, query_pairs(request.GET))
-        if saved_response is not None:
-            return prepared_response(saved_response)
-    except PageDataError as exc:
-        return data_unavailable(exc)
-    return render_or_stub(request, 'legacy/organizations.html')
+    search_url = request.build_absolute_uri(reverse('search').rstrip('/'))
+    if search_url is None:
+        return data_unavailable(PageDataError('The search destination is unavailable.'))
+    destination = search_url + '?fq=record_type|ORGANIZATION'
+    return HttpResponse(status=302, headers={'Location': destination})
 
 
 def old_image(request: HttpRequest, id: str, file_name: str) -> HttpResponse:
@@ -912,10 +713,7 @@ def old_image(request: HttpRequest, id: str, file_name: str) -> HttpResponse:
     if path is None:
         return page_not_found(request)
     try:
-        if settings.PAGE_DATA_MODE == 'replay':
-            location = '/source-images' + path
-        else:
-            location = source_origin('images') + path
+        location = source_origin('images') + path
     except PageDataError as exc:
         return data_unavailable(exc)
     return HttpResponse(status=301, headers={'Location': location})
@@ -946,12 +744,6 @@ def individual_redirect(request: HttpRequest, id: str) -> HttpResponse:
     Called by: config.urls
     """
     try:
-        if settings.PAGE_DATA_MODE == 'prototype':
-            return render_or_stub(request, 'vivo/individual_redirect.html', {'id': id})
-        if settings.PAGE_DATA_MODE == 'prepared':
-            saved_response = get_response_data(request.path_info, query_pairs(request.GET))
-            if saved_response is not None:
-                return prepared_response(saved_response)
         if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', id) is None:
             raise PageDataError('The requested VIVO identifier is unsupported.')
         formats = {'application/json': 'jsonld', 'text/turtle': 'ttl', 'application/rdf+xml': 'rdf'}
@@ -973,22 +765,10 @@ def individual_export(request: HttpRequest, id: str, fmt: str, id2: str | None =
     Called by: config.urls
     """
     try:
-        if settings.PAGE_DATA_MODE == 'prototype':
-            payload = {'id': id, 'format': fmt}
-            if id2 is not None:
-                payload['id2'] = id2
-            if fmt.lower() == 'json' or request.GET.get('format') == 'json':
-                return JsonResponse(payload)
-            return HttpResponse(f'Export for {id} as {fmt}'.encode(), content_type='text/plain')
-        if settings.PAGE_DATA_MODE == 'prepared':
-            saved_response = get_response_data(request.path_info, query_pairs(request.GET))
-            if saved_response is not None:
-                return prepared_response(saved_response)
-            raise PageDataError('The VIVO representation is unavailable.')
-        if settings.PAGE_DATA_MODE not in {'live', 'replay'} or id2 != id or request.GET:
+        if id2 != id or request.GET:
             raise PageDataError('The requested VIVO representation is unsupported.')
         key = vitro_key(id, fmt)
-        response = read_source(key, settings.PAGE_DATA_MODE)
+        response = read_source(key)
         content_type = {'jsonld': 'application/json', 'ttl': 'text/turtle', 'rdf': 'application/rdf+xml'}[fmt]
         result = HttpResponse(response.body, status=response.status, content_type=content_type + '; charset=utf-8')
         result['X-Content-Type-Options'] = 'nosniff'

@@ -1,13 +1,12 @@
 """
-Builds public structured responses from live or recorded source records.
+Builds public structured responses from configured source records.
 """
 
 import json
 from collections.abc import Callable
 from datetime import date
 
-from vivo_app.lib.prepared_data import PageDataError
-from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_pages import (
     documents,
     entries,
@@ -20,8 +19,9 @@ from vivo_app.lib.source_pages import (
     website_rank,
 )
 from vivo_app.lib.source_requests import image_path, member_key, profile_export_key, profile_key, read_source, source_origin
+from vivo_app.lib.source_types import RequestKey, SourceResponse
 
-FormatReader = Callable[[RequestKey, str], RecordedResponse]
+FormatReader = Callable[[RequestKey], SourceResponse]
 
 
 def profile_json_text(data: dict[str, object] | list[dict[str, object]]) -> str:
@@ -44,7 +44,7 @@ def profile_json_text(data: dict[str, object] | list[dict[str, object]]) -> str:
     return result
 
 
-def raw_record_json_data(identifier: str, mode: str, reader: FormatReader | None = None) -> dict[str, object]:
+def raw_record_json_data(identifier: str, reader: FormatReader | None = None) -> dict[str, object]:
     """
     Returns the original parsed Solr record for a person or organization.
 
@@ -52,7 +52,7 @@ def raw_record_json_data(identifier: str, mode: str, reader: FormatReader | None
     """
     if reader is None:
         reader = read_source
-    response = response_object(profile_key(identifier), mode, reader)
+    response = response_object(profile_key(identifier), reader)
     docs, _ = documents(response)
     if (
         not docs
@@ -68,7 +68,7 @@ def raw_record_json_data(identifier: str, mode: str, reader: FormatReader | None
 
 
 def organization_json_data(
-    identifier: str, mode: str, reader: FormatReader | None = None, extra_member_ids: list[str] | None = None
+    identifier: str, reader: FormatReader | None = None, extra_member_ids: list[str] | None = None
 ) -> dict[str, object]:
     """
     Converts an organization record and its member portraits for public JSON.
@@ -77,7 +77,7 @@ def organization_json_data(
     """
     if reader is None:
         reader = read_source
-    response = response_object(profile_key(identifier), mode, reader)
+    response = response_object(profile_key(identifier), reader)
     docs, _ = documents(response)
     if not docs or record_id(docs[0]) != identifier or first_text(docs[0].get('record_type')) != 'ORGANIZATION':
         raise PageDataError('The requested source record is not an organization.')
@@ -85,13 +85,13 @@ def organization_json_data(
     raw = record_data(doc)
     uri = first_text(raw.get('uri')) or first_text(doc.get('id'))
     path = image_path(doc.get('thumbnail_file_path_s'))
-    members = organization_members(raw, extra_member_ids or [], mode, reader)
+    members = organization_members(raw, extra_member_ids or [], reader)
     ids = list(dict.fromkeys(record_id({'id': first_text(row.get('faculty_uri'))}) for row in members))
     portraits: dict[str, str] = {}
     seen_ids: set[str] = set()
     for start in range(0, len(ids), 20):
         batch = ids[start : start + 20]
-        member_response = response_object(member_key(batch), mode, reader)
+        member_response = response_object(member_key(batch), reader)
         member_docs, _ = documents(member_response)
         for member_doc in member_docs:
             member_id = record_id(member_doc)
@@ -253,7 +253,7 @@ def publication_entries(raw: dict[str, object]) -> list[dict[str, object]]:
     return converted
 
 
-def profile_json_data(identifier: str, mode: str, reader: FormatReader | None = None) -> dict[str, object]:
+def profile_json_data(identifier: str, reader: FormatReader | None = None) -> dict[str, object]:
     """
     Converts a person Solr record and graph lists to the public profile JSON fields.
 
@@ -261,25 +261,22 @@ def profile_json_data(identifier: str, mode: str, reader: FormatReader | None = 
     """
     if reader is None:
         reader = read_source
-    response = response_object(profile_export_key(identifier), mode, reader)
+    response = response_object(profile_export_key(identifier), reader)
     docs, _ = documents(response)
     if not docs or record_id(docs[0]) != identifier or first_text(docs[0].get('record_type')) != 'PEOPLE':
         raise PageDataError('The requested source record is not a person.')
     from vivo_app.lib.source_graph import visualization_list
 
     try:
-        coauthors = visualization_list('coauthors', mode, reader)
+        coauthors = visualization_list('coauthors', reader)
     except PageDataError:
-        if mode == 'replay':
-            raise
         coauthors = {}
     collaborators = {}
     if entries(record_data(docs[0]), 'collaborators'):
         try:
-            collaborators = visualization_list('collaborators', mode, reader)
+            collaborators = visualization_list('collaborators', reader)
         except PageDataError:
-            if mode == 'replay':
-                raise
+            pass
     return faculty_item_from_doc(docs[0], coauthors, collaborators)
 
 
@@ -384,9 +381,7 @@ def faculty_item_from_doc(
         raw, 'appointments', ('uri', 'id', 'org_name', 'name', 'department', 'start_date', 'end_date')
     )
     item['credentials'] = dated_entries(
-        raw,
-        'credentials',
-        ('uri', 'id', 'name', 'number', 'start_date', 'end_date', 'grantor_name', 'specialty_name'),
+        raw, 'credentials', ('uri', 'id', 'name', 'number', 'start_date', 'end_date', 'grantor_name', 'specialty_name')
     )
     item['training'] = dated_entries(
         raw,

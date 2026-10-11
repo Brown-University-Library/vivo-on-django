@@ -2,9 +2,9 @@
 {% load static asset_urls %}
 {% block title %}Researchers @ Brown{% endblock %}
 {% block content %}
-{% include "includes/prepared_search.html" %}
+{% include "includes/search_form.html" %}
 <div class="container-fluid results-page col-sm-12">
-  {% include "includes/prepared_profile_links.html" %}
+  {% include "includes/profile_links.html" %}
   <div class="row results-page-wrapper">
     <div class="results-wrapper col-lg-9 col-lg-push-3 col-md-9 col-md-push-3 col-sm-8 col-sm-push-4">
       <div class="result-nums-breadcrumbs-wrapper">
@@ -38,7 +38,7 @@
         <div class="clearfix visible-sm-block visible-xs-block"></div>
         <article class="col-lg-4 col-md-4 col-sm-12 col-xs-12 expert-results" data-result-id="{{ item.id }}">
           <div class="gap30"></div>
-          <section itemscope itemtype="{{ item.schema_type }}" class="vcard person prepared-result-intro" role="region"><section class="share-contact" role="region"><div class="share-contact--bottom"></div><div class="results__photo" id="photo-{{ item.id }}"><a href="{{ item.url }}"><img src="{{ item.thumbnail }}" alt="Profile picture of {{ item.name }}" class="img-circle" ></a></div>
+          <section itemscope itemtype="{{ item.schema_type }}" class="vcard person result-intro" role="region"><section class="share-contact" role="region"><div class="share-contact--bottom"></div><div class="results__photo" id="photo-{{ item.id }}"><a href="{{ item.url }}"><img src="{{ item.thumbnail }}" alt="Profile picture of {{ item.name }}" class="img-circle" ></a></div>
           <div class="contact-content"><h4><span itemprop="name" class="fn"><a href="{{ item.url }}">{{ item.name }}</a></span></h4><span class="results-title">{{ item.title }}</span></div>
           <div class="emailsContainer">{% if item.matches_html %}<a href="{{ item.matches_url }}" data-match-content="matches-{{ forloop.counter }}"><span class="glyphicon glyphicon-tag" aria-hidden="true"></span><span class="sr-only">Search matches</span></a>&nbsp;&nbsp;&nbsp;&nbsp;<template id="matches-{{ forloop.counter }}">{{ item.matches_html|safe }}</template>{% endif %}<a href="mailto:{{ item.email }}" aria-label="Email researcher at {{ item.email }}"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span></a></div></section></section>
         </article>

@@ -11,15 +11,15 @@ Usage examples:
 Also takes a -v or --verbose flag to show each test's name, docstring, and result.
 
 Uses config.settings unless DJANGO_SETTINGS_MODULE is already set. The runner
-selects prototype page data and local static URLs before Django loads the
-private .env. This gives the suite a consistent baseline. Individual tests
-override the mode when they check prepared, replay, live, or invalid modes.
+selects local static URLs and made-up source settings before loading the
+private .env. Tests inject source responses; unexpected network connections fail.
 Django creates and destroys a test database when needed.
 """
 
 import argparse
 import os
 import sys
+from unittest.mock import patch
 
 import django
 from django.conf import settings
@@ -62,11 +62,29 @@ def normalize_test_label(test_label: str) -> str:
 
 def configure_test_environment() -> None:
     """
-    Selects the page-data and static URL baseline used by the complete test suite.
+    Selects made-up source settings and local static URLs for the complete test suite.
 
     Called by: run_tests()
     """
-    os.environ['PAGE_DATA_MODE'] = 'prototype'
+    os.environ.update(
+        {
+            'SOLR_URL': 'https://source.invalid/solr',
+            'IMAGES_URL': 'https://source.invalid',
+            'DOCUMENTS_URL': 'https://source.invalid',
+            'VIZ_SERVICE_URL': 'https://source.invalid',
+            'VIVO_BACKEND_URL': 'https://source.invalid',
+            'BOOK_COVER_BASE_PATH': '/book-images',
+            'BOOK_COVER_DB_HOST': '',
+            'BOOK_COVER_DB_NAME': '',
+            'BOOK_COVER_DB_USER': '',
+            'BOOK_COVER_DB_PASSWORD': '',
+            'TEAM_SOURCE_MANIFEST': '',
+            'TURNSTILE_ENABLED': 'false',
+            'CF_TURNSTILE_SITEKEY': '',
+            'CF_TURNSTILE_SECRET_KEY': '',
+            'GOOGLE_ANALYTICS_KEY': '',
+        }
+    )
     os.environ['STATIC_URL'] = '/static/'
 
 
@@ -84,7 +102,11 @@ def run_tests(test_label: str, verbose: bool) -> int:
     django.setup()
     test_runner_class = get_runner(settings)
     test_runner = test_runner_class(verbosity=verbosity, interactive=False)
-    failures: int = test_runner.run_tests(test_labels)
+    with (
+        patch('socket.socket.connect', side_effect=AssertionError('Tests must provide source responses.')),
+        patch('socket.create_connection', side_effect=AssertionError('Tests must provide source responses.')),
+    ):
+        failures: int = test_runner.run_tests(test_labels)
     return failures
 
 

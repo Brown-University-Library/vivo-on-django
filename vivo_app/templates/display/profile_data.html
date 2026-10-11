@@ -1,7 +1,7 @@
-{% include "includes/prepared_search.html" %}
+{% include "includes/search_form.html" %}
 <div class="container profile"><div class="row person-content"><div class="container profile-page">
   <div class="wrapper__back-to-search col-xs-12"><a href="{{ back_to_search }}" class="back-to-search"><span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span><span>Back to search</span></a></div>
-  {% include "includes/prepared_profile_links.html" %}
+  {% include "includes/profile_links.html" %}
   <div class="col-md-3 col-sm-4 col-xs-12" id="people-left-panel">
     <section id="individual-intro" class="vcard person" aria-label="Profile contact and sections"><section class="share-contact">
       <div id="photo-wrapper"><img src="{{ profile.thumbnail }}" alt="Faculty Picture" class="img-circle" width="175"></div>
@@ -20,7 +20,7 @@
     {% for section in profile.panels|default:profile.sections %}
     <div id="tab{{ section.id }}" class="tabFinder{% if section.id != 'Overview' %} panel panel-default{% endif %}"{% if section.id != 'Overview' %} style="display:none" aria-hidden="true"{% endif %}>
       {% if section.id == 'Publications' and profile.publication_filters %}
-        {% include "display/prepared_publications.html" %}
+        {% include "display/publication_list.html" %}
       {% else %}{{ section.html|safe }}{% endif %}
     </div>
     {% endfor %}

@@ -9,67 +9,14 @@ from unittest.mock import patch
 from django.core.management import call_command
 from django.test import SimpleTestCase, override_settings
 
-from vivo_app.lib.prepared_data import PageDataError
-from vivo_app.lib.recorded_responses import RecordedResponse
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_requests import profile_key, read_source
+from vivo_app.lib.source_types import SourceResponse
 from vivo_app.management.commands.check_dev_sources import source_check
 
 
 class CheckDevSourcesTests(SimpleTestCase):
     """Checks safe reports and explicit source selection."""
-
-    @override_settings(PAGE_DATA_MODE='prepared')
-    def test_default_checks_prepared_bundle_without_source_requests(self) -> None:
-        """
-        Checks the default command reads only the prepared bundle.
-        """
-        output = io.StringIO()
-        with (
-            patch('vivo_app.management.commands.check_dev_sources.prepared_check', return_value={'status': 'ok'}),
-            patch('vivo_app.management.commands.check_dev_sources.source_check') as source,
-        ):
-            call_command('check_dev_sources', stdout=output)
-        report = json.loads(output.getvalue())
-        self.assertEqual(report['page_data_mode']['value'], 'prepared')
-        self.assertEqual(report['prepared_bundle']['status'], 'ok')
-        self.assertEqual(report['sources'], {})
-        source.assert_not_called()
-
-    @override_settings(PAGE_DATA_MODE='prepared')
-    def test_missing_bundle_exits_after_safe_report(self) -> None:
-        """
-        Checks a missing bundle causes a nonzero result with no filesystem path.
-        """
-        output = io.StringIO()
-        with (
-            patch(
-                'vivo_app.management.commands.check_dev_sources.prepared_check',
-                return_value={'status': 'error', 'reason': 'The prepared manifest is missing or unreadable.'},
-            ),
-            self.assertRaises(SystemExit) as exit_status,
-        ):
-            call_command('check_dev_sources', stdout=output)
-        self.assertEqual(exit_status.exception.code, 1)
-        self.assertIn('missing or unreadable', output.getvalue())
-
-    @override_settings(PAGE_DATA_MODE='prepared', PREPARED_FIXTURE_DIR='missing-directory')
-    def test_selected_sources_skip_unrelated_page_data_checks(self) -> None:
-        """
-        Checks source probes succeed without a prepared directory or mode check.
-        """
-        output = io.StringIO()
-        with (
-            patch('vivo_app.management.commands.check_dev_sources.source_check', return_value={'status': 'ok'}) as source,
-            patch('vivo_app.management.commands.check_dev_sources.prepared_check') as prepared,
-            patch('vivo_app.management.commands.check_dev_sources.selected_mode') as mode,
-        ):
-            call_command('check_dev_sources', '--source', 'solr', '--source', 'solr', '--source', 'viz', stdout=output)
-        report = json.loads(output.getvalue())
-        self.assertEqual(list(report), ['sources'])
-        self.assertEqual(list(report['sources']), ['solr', 'viz'])
-        self.assertEqual(source.call_count, 2)
-        prepared.assert_not_called()
-        mode.assert_not_called()
 
     def test_failed_source_check_exits_after_reporting_its_reason(self) -> None:
         """
@@ -101,7 +48,7 @@ class CheckDevSourcesTests(SimpleTestCase):
         """
         Checks a successful export can be compared without printing its body.
         """
-        response = RecordedResponse(200, (), b'invented record content')
+        response = SourceResponse(200, (), b'invented record content')
         with patch('vivo_app.management.commands.check_dev_sources.read_source', return_value=response):
             result = source_check('vivo', 'invented-a')
         self.assertEqual(result['status'], 'ok')
@@ -125,7 +72,7 @@ class CheckDevSourcesTests(SimpleTestCase):
         self.assertEqual(report['sources']['search']['results_on_page'], 1)
         self.assertNotIn('Invented Private Name', output.getvalue())
         self.assertNotIn('invented', output.getvalue())
-        search.assert_called_once_with([('q', 'invented')], 'live')
+        search.assert_called_once_with([('q', 'invented')])
 
     def test_search_check_reports_parser_failure(self) -> None:
         """
@@ -159,8 +106,8 @@ class CheckDevSourcesTests(SimpleTestCase):
         self.assertTrue(result['profile_visualizations_enabled'])
         self.assertTrue(result['collaborator_graph_available'])
         self.assertNotIn('Invented Private Name', json.dumps(result))
-        source.assert_called_once_with(profile_key('invented-a'), 'live', read_source)
-        graphs.assert_called_once_with('collaborators', 'live')
+        source.assert_called_once_with(profile_key('invented-a'), read_source)
+        graphs.assert_called_once_with('collaborators')
 
     def test_profile_check_requires_an_id(self) -> None:
         """
@@ -188,10 +135,42 @@ class CheckDevSourcesTests(SimpleTestCase):
             report = json.loads(output.getvalue())['sources']['search-facets']
             self.assertEqual((report['status'], report['shown_values'], report['full_values']), ('ok', 10, 12))
             self.assertNotIn('Invented Private Name', output.getvalue())
-            full.assert_called_with([('q', 'invented'), ('f_name', 'affiliations')], 'live')
+            full.assert_called_with([('q', 'invented'), ('f_name', 'affiliations')])
             full.return_value = []
             output = io.StringIO()
             with self.assertRaises(SystemExit):
                 call_command('check_dev_sources', '--source', 'search-facets', stdout=output)
             report = json.loads(output.getvalue())['sources']['search-facets']
             self.assertEqual((report['status'], report['shown_values'], report['full_values']), ('error', 10, 0))
+
+    def test_default_checks_configuration_without_source_requests(self) -> None:
+        """
+        Checks the default command reads settings without contacting services.
+        """
+        output = io.StringIO()
+        with patch('vivo_app.management.commands.check_dev_sources.source_check') as source:
+            call_command('check_dev_sources', stdout=output)
+        self.assertEqual(json.loads(output.getvalue()), {'configuration': {'status': 'ok'}, 'sources': {}})
+        source.assert_not_called()
+
+    @override_settings(SOLR_URL='')
+    def test_missing_configuration_reports_failure(self) -> None:
+        """
+        Checks a missing required setting produces a nonzero result without private values.
+        """
+        output = io.StringIO()
+        with self.assertRaises(SystemExit) as caught:
+            call_command('check_dev_sources', stdout=output)
+        self.assertEqual(caught.exception.code, 1)
+        self.assertEqual(json.loads(output.getvalue())['configuration']['status'], 'error')
+
+    @override_settings(SOLR_URL='')
+    def test_selected_sources_skip_unrelated_configuration_checks(self) -> None:
+        """
+        Checks explicit probes contact only named sources, once each.
+        """
+        output = io.StringIO()
+        with patch('vivo_app.management.commands.check_dev_sources.source_check', return_value={'status': 'ok'}) as source:
+            call_command('check_dev_sources', '--source', 'solr', '--source', 'solr', '--source', 'viz', stdout=output)
+        self.assertEqual(list(json.loads(output.getvalue())['sources']), ['solr', 'viz'])
+        self.assertEqual(source.call_count, 2)

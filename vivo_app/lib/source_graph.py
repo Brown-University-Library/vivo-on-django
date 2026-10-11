@@ -1,5 +1,5 @@
 """
-Reads visualization-service lists and graph data through live or recorded requests.
+Reads visualization-service lists and graph data through configured requests.
 """
 
 import csv
@@ -11,8 +11,7 @@ import re
 import time
 from collections.abc import Callable
 
-from vivo_app.lib.prepared_data import PageDataError
-from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_formats import faculty_item_from_doc
 from vivo_app.lib.source_pages import (
     documents,
@@ -25,8 +24,9 @@ from vivo_app.lib.source_pages import (
 )
 from vivo_app.lib.source_requests import graph_root_key, member_details_key, profile_key, read_source
 from vivo_app.lib.source_teams import CUSTOM_ORGANIZATION_IDS, custom_organization_members, team_definition
+from vivo_app.lib.source_types import RequestKey, SourceResponse
 
-GraphReader = Callable[[RequestKey, str], RecordedResponse]
+GraphReader = Callable[[RequestKey], SourceResponse]
 GRAPH_MEMBER_BATCH_SIZE = 20
 
 
@@ -45,13 +45,13 @@ def visualization_key(kind: str, identifier: str = '') -> RequestKey:
     return RequestKey('viz', path, query)
 
 
-def visualization_response(key: RequestKey, mode: str, reader: GraphReader) -> dict[str, object]:
+def visualization_response(key: RequestKey, reader: GraphReader) -> dict[str, object]:
     """
     Parses a visualization-service response without substituting page JSON.
 
     Called by: visualization_list(), visualization_graph()
     """
-    response = reader(key, mode)
+    response = reader(key)
     try:
         value: object = json.loads(response.body)
     except (ValueError, UnicodeError) as exc:
@@ -61,7 +61,7 @@ def visualization_response(key: RequestKey, mode: str, reader: GraphReader) -> d
     return value
 
 
-def visualization_list(kind: str, mode: str, reader: GraphReader | None = None) -> dict[str, object]:
+def visualization_list(kind: str, reader: GraphReader | None = None) -> dict[str, object]:
     """
     Reads one graph-availability list used by public profile flags.
 
@@ -69,10 +69,10 @@ def visualization_list(kind: str, mode: str, reader: GraphReader | None = None) 
     """
     if reader is None:
         reader = read_source
-    return visualization_response(visualization_key(kind), mode, reader)
+    return visualization_response(visualization_key(kind), reader)
 
 
-def visualization_graph(kind: str, identifier: str, mode: str, reader: GraphReader | None = None) -> dict[str, object]:
+def visualization_graph(kind: str, identifier: str, reader: GraphReader | None = None) -> dict[str, object]:
     """
     Reads one graph for a retained visualization JSON route.
 
@@ -81,8 +81,8 @@ def visualization_graph(kind: str, identifier: str, mode: str, reader: GraphRead
     if reader is None:
         reader = read_source
     if kind == 'collaborators' and (identifier.startswith('team-') or identifier in CUSTOM_ORGANIZATION_IDS):
-        return custom_collaboration_graph(identifier, mode, reader)
-    value = visualization_response(visualization_key(kind, identifier), mode, reader)
+        return custom_collaboration_graph(identifier, reader)
+    value = visualization_response(visualization_key(kind, identifier), reader)
     if not value:
         return value
     graph = value.get('graph') if kind == 'collaborators' else value.get('data')
@@ -94,7 +94,7 @@ def visualization_graph(kind: str, identifier: str, mode: str, reader: GraphRead
     return value
 
 
-def custom_graph_members(identifier: str, mode: str, reader: GraphReader) -> tuple[str, list[str]]:
+def custom_graph_members(identifier: str, reader: GraphReader) -> tuple[str, list[str]]:
     """
     Reads the same configured and organization members used by custom collaboration graphs.
 
@@ -103,16 +103,14 @@ def custom_graph_members(identifier: str, mode: str, reader: GraphReader) -> tup
     if identifier.startswith('team-'):
         name, members = team_definition(identifier)
     else:
-        response = response_object(profile_key(identifier), mode, reader)
+        response = response_object(profile_key(identifier), reader)
         docs, _ = documents(response)
         if not docs or record_id(docs[0]) != identifier or first_text(docs[0].get('record_type')) != 'ORGANIZATION':
             raise PageDataError('The custom collaboration organization is unavailable.')
         item = record_data(docs[0])
         name = first_text(item.get('name'))
-        members = [
-            record_id({'id': first_text(row.get('faculty_uri'))}) for row in organization_members(item, [], mode, reader)
-        ]
-        members.extend(custom_organization_members(identifier, mode, reader))
+        members = [record_id({'id': first_text(row.get('faculty_uri'))}) for row in organization_members(item, [], reader)]
+        members.extend(custom_organization_members(identifier, reader))
     result = list(dict.fromkeys(members))
     if not name or not result or len(result) > 500:
         raise PageDataError('The custom collaboration member list is unavailable or too large.')
@@ -120,7 +118,7 @@ def custom_graph_members(identifier: str, mode: str, reader: GraphReader) -> tup
 
 
 def custom_graph_records(
-    identifiers: list[str], mode: str, reader: GraphReader, require_all: bool, full: bool = False
+    identifiers: list[str], reader: GraphReader, require_all: bool, full: bool = False
 ) -> dict[str, dict[str, object]]:
     """
     Reads small member batches, retaining complete Solr documents for graph roots.
@@ -133,9 +131,9 @@ def custom_graph_records(
     batch_size = 5 if full else GRAPH_MEMBER_BATCH_SIZE
     for start in range(0, len(identifiers), batch_size):
         batch = identifiers[start : start + batch_size]
-        if start and mode == 'live':
+        if start:
             time.sleep(0.25)
-        response = response_object(graph_root_key(batch) if full else member_details_key(batch), mode, reader)
+        response = response_object(graph_root_key(batch) if full else member_details_key(batch), reader)
         docs, _ = documents(response)
         for doc in docs:
             member_id = record_id(doc)
@@ -205,14 +203,14 @@ def add_custom_collaborators(
     return neighbors
 
 
-def custom_collaboration_graph(identifier: str, mode: str, reader: GraphReader) -> dict[str, object]:
+def custom_collaboration_graph(identifier: str, reader: GraphReader) -> dict[str, object]:
     """
     Calculates a two-level team or specialized-organization graph from Solr profiles.
 
     Called by: visualization_graph()
     """
-    name, member_ids = custom_graph_members(identifier, mode, reader)
-    roots = custom_graph_records(member_ids, mode, reader, False, full=True)
+    name, member_ids = custom_graph_members(identifier, reader)
+    roots = custom_graph_records(member_ids, reader, False, full=True)
     member_ids = [member_id for member_id in member_ids if member_id in roots]
     if not member_ids:
         raise PageDataError('The custom collaboration organization has no available member records.')
@@ -222,9 +220,9 @@ def custom_collaboration_graph(identifier: str, mode: str, reader: GraphReader) 
 
     neighbors: list[str] = []
     people = {member_id: record_data(roots[member_id]) for member_id in member_ids}
-    coauthors = visualization_list('coauthors', mode, reader)
+    coauthors = visualization_list('coauthors', reader)
     collaborators = (
-        visualization_list('collaborators', mode, reader)
+        visualization_list('collaborators', reader)
         if any(entries(person, 'collaborators') for person in people.values())
         else {}
     )
@@ -242,7 +240,7 @@ def custom_collaboration_graph(identifier: str, mode: str, reader: GraphReader) 
     for member_id in member_ids:
         neighbors.extend(add_custom_collaborators(nodes, links, prefix + member_id, people[member_id], 1))
     missing_neighbors = sorted(set(neighbors) - set(roots))
-    second_level = custom_graph_records(missing_neighbors, mode, reader, False) if missing_neighbors else {}
+    second_level = custom_graph_records(missing_neighbors, reader, False) if missing_neighbors else {}
     for neighbor_id in neighbors:
         doc = roots.get(neighbor_id) or second_level.get(neighbor_id)
         if doc is not None:
@@ -264,7 +262,7 @@ def custom_collaboration_graph(identifier: str, mode: str, reader: GraphReader) 
     }
 
 
-def graph_subject_data(kind: str, identifier: str, mode: str, reader: GraphReader | None = None) -> dict[str, str]:
+def graph_subject_data(kind: str, identifier: str, reader: GraphReader | None = None) -> dict[str, str]:
     """
     Reads the person or organization heading shown on a source-backed graph page.
 
@@ -277,7 +275,7 @@ def graph_subject_data(kind: str, identifier: str, mode: str, reader: GraphReade
             raise PageDataError('A team has no coauthor network.')
         name, _ = team_definition(identifier)
         return {'name': name, 'page_title': name, 'title': '', 'type': 'TEAM'}
-    response = response_object(profile_key(identifier), mode, reader)
+    response = response_object(profile_key(identifier), reader)
     docs, _ = documents(response)
     if not docs or record_id(docs[0]) != identifier:
         raise PageDataError('The visualization profile is unavailable.')

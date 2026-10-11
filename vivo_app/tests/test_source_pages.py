@@ -12,12 +12,10 @@ from django.test import TestCase, override_settings
 from django.urls import get_script_prefix, set_script_prefix
 from django.utils import translation
 
-from vivo_app.lib.prepared_data import PageDataError
-from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_formats import (
     faculty_item_from_doc,
     organization_json_data,
-    profile_json_data,
     profile_json_text,
     publication_entries,
 )
@@ -43,8 +41,6 @@ from vivo_app.lib.source_pages import (
 )
 from vivo_app.lib.source_requests import (
     community_research_members_key,
-    document_key,
-    image_key,
     member_details_key,
     member_key,
     profile_export_key,
@@ -53,10 +49,11 @@ from vivo_app.lib.source_requests import (
     team_member_key,
 )
 from vivo_app.lib.source_teams import custom_organization_members, team_data
+from vivo_app.lib.source_types import RequestKey, SourceResponse
+from vivo_app.tests.source_fixtures import page_responses, solr_response
 
 
 @override_settings(
-    PAGE_DATA_MODE='live',
     SOLR_URL='http://example.invalid/solr/example',
     IMAGES_URL='http://example.invalid',
     DOCUMENTS_URL='https://example.invalid',
@@ -67,159 +64,21 @@ class SourcePageTests(TestCase):
 
     def setUp(self) -> None:
         """
-        Creates response bytes for one invented search-to-profile journey.
+        Creates made-up source inputs for each test.
         """
-        person = {
-            'id': 'http://vivo.brown.edu/individual/invented-a',
-            'name': 'Invented Researcher',
-            'title': 'Example Professor',
-            'email': 'invented@example.invalid',
-            'overview': '<p>Invented &amp; tested. <a href="https://example.invalid/lab">Example lab</a></p>',
-            'affiliations': [{'uri': 'http://vivo.brown.edu/individual/org-example', 'name': 'Example Department'}],
-            'research_areas': ['liver', 'Excretion', 'absorption'],
-            'on_the_web': [{'url': 'https://example.invalid/person', 'text': 'Website'}],
-            'contributor_to': [
-                {
-                    'type': 'http://vivo.brown.edu/ontology/citation#Article',
-                    'title': 'Example publication',
-                    'authors': 'Researcher, Invented',
-                    'date': '2024-01-01',
-                    'published_in': 'Invented Journal',
-                    'doi': '10.0000/example',
-                    'pub_med_id': '12345678',
-                }
-            ],
-            'education': [{'date': '2001', 'degree': 'PhD', 'school_name': 'Example University'}],
-            'awards': '<ul><li>Example <a href="https://example.invalid/award">Award</a></li></ul>',
-            'appointments': [{'name': 'Editor', 'org_name': 'Example Journal', 'start_date': '2020-01-01'}],
-            'teacher_for': ['EXMP 1000 - Example Course'],
-            'cv': [{'cv_link': 'http://example.invalid/docs/i/invented_cv.pdf?dt=1'}],
-        }
-        person_doc = {
-            'id': person['id'],
-            'record_type': ['PEOPLE'],
-            'json_txt': [json.dumps(person)],
-            'display_name_s': 'Invented Researcher',
-            'show_visualizations_s': 'true',
-            'thumbnail_file_path_s': '/file/n1234/portrait.jpg',
-        }
-        organization_doc = {
-            'id': 'http://vivo.brown.edu/individual/org-example',
-            'record_type': ['ORGANIZATION'],
-            'thumbnail_file_path_s': '/file/n5678/logo.png',
-            'json_txt': [
-                json.dumps(
-                    {
-                        'name': 'Example Department',
-                        'overview': '<p><strong>Invented department</strong></p><script>unsafe()</script>',
-                        'people': [
-                            {
-                                'faculty_uri': person['id'],
-                                'label': 'Researcher, Invented',
-                                'specific_position': 'Example Professor',
-                                'general_position': 'http://vivoweb.org/ontology/core#FacultyPosition',
-                            }
-                        ],
-                        'web_pages': [{'url': 'https://example.invalid/department', 'text': 'Department website'}],
-                    }
-                )
-            ],
-        }
-        facets: dict[str, object] = {
-            'facet_fields': {
-                'record_type': ['PEOPLE', 1],
-                'affiliations': ['Example Department', 1],
-                'research_areas': [],
-                'published_in': ['Invented Journal', 1],
-            }
-        }
-        highlights: dict[str, object] = {
-            'vitroIndividual:http://vivo.brown.edu/individual/invented-a': {
-                'short_id_s': ['<strong>Example</strong> <script>unsafe</script>']
-            }
-        }
-        self.responses = {
-            search_key('Example', 1, []): self.solr_response([person_doc], 1, facets, highlights),
-            search_key('Example', 1, [('record_type', 'PEOPLE')]): self.solr_response([person_doc], 1, facets, highlights),
-            search_key('Example', 1, [], -1): self.solr_response([person_doc], 1, facets, highlights),
-            search_key('Example', 1, [('record_type', 'PEOPLE')], -1): self.solr_response(
-                [person_doc], 1, facets, highlights
-            ),
-            search_key('none', 1, []): self.solr_response(
-                [],
-                0,
-                {'facet_fields': {field: [] for field in ('record_type', 'affiliations', 'research_areas', 'published_in')}},
-            ),
-            search_key('none', 1, [], -1): self.solr_response(
-                [],
-                0,
-                {'facet_fields': {field: [] for field in ('record_type', 'affiliations', 'research_areas', 'published_in')}},
-            ),
-            search_key('Example', 2, []): self.solr_response([person_doc], 21, facets),
-            search_key(
-                'Example', 1, [('record_type', 'PEOPLE'), ('affiliations', 'Example Department')]
-            ): self.solr_response([person_doc], 1, facets),
-            profile_key('invented-a'): self.solr_response([person_doc], 1),
-            visualization_key('coauthors'): RecordedResponse(
-                200, (('content-type', 'application/json'),), json.dumps({person['id']: True}).encode()
-            ),
-            profile_key('org-example'): self.solr_response([organization_doc], 1),
-            member_key(['invented-a']): self.solr_response([person_doc], 1),
-            member_details_key(['invented-a']): self.solr_response([person_doc], 1),
-            team_member_key(['invented-a']): self.solr_response([person_doc], 1),
-            image_key('/profile-images/123/4/portrait.jpg'): RecordedResponse(
-                200, (('content-type', 'image/jpeg'),), b'invented-portrait'
-            ),
-            image_key('/profile-images/567/8/logo.png'): RecordedResponse(
-                200, (('content-type', 'image/png'),), b'invented-logo'
-            ),
-            document_key('/docs/i/invented_cv.pdf', (('dt', '1'),)): RecordedResponse(
-                200, (('content-type', 'application/pdf'),), b'%PDF-1.7 invented document'
-            ),
-            document_key('/docs/i/invented_cv.pdf'): RecordedResponse(
-                301,
-                (('content-type', 'text/html'), ('location', 'https://example.invalid/docs/i/invented_cv.pdf?dt=1')),
-                b'',
-            ),
-        }
+        self.responses = page_responses()
 
-    def solr_response(
+    solr_response = staticmethod(solr_response)
+
+    def read(
         self,
-        docs: list[dict[str, object]],
-        count: int,
-        facets: dict[str, object] | None = None,
-        highlights: dict[str, object] | None = None,
-    ) -> RecordedResponse:
-        """
-        Makes a complete Solr response from invented documents.
-
-        Called by: setUp()
-        """
-        data: dict[str, object] = {'responseHeader': {'status': 0}, 'response': {'numFound': count, 'docs': docs}}
-        if facets is not None:
-            data['facet_counts'] = facets
-        if highlights is not None:
-            data['highlighting'] = highlights
-        return RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(data).encode())
-
-    def read(self, key: RequestKey, mode: str) -> RecordedResponse:
+        key: RequestKey,
+    ) -> SourceResponse:
         """
         Supplies one exact invented response and fails on any other request.
 
         Called by: test methods through the source modules
         """
-        self.assertEqual(mode, 'live')
-        if key not in self.responses:
-            raise PageDataError('No invented response matches this request.')
-        return self.responses[key]
-
-    def read_replay(self, key: RequestKey, mode: str) -> RecordedResponse:
-        """
-        Reads the same exact responses while checking replay failures.
-
-        Called by: test_profile_still_loads_when_coauthor_list_is_unavailable(), test_sparse_profile_json_uses_graph_availability()
-        """
-        self.assertEqual(mode, 'replay')
         if key not in self.responses:
             raise PageDataError('No invented response matches this request.')
         return self.responses[key]
@@ -253,7 +112,7 @@ class SourcePageTests(TestCase):
         person = json.loads(response['response']['docs'][0]['json_txt'][0])
         person['hidden'] = True
         response['response']['docs'][0]['json_txt'] = [json.dumps(person)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
             inactive = self.get_page('/display/invented-a')
         self.assertContains(inactive, 'Invented Researcher [Inactive]')
@@ -278,7 +137,7 @@ class SourcePageTests(TestCase):
             ]
         }
         background = next(
-            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Background'
+            section['html'] for section in profile_sections(item, self.read, 0, '') if section['id'] == 'Background'
         )
         self.assertIn('Postdoctoral/Other Training', background)
         self.assertLess(background.index('Later training'), background.index('Earlier training'))
@@ -301,7 +160,7 @@ class SourcePageTests(TestCase):
             ]
         }
         background = next(
-            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Background'
+            section['html'] for section in profile_sections(item, self.read, 0, '') if section['id'] == 'Background'
         )
         self.assertLess(background.index('PhD'), background.index('MS'))
         self.assertLess(background.index('MS'), background.index('BS'))
@@ -312,7 +171,7 @@ class SourcePageTests(TestCase):
         """
         item: dict[str, object] = {'education': [{'date': '2001', 'degree': 'PhD', 'school_name': '  Example University  '}]}
         background = next(
-            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Background'
+            section['html'] for section in profile_sections(item, self.read, 0, '') if section['id'] == 'Background'
         )
         self.assertIn('q=alumni_of%3A%22Example+University%22', background)
         self.assertIn('>Example University</a>', background)
@@ -327,8 +186,8 @@ class SourcePageTests(TestCase):
         item = json.loads(response['response']['docs'][0]['json_txt'][0])
         item['web_pages'] = [{'url': '  https://example.invalid/department  ', 'text': '  Department website  '}]
         response['response']['docs'][0]['json_txt'] = [json.dumps(item)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
-        organization = organization_data('org-example', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        organization = organization_data('org-example', self.read)
         self.assertEqual(
             organization['website_links'], [{'url': 'https://example.invalid/department', 'label': 'Department website'}]
         )
@@ -342,8 +201,8 @@ class SourcePageTests(TestCase):
         item = json.loads(response['response']['docs'][0]['json_txt'][0])
         item['overview'] = ''
         response['response']['docs'][0]['json_txt'] = [json.dumps(item)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
-        organization = organization_data('org-example', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        organization = organization_data('org-example', self.read)
         self.assertEqual(organization['overview_html'], '<p></p>')
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
             result = self.get_page('/display/org-example')
@@ -378,8 +237,8 @@ class SourcePageTests(TestCase):
             {'rank': '1', 'url': 'https://example.invalid/earlier'},
         ]
         response['response']['docs'][0]['json_txt'] = [json.dumps(item)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
-        organization = organization_data('org-example', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        organization = organization_data('org-example', self.read)
         websites = organization['website_links']
         self.assertIsInstance(websites, list)
         if not isinstance(websites, list):
@@ -397,7 +256,7 @@ class SourcePageTests(TestCase):
             'research_statement': '<p>Second paragraph.</p><script>unsafe()</script>',
         }
         research = next(
-            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Research'
+            section['html'] for section in profile_sections(item, self.read, 0, '') if section['id'] == 'Research'
         )
         self.assertIn('<p>Studies <em>RNA</em> at the <a href="https://example.invalid/lab">lab</a>.</p>', research)
         self.assertIn('<p>Second paragraph.</p>', research)
@@ -416,7 +275,7 @@ class SourcePageTests(TestCase):
             ]
         }
         overview = next(
-            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Overview'
+            section['html'] for section in profile_sections(item, self.read, 0, '') if section['id'] == 'Overview'
         )
         self.assertLess(overview.index('First website'), overview.index('Tied website'))
         self.assertLess(overview.index('Tied website'), overview.index('Middle website'))
@@ -433,7 +292,7 @@ class SourcePageTests(TestCase):
             ]
         }
         overview = next(
-            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Overview'
+            section['html'] for section in profile_sections(item, self.read, 0, '') if section['id'] == 'Overview'
         )
         self.assertIn('href="https://example.invalid/web"', overview)
         self.assertIn('>Example link</a>', overview)
@@ -448,7 +307,7 @@ class SourcePageTests(TestCase):
             'teaching_overview': '<p><strong>Courses taught:<br>Example Biology</strong></p><script>unsafe()</script>'
         }
         teaching = next(
-            section['html'] for section in profile_sections(item, 'live', self.read, 0, '') if section['id'] == 'Teaching'
+            section['html'] for section in profile_sections(item, self.read, 0, '') if section['id'] == 'Teaching'
         )
         self.assertIn('<div class="property-list" role="list" displaylimit="5">', teaching)
         self.assertIn('<p><strong>Courses taught:<br>Example Biology</strong></p>', teaching)
@@ -473,9 +332,7 @@ class SourcePageTests(TestCase):
             ]
         }
         affiliations = next(
-            section['html']
-            for section in profile_sections(item, 'live', self.read, 0, '')
-            if section['id'] == 'Affiliations'
+            section['html'] for section in profile_sections(item, self.read, 0, '') if section['id'] == 'Affiliations'
         )
         self.assertIn('Credentials/Licenses', affiliations)
         self.assertLess(affiliations.index('Later license'), affiliations.index('Earlier license'))
@@ -502,9 +359,7 @@ class SourcePageTests(TestCase):
             ]
         }
         affiliations = next(
-            section['html']
-            for section in profile_sections(item, 'live', self.read, 0, '')
-            if section['id'] == 'Affiliations'
+            section['html'] for section in profile_sections(item, self.read, 0, '') if section['id'] == 'Affiliations'
         )
         self.assertLess(affiliations.index('Hospital role'), affiliations.index('Department role'))
         self.assertLess(affiliations.index('Department role'), affiliations.index('Older role'))
@@ -549,9 +404,7 @@ class SourcePageTests(TestCase):
             )
         }
         affiliations = next(
-            section['html']
-            for section in profile_sections(item, 'live', self.read, 0, '')
-            if section['id'] == 'Affiliations'
+            section['html'] for section in profile_sections(item, self.read, 0, '') if section['id'] == 'Affiliations'
         )
         self.assertIn('<div class="property-list" role="list" displaylimit="5">', affiliations)
         self.assertIn('<a href="https://example.invalid/society">Example Society</a><br>', affiliations)
@@ -630,17 +483,17 @@ class SourcePageTests(TestCase):
                 record = json.loads(document['json_txt'][0])
                 record['title'] = title
                 document['json_txt'] = [json.dumps(record)]
-                self.responses[key] = RecordedResponse(
+                self.responses[key] = SourceResponse(
                     200, (('content-type', 'application/json'),), json.dumps(response).encode()
                 )
-                html = search_data([('q', 'Example')], 'live', self.read)
+                html = search_data([('q', 'Example')], self.read)
                 items = html['results']
                 assert isinstance(items, list)
                 self.assertEqual(items[0]['title'], expected)
-                data = search_json_data([('q', 'Example')], 'live', 'https://example.invalid', self.read)
+                data = search_json_data([('q', 'Example')], 'https://example.invalid', self.read)
                 self.assertEqual(data[0]['title'], expected)
 
-    def test_live_search_links_keep_the_deployment_prefix(self) -> None:
+    def test_source_search_links_keep_the_deployment_prefix(self) -> None:
         """
         Checks search links, profile images, and JSON destinations stay inside a mounted Django application.
         """
@@ -669,7 +522,7 @@ class SourcePageTests(TestCase):
         finally:
             set_script_prefix(previous_prefix)
 
-    def test_live_profile_and_organization_links_keep_the_deployment_prefix(self) -> None:
+    def test_source_profile_and_organization_links_keep_the_deployment_prefix(self) -> None:
         """
         Checks person and organization links stay inside a mounted Django application.
         """
@@ -707,8 +560,6 @@ class SourcePageTests(TestCase):
         self.assertEqual(profile.status_code, 200)
         self.assertContains(profile, 'Invented Researcher')
         self.assertNotContains(profile, 'id="viz_coauthor"')
-        with self.assertRaises(PageDataError):
-            profile_data('invented-a', 'replay', self.read_replay)
 
     def test_affiliations_show_collaborators_and_available_graph(self) -> None:
         """
@@ -726,8 +577,8 @@ class SourcePageTests(TestCase):
             {'uri': 'http://vivo.brown.edu/individual/invented-c', 'name': 'Alpha Colleague'},
         ]
         response['response']['docs'][0]['json_txt'] = [json.dumps(person)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
-        self.responses[visualization_key('collaborators')] = RecordedResponse(
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        self.responses[visualization_key('collaborators')] = SourceResponse(
             200, (('content-type', 'application/json'),), json.dumps({person['id']: True}).encode()
         )
         prefix = '/mounted-app'
@@ -752,7 +603,7 @@ class SourcePageTests(TestCase):
         finally:
             set_script_prefix(previous_prefix)
 
-    def test_live_search_offers_more_facets_when_an_eleventh_value_exists(self) -> None:
+    def test_source_search_offers_more_facets_when_an_eleventh_value_exists(self) -> None:
         """
         Checks ten values stay visible and the full local facet response supplies the dialog.
         """
@@ -762,9 +613,7 @@ class SourcePageTests(TestCase):
         for key in (search, full):
             response = json.loads(self.responses[key].body)
             response['facet_counts']['facet_fields']['affiliations'] = values
-            self.responses[key] = RecordedResponse(
-                200, (('content-type', 'application/json'),), json.dumps(response).encode()
-            )
+            self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
         prefix = '/mounted-app'
         previous_prefix = get_script_prefix()
         set_script_prefix(prefix)
@@ -783,7 +632,7 @@ class SourcePageTests(TestCase):
                 self.assertEqual(rows[-1]['add_url'], f'{prefix}/search?q=Example&fq=affiliations%7CArea+11')
                 response = json.loads(self.responses[search].body)
                 response['facet_counts']['facet_fields']['affiliations'] = values[:-2]
-                self.responses[search] = RecordedResponse(
+                self.responses[search] = SourceResponse(
                     200, (('content-type', 'application/json'),), json.dumps(response).encode()
                 )
                 ten_values = self.client.get('/search?q=Example', SCRIPT_NAME=prefix)
@@ -801,14 +650,14 @@ class SourcePageTests(TestCase):
             'json_txt': [json.dumps({'name': 'Sparse Researcher'})],
         }
         self.responses[profile_key('invented-sparse')] = self.solr_response([sparse_doc], 1)
-        empty = search_data([('q', 'none')], 'live', self.read)
+        empty = search_data([('q', 'none')], self.read)
         self.assertEqual(empty['results'], [])
         self.assertEqual(empty['start'], 1)
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
             empty_page = self.get_page('/search?q=none')
         self.assertContains(empty_page, '<span id="search-page-start">1</span>')
         self.assertContains(empty_page, '<span id="search-page-end">0</span>')
-        later = search_data([('q', 'Example'), ('page', '2')], 'live', self.read)
+        later = search_data([('q', 'Example'), ('page', '2')], self.read)
         self.assertEqual((later['start'], later['end']), (21, 21))
         pagination = later['pagination']
         self.assertIsInstance(pagination, list)
@@ -816,9 +665,7 @@ class SourcePageTests(TestCase):
             self.fail('Search pagination was not a list.')
         self.assertEqual(len(pagination), 2)
         repeated = search_data(
-            [('q', 'Example'), ('fq', 'record_type|PEOPLE'), ('fq', 'affiliations|Example Department')],
-            'live',
-            self.read,
+            [('q', 'Example'), ('fq', 'record_type|PEOPLE'), ('fq', 'affiliations|Example Department')], self.read
         )
         selected_filters = repeated['selected_filters']
         self.assertIsInstance(selected_filters, list)
@@ -832,7 +679,7 @@ class SourcePageTests(TestCase):
             repeated_pagination[0]['url'],
             '/search?q=Example&fq=record_type%7CPEOPLE&fq=affiliations%7CExample+Department&page=1',
         )
-        sparse = profile_data('invented-sparse', 'live', self.read)
+        sparse = profile_data('invented-sparse', self.read)
         sections = sparse['sections']
         self.assertIsInstance(sections, list)
         if not isinstance(sections, list):
@@ -848,7 +695,7 @@ class SourcePageTests(TestCase):
     def test_missing_affiliation_logo_uses_organization_placeholder(self) -> None:
         """Keeps the profile's affiliation visible when its logo record is absent."""
         self.responses[profile_key('org-example')] = self.solr_response([], 0)
-        result = profile_data('invented-a', 'live', self.read)
+        result = profile_data('invented-a', self.read)
         sections = result['sections']
         assert isinstance(sections, list)
         self.assertIn('org_placeholder.png', sections[0]['html'])
@@ -863,7 +710,7 @@ class SourcePageTests(TestCase):
             'thumbnail_file_path_s': '/file/n9999/wrong.png',
         }
         self.responses[profile_key('org-example')] = self.solr_response([other], 1)
-        result = profile_data('invented-a', 'live', self.read)
+        result = profile_data('invented-a', self.read)
         sections = result['sections']
         if not isinstance(sections, list):
             self.fail('Profile sections should be a list.')
@@ -879,8 +726,8 @@ class SourcePageTests(TestCase):
         person = json.loads(source['response']['docs'][0]['json_txt'][0])
         person['affiliations'] = [{'uri': 'http://vivo.brown.edu/individual/invalid id', 'name': 'Example Unit'}]
         source['response']['docs'][0]['json_txt'] = [json.dumps(person)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        result = profile_data('invented-a', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = profile_data('invented-a', self.read)
         sections = result['sections']
         if not isinstance(sections, list):
             self.fail('Profile sections should be a list.')
@@ -896,8 +743,8 @@ class SourcePageTests(TestCase):
         person = json.loads(source['response']['docs'][0]['json_txt'][0])
         person['on_the_web'] = [{'url': 'not a web address', 'text': 'Example'}]
         source['response']['docs'][0]['json_txt'] = [json.dumps(person)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        result = profile_data('invented-a', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = profile_data('invented-a', self.read)
         sections = result['sections']
         if not isinstance(sections, list):
             self.fail('Profile sections should be a list.')
@@ -912,8 +759,8 @@ class SourcePageTests(TestCase):
         person = json.loads(source['response']['docs'][0]['json_txt'][0])
         person['on_the_web'] = [{'url': 'https://example.invalid/profile', 'text': '  '}]
         source['response']['docs'][0]['json_txt'] = [json.dumps(person)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        result = profile_data('invented-a', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = profile_data('invented-a', self.read)
         sections = result['sections']
         if not isinstance(sections, list):
             self.fail('Profile sections should be a list.')
@@ -928,8 +775,8 @@ class SourcePageTests(TestCase):
         person = json.loads(source['response']['docs'][0]['json_txt'][0])
         person['research_areas'] = ['Genomics', '', None]
         source['response']['docs'][0]['json_txt'] = [json.dumps(person)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        result = profile_data('invented-a', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = profile_data('invented-a', self.read)
         sections = result['sections']
         if not isinstance(sections, list):
             self.fail('Profile sections should be a list.')
@@ -962,8 +809,8 @@ class SourcePageTests(TestCase):
         person['teacher_for'] = ['EXMP 1000 - Example Course', None, '']
         person['uri'] = person['id']
         doc['json_txt'] = [json.dumps(person)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        profile = profile_data('invented-a', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        profile = profile_data('invented-a', self.read)
         sections = profile['sections']
         if not isinstance(sections, list):
             self.fail('Profile sections should be a list.')
@@ -1035,8 +882,8 @@ class SourcePageTests(TestCase):
         organization = json.loads(source['response']['docs'][0]['json_txt'][0])
         organization['web_pages'] = websites
         source['response']['docs'][0]['json_txt'] = [json.dumps(organization)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        structured_org = organization_json_data('org-example', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        structured_org = organization_json_data('org-example', self.read)
         org_websites = structured_org['web_pages']
         if not isinstance(org_websites, list) or not org_websites or not isinstance(org_websites[0], dict):
             self.fail('Structured organization websites should be a nonempty list.')
@@ -1046,18 +893,10 @@ class SourcePageTests(TestCase):
     def test_affiliation_logo_request_failure_keeps_profile_visible(self) -> None:
         """Uses the placeholder if the optional affiliation lookup fails."""
         self.responses.pop(profile_key('org-example'))
-        result = profile_data('invented-a', 'live', self.read)
+        result = profile_data('invented-a', self.read)
         sections = result['sections']
         assert isinstance(sections, list)
         self.assertIn('org_placeholder.png', sections[0]['html'])
-
-    def test_replay_reports_missing_affiliation_logo_response(self) -> None:
-        """
-        Checks replay reports a missing recorded affiliation lookup.
-        """
-        self.responses.pop(profile_key('org-example'))
-        with self.assertRaises(PageDataError):
-            profile_data('invented-a', 'replay', self.read_replay)
 
     def test_organization_preserves_custom_and_ordinary_member_order(self) -> None:
         """
@@ -1085,7 +924,7 @@ class SourcePageTests(TestCase):
                 self.subTest(custom=custom),
                 patch('vivo_app.lib.source_pages.CUSTOM_ORGANIZATION_IDS', {'org-example'} if custom else set()),
             ):
-                result = organization_data('org-example', 'live', self.read, extra_member_ids=[])
+                result = organization_data('org-example', self.read, extra_member_ids=[])
                 faculty = result['faculty_positions']
                 if not isinstance(faculty, list):
                     self.fail('Faculty positions should be a list.')
@@ -1099,8 +938,8 @@ class SourcePageTests(TestCase):
         item = json.loads(source['response']['docs'][0]['json_txt'][0])
         item['people'][0]['general_position'] = 'http://example.invalid/other#FacultyAdministrativePosition'
         source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        result = organization_data('org-example', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = organization_data('org-example', self.read)
         self.assertEqual(result['administrative_positions'], [])
         faculty = result['faculty_positions']
         assert isinstance(faculty, list)
@@ -1115,8 +954,8 @@ class SourcePageTests(TestCase):
         organization = json.loads(source['response']['docs'][0]['json_txt'][0])
         organization['people'].append({'faculty_uri': 'invalid person address', 'label': 'Other Person'})
         source['response']['docs'][0]['json_txt'] = [json.dumps(organization)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        result = organization_data('org-example', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = organization_data('org-example', self.read)
         faculty = result['faculty_positions']
         if not isinstance(faculty, list):
             self.fail('Faculty positions should be a list.')
@@ -1130,19 +969,19 @@ class SourcePageTests(TestCase):
         source = json.loads(self.responses[key].body)
         source['response']['docs'].append(dict(source['response']['docs'][0]))
         source['response']['numFound'] = 2
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
         with self.assertRaises(PageDataError):
-            organization_data('org-example', 'live', self.read)
+            organization_data('org-example', self.read)
         with self.assertRaises(PageDataError):
-            organization_json_data('org-example', 'live', self.read)
+            organization_json_data('org-example', self.read)
 
     def test_organization_without_logo_uses_borderless_placeholder(self) -> None:
         """Matches the organization page's plain default image."""
         key = profile_key('org-example')
         source = json.loads(self.responses[key].body)
         source['response']['docs'][0].pop('thumbnail_file_path_s')
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        result = organization_data('org-example', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = organization_data('org-example', self.read)
         image = result['image']
         assert isinstance(image, str)
         self.assertIn('org_placeholder_noborder.png', image)
@@ -1151,7 +990,7 @@ class SourcePageTests(TestCase):
         """
         Checks search submissions retain a facet sent as a numbered form field.
         """
-        result = search_data([('q', 'Example'), ('fq_0', 'record_type|PEOPLE')], 'live', self.read)
+        result = search_data([('q', 'Example'), ('fq_0', 'record_type|PEOPLE')], self.read)
         selected = result['selected_filters']
         self.assertIsInstance(selected, list)
         if not isinstance(selected, list):
@@ -1165,11 +1004,7 @@ class SourcePageTests(TestCase):
         """
         Checks a repeated facet from two form fields creates one search selection.
         """
-        result = search_data(
-            [('q', 'Example'), ('fq', 'record_type|PEOPLE'), ('fq_0', 'record_type|PEOPLE')],
-            'live',
-            self.read,
-        )
+        result = search_data([('q', 'Example'), ('fq', 'record_type|PEOPLE'), ('fq_0', 'record_type|PEOPLE')], self.read)
         selected = result['selected_filters']
         if not isinstance(selected, list):
             self.fail('Selected search filters should be a list.')
@@ -1189,14 +1024,14 @@ class SourcePageTests(TestCase):
                 'Another Unit',
                 2,
             ]
-            self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        result = search_data([('q', 'Example')], 'live', self.read)
+            self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        result = search_data([('q', 'Example')], self.read)
         facets = result['facets']
         if not isinstance(facets, list):
             self.fail('Search facets should be a list.')
         affiliation = next(facet for facet in facets if facet['name'] == 'affiliations')
         self.assertEqual([value['text'] for value in affiliation['values']], ['Example Department', 'Another Unit'])
-        all_values = facet_values_data([('q', 'Example'), ('f_name', 'affiliations')], 'live', self.read)
+        all_values = facet_values_data([('q', 'Example'), ('f_name', 'affiliations')], self.read)
         self.assertEqual([value['text'] for value in all_values], ['Example Department', 'Another Unit'])
 
     def test_search_ignores_other_solr_record_types(self) -> None:
@@ -1206,8 +1041,8 @@ class SourcePageTests(TestCase):
         other = dict(original['response']['docs'][0], record_type=['DOCUMENT'])
         original['response']['docs'].insert(0, other)
         original['response']['numFound'] = 2
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(original).encode())
-        result = search_data([('q', 'Example')], 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(original).encode())
+        result = search_data([('q', 'Example')], self.read)
         results = result['results']
         assert isinstance(results, list)
         self.assertEqual(len(results), 1)
@@ -1220,8 +1055,8 @@ class SourcePageTests(TestCase):
         bad = dict(original['response']['docs'][0], json_txt=['{invalid'])
         original['response']['docs'].insert(0, bad)
         original['response']['numFound'] = 2
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(original).encode())
-        result = search_data([('q', 'Example')], 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(original).encode())
+        result = search_data([('q', 'Example')], self.read)
         results = result['results']
         assert isinstance(results, list)
         self.assertEqual(len(results), 1)
@@ -1234,8 +1069,8 @@ class SourcePageTests(TestCase):
         other = dict(original['response']['docs'][0], record_type=['DOCUMENT'])
         original['response']['docs'].insert(0, other)
         original['response']['numFound'] = 2
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(original).encode())
-        result = search_json_data([('q', 'Example')], 'live', 'https://example.invalid', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(original).encode())
+        result = search_json_data([('q', 'Example')], 'https://example.invalid', self.read)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['vivo_id'], 'invented-a')
 
@@ -1246,8 +1081,8 @@ class SourcePageTests(TestCase):
         bad = dict(original['response']['docs'][0], json_txt=['{invalid'])
         original['response']['docs'].insert(0, bad)
         original['response']['numFound'] = 2
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(original).encode())
-        result = search_json_data([('q', 'Example')], 'live', 'https://example.invalid', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(original).encode())
+        result = search_json_data([('q', 'Example')], 'https://example.invalid', self.read)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['vivo_id'], 'invented-a')
 
@@ -1260,9 +1095,9 @@ class SourcePageTests(TestCase):
         bad = dict(source['response']['docs'][0], id='http://vivo.brown.edu/individual/invalid id')
         source['response']['docs'].insert(0, bad)
         source['response']['numFound'] = 2
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        html = search_data([('q', 'Example')], 'live', self.read)
-        structured = search_json_data([('q', 'Example')], 'live', 'https://example.invalid', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        html = search_data([('q', 'Example')], self.read)
+        structured = search_json_data([('q', 'Example')], 'https://example.invalid', self.read)
         results = html['results']
         if not isinstance(results, list):
             self.fail('Search results should be a list.')
@@ -1283,9 +1118,9 @@ class SourcePageTests(TestCase):
         unnamed['json_txt'] = [json.dumps({'title': 'Unnamed source record'})]
         source['response']['docs'].insert(0, unnamed)
         source['response']['numFound'] = 2
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        html = search_data([('q', 'Example')], 'live', self.read)
-        structured = search_json_data([('q', 'Example')], 'live', 'https://example.invalid', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        html = search_data([('q', 'Example')], self.read)
+        structured = search_json_data([('q', 'Example')], 'https://example.invalid', self.read)
         results = html['results']
         if not isinstance(results, list):
             self.fail('Search results should be a list.')
@@ -1305,14 +1140,14 @@ class SourcePageTests(TestCase):
             {'faculty_uri': f'http://vivo.brown.edu/individual/{identifier}', 'label': identifier} for identifier in ids
         ]
         source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
         for start in range(0, len(ids), 20):
             batch = ids[start : start + 20]
             docs = [
                 {'id': f'http://vivo.brown.edu/individual/{identifier}', 'record_type': ['PEOPLE']} for identifier in batch
             ]
             self.responses[member_key(batch)] = self.solr_response(docs, len(batch))
-        result = organization_data('org-example', 'live', self.read)
+        result = organization_data('org-example', self.read)
         faculty = result['faculty_positions']
         assert isinstance(faculty, list)
         self.assertEqual(len(faculty), 101)
@@ -1330,14 +1165,14 @@ class SourcePageTests(TestCase):
             {'faculty_uri': f'http://vivo.brown.edu/individual/{identifier}', 'label': identifier} for identifier in ids
         ]
         source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
         for start in range(0, len(ids), 20):
             batch = ids[start : start + 20]
             docs = [
                 {'id': f'http://vivo.brown.edu/individual/{identifier}', 'record_type': ['PEOPLE']} for identifier in batch
             ]
             self.responses[member_key(batch)] = self.solr_response(docs, len(batch))
-        result = organization_json_data('org-example', 'live', self.read)
+        result = organization_json_data('org-example', self.read)
         people = result['people']
         assert isinstance(people, list)
         self.assertEqual(len(people), 101)
@@ -1353,7 +1188,7 @@ class SourcePageTests(TestCase):
             {'faculty_uri': f'http://vivo.brown.edu/individual/{identifier}', 'label': identifier} for identifier in ids
         ]
         source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
         for start in range(0, len(ids), 20):
             batch = ids[start : start + 20]
             docs = [
@@ -1365,13 +1200,13 @@ class SourcePageTests(TestCase):
                 for identifier in batch
             ]
             self.responses[member_details_key(batch)] = self.solr_response(docs, len(batch))
-        result = organization_publications_data('org-example', 'live', self.read)
+        result = organization_publications_data('org-example', self.read)
         self.assertEqual(result, 'Id\tFaculty\tTitle\tAuthors\tYear\tType\tCitation\n')
 
     def test_organization_download_skips_member_missing_from_solr(self) -> None:
         """Downloads publications from members whose Solr records still exist."""
         self.responses[member_details_key(['invented-a'])] = self.solr_response([], 0)
-        result = organization_publications_data('org-example', 'live', self.read)
+        result = organization_publications_data('org-example', self.read)
         self.assertEqual(result, 'Id\tFaculty\tTitle\tAuthors\tYear\tType\tCitation\n')
 
     def test_person_without_portrait_uses_public_placeholder(self) -> None:
@@ -1388,7 +1223,7 @@ class SourcePageTests(TestCase):
         source = json.loads(self.responses[key].body)
         org = json.loads(self.responses[profile_key('org-example')].body)['response']['docs'][0]
         source['response']['docs'] = [org]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
             page = self.get_page('/search?q=Example')
         self.assertContains(page, 'href="mailto:" aria-label="Email researcher at "')
@@ -1409,7 +1244,7 @@ class SourcePageTests(TestCase):
         key = search_key('Example', 1, [])
         response = json.loads(self.responses[key].body)
         response['response']['numFound'] = 21
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
             first = self.get_page('/search?q=Example')
             second = self.get_page('/search?q=Example&page=2')
@@ -1515,7 +1350,7 @@ class SourcePageTests(TestCase):
                 'json_txt': [json.dumps({'name': 'Invented Organization'})],
             }
         ]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
             organization_page = self.get_page('/search?q=Example')
         self.assertContains(organization_page, 'itemscope itemtype="http://schema.org/Organization"')
@@ -1586,7 +1421,6 @@ class SourcePageTests(TestCase):
             patch('vivo_app.lib.source_books.read_source', side_effect=self.read),
         ):
             self.assertEqual(self.get_page('/search?q=Other').status_code, 503)
-            self.assertEqual(self.get_page('/search?q=Example&format=xml').status_code, 503)
             self.assertEqual(self.get_page('/display/other').status_code, 500)
             self.assertEqual(self.get_page('/search_facets?q=Example&f_name=bad').status_code, 503)
             self.assertEqual(self.get_page('/display/invented-a/publications/').status_code, 503)
@@ -1649,8 +1483,7 @@ class SourcePageTests(TestCase):
             }
         )
         self.assertIn(
-            '"Invented Chapter." <i>Invented Collection</i>, edited by A. Editor, Example Press, 2020, pp. 10-20.',
-            markup,
+            '"Invented Chapter." <i>Invented Collection</i>, edited by A. Editor, Example Press, 2020, pp. 10-20.', markup
         )
 
     def test_book_citation_preserves_title_spacing(self) -> None:
@@ -1810,8 +1643,8 @@ class SourcePageTests(TestCase):
         person['uri'] = person['id']
         person['research_areas'] = 'invalid list'
         doc['json_txt'] = [json.dumps(person)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
-        html = profile_data('invented-a', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        html = profile_data('invented-a', self.read)
         sections = html['sections']
         if not isinstance(sections, list):
             self.fail('Profile sections should be a list.')
@@ -1830,8 +1663,8 @@ class SourcePageTests(TestCase):
         person['uri'] = person['id']
         person['teacher_for'] = ['Valid course', 42]
         doc['json_txt'] = [json.dumps(person)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
-        html = profile_data('invented-a', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        html = profile_data('invented-a', self.read)
         sections = html['sections']
         if not isinstance(sections, list):
             self.fail('Profile sections should be a list.')
@@ -1854,8 +1687,8 @@ class SourcePageTests(TestCase):
         person = json.loads(doc['json_txt'][0])
         person['on_the_web'] = [{'url': 'https://example.invalid'}, 42]
         doc['json_txt'] = [json.dumps(person)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
-        profile = profile_data('invented-a', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        profile = profile_data('invented-a', self.read)
         self.assertEqual(profile['name'], 'Invented Researcher')
         sections = profile['sections']
         if not isinstance(sections, list):
@@ -1866,7 +1699,7 @@ class SourcePageTests(TestCase):
         """
         Checks search JSON has the public fields without requesting another Solr shape.
         """
-        rows = search_json_data([('q', 'Example')], 'live', 'http://127.0.0.1/', self.read)
+        rows = search_json_data([('q', 'Example')], 'http://127.0.0.1/', self.read)
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]['vivo_id'], 'invented-a')
         self.assertEqual(rows[0]['uri'], 'http://127.0.0.1/display/invented-a')
@@ -1883,7 +1716,7 @@ class SourcePageTests(TestCase):
         self.assertEqual(response['Content-Type'], 'application/json; charset=utf-8')
         self.assertEqual(response.content.decode(), profile_json_text(rows))
         self.assertEqual(json.loads(response.content), rows)
-        self.assertEqual(search_json_data([('q', 'none')], 'live', 'http://127.0.0.1/', self.read), [])
+        self.assertEqual(search_json_data([('q', 'none')], 'http://127.0.0.1/', self.read), [])
 
     def test_search_json_preserves_null_and_empty_title_and_email(self) -> None:
         """
@@ -1907,7 +1740,7 @@ class SourcePageTests(TestCase):
                     raw.update(fields)
                     doc['json_txt'] = [json.dumps(raw)]
                     doc['record_type'] = [kind]
-                    self.responses[key] = RecordedResponse(200, (), json.dumps(source).encode())
+                    self.responses[key] = SourceResponse(200, (), json.dumps(source).encode())
                     with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
                         response = self.get_page('/search?q=Example&format=json')
                     self.assertEqual(response.status_code, 200)
@@ -1920,7 +1753,7 @@ class SourcePageTests(TestCase):
 
     def test_search_json_encoding_preserves_highlights_and_unicode(self) -> None:
         """
-        Checks live and replay downloads escape HTML without changing decoded search values.
+        Checks source downloads escape HTML without changing decoded search values.
         """
         data: list[dict[str, object]] = [
             {
@@ -1939,17 +1772,16 @@ class SourcePageTests(TestCase):
             '["Professor of \\u003cstrong\\u003eExample\\u003c/strong\\u003e \\u0026 text\\u2028\\u2029"]}]},'
             '"literal":"\\\\u003c","optional":null}]'
         )
-        for mode in ('live', 'replay'):
-            with (
-                self.subTest(mode=mode),
-                override_settings(PAGE_DATA_MODE=mode, UPSTREAM_RECORDING_MANIFEST='invented-manifest.json'),
-                patch('vivo_app.views.search_json_data', return_value=data),
-            ):
-                response = self.get_page('/search?q=Example&format=json')
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response['Content-Type'], 'application/json; charset=utf-8')
-            self.assertEqual(response.content.decode(), expected)
-            self.assertEqual(json.loads(response.content), data)
+        with (
+            self.subTest(),
+            override_settings(),
+            patch('vivo_app.views.search_json_data', return_value=data),
+        ):
+            response = self.get_page('/search?q=Example&format=json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json; charset=utf-8')
+        self.assertEqual(response.content.decode(), expected)
+        self.assertEqual(json.loads(response.content), data)
 
     def test_search_json_encoding_preserves_empty_results(self) -> None:
         """
@@ -1965,7 +1797,7 @@ class SourcePageTests(TestCase):
         """
         Checks the public TSV fields come from complete member records and fail if one is absent.
         """
-        body = organization_publications_data('org-example', 'live', self.read)
+        body = organization_publications_data('org-example', self.read)
         self.assertTrue(body.startswith('Id\tFaculty\tTitle\tAuthors\tYear\tType\tCitation\n'))
         self.assertIn('Example publication\tResearcher, Invented\t2024\tArticle\t', body)
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
@@ -1978,7 +1810,7 @@ class SourcePageTests(TestCase):
         self.assertEqual(response.content.decode(), body)
         self.responses.pop(member_details_key(['invented-a']))
         with self.assertRaises(PageDataError):
-            organization_publications_data('org-example', 'live', self.read)
+            organization_publications_data('org-example', self.read)
 
     def test_organization_publications_tsv_orders_titles_and_valid_years(self) -> None:
         """
@@ -1993,8 +1825,8 @@ class SourcePageTests(TestCase):
             {'type': 'http://vivo.brown.edu/ontology/citation#Article', 'title': 'Old', 'date': '1899'},
         ]
         response['response']['docs'][0]['json_txt'] = [json.dumps(person)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
-        body = organization_publications_data('org-example', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        body = organization_publications_data('org-example', self.read)
         self.assertLess(body.index('\tAlpha\t'), body.index('\t Zeta\t'))
         self.assertIn('\tOld\t\t\tArticle\t', body)
 
@@ -2037,7 +1869,7 @@ class SourcePageTests(TestCase):
                         for member_id in response_ids
                     ]
                     self.responses[member_details_key(batch)] = self.solr_response(docs, len(docs))
-                body = organization_publications_data(identifier, 'live', self.read)
+                body = organization_publications_data(identifier, self.read)
                 actual_ids = [row.split('\t')[0].rsplit('/', 1)[-1] for row in body.splitlines()[1:]]
                 self.assertEqual(actual_ids, expected_ids)
                 self.assertEqual(len(actual_ids), len(ids))
@@ -2058,7 +1890,7 @@ class SourcePageTests(TestCase):
         ]
         response['response']['docs'][0]['json_txt'] = [json.dumps(person)]
         self.responses[key] = self.solr_response(response['response']['docs'], 1)
-        body = organization_publications_data('org-example', 'live', self.read)
+        body = organization_publications_data('org-example', self.read)
         titles = [row.split('\t')[2] for row in body.splitlines()[1:]]
         self.assertEqual(titles, ['Newest', ' Beta ', 'Zulu', '\u00a0Alpha', '\u2007Alpha'])
         profile_publications, _ = publications(person)
@@ -2074,8 +1906,8 @@ class SourcePageTests(TestCase):
         person = json.loads(source['response']['docs'][0]['json_txt'][0])
         person['contributor_to'][0]['title'] = 'Example\tpublication\ncontinued'
         source['response']['docs'][0]['json_txt'] = [json.dumps(person)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
-        body = organization_publications_data('org-example', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(source).encode())
+        body = organization_publications_data('org-example', self.read)
         self.assertIn('\tExample\tpublication\ncontinued\t', body)
         self.assertIn('"Example\tpublication\ncontinued." ', body)
         self.assertGreater(len(body.splitlines()), 2)
@@ -2190,9 +2022,7 @@ class SourcePageTests(TestCase):
             'show_visualizations_s': 'false',
         }
         self.responses[profile_export_key('invented-sparse')] = self.solr_response([sparse_doc], 1)
-        self.responses[visualization_key('coauthors')] = RecordedResponse(
-            200, (('content-type', 'application/json'),), b'{}'
-        )
+        self.responses[visualization_key('coauthors')] = SourceResponse(200, (('content-type', 'application/json'),), b'{}')
         with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
             response = self.get_page('/display/invented-sparse.json')
         self.assertEqual(response.status_code, 200)
@@ -2206,8 +2036,6 @@ class SourcePageTests(TestCase):
             response = self.get_page('/display/invented-sparse.json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content)['has_coauthors'], False)
-        with self.assertRaises(PageDataError):
-            profile_json_data('invented-sparse', 'replay', self.read_replay)
 
     def test_profile_json_survives_missing_collaborator_list(self) -> None:
         """
@@ -2268,7 +2096,7 @@ class SourcePageTests(TestCase):
             {'rank': '1', 'url': 'https://example.invalid/earlier'},
         ]
         response['response']['docs'][0]['json_txt'] = [json.dumps(item)]
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
         with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
             result = self.get_page('/display/org-example.json')
         body = json.loads(result.content)
@@ -2314,10 +2142,10 @@ class SourcePageTests(TestCase):
         }
         doc = {'id': uri, 'record_type': ['PEOPLE'], 'json_txt': [json.dumps(raw)]}
         self.responses[profile_export_key('invented-nested')] = self.solr_response([doc], 1)
-        self.responses[visualization_key('coauthors')] = RecordedResponse(
+        self.responses[visualization_key('coauthors')] = SourceResponse(
             200, (('content-type', 'application/json'),), json.dumps({uri: True}).encode()
         )
-        self.responses[visualization_key('collaborators')] = RecordedResponse(
+        self.responses[visualization_key('collaborators')] = SourceResponse(
             200, (('content-type', 'application/json'),), json.dumps({uri: True}).encode()
         )
         with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
@@ -2452,9 +2280,7 @@ class SourcePageTests(TestCase):
         }
         doc = {'id': uri, 'record_type': ['PEOPLE'], 'json_txt': [json.dumps(raw)]}
         self.responses[key] = self.solr_response([doc], 1)
-        self.responses[visualization_key('coauthors')] = RecordedResponse(
-            200, (('content-type', 'application/json'),), b'{}'
-        )
+        self.responses[visualization_key('coauthors')] = SourceResponse(200, (('content-type', 'application/json'),), b'{}')
         with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
             result = self.get_page('/display/invented-nested-rank.json')
         self.assertEqual(result.status_code, 200)
@@ -2482,14 +2308,14 @@ class SourcePageTests(TestCase):
                 override_settings(TEAM_SOURCE_MANIFEST=str(manifest)),
                 patch('vivo_app.lib.source_teams.read_source', side_effect=self.read),
             ):
-                result = team_data('team-example', 'live', self.read)
+                result = team_data('team-example', self.read)
                 self.assertEqual(result['name'], 'Invented Team')
                 self.assertEqual(result['administrative_positions'], [])
                 response = self.get_page('/display/team-example')
                 self.assertEqual(response.status_code, 200)
                 self.assertContains(response, 'Invented Researcher')
                 with self.assertRaises(PageDataError):
-                    team_data('team-missing', 'live', self.read)
+                    team_data('team-missing', self.read)
 
     def test_active_team_skips_member_missing_from_solr(self) -> None:
         """Shows available team members when an older listed profile has vanished."""
@@ -2500,7 +2326,7 @@ class SourcePageTests(TestCase):
             manifest = Path(directory) / 'teams.json'
             manifest.write_text(json.dumps({'teams': {'team-example': {'name': 'Invented Team', 'member_ids': ids}}}))
             with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
-                result = team_data('team-example', 'live', self.read)
+                result = team_data('team-example', self.read)
         positions = result['faculty_positions']
         assert isinstance(positions, list)
         self.assertEqual(len(positions), 1)
@@ -2518,7 +2344,7 @@ class SourcePageTests(TestCase):
             set_script_prefix('/mounted-app')
             try:
                 with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
-                    result = team_data('team-example', 'live', self.read)
+                    result = team_data('team-example', self.read)
                 positions = result['faculty_positions']
                 self.assertIsInstance(positions, list)
                 if not isinstance(positions, list):
@@ -2563,8 +2389,8 @@ class SourcePageTests(TestCase):
                 json.dumps({'organizations': {'org-brown-univ-dept124': {'extra_member_ids': ['invented-b']}}})
             )
             with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
-                extras = custom_organization_members('org-brown-univ-dept124', 'live')
-                result = organization_data('org-example', 'live', self.read, extras)
+                extras = custom_organization_members('org-brown-univ-dept124')
+                result = organization_data('org-example', self.read, extras)
                 faculty = result['faculty_positions']
                 self.assertIsInstance(faculty, list)
                 if not isinstance(faculty, list):
@@ -2577,19 +2403,19 @@ class SourcePageTests(TestCase):
                     self.fail('Organization preview was not an object.')
                 self.assertEqual(len(preview['nodes']), 8)
                 with override_settings(VIZ_ENABLED=False):
-                    hidden = organization_data('org-example', 'live', self.read, extras)
+                    hidden = organization_data('org-example', self.read, extras)
                 self.assertEqual(hidden['visualization_url'], '')
-                export = organization_publications_data('org-example', 'live', self.read, extras)
+                export = organization_publications_data('org-example', self.read, extras)
                 self.assertIn('Another publication', export)
                 self.responses[team_member_key(['invented-b'])] = self.solr_response([], 0)
-                missing = organization_data('org-example', 'live', self.read, extras)
+                missing = organization_data('org-example', self.read, extras)
                 missing_faculty = missing['faculty_positions']
                 self.assertIsInstance(missing_faculty, list)
                 if not isinstance(missing_faculty, list):
                     self.fail('Organization faculty positions are not a list.')
                 self.assertEqual(len(missing_faculty), 1)
                 with self.assertRaises(PageDataError):
-                    custom_organization_members('org-brown-univ-dept148', 'live', self.read)
+                    custom_organization_members('org-brown-univ-dept148', self.read)
 
     def test_research_area_organization_combines_query_and_fixed_members(self) -> None:
         """
@@ -2606,9 +2432,8 @@ class SourcePageTests(TestCase):
             )
             with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
                 self.assertEqual(
-                    custom_organization_members('org-brown-univ-dept148', 'live', self.read),
-                    ['invented-b', 'invented-c'],
+                    custom_organization_members('org-brown-univ-dept148', self.read), ['invented-b', 'invented-c']
                 )
                 self.responses[key] = self.solr_response([area_member], 501)
                 with self.assertRaises(PageDataError):
-                    custom_organization_members('org-brown-univ-dept148', 'live', self.read)
+                    custom_organization_members('org-brown-univ-dept148', self.read)

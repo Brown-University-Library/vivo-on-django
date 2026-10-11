@@ -4,15 +4,14 @@ Builds and reads the upstream requests for a search-to-profile journey.
 
 import logging
 import re
-from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit
 
 import httpx2
 from django.conf import settings
 from django.urls import reverse
 
-from vivo_app.lib.prepared_data import PageDataError
-from vivo_app.lib.recorded_responses import RecordedResponse, RecordingError, RequestKey, load_recordings
+from vivo_app.lib.page_errors import PageDataError
+from vivo_app.lib.source_types import RequestKey, SourceResponse
 
 SEARCH_FIELDS = (
     'short_id_s^2500 email_s^2500 nameText^2000 title_t^1600 department_t^1500 '
@@ -198,9 +197,7 @@ def status_key() -> RequestKey:
     Called by: source_status.status_data(), tests
     """
     return RequestKey(
-        'solr',
-        '/select',
-        (('q', '*:*'), ('fq', 'record_type:(PEOPLE OR ORGANIZATION)'), ('rows', '0'), ('wt', 'json')),
+        'solr', '/select', (('q', '*:*'), ('fq', 'record_type:(PEOPLE OR ORGANIZATION)'), ('rows', '0'), ('wt', 'json'))
     )
 
 
@@ -315,7 +312,7 @@ def document_key_from_url(url: str) -> RequestKey:
 
 def local_document_url(url: str) -> str:
     """
-    Rewrites a supported CV link to the local recorded or live PDF route.
+    Rewrites a supported CV link to the local PDF route.
 
     Called by: source_pages.profile_data()
     """
@@ -357,60 +354,46 @@ def source_origin(service: str) -> str:
     return result
 
 
-def read_source(key: RequestKey, mode: str) -> RecordedResponse:
+def read_source(
+    key: RequestKey,
+) -> SourceResponse:
     """
-    Reads one response from the configured live source or exact saved input, with no fallback.
+    Reads one response from its configured source without a sample fallback.
 
     Called by: source_pages.response_object(), views.source_image(), views.source_document()
     """
     limit = {'documents': MAX_DOCUMENT_BYTES, 'images': MAX_IMAGE_BYTES}.get(key.service, MAX_RESPONSE_BYTES)
-    if mode == 'replay':
-        manifest = settings.UPSTREAM_RECORDING_MANIFEST
-        if not manifest:
-            raise PageDataError('Replay requires an upstream recording manifest.')
-        try:
-            recordings = load_recordings(Path(manifest))
-            if recordings.data_kind != 'recorded':
-                raise RecordingError('Replay requires authentic recorded responses.')
-            result = recordings.get(settings.UPSTREAM_RECORDING_CASE, key)
-        except RecordingError as exc:
-            raise PageDataError(str(exc)) from exc
-    elif mode == 'live':
-        if key.service == 'book_db':
-            from vivo_app.lib.source_books import BOOKS_KEY, book_rows_response
+    if key.service == 'book_db':
+        from vivo_app.lib.source_books import BOOKS_KEY, book_rows_response
 
-            if key != BOOKS_KEY:
-                raise PageDataError('The requested homepage book query is unsupported.')
-            result = book_rows_response()
-        else:
-            origin = source_origin(key.service)
-            try:
-                with (
-                    httpx2.Client(timeout=10.0, follow_redirects=False, trust_env=False) as client,
-                    client.stream('GET', origin + key.path, params=list(key.query), headers=dict(key.headers)) as response,
-                ):
-                    chunks: list[bytes] = []
-                    size = 0
-                    for chunk in response.iter_bytes():
-                        size += len(chunk)
-                        if size > limit:
-                            raise PageDataError('The upstream response exceeds the configured size limit.')
-                        chunks.append(chunk)
-                    headers = [('content-type', response.headers.get('content-type', ''))]
-                    if key.service == 'documents' and 'location' in response.headers:
-                        headers.append(('location', response.headers['location']))
-                    result = RecordedResponse(response.status_code, tuple(headers), b''.join(chunks))
-            except httpx2.HTTPError as exc:
-                raise PageDataError(f'{key.service} source request failed.') from exc
+        if key != BOOKS_KEY:
+            raise PageDataError('The requested homepage book query is unsupported.')
+        result = book_rows_response()
     else:
-        raise PageDataError('Source requests require replay or live mode.')
+        origin = source_origin(key.service)
+        try:
+            with (
+                httpx2.Client(timeout=10.0, follow_redirects=False, trust_env=False) as client,
+                client.stream('GET', origin + key.path, params=list(key.query), headers=dict(key.headers)) as response,
+            ):
+                chunks: list[bytes] = []
+                size = 0
+                for chunk in response.iter_bytes():
+                    size += len(chunk)
+                    if size > limit:
+                        raise PageDataError('The upstream response exceeds the configured size limit.')
+                    chunks.append(chunk)
+                headers = [('content-type', response.headers.get('content-type', ''))]
+                if key.service == 'documents' and 'location' in response.headers:
+                    headers.append(('location', response.headers['location']))
+                result = SourceResponse(response.status_code, tuple(headers), b''.join(chunks))
+        except httpx2.HTTPError as exc:
+            raise PageDataError(f'{key.service} source request failed.') from exc
     allowed_status = {200, 301, 302} if key.service == 'documents' else ({200, 404} if key.service == 'vitro' else {200})
     if result.status not in allowed_status or len(result.body) > limit:
         logger.warning(
-            'source_response_unusable: service, ``%s``; mode, ``%s``; status, ``%s``; '
-            'query_bytes, ``%s``; response_bytes, ``%s``',
+            'source_response_unusable: service, ``%s``; status, ``%s``; query_bytes, ``%s``; response_bytes, ``%s``',
             key.service,
-            mode,
             result.status,
             len(urlencode(key.query).encode('ascii')),
             len(result.body),

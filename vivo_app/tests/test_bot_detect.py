@@ -10,10 +10,22 @@ from django.test import Client, TestCase, override_settings
 from django.urls import get_script_prefix, set_script_prefix
 
 from vivo_app.lib.bot_detect import VERIFY_URL, verify_token
+from vivo_app.tests.source_fixtures import solr_response
 
 
 class BotDetectTests(TestCase):
     """Checks search protection and server-side token handling."""
+
+    def setUp(self) -> None:
+        """
+        Supplies an empty search response while checking challenge behavior.
+        """
+        response = solr_response(
+            [], 0, {'facet_fields': {'record_type': [], 'affiliations': [], 'research_areas': [], 'published_in': []}}
+        )
+        reader = patch('vivo_app.lib.source_pages.read_source', return_value=response)
+        reader.start()
+        self.addCleanup(reader.stop)
 
     @override_settings(TURNSTILE_ENABLED=False, CF_TURNSTILE_SITEKEY='', CF_TURNSTILE_SECRET_KEY='')
     def test_disabled_challenge_does_not_contact_verifier(self) -> None:
@@ -34,10 +46,7 @@ class BotDetectTests(TestCase):
         client.assert_not_called()
 
     @override_settings(
-        PAGE_DATA_MODE='prototype',
-        TURNSTILE_ENABLED=False,
-        CF_TURNSTILE_SITEKEY='invented-site-key',
-        CF_TURNSTILE_SECRET_KEY='invented-secret-key',
+        TURNSTILE_ENABLED=False, CF_TURNSTILE_SITEKEY='invented-site-key', CF_TURNSTILE_SECRET_KEY='invented-secret-key'
     )
     def test_configured_challenge_does_not_enable_search_protection(self) -> None:
         """
@@ -63,15 +72,14 @@ class BotDetectTests(TestCase):
         verify.assert_called_once_with('invented-token', '127.0.0.1')
 
     @override_settings(
-        PAGE_DATA_MODE='live',
         SOLR_URL='http://127.0.0.1:8983/solr/example',
         TURNSTILE_ENABLED=False,
         CF_TURNSTILE_SITEKEY='invented-site-key',
         CF_TURNSTILE_SECRET_KEY='invented-secret-key',
     )
-    def test_live_challenge_get_does_not_contact_data_services(self) -> None:
+    def test_source_challenge_get_does_not_contact_data_services(self) -> None:
         """
-        Checks the live challenge renders without contacting Turnstile or the search index.
+        Checks the challenge renders without contacting Turnstile or the search index.
         """
         with patch('vivo_app.lib.bot_detect.httpx2.Client') as client:
             page = self.client.get('/challenge/')
@@ -80,32 +88,7 @@ class BotDetectTests(TestCase):
         self.assertContains(page, 'content="noindex"')
         client.assert_not_called()
 
-    @override_settings(
-        TURNSTILE_ENABLED=False,
-        CF_TURNSTILE_SITEKEY='invented-site-key',
-        CF_TURNSTILE_SECRET_KEY='invented-secret-key',
-        UPSTREAM_RECORDING_MANIFEST='unused-offline-manifest.json',
-    )
-    def test_offline_modes_do_not_serve_configured_challenge(self) -> None:
-        """
-        Checks offline modes never load the widget or verify tokens even with configured keys.
-        """
-        with patch('vivo_app.views.verify_token') as verify:
-            for mode in ('prepared', 'replay'):
-                with self.subTest(mode=mode), override_settings(PAGE_DATA_MODE=mode):
-                    for method in ('get', 'post'):
-                        response = getattr(self.client, method)('/challenge')
-                        assert isinstance(response, HttpResponse)
-                        self.assertEqual(response.status_code, 404)
-                        self.assertNotContains(response, 'challenges.cloudflare.com', status_code=404)
-        verify.assert_not_called()
-
-    @override_settings(
-        PAGE_DATA_MODE='prototype',
-        TURNSTILE_ENABLED=True,
-        CF_TURNSTILE_SITEKEY='invented-site-key',
-        CF_TURNSTILE_SECRET_KEY='',
-    )
+    @override_settings(TURNSTILE_ENABLED=True, CF_TURNSTILE_SITEKEY='invented-site-key', CF_TURNSTILE_SECRET_KEY='')
     def test_missing_key_does_not_load_widget_or_verify(self) -> None:
         """
         Checks incomplete configuration reports unavailable without contacting the verifier.
@@ -119,10 +102,7 @@ class BotDetectTests(TestCase):
         verify.assert_not_called()
 
     @override_settings(
-        PAGE_DATA_MODE='prototype',
-        TURNSTILE_ENABLED=False,
-        CF_TURNSTILE_SITEKEY='invented-site-key',
-        CF_TURNSTILE_SECRET_KEY='invented-secret-key',
+        TURNSTILE_ENABLED=False, CF_TURNSTILE_SITEKEY='invented-site-key', CF_TURNSTILE_SECRET_KEY='invented-secret-key'
     )
     def test_mounted_challenge_uses_local_post_url_and_requires_csrf(self) -> None:
         """
@@ -156,7 +136,6 @@ class BotDetectTests(TestCase):
         verify.assert_called_once_with('invented-token', '127.0.0.1')
 
     @override_settings(
-        PAGE_DATA_MODE='prototype',
         TURNSTILE_ENABLED=True,
         CF_TURNSTILE_SITEKEY='invented-site-key',
         CF_TURNSTILE_SECRET_KEY='invented-secret-key',
@@ -188,7 +167,6 @@ class BotDetectTests(TestCase):
         self.assertEqual(other_address.status_code, 307)
 
     @override_settings(
-        PAGE_DATA_MODE='prototype',
         TURNSTILE_ENABLED=True,
         CF_TURNSTILE_SITEKEY='invented-site-key',
         CF_TURNSTILE_SECRET_KEY='invented-secret-key',
@@ -209,7 +187,6 @@ class BotDetectTests(TestCase):
         self.assertEqual(blocked.status_code, 307)
 
     @override_settings(
-        PAGE_DATA_MODE='prototype',
         TURNSTILE_ENABLED=True,
         CF_TURNSTILE_SITEKEY='invented-site-key',
         CF_TURNSTILE_SECRET_KEY='invented-secret-key',
@@ -234,8 +211,7 @@ class BotDetectTests(TestCase):
             transport.post.return_value.json.return_value = {'success': True}
             self.assertTrue(verify_token('invented-token', '192.0.2.8'))
             transport.post.assert_called_once_with(
-                VERIFY_URL,
-                data={'secret': 'invented-secret-key', 'response': 'invented-token', 'remoteip': '192.0.2.8'},
+                VERIFY_URL, data={'secret': 'invented-secret-key', 'response': 'invented-token', 'remoteip': '192.0.2.8'}
             )
             transport.post.return_value.json.return_value = {'success': False}
             self.assertFalse(verify_token('invented-token', '192.0.2.8'))

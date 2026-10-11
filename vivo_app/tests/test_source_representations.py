@@ -5,16 +5,15 @@ Checks VIVO representation routes with made-up upstream bytes.
 from unittest.mock import patch
 
 from django.http import HttpResponse
-from django.test import TestCase, override_settings
+from django.test import TestCase
 
-from vivo_app.lib.prepared_data import PageDataError
-from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_requests import vitro_key
+from vivo_app.lib.source_types import RequestKey, SourceResponse
 
 
-@override_settings(PAGE_DATA_MODE='replay', UPSTREAM_RECORDING_MANIFEST='unused-in-this-test')
 class SourceRepresentationTests(TestCase):
-    """Checks exact requests, original bytes, redirects, and absent recordings."""
+    """Checks exact requests, original bytes, redirects, and absent source responses."""
 
     def setUp(self) -> None:
         """
@@ -25,19 +24,22 @@ class SourceRepresentationTests(TestCase):
             vitro_key('invented-a', 'ttl'): b'@prefix ex: <https://example.invalid/> .\n',
             vitro_key('invented-a', 'rdf'): b'<rdf:RDF/>',
         }
-        self.requested: list[tuple[RequestKey, str]] = []
+        self.requested: list[RequestKey] = []
 
-    def read(self, key: RequestKey, mode: str) -> RecordedResponse:
+    def read(
+        self,
+        key: RequestKey,
+    ) -> SourceResponse:
         """
         Reads only a matching made-up representation.
 
-        Called by: test_exports_retain_bytes(), test_missing_recording_fails()
+        Called by: test_exports_retain_bytes(), test_missing_source_response_fails()
         """
-        self.requested.append((key, mode))
+        self.requested.append(key)
         body = self.responses.get(key)
         if body is None:
-            raise PageDataError('The requested recording is missing.')
-        return RecordedResponse(200, (), body)
+            raise PageDataError('The requested source response is missing.')
+        return SourceResponse(200, (), body)
 
     def test_exports_retain_bytes(self) -> None:
         """
@@ -54,8 +56,7 @@ class SourceRepresentationTests(TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.content, self.responses[vitro_key('invented-a', fmt)])
                 self.assertTrue(response['Content-Type'].startswith(content_type))
-        self.assertEqual([key for key, _ in self.requested], list(self.responses))
-        self.assertEqual({mode for _, mode in self.requested}, {'replay'})
+        self.assertEqual(list(self.requested), list(self.responses))
 
     def test_redirects_use_exact_accept_values(self) -> None:
         """
@@ -75,7 +76,7 @@ class SourceRepresentationTests(TestCase):
         self.assertEqual(html.status_code, 303)
         self.assertTrue(html['Location'].endswith('/display/invented-a'))
 
-    def test_missing_recording_fails(self) -> None:
+    def test_missing_source_response_fails(self) -> None:
         """
         Checks an absent export never substitutes public or sample data.
         """

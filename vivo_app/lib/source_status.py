@@ -4,7 +4,7 @@ Checks the public search record count through the selected Solr source.
 
 import uuid
 
-from vivo_app.lib.prepared_data import PageDataError
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_pages import SourceReader, response_object
 from vivo_app.lib.source_requests import read_source, status_key
 
@@ -13,13 +13,13 @@ class NoSearchResultsError(PageDataError):
     """Identifies a valid status count with no searchable records."""
 
 
-def status_data(mode: str, reader: SourceReader = read_source) -> dict[str, str]:
+def status_data(reader: SourceReader = read_source) -> dict[str, str]:
     """
     Builds the normal status response from one bounded Solr count request.
 
     Called by: views.home_status(), tests
     """
-    source = response_object(status_key(), mode, reader)
+    source = response_object(status_key(), reader)
     body = source.get('response')
     count = body.get('numFound') if isinstance(body, dict) else None
     if type(count) is not int:

@@ -7,42 +7,44 @@ import uuid
 from unittest.mock import patch
 
 from django.http import HttpResponse
-from django.test import TestCase, override_settings
+from django.test import TestCase
 
-from vivo_app.lib.prepared_data import PageDataError
-from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_requests import status_key
 from vivo_app.lib.source_status import NoSearchResultsError, status_data
+from vivo_app.lib.source_types import RequestKey, SourceResponse
 
 
 class SourceStatusTests(TestCase):
     """Checks a positive source count and a controlled failure."""
 
-    def read(self, key: RequestKey, mode: str) -> RecordedResponse:
+    def read(
+        self,
+        key: RequestKey,
+    ) -> SourceResponse:
         """
-        Returns one made-up count for each mode.
+        Returns one made-up count for each request.
 
-        Called by: test_count_uses_same_request_in_live_and_replay()
+        Called by: test_count_uses_same_request_in_repeated_reads()
         """
-        self.calls.append((key, mode))
+        self.calls.append(key)
         body = {'responseHeader': {'status': 0}, 'response': {'numFound': getattr(self, 'source_count', 27), 'docs': []}}
-        return RecordedResponse(200, (), json.dumps(body).encode())
+        return SourceResponse(200, (), json.dumps(body).encode())
 
-    def test_count_uses_same_request_in_live_and_replay(self) -> None:
+    def test_count_uses_same_request_in_repeated_reads(self) -> None:
         """
-        Checks both modes use a single count request and keep the result text.
+        Checks repeated reads use a single count request and keep the result text.
         """
-        self.calls: list[tuple[RequestKey, str]] = []
-        self.assertEqual(status_data('live', self.read), {'status': 'OK', 'message': '27 records found.'})
-        self.assertEqual(status_data('replay', self.read), {'status': 'OK', 'message': '27 records found.'})
-        self.assertEqual(self.calls, [(status_key(), 'live'), (status_key(), 'replay')])
+        self.calls: list[RequestKey] = []
+        self.assertEqual(status_data(self.read), {'status': 'OK', 'message': '27 records found.'})
+        self.assertEqual(status_data(self.read), {'status': 'OK', 'message': '27 records found.'})
+        self.assertEqual(self.calls, [status_key(), status_key()])
 
-    @override_settings(PAGE_DATA_MODE='replay', UPSTREAM_RECORDING_MANIFEST='unused-in-this-test')
     def test_missing_count_returns_error_json(self) -> None:
         """
         Checks an unavailable recorded count cannot become a successful status.
         """
-        with patch('vivo_app.views.status_data', side_effect=PageDataError('Missing recording.')):
+        with patch('vivo_app.views.status_data', side_effect=PageDataError('Missing source response.')):
             response = self.client.get('/status')
         assert isinstance(response, HttpResponse)
         self.assertEqual(response.status_code, 500)
@@ -52,18 +54,17 @@ class SourceStatusTests(TestCase):
         """
         Checks zero and negative counts identify an empty index, while an invalid count identifies a failed check.
         """
-        self.calls: list[tuple[RequestKey, str]] = []
+        self.calls: list[RequestKey] = []
         self.source_count: int | None = 0
         for count in (0, -1):
             self.source_count = count
             with self.assertRaises(NoSearchResultsError):
-                status_data('live', self.read)
+                status_data(self.read)
         self.source_count = None
         with self.assertRaises(PageDataError) as raised:
-            status_data('live', self.read)
+            status_data(self.read)
         self.assertNotIsInstance(raised.exception, NoSearchResultsError)
 
-    @override_settings(PAGE_DATA_MODE='live')
     def test_error_messages_and_logged_ids_match_reference(self) -> None:
         """
         Checks empty-index and source-exception responses use the reference text and a matching log ID.
@@ -88,7 +89,6 @@ class SourceStatusTests(TestCase):
             self.assertIn(str(identifier), logs.output[0])
             self.assertNotIn('Made-up', logs.output[0])
 
-    @override_settings(PAGE_DATA_MODE='replay', UPSTREAM_RECORDING_MANIFEST='unused-in-this-test')
     def test_failures_receive_distinct_tracking_ids(self) -> None:
         """
         Checks separate failed requests receive distinct valid UUIDs.
@@ -108,7 +108,6 @@ class SourceStatusTests(TestCase):
         self.assertNotEqual(identifiers[0], identifiers[1])
 
 
-@override_settings(PAGE_DATA_MODE='replay', UPSTREAM_RECORDING_MANIFEST='unused-in-this-test')
 class OldImageTests(TestCase):
     """Checks legacy paths redirect locally only when valid."""
 
@@ -119,7 +118,7 @@ class OldImageTests(TestCase):
         response = self.client.get('/file/n12345/example.jpg')
         assert isinstance(response, HttpResponse)
         self.assertEqual(response.status_code, 301)
-        self.assertEqual(response['Location'], '/source-images/profile-images/123/45/example.jpg')
+        self.assertEqual(response['Location'], 'https://source.invalid/profile-images/123/45/example.jpg')
 
     def test_invalid_image_is_missing(self) -> None:
         """

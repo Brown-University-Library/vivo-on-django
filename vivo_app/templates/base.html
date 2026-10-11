@@ -21,21 +21,21 @@
     {% endif %}
 
     <link rel="stylesheet" href="{% versioned_static 'css/fonts.css' %}">
-    {% if source_page_styles %}<link rel="stylesheet" href="{% versioned_static 'css/bootstrap-theme.css' %}">{% endif %}
+    <link rel="stylesheet" href="{% versioned_static 'css/bootstrap-theme.css' %}">
     <link rel="stylesheet" href="{% versioned_static 'css/bootstrap.css' %}">
-    {% if not source_page_styles %}<link rel="stylesheet" href="{% versioned_static 'css/bootstrap-theme.css' %}">{% endif %}
+    {# Stylesheet order is significant. #}
     <link rel="stylesheet" href="{% versioned_static 'css/theme.css' %}">
     <link rel="stylesheet" href="{% versioned_static 'css/homepage.css' %}">
     <link rel="stylesheet" href="{% versioned_static 'css/style.css' %}">
-    {% if source_page_styles %}
+    {# Shared public page styles. #}
     <link rel="stylesheet" href="{% versioned_static 'css/individual.css' %}">
     <link rel="stylesheet" href="{% versioned_static 'css/public.css' %}">
-    {% endif %}
+    {# End shared styles. #}
     <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     {% block extra_css %}{% endblock %}
     {% block head_extra %}{% endblock %}
 </head>
-<body class="no-logo fae {% if source_page_styles %}prepared-data{% endif %} {% block body_class %}{% endblock %}">
+<body class="no-logo fae public-page {% block body_class %}{% endblock %}">
 <header id="branding" role="banner">
     <div class="header">
         <div class="hgroup">

@@ -128,7 +128,7 @@
     function show() {
       hide();
       tooltip = document.createElement('div');
-      tooltip.className = 'prepared-match-tooltip ui-tooltip';
+      tooltip.className = 'match-tooltip ui-tooltip';
       tooltip.id = 'search-match-tooltip-' + index;
       tooltip.setAttribute('role', 'tooltip');
       var body = document.createElement('div');
@@ -169,7 +169,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.prepared-facet-dialog').forEach(prepareFacet);
+    document.querySelectorAll('.facet-dialog').forEach(prepareFacet);
     document.querySelectorAll('[data-match-content]').forEach(preparePreview);
   });
 })();

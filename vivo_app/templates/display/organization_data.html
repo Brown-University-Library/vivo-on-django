@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% load static asset_urls %}
 {% block title %}{{ organization.page_title }}{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% versioned_static 'css/prepared_organization.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% versioned_static 'css/organization.css' %}">{% endblock %}
 {% block content %}
-{% include "includes/prepared_search.html" %}
+{% include "includes/search_form.html" %}
 <div class="container org-profile">
   <div class="row org-content" itemscope itemtype="http://schema.org/Organization">
     <div class="container organization-page">

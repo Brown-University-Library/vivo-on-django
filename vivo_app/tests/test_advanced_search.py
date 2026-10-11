@@ -12,13 +12,13 @@ from django.urls import get_script_prefix, set_script_prefix
 from vivo_app.lib.advanced_search import advanced_search_query
 
 
-@override_settings(PAGE_DATA_MODE='live', SOLR_URL='http://example.invalid/solr/example')
+@override_settings(SOLR_URL='http://example.invalid/solr/example')
 class AdvancedSearchTests(TestCase):
     """Checks advanced search without contacting a source service."""
 
     def test_form_and_blank_submission(self) -> None:
         """
-        Checks the live form has the two Rails fields and a blank search stays on the form.
+        Checks the search form has the two Rails fields and a blank search stays on the form.
         """
         with patch('vivo_app.lib.source_requests.read_source') as read:
             for path in ('/search/advanced', '/search/advanced/'):
@@ -100,18 +100,15 @@ class AdvancedSearchTests(TestCase):
         Checks AND text and plus signs inside a field remain distinct from the field separator.
         """
         response = self.client.get(
-            '/search/advanced',
-            {'title_t': 'Example AND Other+Group', 'name_t': 'Example & Café', 'search': 'true'},
+            '/search/advanced', {'title_t': 'Example AND Other+Group', 'name_t': 'Example & Café', 'search': 'true'}
         )
         assert isinstance(response, HttpResponse)
         destination = urlsplit(response['Location'])
         self.assertEqual(
-            destination.query,
-            'q=title_t:%22Example%20AND%20Other%2BGroup%22+AND+name_t:%22Example%20%26%20Caf%C3%A9%22',
+            destination.query, 'q=title_t:%22Example%20AND%20Other%2BGroup%22+AND+name_t:%22Example%20%26%20Caf%C3%A9%22'
         )
         self.assertEqual(
-            parse_qs(destination.query),
-            {'q': ['title_t:"Example AND Other+Group" AND name_t:"Example & Café"']},
+            parse_qs(destination.query), {'q': ['title_t:"Example AND Other+Group" AND name_t:"Example & Café"']}
         )
 
     def test_department_submission_joins_the_fielded_search(self) -> None:
@@ -119,14 +116,12 @@ class AdvancedSearchTests(TestCase):
         Checks a department supplied in the URL joins the public fielded search.
         """
         response = self.client.get(
-            '/search/advanced/',
-            {'title_t': 'Professor', 'department_t': 'Biology', 'name_t': 'Example', 'search': 'true'},
+            '/search/advanced/', {'title_t': 'Professor', 'department_t': 'Biology', 'name_t': 'Example', 'search': 'true'}
         )
         assert isinstance(response, HttpResponse)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
-            response['Location'],
-            '/search?q=title_t:%22Professor%22+AND+department_t:%22Biology%22+AND+name_t:%22Example%22',
+            response['Location'], '/search?q=title_t:%22Professor%22+AND+department_t:%22Biology%22+AND+name_t:%22Example%22'
         )
         self.assertEqual(
             parse_qs(urlsplit(response['Location']).query),

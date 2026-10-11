@@ -4,7 +4,7 @@ Builds the fielded search term used by the public advanced search form.
 
 from urllib.parse import quote
 
-from vivo_app.lib.prepared_data import PageDataError
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_requests import quoted
 
 

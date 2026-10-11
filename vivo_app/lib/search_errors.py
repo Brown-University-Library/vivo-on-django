@@ -4,7 +4,7 @@ Preserves demonstrated search failures without sending malformed source queries.
 
 import re
 
-from vivo_app.lib.prepared_data import PageDataError
+from vivo_app.lib.page_errors import PageDataError
 
 
 class ReferenceSearchError(PageDataError):

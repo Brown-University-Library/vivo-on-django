@@ -7,12 +7,14 @@ from run_tests import configure_test_environment
 
 
 class TestRunnerTests(SimpleTestCase):
-    def test_configure_test_environment_selects_prototype_mode(self) -> None:
+    def test_configure_test_environment_selects_test_source_settings(self) -> None:
         """
-        Checks that the test runner does not inherit the application's private data mode.
+        Checks that the test runner does not inherit the application's private source configuration.
         """
-        with patch.dict(os.environ, {'PAGE_DATA_MODE': 'prepared', 'STATIC_URL': 'https://example.invalid/assets/'}):
+        with patch.dict(
+            os.environ, {'SOLR_URL': 'https://private.invalid/', 'STATIC_URL': 'https://example.invalid/assets/'}
+        ):
             configure_test_environment()
 
-            self.assertEqual(os.environ['PAGE_DATA_MODE'], 'prototype')
+            self.assertEqual(os.environ['SOLR_URL'], 'https://source.invalid/solr')
             self.assertEqual(os.environ['STATIC_URL'], '/static/')

@@ -1,5 +1,5 @@
 """
-Reads active homepage books from a separate database or an exact saved response.
+Reads active homepage books from the configured separate database.
 """
 
 import json
@@ -12,19 +12,19 @@ from django.templatetags.static import static
 from django.urls import reverse
 
 from vivo_app.lib.assets import get_random_background_relpath
-from vivo_app.lib.prepared_data import PageDataError
-from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_requests import read_source
+from vivo_app.lib.source_types import RequestKey, SourceResponse
 
 BOOKS_KEY = RequestKey('book_db', '/book_covers/active')
 BOOKS_QUERY = (
     'SELECT jacket_id, firstname, lastname, shortID, title, pub_date, image '
     "FROM book_covers WHERE active = 'y' ORDER BY pub_date DESC"
 )
-BookReader = Callable[[RequestKey, str], RecordedResponse]
+BookReader = Callable[[RequestKey], SourceResponse]
 
 
-def book_rows_response() -> RecordedResponse:
+def book_rows_response() -> SourceResponse:
     """
     Reads the active rows in Rails order using a separately configured account.
 
@@ -57,18 +57,18 @@ def book_rows_response() -> RecordedResponse:
     except pymysql.MySQLError as exc:
         raise PageDataError('The homepage book database request failed.') from exc
     body = json.dumps(rows, ensure_ascii=False, default=str).encode('utf-8')
-    return RecordedResponse(200, (('content-type', 'application/json'),), body)
+    return SourceResponse(200, (('content-type', 'application/json'),), body)
 
 
-def homepage_books(mode: str, reader: BookReader | None = None) -> dict[str, object]:
+def homepage_books(reader: BookReader | None = None) -> dict[str, object]:
     """
-    Builds four-cover pages from the same active rows in live and replay modes.
+    Builds four-cover pages from the same active rows in source configurations.
 
     Called by: page_data.get_home_data(), tests
     """
     if reader is None:
         reader = read_source
-    response = reader(BOOKS_KEY, mode)
+    response = reader(BOOKS_KEY)
     try:
         rows: object = json.loads(response.body)
     except (ValueError, UnicodeError) as exc:
