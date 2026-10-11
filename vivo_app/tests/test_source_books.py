@@ -10,15 +10,13 @@ from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.urls import get_script_prefix, set_script_prefix
 
-from vivo_app.lib.prepared_data import PageDataError
-from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_books import BOOKS_KEY, BOOKS_QUERY, book_rows_response, homepage_books
 from vivo_app.lib.source_requests import read_source
+from vivo_app.lib.source_types import RequestKey, SourceResponse
 
 
-@override_settings(
-    BOOK_COVER_BASE_PATH='/book-images', PAGE_DATA_MODE='replay', UPSTREAM_RECORDING_MANIFEST='unused-in-test'
-)
+@override_settings(BOOK_COVER_BASE_PATH='/book-images')
 class SourceBookTests(TestCase):
     """Checks active book order, page grouping, and exact source selection."""
 
@@ -38,33 +36,36 @@ class SourceBookTests(TestCase):
             }
             for index in range(5)
         ]
-        self.response = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(rows).encode())
-        self.requested: list[tuple[RequestKey, str]] = []
+        self.response = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(rows).encode())
+        self.requested: list[RequestKey] = []
 
-    def read(self, key: RequestKey, mode: str) -> RecordedResponse:
+    def read(
+        self,
+        key: RequestKey,
+    ) -> SourceResponse:
         """
         Supplies only the made-up active book query.
 
-        Called by: test_live_and_replay_group_the_same_rows(), test_replay_homepage_renders_source_books()
+        Called by: test_repeated_reads_group_the_same_rows(), test_source_homepage_renders_source_books()
         """
-        self.requested.append((key, mode))
+        self.requested.append(key)
         if key != BOOKS_KEY:
-            raise PageDataError('The requested recording is missing.')
+            raise PageDataError('The requested source response is missing.')
         return self.response
 
-    def test_live_and_replay_group_the_same_rows(self) -> None:
+    def test_repeated_reads_group_the_same_rows(self) -> None:
         """
-        Checks both modes use the same query key and retain the final short page.
+        Checks repeated reads use the same query key and retain the final short page.
         """
-        live = homepage_books('live', self.read)
-        replay = homepage_books('replay', self.read)
-        self.assertEqual(live['book_covers_paginated'], replay['book_covers_paginated'])
-        pages = replay['book_covers_paginated']
+        first = homepage_books(self.read)
+        repeated = homepage_books(self.read)
+        self.assertEqual(first['book_covers_paginated'], repeated['book_covers_paginated'])
+        pages = repeated['book_covers_paginated']
         assert isinstance(pages, list)
         self.assertEqual([len(page) for page in pages], [4, 1])
         self.assertEqual(pages[0][0]['image_url'], '/book-images/invented-0.jpg')
         self.assertEqual(pages[0][0]['author_url'], '/display/invented-0')
-        self.assertEqual(self.requested, [(BOOKS_KEY, 'live'), (BOOKS_KEY, 'replay')])
+        self.assertEqual(self.requested, [BOOKS_KEY, BOOKS_KEY])
 
     def test_book_links_keep_the_application_prefix_without_a_trailing_slash(self) -> None:
         """
@@ -73,14 +74,14 @@ class SourceBookTests(TestCase):
         previous_prefix = get_script_prefix()
         set_script_prefix('/mounted-app/')
         try:
-            data = homepage_books('replay', self.read)
+            data = homepage_books(self.read)
             pages = data['book_covers_paginated']
             assert isinstance(pages, list)
             self.assertEqual(pages[0][0]['author_url'], '/mounted-app/display/invented-0')
         finally:
             set_script_prefix(previous_prefix)
 
-    def test_replay_homepage_renders_source_books(self) -> None:
+    def test_source_homepage_renders_source_books(self) -> None:
         """
         Checks the normal homepage template reads the recorded row response.
         """
@@ -90,22 +91,22 @@ class SourceBookTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Invented Book 0')
         self.assertContains(response, '/book-images/invented-4.jpg')
-        self.assertEqual(self.requested, [(BOOKS_KEY, 'replay')])
+        self.assertEqual(self.requested, [BOOKS_KEY])
 
     def test_invalid_or_missing_book_response_fails(self) -> None:
         """
-        Checks replay cannot substitute sample books for an absent response.
+        Checks an absent source response cannot produce a successful book page.
         """
-        with self.assertRaisesRegex(PageDataError, 'recording is missing'):
-            homepage_books('replay', lambda key, mode: (_ for _ in ()).throw(PageDataError('recording is missing')))
-        self.response = RecordedResponse(200, (), b'{"wrong":"shape"}')
+        with self.assertRaisesRegex(PageDataError, 'source response is missing'):
+            homepage_books(lambda key,: (_ for _ in ()).throw(PageDataError('source response is missing')))
+        self.response = SourceResponse(200, (), b'{"wrong":"shape"}')
         with self.assertRaisesRegex(PageDataError, 'invalid'):
-            homepage_books('replay', self.read)
+            homepage_books(self.read)
         with (
             override_settings(BOOK_COVER_BASE_PATH='//unintended-origin'),
             self.assertRaisesRegex(PageDataError, 'image source'),
         ):
-            homepage_books('replay', lambda key, mode: RecordedResponse(200, (), b'[]'))
+            homepage_books(lambda key,: SourceResponse(200, (), b'[]'))
 
     def test_unusable_book_row_does_not_hide_other_covers(self) -> None:
         """
@@ -115,8 +116,8 @@ class SourceBookTests(TestCase):
         rows[0]['firstname'] = None
         rows[0]['lastname'] = None
         rows[1]['image'] = None
-        self.response = RecordedResponse(200, (), json.dumps(rows).encode())
-        result = homepage_books('replay', self.read)
+        self.response = SourceResponse(200, (), json.dumps(rows).encode())
+        result = homepage_books(self.read)
         pages = result['book_covers_paginated']
         if not isinstance(pages, list):
             self.fail('Book pages should be a list.')
@@ -129,22 +130,22 @@ class SourceBookTests(TestCase):
         """
         rows = json.loads(self.response.body)
         expanded = [dict(rows[0], jacket_id=index, shortID=f'invented-{index}') for index in range(501)]
-        self.response = RecordedResponse(200, (), json.dumps(expanded).encode())
-        result = homepage_books('replay', self.read)
+        self.response = SourceResponse(200, (), json.dumps(expanded).encode())
+        result = homepage_books(self.read)
         pages = result['book_covers_paginated']
         if not isinstance(pages, list):
             self.fail('Book pages should be a list.')
         self.assertEqual(len(pages), 126)
         self.assertEqual(len(pages[-1]), 1)
 
-    def test_live_dispatch_accepts_only_the_book_query(self) -> None:
+    def test_source_dispatch_accepts_only_the_book_query(self) -> None:
         """
         Checks the source reader rejects other database query names.
         """
         with patch('vivo_app.lib.source_books.book_rows_response', return_value=self.response) as books:
-            self.assertEqual(read_source(BOOKS_KEY, 'live'), self.response)
+            self.assertEqual(read_source(BOOKS_KEY), self.response)
             with self.assertRaisesRegex(PageDataError, 'unsupported'):
-                read_source(RequestKey('book_db', '/other'), 'live')
+                read_source(RequestKey('book_db', '/other'))
         books.assert_called_once_with()
 
     @override_settings(
@@ -154,7 +155,7 @@ class SourceBookTests(TestCase):
         BOOK_COVER_DB_PASSWORD='invented-password',
         BOOK_COVER_DB_PORT=3306,
     )
-    def test_live_database_reads_only_active_ordered_rows(self) -> None:
+    def test_source_database_reads_only_active_ordered_rows(self) -> None:
         """
         Checks the database source runs one read-only active-books query.
         """

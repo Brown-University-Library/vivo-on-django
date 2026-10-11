@@ -19,7 +19,7 @@ uv run ./run_tests.py vivo_app.tests.test_source_pages -v
 
 The first discovers the complete suite. The second selects the app and shows each test's name, description, and result. The third selects a module; dotted class/method names narrow it further. Django creates and removes its test database. Failures produce a nonzero exit status.
 
-The runner selects prototype mode before loading the private environment. Tests choose other modes and supply made-up responses as needed. Preserve tests that protect live parsing, rendering, source failures, and formats, even when their setup uses replay. Real connectivity is checked separately.
+The runner selects made-up source settings before loading the private environment and rejects unexpected network connections. Tests provide source responses to the application parsers and rendering code. Preserve tests for parsing, rendering, source failures, and formats. Real connectivity is checked separately.
 
 ## Check changed Python files
 
@@ -39,4 +39,4 @@ Before reusing earlier comparisons, check current code, source content, assets, 
 
 [Browser comparison](browser_comparison.md) explains commands and file/network behavior. The tool can capture a reference, compare pages, and check its detector. Generated files remain outside Git.
 
-Former source capture commands and the validator script are archived. Existing offline inputs can still be read; [recorded responses](recorded_responses.md) documents their format. [The review note](code_retirement_review.md) explains shared code that remains.
+[The review note](code_retirement_review.md) identifies remaining maintenance decisions. The comparison tool reads its own page captures; application tests use made-up source responses.

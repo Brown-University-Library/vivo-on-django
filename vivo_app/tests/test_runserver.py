@@ -13,7 +13,7 @@ from django.test import RequestFactory, SimpleTestCase, override_settings
 from vivo_app.management.commands.runserver import Command
 
 
-@override_settings(PAGE_DATA_MODE='prototype', STATIC_URL='/static/')
+@override_settings(STATIC_URL='/static/')
 class RunserverTests(SimpleTestCase):
     """Checks Django's actual static handler without starting a network server."""
 

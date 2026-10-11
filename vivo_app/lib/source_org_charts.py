@@ -8,7 +8,7 @@ import io
 import time
 from collections import Counter
 
-from vivo_app.lib.prepared_data import PageDataError
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_pages import (
     CUSTOM_ORGANIZATION_IDS,
     SourceReader,
@@ -25,7 +25,7 @@ from vivo_app.lib.source_teams import custom_organization_members, team_definiti
 
 
 def organization_chart_members(
-    identifier: str, mode: str, reader: SourceReader | None = None
+    identifier: str, reader: SourceReader | None = None
 ) -> tuple[str, list[tuple[str, dict[str, object], str]]]:
     """
     Reads one organization and its distinct members for either chart.
@@ -37,14 +37,14 @@ def organization_chart_members(
     if identifier.startswith('team-'):
         name, member_ids = team_definition(identifier)
     else:
-        response = response_object(profile_key(identifier), mode, reader)
+        response = response_object(profile_key(identifier), reader)
         docs, _ = documents(response)
         if not docs or record_id(docs[0]) != identifier or first_text(docs[0].get('record_type')) != 'ORGANIZATION':
             raise PageDataError('The requested chart organization is unavailable.')
         organization = record_data(docs[0])
         name = first_text(organization.get('name')) or first_text(docs[0].get('display_name_s'))
-        extras = custom_organization_members(identifier, mode, reader)
-        members = organization_members(organization, extras, mode, reader)
+        extras = custom_organization_members(identifier, reader)
+        members = organization_members(organization, extras, reader)
         members = sorted(
             members,
             key=lambda row: (
@@ -59,10 +59,10 @@ def organization_chart_members(
     found: dict[str, tuple[dict[str, object], str]] = {}
     ## preserves the reference's twenty-member batches and each response's faculty order.
     for start in range(0, len(member_ids), 20):
-        if start and mode == 'live':
+        if start:
             time.sleep(0.25)
         batch = member_ids[start : start + 20]
-        response = response_object(chart_member_key(batch), mode, reader)
+        response = response_object(chart_member_key(batch), reader)
         docs, _ = documents(response)
         for doc in docs:
             member_id = record_id(doc)
@@ -73,15 +73,13 @@ def organization_chart_members(
     return name, result
 
 
-def publication_history_data(
-    identifier: str, mode: str, reader: SourceReader | None = None
-) -> tuple[str, dict[str, object]]:
+def publication_history_data(identifier: str, reader: SourceReader | None = None) -> tuple[str, dict[str, object]]:
     """
     Counts each member's valid publications by year in the public chart format.
 
     Called by: views.visualization_publications(), tests
     """
-    name, members = organization_chart_members(identifier, mode, reader)
+    name, members = organization_chart_members(identifier, reader)
     current_year = datetime.datetime.now().astimezone().year
     summaries: list[tuple[str, str, str, dict[int, int]]] = []
     all_years: set[int] = set()
@@ -147,13 +145,13 @@ def publication_history_csv(value: dict[str, object]) -> str:
     return output.getvalue().removesuffix('\n')
 
 
-def research_areas_data(identifier: str, mode: str, reader: SourceReader | None = None) -> tuple[str, dict[str, object]]:
+def research_areas_data(identifier: str, reader: SourceReader | None = None) -> tuple[str, dict[str, object]]:
     """
     Links members to research areas named by at least two members.
 
     Called by: views.visualization_research(), tests
     """
-    name, members = organization_chart_members(identifier, mode, reader)
+    name, members = organization_chart_members(identifier, reader)
     areas_by_member: list[list[str]] = []
     for _, person, _ in members:
         raw = person.get('research_areas')

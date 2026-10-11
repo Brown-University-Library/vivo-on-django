@@ -10,46 +10,40 @@ from django.middleware.common import CommonMiddleware
 from django.test import RequestFactory, SimpleTestCase, override_settings
 from django.urls import get_script_prefix, set_script_prefix
 
-from vivo_app.lib.recorded_responses import RecordedResponse
 from vivo_app.lib.source_documents import document_response
 from vivo_app.lib.source_requests import document_key
+from vivo_app.lib.source_types import SourceResponse
 
 
 class SourceDocumentTests(SimpleTestCase):
     def test_original_document_path_uses_selected_reader_and_range_handler(self) -> None:
         """
-        Checks live and replay original paths preserve version queries, full GET, HEAD and ranges.
+        Checks source original paths preserve version queries, full GET, HEAD and ranges.
         """
         body = b'%PDF-1.7 made-up document'
-        result = RecordedResponse(200, (('content-type', 'application/pdf'),), body)
-        for mode in ('live', 'replay'):
-            for method, headers, status, expected in (
-                ('get', {}, 200, body),
-                ('head', {}, 200, b''),
-                ('get', {'HTTP_RANGE': 'bytes=0-4'}, 206, body[:5]),
-            ):
-                with self.subTest(mode=mode, method=method, headers=headers):
-                    with (
-                        override_settings(
-                            PAGE_DATA_MODE=mode,
-                            SOLR_URL='https://source.invalid/core',
-                            UPSTREAM_RECORDING_MANIFEST='unused-recording.json',
-                            TURNSTILE_ENABLED=False,
-                        ),
-                        patch('vivo_app.views.read_source', return_value=result) as read,
-                    ):
-                        response = getattr(self.client, method)('/docs/i/invented_cv.pdf?dt=1', **headers)
-                    self.assertEqual(response.status_code, status)
-                    self.assertEqual(response['Content-Type'], 'application/pdf')
-                    self.assertEqual(response.content, expected)
-                    read.assert_called_once_with(document_key('/docs/i/invented_cv.pdf', (('dt', '1'),)), mode)
+        result = SourceResponse(200, (('content-type', 'application/pdf'),), body)
+        for method, headers, status, expected in (
+            ('get', {}, 200, body),
+            ('head', {}, 200, b''),
+            ('get', {'HTTP_RANGE': 'bytes=0-4'}, 206, body[:5]),
+        ):
+            with self.subTest(method=method, headers=headers):
+                with (
+                    override_settings(SOLR_URL='https://source.invalid/core', TURNSTILE_ENABLED=False),
+                    patch('vivo_app.views.read_source', return_value=result) as read,
+                ):
+                    response = getattr(self.client, method)('/docs/i/invented_cv.pdf?dt=1', **headers)
+                self.assertEqual(response.status_code, status)
+                self.assertEqual(response['Content-Type'], 'application/pdf')
+                self.assertEqual(response.content, expected)
+                read.assert_called_once_with(document_key('/docs/i/invented_cv.pdf', (('dt', '1'),)))
 
-    @override_settings(PAGE_DATA_MODE='live', DOCUMENTS_URL='https://source.invalid')
+    @override_settings(DOCUMENTS_URL='https://source.invalid')
     def test_original_document_version_redirect_stays_mounted(self) -> None:
         """
         Checks a source version redirect keeps the existing reader route and deployment prefix.
         """
-        result = RecordedResponse(302, (('location', 'https://source.invalid/docs/i/invented_cv.pdf?dt=1'),), b'')
+        result = SourceResponse(302, (('location', 'https://source.invalid/docs/i/invented_cv.pdf?dt=1'),), b'')
         previous_prefix = get_script_prefix()
         set_script_prefix('/mounted')
         try:
@@ -60,17 +54,6 @@ class SourceDocumentTests(SimpleTestCase):
         assert isinstance(response, HttpResponse)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], '/mounted/source-documents/docs/i/invented_cv.pdf?dt=1')
-
-    @override_settings(PAGE_DATA_MODE='prototype')
-    def test_original_saved_document_does_not_fall_back_to_live(self) -> None:
-        """
-        Checks an absent saved document remains unavailable without contacting a source.
-        """
-        with patch('vivo_app.views.get_response_data', return_value=None), patch('vivo_app.views.read_source') as read:
-            response = self.client.get('/docs/i/invented_cv.pdf?dt=1')
-        assert isinstance(response, HttpResponse)
-        self.assertEqual(response.status_code, 404)
-        read.assert_not_called()
 
     def test_complete_pdf_and_head_report_the_same_length(self) -> None:
         """

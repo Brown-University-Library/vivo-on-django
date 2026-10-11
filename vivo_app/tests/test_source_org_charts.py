@@ -10,15 +10,14 @@ from unittest.mock import patch
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 
-from vivo_app.lib.prepared_data import PageDataError
-from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_org_charts import publication_history_csv, publication_history_data, research_areas_data
 from vivo_app.lib.source_requests import chart_member_key, profile_key
+from vivo_app.lib.source_types import RequestKey, SourceResponse
 
 
-@override_settings(PAGE_DATA_MODE='live')
 class OrganizationChartTests(TestCase):
-    """Checks the chart data, routes, and matching live/replay requests."""
+    """Checks the chart data, routes, and matching source requests."""
 
     def setUp(self) -> None:
         """
@@ -74,49 +73,51 @@ class OrganizationChartTests(TestCase):
             profile_key('org-example'): self.response([organization]),
             chart_member_key(['invented-a', 'invented-b', 'invented-c']): self.response(member_docs),
         }
-        self.requested: list[tuple[RequestKey, str]] = []
+        self.requested: list[RequestKey] = []
 
-    def response(self, docs: list[dict[str, object]]) -> RecordedResponse:
+    def response(self, docs: list[dict[str, object]]) -> SourceResponse:
         """
         Wraps made-up records in the expected Solr response.
 
         Called by: setUp()
         """
         body = {'responseHeader': {'status': 0}, 'response': {'numFound': len(docs), 'docs': docs}}
-        return RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(body).encode())
+        return SourceResponse(200, (('content-type', 'application/json'),), json.dumps(body).encode())
 
-    def read(self, key: RequestKey, mode: str) -> RecordedResponse:
+    def read(
+        self,
+        key: RequestKey,
+    ) -> SourceResponse:
         """
         Reads only the exact made-up request keys.
 
-        Called by: test_chart_data_and_replay(), test_chart_routes(), test_missing_recording_fails()
+        Called by: test_chart_data_and_repeated_reads(), test_chart_routes(), test_missing_source_response_fails()
         """
-        self.requested.append((key, mode))
+        self.requested.append(key)
         if key not in self.responses:
-            raise PageDataError('The requested recording is missing.')
+            raise PageDataError('The requested source response is missing.')
         return self.responses[key]
 
-    def test_chart_data_and_replay(self) -> None:
+    def test_chart_data_and_repeated_reads(self) -> None:
         """
-        Checks public chart shapes and identical live and offline request keys.
+        Checks public chart shapes and repeatable source request keys.
         """
-        name, publications = publication_history_data('org-example', 'live', self.read)
-        live_keys = [key for key, _ in self.requested]
+        name, publications = publication_history_data('org-example', self.read)
+        first_keys = list(self.requested)
         self.requested.clear()
-        _, replay = publication_history_data('org-example', 'replay', self.read)
+        _, repeated = publication_history_data('org-example', self.read)
         self.assertEqual(name, 'Example Organization')
-        self.assertEqual(publications, replay)
-        self.assertEqual(live_keys, [key for key, _ in self.requested])
+        self.assertEqual(publications, repeated)
+        self.assertEqual(first_keys, list(self.requested))
         self.assertEqual(publications['years'], ['2020', '2021'])
         self.assertEqual(publications['columns'], ['invented-a', 'invented-b'])
         matrix = publications['matrix']
         assert isinstance(matrix, list)
         self.assertEqual([row['total'] for row in matrix if isinstance(row, dict)], [3, 1])
         self.assertEqual(
-            publication_history_csv(publications),
-            'year,year_total,invented-a,invented-b\n2020,3,2,1\n2021,1,1,0',
+            publication_history_csv(publications), 'year,year_total,invented-a,invented-b\n2020,3,2,1\n2021,1,1,0'
         )
-        _, research = research_areas_data('org-example', 'replay', self.read)
+        _, research = research_areas_data('org-example', self.read)
         nodes = research['nodes']
         links = research['links']
         assert isinstance(nodes, list) and isinstance(nodes[1], list)
@@ -132,10 +133,7 @@ class OrganizationChartTests(TestCase):
             'columns': ['invented-a', 'invented-b'],
             'matrix': [{'invented-b': 2, 'total': 3, 'year': 2020, 'invented-a': 1}],
         }
-        self.assertEqual(
-            publication_history_csv(chart),
-            'year,year_total,invented-a,invented-b\n2020,3,1,2',
-        )
+        self.assertEqual(publication_history_csv(chart), 'year,year_total,invented-a,invented-b\n2020,3,1,2')
 
     def test_research_chart_omits_blank_area_names(self) -> None:
         """
@@ -148,7 +146,7 @@ class OrganizationChartTests(TestCase):
             person['research_areas'].append('')
             doc['json_txt'] = json.dumps(person)
         self.responses[key] = self.response(source['response']['docs'])
-        _, result = research_areas_data('org-example', 'live', self.read)
+        _, result = research_areas_data('org-example', self.read)
         groups = result['nodes']
         if not isinstance(groups, list) or not isinstance(groups[1], list):
             self.fail('Research chart nodes should contain an area list.')
@@ -165,7 +163,7 @@ class OrganizationChartTests(TestCase):
             person['research_areas'] = ['Area A', 'Area B', 'Area C'] if index < 2 else ['Area C']
             doc['json_txt'] = json.dumps(person)
         self.responses[key] = self.response(source['response']['docs'])
-        _, chart = research_areas_data('org-example', 'live', self.read)
+        _, chart = research_areas_data('org-example', self.read)
         groups = chart['nodes']
         if not isinstance(groups, list) or not isinstance(groups[1], list):
             self.fail('Research chart nodes should contain an area list.')
@@ -190,8 +188,8 @@ class OrganizationChartTests(TestCase):
         response = json.loads(self.responses[key].body)
         response['response']['docs'] = response['response']['docs'][:2]
         response['response']['numFound'] = 2
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
-        _, chart = publication_history_data('org-example', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        _, chart = publication_history_data('org-example', self.read)
         self.assertEqual(chart['columns'], ['invented-a', 'invented-b'])
 
     def test_team_chart_uses_solr_member_order(self) -> None:
@@ -207,7 +205,7 @@ class OrganizationChartTests(TestCase):
                 )
             )
             with override_settings(TEAM_SOURCE_MANIFEST=str(manifest)):
-                _, chart = publication_history_data('team-example', 'live', self.read)
+                _, chart = publication_history_data('team-example', self.read)
         self.assertEqual(chart['columns'], ['invented-b', 'invented-a'])
 
     def test_organization_charts_keep_sorted_twenty_member_batches(self) -> None:
@@ -251,8 +249,8 @@ class OrganizationChartTests(TestCase):
                     for identifier in returned
                 ]
             )
-        _, publications = publication_history_data('org-example', 'live', self.read)
-        _, research = research_areas_data('org-example', 'live', self.read)
+        _, publications = publication_history_data('org-example', self.read)
+        _, research = research_areas_data('org-example', self.read)
         self.assertEqual(publications['columns'], expected)
         self.assertEqual(publication_history_csv(publications).splitlines()[0], 'year,year_total,' + ','.join(expected))
         groups = research['nodes']
@@ -260,7 +258,7 @@ class OrganizationChartTests(TestCase):
             self.fail('Research chart nodes should contain a researcher list.')
         self.assertEqual([node['nodeName'] for node in groups[0]], expected)
         self.assertEqual(
-            [key for key, _ in self.requested if key.service == 'solr' and key != profile_key('org-example')],
+            [key for key in self.requested if key.service == 'solr' and key != profile_key('org-example')],
             [chart_member_key(identifiers[:20]), chart_member_key(identifiers[20:])] * 2,
         )
 
@@ -271,8 +269,8 @@ class OrganizationChartTests(TestCase):
         first = json.loads(response['response']['docs'][0]['json_txt'])
         first['contributor_to'].append({'date': ' 2022-01-01'})
         response['response']['docs'][0]['json_txt'] = json.dumps(first)
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
-        _, chart = publication_history_data('org-example', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        _, chart = publication_history_data('org-example', self.read)
         years = chart['years']
         if not isinstance(years, list):
             self.fail('Chart years should be a list.')
@@ -287,8 +285,8 @@ class OrganizationChartTests(TestCase):
         first = json.loads(response['response']['docs'][0]['json_txt'])
         first['research_areas'] = 'unreadable list'
         response['response']['docs'][0]['json_txt'] = json.dumps(first)
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
-        _, chart = research_areas_data('org-example', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        _, chart = research_areas_data('org-example', self.read)
         nodes = chart['nodes']
         if not isinstance(nodes, list):
             self.fail('Research chart nodes should be a list.')
@@ -304,8 +302,8 @@ class OrganizationChartTests(TestCase):
         first = json.loads(response['response']['docs'][0]['json_txt'])
         first['contributor_to'].append('invalid row')
         response['response']['docs'][0]['json_txt'] = json.dumps(first)
-        self.responses[key] = RecordedResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
-        _, chart = publication_history_data('org-example', 'live', self.read)
+        self.responses[key] = SourceResponse(200, (('content-type', 'application/json'),), json.dumps(response).encode())
+        _, chart = publication_history_data('org-example', self.read)
         self.assertEqual(chart['columns'], ['invented-b'])
 
     def test_chart_routes(self) -> None:
@@ -326,20 +324,19 @@ class OrganizationChartTests(TestCase):
         self.assertEqual(json.loads(json_response.content)['years'], ['2020', '2021'])
         self.assertEqual(csv_response['Content-Type'], 'text/csv')
         self.assertEqual(
-            csv_response['Content-Disposition'],
-            'attachment; filename="org-example.csv"; filename*=UTF-8\'\'org-example.csv',
+            csv_response['Content-Disposition'], 'attachment; filename="org-example.csv"; filename*=UTF-8\'\'org-example.csv'
         )
         self.assertContains(research_page, 'research areas and how common')
         self.assertContains(research_page, '/display/org-example/viz/collab.json')
         self.assertEqual(len(json.loads(research_json.content)['links']), 2)
 
-    def test_missing_recording_fails(self) -> None:
+    def test_missing_source_response_fails(self) -> None:
         """
-        Checks that replay cannot substitute a different member batch.
+        Checks a missing member batch cannot be replaced with unrelated records.
         """
         self.responses.pop(chart_member_key(['invented-a', 'invented-b', 'invented-c']))
-        with self.assertRaisesRegex(PageDataError, 'recording is missing'):
-            publication_history_data('org-example', 'replay', self.read)
+        with self.assertRaisesRegex(PageDataError, 'source response is missing'):
+            publication_history_data('org-example', self.read)
 
     def test_publication_json_preserves_compact_utf8_and_reference_escaping(self) -> None:
         """

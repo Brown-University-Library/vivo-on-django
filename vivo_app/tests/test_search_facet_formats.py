@@ -6,12 +6,11 @@ import json
 from unittest.mock import patch
 
 from django.http import HttpResponse
-from django.test import SimpleTestCase, override_settings
+from django.test import SimpleTestCase
 
-from vivo_app.lib.prepared_data import PageDataError
+from vivo_app.lib.page_errors import PageDataError
 
 
-@override_settings(PAGE_DATA_MODE='live')
 class SearchFacetFormatTests(SimpleTestCase):
     """Checks the array response, empty results and source failure."""
 
@@ -42,7 +41,7 @@ class SearchFacetFormatTests(SimpleTestCase):
         self.assertEqual(response['Content-Type'], 'application/json; charset=utf-8')
         self.assertEqual(response.content, expected)
         self.assertEqual(json.loads(response.content), values)
-        read.assert_called_once_with([('q', 'Example'), ('f_name', 'affiliations')], 'live')
+        read.assert_called_once_with([('q', 'Example'), ('f_name', 'affiliations')])
 
     def test_empty_facet_json_stays_an_array(self) -> None:
         """

@@ -16,21 +16,18 @@ from vivo_app.management.commands.runserver import Command
 
 @override_settings(DEBUG=True, STATIC_URL='/static/')
 class FontTests(SimpleTestCase):
-    """Checks font delivery independently of prepared page bundles or remote services."""
+    """Checks font delivery without remote services."""
 
     def test_public_templates_share_local_fonts(self) -> None:
         """
-        Checks that prototype and prepared pages select the same local font stylesheet.
+        Checks that public pages select the local font stylesheet.
         """
         request = RequestFactory().get('/')
-        for mode in ['prototype', 'prepared']:
-            with self.subTest(mode=mode), override_settings(PAGE_DATA_MODE=mode):
-                html = render_to_string('base.html', request=request)
-                self.assertIn('/static/css/fonts.css', html)
-                self.assertNotIn('fonts.googleapis.com', html)
-                self.assertNotIn('/__prepared_assets/source-sans-pro.ttf', html)
+        with self.subTest(), override_settings():
+            html = render_to_string('base.html', request=request)
+            self.assertIn('/static/css/fonts.css', html)
+            self.assertNotIn('fonts.googleapis.com', html)
 
-    @override_settings(PAGE_DATA_MODE='prototype')
     def test_declared_fonts_are_served_locally(self) -> None:
         """
         Checks that the character subsets and icon font all resolve to real local WOFF2 responses.

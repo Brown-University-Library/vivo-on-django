@@ -1,5 +1,5 @@
 """
-Checks source citation variations and person-profile navigation without live services.
+Checks source citation variations and person-profile navigation without external services.
 """
 
 from django.http import HttpRequest
@@ -8,12 +8,14 @@ from django.test import RequestFactory, SimpleTestCase, override_settings
 from django.urls import get_script_prefix, set_script_prefix
 
 from vivo_app.lib.profile_navigation import profile_search_return
-from vivo_app.lib.recorded_responses import RecordedResponse, RequestKey
 from vivo_app.lib.source_html import render_citation_html
 from vivo_app.lib.source_pages import profile_panels, profile_sections, publication_html
+from vivo_app.lib.source_types import RequestKey, SourceResponse
 
 
-def unused_source(key: RequestKey, mode: str) -> RecordedResponse:
+def unused_source(
+    key: RequestKey,
+) -> SourceResponse:
     """
     Fails if a text-only profile comparison unexpectedly requests a source.
 
@@ -198,7 +200,7 @@ class ProfileBatchTests(SimpleTestCase):
         cases: list[dict[str, object]] = [{}, {'research_overview': 'Example research.'}]
         for content in cases:
             with self.subTest(content=content):
-                sections = profile_sections(content, 'live', unused_source, 0, '')
+                sections = profile_sections(content, unused_source, 0, '')
                 panels = profile_panels(sections)
                 profile = {'sections': sections, 'panels': panels}
                 html = render_to_string('display/profile_data.html', {'profile': profile})
@@ -261,7 +263,6 @@ class ProfileBatchTests(SimpleTestCase):
                 'education': [{'date': '2020', 'school_name': 'Example School'}],
                 'appointments': [{'name': 'Example Role', 'org_name': 'Example Institution'}],
             },
-            'live',
             unused_source,
             0,
             '',

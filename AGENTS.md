@@ -33,7 +33,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 - Dependency / execution tool: `uv`
 - The only dependency groups in `pyproject.toml` are `local`, `staging`, and `prod`. `local` is for laptop-only tools; `staging` is for the development server; `prod` is for the production server. Do not add a `dev` group: `uv sync` and `uv run` install it by default, including on the development server.
 - The repository root contains this file, `.git/`, `manage.py`, and `pyproject.toml`. The enclosing workspace contains separate repositories and local support files.
-- The owner completed the conversion review. Use `docs/public_behavior.md`, `docs/behavior_decisions.md`, and `docs/development_checks.md` for maintenance. Prepared mode is a build artifact the owner plans to remove over time; do not extend it as a current workflow. Historical conversion records do not define active work.
+- The owner completed the conversion review. Use `docs/public_behavior.md`, `docs/behavior_decisions.md`, and `docs/development_checks.md` for maintenance. Historical conversion records do not define active work.
 
 
 ## How to run code
@@ -41,8 +41,8 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 - Assume user is in the project-root directory.
 - Use `uv` to run Python code; do not invoke `python` or `python3` directly.
 - Install the locked dependencies with `uv sync --locked`; use the repository's `.venv` interpreter.
-- Prepare `../.env` and the local directories as described in `README.md` before running Django commands or tests. `example.env` still selects legacy prepared mode; use the README's settings for sample content for a new local checkout.
-- Optional tools and drivers require an explicit group: `uv sync --locked --group local` for browser/image comparisons, or `uv sync --locked --group staging` for local live homepage books. A plain sync installs only the base dependencies and removes packages from unselected groups.
+- Prepare `../.env` and the local directories as described in `README.md` before running Django commands or tests. Use `example.env` for source configuration; tests supply made-up responses.
+- Optional tools and drivers require an explicit group: `uv sync --locked --group local` for browser/image comparisons, or `uv sync --locked --group staging` for local homepage books. A plain sync installs only the base dependencies and removes packages from unselected groups.
 - Run a script via: `uv run ./path_to_script.py --help`
 - Run tests via: `uv run ./run_tests.py`. This discovers all tests.
 - Run the local Django app tests via: `uv run ./run_tests.py vivo_app -v`.
@@ -152,7 +152,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 ## Tests
 
 - Use Django's test framework for application tests and standard library `unittest` for independent helpers; do not introduce pytest.
-- `vivo_app/tests/` checks routes, rendering, response formats, all retained data modes, source failures, configuration, and developer tools using local files or made-up responses. Django's runner creates and destroys its test database.
+- `vivo_app/tests/` checks routes, rendering, response formats, source failures, configuration, and developer tools using local files or made-up responses. Django's runner creates and destroys its test database.
 - New behavior should usually come with a focused test covering:
   - the happy path
   - at least one failure / edge case
@@ -248,7 +248,7 @@ When implementing a change (especially from an issue/task):
 ### Scope and reference material
 
 - Start with `docs/public_behavior.md` for current behavior, `docs/source_journey.md` for sources, and `docs/development_checks.md` for validation.
-- `docs/behavior_decisions.md` explains owner choices. `docs/code_retirement_review.md` identifies shared code retained to protect working behavior. Test uncertain behavior before changing it, or retain the code and update that note.
+- `docs/behavior_decisions.md` explains owner choices. `docs/code_retirement_review.md` identifies remaining maintenance decisions. Test uncertain behavior before changing it, or retain the code and update that note.
 - `historical_conversion_info/` explains the build-out. Do not resume old batches, reconstruct pending checklists, or use historical plans as current instructions.
 - The enclosing workspace may contain private archives, saved inputs, and Rails source. These are optional background, not requirements for a standalone checkout. Keep private records outside Git.
 
@@ -261,22 +261,21 @@ When implementing a change (especially from an issue/task):
 | `run_tests.py` | Django test command, with full discovery, app/module/class/method selection, and optional verbose output. |
 | `config/settings.py` | Environment loading, database, cache, logging, templates, and public-site configuration. |
 | `config/urls.py` | Application routes, Django admin, disabled account/editing route definitions, and error handlers; there is no app-level `urls.py`. |
-| `vivo_app/views.py` | Public request handlers, source-backed pages and responses, and retained sample paths. |
-| `vivo_app/lib/display.py` | Retained sample display helpers imported by views; review shared uses before removal. |
-| `vivo_app/lib/home.py`, `vivo_app/lib/source_books.py`, `vivo_app/lib/assets.py` | Shared book-cover values, sample books, live/replay book reads, and random homepage backgrounds. |
-| `vivo_app/lib/prepared_data.py`, `vivo_app/lib/recorded_responses.py`, `vivo_app/lib/source_*.py` | Readers and processors used while Django serves prepared, replayed, or live pages. |
+| `vivo_app/views.py` | Public request handlers, source-backed pages and responses, and existing error behavior. |
+| `vivo_app/lib/source_books.py`, `vivo_app/lib/assets.py` | Source book reads and random homepage backgrounds. |
+| `vivo_app/lib/page_errors.py`, `vivo_app/lib/source_types.py`, `vivo_app/lib/source_*.py` | Shared errors, request/response values, source readers, and processing. |
 | `tools/compare_sites.py`, `vivo_app/tests/test_comparison.py`, `docs/browser_comparison.md` | Optional browser comparison tool, its tests, and current usage. |
 | `vivo_app/templates/`, `vivo_app/static/` | Page templates, shared includes, CSS, JavaScript, and images; follow the template actually selected by each view. |
 | `vivo_app/context_processors.py` | Shared template values from settings. |
 | `vivo_app/views_auth.py`, `vivo_app/forms.py`, `vivo_app/models.py`, `vivo_app/migrations/` | Retained account/profile code and database tables; application account/editing routes remain disabled. |
-| `vivo_app/tests/` | Regression tests for pages, parsing, responses, modes, source failures, and developer commands. |
+| `vivo_app/tests/` | Regression tests for pages, parsing, responses, source failures, and developer commands. |
 
 ### Local configuration and current limitations
 
 - Settings call `load_dotenv()` and require `ALLOWED_HOSTS_JSON`, `STATIC_URL`, and `STATIC_ROOT`. Use `example.env` and `docs/source_journey.md` for current source settings. Keep the actual `.env` outside Git.
 - Local settings use `../DBs/`, `../cache_dir/`, and `../logs/`. Imports create the logs directory, but local database use requires its parent directory to exist. After relocating a checkout, verify `.venv` and use `uv sync --locked` to prepare dependencies as needed.
-- Paths serving sample content can return placeholder text when template loading or rendering fails. Check actual content and templates; a status-code assertion alone does not prove correct rendering. The startup mode notice still contains older conversion wording and does not establish endpoint coverage. Live paths preserve their source-error behavior.
+- Informational pages and error handlers retain `render_or_stub()` behavior when template loading or rendering fails. Check actual content and templates; a status-code assertion alone does not prove correct rendering. Source-backed pages preserve their source-error behavior.
 - `?format=json` changes the response for many views; preserve confirmed query-parameter behavior. Keep individual-export URL patterns before the generic individual route.
-- Homepage imagery is randomized. The test runner selects sample content; individual tests exercise other modes with made-up data. Local tests do not establish real-service connectivity.
+- Homepage imagery is randomized. The test runner supplies made-up source settings and rejects unexpected network connections. Tests supply source responses; local tests do not establish real-service connectivity.
 
 ---

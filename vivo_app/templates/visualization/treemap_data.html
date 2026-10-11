@@ -3,7 +3,7 @@
 {% block title %}{{ graph.page_title }} Coauthor treemap{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% versioned_static 'css/network_graph.css' %}">{% endblock %}
 {% block content %}
-{% include "includes/prepared_search.html" %}
+{% include "includes/search_form.html" %}
 <div class="network-page treemap-page">
   <h1 class="researcherName">{{ graph.name }}</h1>
   {% if graph.title %}<h3 class="facultyTitle">{{ graph.title }}</h3>{% endif %}

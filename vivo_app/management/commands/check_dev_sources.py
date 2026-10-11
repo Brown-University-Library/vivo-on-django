@@ -1,17 +1,16 @@
 """
-Checks deployed page data and selected live sources without printing records or URLs.
+Checks deployed page data and configured sources without printing records or URLs.
 """
 
 import hashlib
 import json
-from pathlib import Path
 from typing import ClassVar
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 
-from vivo_app.lib.page_data import selected_mode
-from vivo_app.lib.prepared_data import PageDataError, load_bundle
+from vivo_app.lib.page_data import check_source_configuration
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_books import homepage_books
 from vivo_app.lib.source_graph import visualization_list
 from vivo_app.lib.source_pages import (
@@ -30,23 +29,6 @@ from vivo_app.lib.source_status import status_data
 SOURCES = ('solr', 'search', 'search-facets', 'profile', 'viz', 'vivo', 'books')
 
 
-def prepared_check() -> dict[str, object]:
-    """
-    Validates the configured prepared bundle from the checkout directory.
-
-    Called by: Command.handle()
-    """
-    directory = Path(settings.PREPARED_FIXTURE_DIR)
-    if not directory.is_absolute():
-        directory = Path(settings.BASE_DIR) / directory
-    try:
-        bundle = load_bundle(directory)
-        result: dict[str, object] = {'status': 'ok', 'version': bundle.version, 'cases': len(bundle.cases)}
-    except PageDataError as exc:
-        result = {'status': 'error', 'reason': str(exc)}
-    return result
-
-
 def source_check(name: str, vivo_id: str, search_query: str = 'biology') -> dict[str, object]:
     """
     Checks a named source with read-only requests and keeps returned content private.
@@ -55,16 +37,16 @@ def source_check(name: str, vivo_id: str, search_query: str = 'biology') -> dict
     """
     try:
         if name == 'solr':
-            status_data('live')
+            status_data()
             result: dict[str, object] = {'status': 'ok', 'check': 'searchable record count'}
         elif name == 'search':
-            search = search_data([('q', search_query)], 'live')
+            search = search_data([('q', search_query)])
             results = search.get('results')
             if not isinstance(results, list):
                 raise PageDataError('Search processing returned no result list.')
             result = {'status': 'ok', 'check': 'search results and facets', 'results_on_page': len(results)}
         elif name == 'search-facets':
-            search = search_data([('q', search_query)], 'live')
+            search = search_data([('q', search_query)])
             facets = search.get('facets')
             if not isinstance(facets, list):
                 raise PageDataError('Search processing returned no facet list.')
@@ -74,7 +56,7 @@ def source_check(name: str, vivo_id: str, search_query: str = 'biology') -> dict
             shown = affiliation.get('values') if isinstance(affiliation, dict) else []
             if not isinstance(shown, list):
                 raise PageDataError('Search processing returned an invalid affiliation facet.')
-            full = facet_values_data([('q', search_query), ('f_name', 'affiliations')], 'live')
+            full = facet_values_data([('q', search_query), ('f_name', 'affiliations')])
             result = {
                 'status': 'ok' if len(full) >= len(shown) else 'error',
                 'check': 'affiliation values shown and returned by the full facet request',
@@ -84,7 +66,7 @@ def source_check(name: str, vivo_id: str, search_query: str = 'biology') -> dict
         elif name == 'profile':
             if not vivo_id:
                 raise PageDataError('Supply --vivo-id to check one person profile.')
-            response = response_object(profile_key(vivo_id), 'live', read_source)
+            response = response_object(profile_key(vivo_id), read_source)
             docs, _ = documents(response)
             if not docs or record_id(docs[0]) != vivo_id or first_text(docs[0].get('record_type')) != 'PEOPLE':
                 raise PageDataError('The requested source record is not a person profile.')
@@ -92,7 +74,7 @@ def source_check(name: str, vivo_id: str, search_query: str = 'biology') -> dict
             enabled = first_text(docs[0].get('show_visualizations_s')) == 'true'
             graph_available = False
             if collaborators and enabled:
-                graphs = visualization_list('collaborators', 'live')
+                graphs = visualization_list('collaborators')
                 graph_available = first_text(docs[0].get('id')) in graphs
             result = {
                 'status': 'ok',
@@ -103,17 +85,17 @@ def source_check(name: str, vivo_id: str, search_query: str = 'biology') -> dict
                 'collaborator_graph_available': graph_available,
             }
         elif name == 'viz':
-            visualization_list('coauthors', 'live')
+            visualization_list('coauthors')
             result = {'status': 'ok', 'check': 'graph availability list'}
         elif name == 'vivo':
             if not vivo_id:
                 raise PageDataError('Supply --vivo-id to check one existing record export.')
-            response = read_source(vitro_key(vivo_id, 'jsonld'), 'live')
+            response = read_source(vitro_key(vivo_id, 'jsonld'))
             result = {'status': 'ok' if response.status == 200 else 'missing_record', 'http_status': response.status}
             if response.status == 200:
                 result['sha256'] = hashlib.sha256(response.body).hexdigest()
         elif name == 'books':
-            homepage_books('live')
+            homepage_books()
             result = {'status': 'ok', 'check': 'active homepage books and image prefix'}
         else:
             raise PageDataError('Unknown source name.')
@@ -123,9 +105,9 @@ def source_check(name: str, vivo_id: str, search_query: str = 'biology') -> dict
 
 
 class Command(BaseCommand):
-    """Checks the active data mode and optional live sources from the server."""
+    """Checks source configuration and optional configured sources from the server."""
 
-    help = 'Check page data and selected live sources with read-only requests and safe output.'
+    help = 'Check page data and configured sources with read-only requests and safe output.'
     requires_system_checks: ClassVar[list[str]] = []
 
     def add_arguments(self, parser: CommandParser) -> None:
@@ -140,7 +122,7 @@ class Command(BaseCommand):
 
     def handle(self, *args: object, **options: object) -> None:
         """
-        Checks selected live sources independently, or checks the selected page-data mode.
+        Checks configured sources independently, or checks the source configuration.
 
         Called by: Django management command runner
         """
@@ -157,18 +139,12 @@ class Command(BaseCommand):
             failed = any(value['status'] != 'ok' for value in sources.values())
         else:
             try:
-                mode = selected_mode()
-                mode_result: dict[str, object] = {'status': 'ok', 'value': mode}
+                check_source_configuration()
+                configuration: dict[str, object] = {'status': 'ok'}
             except PageDataError as exc:
-                mode_result = {'status': 'error', 'reason': str(exc)}
-                mode = settings.PAGE_DATA_MODE
-            report = {'page_data_mode': mode_result, 'sources': {}}
-            if mode == 'prepared':
-                report['prepared_bundle'] = prepared_check()
-            failed = mode_result['status'] != 'ok'
-            prepared = report.get('prepared_bundle')
-            if isinstance(prepared, dict):
-                failed = failed or prepared.get('status') != 'ok'
+                configuration = {'status': 'error', 'reason': str(exc)}
+            report = {'configuration': configuration, 'sources': {}}
+            failed = configuration['status'] != 'ok'
         self.stdout.write(json.dumps(report, indent=2))
         if failed:
             raise SystemExit(1)

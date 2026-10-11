@@ -17,7 +17,7 @@ from threading import Thread
 from typing import TYPE_CHECKING
 from urllib.parse import parse_qsl, urlencode, urlsplit
 
-from vivo_app.lib.recorded_responses import external_path, json_object
+from vivo_app.lib.source_types import external_path, json_object
 
 if TYPE_CHECKING:
     from playwright.sync_api import Browser, Page, Request, Response, Route

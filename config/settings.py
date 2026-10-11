@@ -72,7 +72,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'vivo_app.middleware.LocalPageDataMiddleware',
+    'vivo_app.middleware.SourceDataMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'vivo_app.middleware.TurnstileSearchMiddleware',
@@ -226,7 +226,6 @@ CONTACT_US_URL_TEMPLATE = os.getenv(
     'CONTACT_US_URL_TEMPLATE',
     'https://docs.google.com/forms/d/e/1FAIpQLSfK1UdN-DfWid2UbboAXc3Pj_rgZZqI0E7dHI58EOdTlYLrrQ/viewform?usp=pp_url&entry.1611024492={LINK}',
 )
-BOOK_COVER_STUB = os.getenv('BOOK_COVER_STUB', 'true').lower() == 'true'
 BOOK_COVER_BASE_PATH = os.getenv('BOOK_COVER_BASE_PATH', '')
 BOOK_COVER_DB_HOST = os.getenv('BOOK_COVER_DB_HOST', '')
 BOOK_COVER_DB_PORT = int(os.getenv('BOOK_COVER_DB_PORT', '3306'))
@@ -237,8 +236,6 @@ TURNSTILE_ENABLED = os.getenv('TURNSTILE_ENABLED', 'false').lower() == 'true'
 CF_TURNSTILE_SITEKEY = os.getenv('CF_TURNSTILE_SITEKEY', '')
 CF_TURNSTILE_SECRET_KEY = os.getenv('CF_TURNSTILE_SECRET_KEY', '')
 ALLOWED_IP_RANGES = os.getenv('ALLOWED_IP_RANGES', '')
-PAGE_DATA_MODE = os.getenv('PAGE_DATA_MODE', 'prototype')
-PREPARED_FIXTURE_DIR = os.getenv('PREPARED_FIXTURE_DIR', '../prepared_fixture_data')
 SOLR_URL = os.getenv('SOLR_URL', '')
 IMAGES_URL = os.getenv('IMAGES_URL', '')
 DOCUMENTS_URL = os.getenv('DOCUMENTS_URL', '')
@@ -246,8 +243,6 @@ VIZ_SERVICE_URL = os.getenv('VIZ_SERVICE_URL', '')
 VIVO_BACKEND_URL = os.getenv('VIVO_BACKEND_URL', '')
 VIZ_ENABLED = os.getenv('VIZ_ENABLED', 'true').lower() == 'true'
 TEAM_SOURCE_MANIFEST = os.getenv('TEAM_SOURCE_MANIFEST', '')
-UPSTREAM_RECORDING_MANIFEST = os.getenv('UPSTREAM_RECORDING_MANIFEST', '')
-UPSTREAM_RECORDING_CASE = os.getenv('UPSTREAM_RECORDING_CASE', 'search-profile')
 
 # Live reload in development (opt-in via environment configuration)
 ENABLE_BROWSER_RELOAD = os.getenv('DJANGO_BROWSER_RELOAD', 'false').lower() == 'true'

@@ -11,8 +11,7 @@ from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.html import escape
 
-from vivo_app.lib.prepared_data import PageDataError
-from vivo_app.lib.recorded_responses import RecordingError, external_path
+from vivo_app.lib.page_errors import PageDataError
 from vivo_app.lib.source_pages import (
     CUSTOM_ORGANIZATION_IDS,
     SourceReader,
@@ -25,6 +24,7 @@ from vivo_app.lib.source_pages import (
     thumbnail_url,
 )
 from vivo_app.lib.source_requests import community_research_members_key, read_source, team_member_key
+from vivo_app.lib.source_types import SourceDataError, external_path
 
 
 def source_definitions() -> dict[str, object]:
@@ -41,14 +41,14 @@ def source_definitions() -> dict[str, object]:
         path = Path(settings.BASE_DIR) / path
     try:
         value: object = json.loads(external_path(path).read_text())
-    except (OSError, ValueError, RecordingError) as exc:
+    except (OSError, ValueError, SourceDataError) as exc:
         raise PageDataError('The member source manifest is unavailable or invalid.') from exc
     if not isinstance(value, dict) or any(not isinstance(key, str) for key in value):
         raise PageDataError('The member source manifest is invalid.')
     return value
 
 
-def custom_organization_members(identifier: str, mode: str, reader: SourceReader | None = None) -> list[str]:
+def custom_organization_members(identifier: str, reader: SourceReader | None = None) -> list[str]:
     """
     Reads added member IDs for a scoped custom organization.
 
@@ -72,7 +72,7 @@ def custom_organization_members(identifier: str, mode: str, reader: SourceReader
         raise PageDataError('The custom-organization member list contains duplicates.')
     result = list(members)
     if identifier == 'org-brown-univ-dept148':
-        response = response_object(community_research_members_key(), mode, reader)
+        response = response_object(community_research_members_key(), reader)
         docs, total = documents(response)
         if total != len(docs):
             raise PageDataError('The research-area member query exceeded its response limit.')
@@ -107,7 +107,7 @@ def team_definition(identifier: str) -> tuple[str, list[str]]:
     return name, members
 
 
-def team_data(identifier: str, mode: str, reader: SourceReader | None = None) -> dict[str, object]:
+def team_data(identifier: str, reader: SourceReader | None = None) -> dict[str, object]:
     """
     Builds the selected active-team organization page from Solr member records.
 
@@ -116,7 +116,7 @@ def team_data(identifier: str, mode: str, reader: SourceReader | None = None) ->
     if reader is None:
         reader = read_source
     name, member_ids = team_definition(identifier)
-    response = response_object(team_member_key(member_ids), mode, reader)
+    response = response_object(team_member_key(member_ids), reader)
     docs, _ = documents(response)
     members: dict[str, dict[str, object]] = {}
     for doc in docs:

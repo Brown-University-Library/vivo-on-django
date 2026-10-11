@@ -11,7 +11,6 @@ BOOLEAN_SETTINGS = {
     'DJANGO_DEBUG': 'DEBUG',
     'DJANGO_BROWSER_RELOAD': 'ENABLE_BROWSER_RELOAD',
     'EMAIL_USE_TLS': 'EMAIL_USE_TLS',
-    'BOOK_COVER_STUB': 'BOOK_COVER_STUB',
     'TURNSTILE_ENABLED': 'TURNSTILE_ENABLED',
     'VIZ_ENABLED': 'VIZ_ENABLED',
 }
@@ -54,7 +53,7 @@ class EnvironmentSettingsTests(SimpleTestCase):
         Checks that omitted boolean settings keep their existing defaults.
         """
         configured = read_settings('')
-        for setting_name in ('DEBUG', 'EMAIL_USE_TLS', 'BOOK_COVER_STUB', 'VIZ_ENABLED'):
+        for setting_name in ('DEBUG', 'EMAIL_USE_TLS', 'VIZ_ENABLED'):
             self.assertIs(configured[setting_name], True, setting_name)
         for setting_name in ('ENABLE_BROWSER_RELOAD', 'TURNSTILE_ENABLED'):
             self.assertIs(configured[setting_name], False, setting_name)

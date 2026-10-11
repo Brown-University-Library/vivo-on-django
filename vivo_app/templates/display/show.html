@@ -5,29 +5,6 @@
 {% block content %}
   {% if profile %}
     {% include "display/profile_data.html" %}
-  {% elif presenter and presenter.faculty %}
-    <div class="container profile">
-      <h1>{{ presenter.faculty.name }}</h1>
-      <p class="muted">VIVO ID: {{ presenter.faculty.vivo_id }}</p>
-      <div class="row person-content mt-4">
-        <div class="col-md-3">
-          {% include "vivo/people/includes/left_panel.html" %}
-        </div>
-        <div class="col-md-9">
-          {% include "vivo/people/includes/right_panel.html" %}
-        </div>
-      </div>
-    </div>
-  {% elif presenter and presenter.organization %}
-    <div class="container org-profile">
-      <h1>{{ presenter.organization.name }}</h1>
-      <p class="muted">ID: {{ presenter.organization.id }}</p>
-    </div>
-  {% else %}
-    <div class="container">
-      <h1>Profile</h1>
-      <p>Item ID: {{ id }}</p>
-    </div>
   {% endif %}
 {% endblock %}
 

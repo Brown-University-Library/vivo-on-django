@@ -5,14 +5,38 @@ Verifies that the homepage renders and includes key structural markers and links
 that we aim to keep aligned with production.
 """
 
+import json
+from unittest.mock import patch
+
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from vivo_app.lib.source_types import SourceResponse
 
-@override_settings(PAGE_DATA_MODE='prototype', BOOK_COVER_BASE_PATH='')
+
+@override_settings(BOOK_COVER_BASE_PATH='/book-images')
 class HomePageTests(TestCase):
     """Tests homepage rendering and primary elements."""
+
+    def setUp(self) -> None:
+        """
+        Supplies made-up book rows without opening the source database.
+        """
+        rows = [
+            {
+                'shortID': 'example',
+                'firstname': 'Example',
+                'lastname': 'Author',
+                'title': 'Example Book',
+                'image': 'example.jpg',
+            }
+        ]
+        reader = patch(
+            'vivo_app.lib.source_books.read_source', return_value=SourceResponse(200, (), json.dumps(rows).encode())
+        )
+        reader.start()
+        self.addCleanup(reader.stop)
 
     def test_homepage_renders_ok(self) -> None:
         """
@@ -66,7 +90,7 @@ class HomePageTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'id="books-carousel"')
         self.assertContains(resp, 'class="book-cover"')
-        self.assertContains(resp, 'data-src="/static/images/vivo_blank_profile.jpg"')
+        self.assertContains(resp, 'data-src="/book-images/example.jpg"')
 
     def test_alias_parameter_redirects_to_search(self):
         """

@@ -31,37 +31,35 @@ class ReferenceSearchErrorTests(SimpleTestCase):
 
     @override_settings(
         SOLR_URL='https://example.invalid/solr/example',
-        UPSTREAM_RECORDING_MANIFEST='unused-example-manifest.json',
         TURNSTILE_ENABLED=False,
         CONTACT_US_URL_TEMPLATE='https://example.invalid/feedback?url={LINK}',
     )
-    def test_live_and_replay_failures_keep_reference_response_and_search_recovery(self) -> None:
+    def test_repeated_reads_failures_keep_reference_response_and_search_recovery(self) -> None:
         """
         Checks HTML, search JSON and facet failures without contacting a data source.
         """
         filters = {'fq': 'published_in|Example <html_ent glyph="@amp;" ascii="&amp;"/> Journal'}
-        for mode in ('live', 'replay'):
-            with (
-                self.subTest(mode=mode),
-                override_settings(PAGE_DATA_MODE=mode),
-                patch('vivo_app.lib.source_pages.read_source') as reader,
-            ):
-                response = self.client.get('/search', filters)
-                assert isinstance(response, HttpResponse)
-                self.assertContains(response, 'Oops! Something went wrong', status_code=500)
-                self.assertEqual(response['Content-Type'], 'text/html; charset=utf-8')
-                self.assertContains(response, 'name="q"', status_code=500)
-                self.assertContains(response, 'action="/search"', status_code=500)
-                self.assertContains(response, 'autofocus', status_code=500)
-                self.assertNotContains(response, '<html_ent ', status_code=500)
-                search_json = self.client.get('/search', {**filters, 'format': 'json'})
-                assert isinstance(search_json, HttpResponse)
-                self.assertEqual(search_json.status_code, 500)
-                self.assertEqual(search_json.content, b'{"status":500,"error":"Internal Server Error"}')
-                self.assertEqual(search_json['Content-Type'], 'application/json; charset=UTF-8')
-                facets = self.client.get('/search_facets', {**filters, 'f_name': 'published_in'})
-                assert isinstance(facets, HttpResponse)
-                self.assertEqual(facets.status_code, 500)
-                self.assertEqual(facets.content, b'null')
-                self.assertEqual(facets['Content-Type'], 'application/json; charset=utf-8')
-                reader.assert_not_called()
+        with (
+            self.subTest(),
+            override_settings(),
+            patch('vivo_app.lib.source_pages.read_source') as reader,
+        ):
+            response = self.client.get('/search', filters)
+            assert isinstance(response, HttpResponse)
+            self.assertContains(response, 'Oops! Something went wrong', status_code=500)
+            self.assertEqual(response['Content-Type'], 'text/html; charset=utf-8')
+            self.assertContains(response, 'name="q"', status_code=500)
+            self.assertContains(response, 'action="/search"', status_code=500)
+            self.assertContains(response, 'autofocus', status_code=500)
+            self.assertNotContains(response, '<html_ent ', status_code=500)
+            search_json = self.client.get('/search', {**filters, 'format': 'json'})
+            assert isinstance(search_json, HttpResponse)
+            self.assertEqual(search_json.status_code, 500)
+            self.assertEqual(search_json.content, b'{"status":500,"error":"Internal Server Error"}')
+            self.assertEqual(search_json['Content-Type'], 'application/json; charset=UTF-8')
+            facets = self.client.get('/search_facets', {**filters, 'f_name': 'published_in'})
+            assert isinstance(facets, HttpResponse)
+            self.assertEqual(facets.status_code, 500)
+            self.assertEqual(facets.content, b'null')
+            self.assertEqual(facets['Content-Type'], 'application/json; charset=utf-8')
+            reader.assert_not_called()

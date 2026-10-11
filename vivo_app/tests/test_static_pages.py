@@ -70,45 +70,28 @@ class StaticPageTests(TestCase):
         finally:
             set_script_prefix(previous)
 
-    @override_settings(
-        SOLR_URL='https://source.invalid/solr',
-        UPSTREAM_RECORDING_MANIFEST='unused-recordings.json',
-        TURNSTILE_ENABLED=False,
-    )
-    def test_information_pages_render_in_source_modes(self) -> None:
+    @override_settings(SOLR_URL='https://source.invalid/solr', TURNSTILE_ENABLED=False)
+    def test_information_pages_render_without_source_reads(self) -> None:
         """
-        Checks static information renders without source requests in every source mode.
+        Checks static information renders without source requests in ordinary operation.
         """
-        for mode in ('live', 'replay', 'prepared'):
-            with self.subTest(mode=mode), override_settings(PAGE_DATA_MODE=mode):
-                for name, heading in (
-                    ('about', 'About Researchers@Brown'),
-                    ('help', 'Researchers@Brown Help'),
-                    ('faq', 'Frequently Asked Questions'),
-                    ('history', 'VIVO History and Implementation'),
-                    ('publications', 'Managing Your Publications'),
-                    ('roadmap', 'Improvements and Roadmap'),
-                    ('terms', 'Terms of Use'),
-                    ('help_viz', 'Visualize it!'),
-                    ('brown', 'Brown University'),
-                ):
-                    route = {'terms': 'termsOfUse', 'help_viz': 'help/viz'}.get(name, name)
-                    for path in ('/' + route, '/' + route + '/'):
-                        response = self.client.get(path)
-                        assert isinstance(response, HttpResponse)
-                        self.assertEqual(response.status_code, 200)
-                        self.assertTemplateUsed(response, 'home/' + name + '.html')
-                        self.assertContains(response, heading)
-                        self.assertContains(response, '/css/public.css?v=')
-
-    def test_brown_classic_redirects_to_search(self) -> None:
-        response = self.client.get(reverse('brown_classic'), {'name': 'Jane_Doe'})
-        assert isinstance(response, HttpResponse)
-        expected_location: str = f'{reverse("search")}?q=Jane+Doe'
-        self.assertRedirects(response, expected_location, fetch_redirect_response=False)
-
-    def test_brown_classic_named_path_redirects(self) -> None:
-        response = self.client.get(reverse('brown_classic_named', args=['John_Doe']))
-        assert isinstance(response, HttpResponse)
-        expected_location: str = f'{reverse("search")}?q=John+Doe'
-        self.assertRedirects(response, expected_location, fetch_redirect_response=False)
+        with self.subTest(), override_settings():
+            for name, heading in (
+                ('about', 'About Researchers@Brown'),
+                ('help', 'Researchers@Brown Help'),
+                ('faq', 'Frequently Asked Questions'),
+                ('history', 'VIVO History and Implementation'),
+                ('publications', 'Managing Your Publications'),
+                ('roadmap', 'Improvements and Roadmap'),
+                ('terms', 'Terms of Use'),
+                ('help_viz', 'Visualize it!'),
+                ('brown', 'Brown University'),
+            ):
+                route = {'terms': 'termsOfUse', 'help_viz': 'help/viz'}.get(name, name)
+                for path in ('/' + route, '/' + route + '/'):
+                    response = self.client.get(path)
+                    assert isinstance(response, HttpResponse)
+                    self.assertEqual(response.status_code, 200)
+                    self.assertTemplateUsed(response, 'home/' + name + '.html')
+                    self.assertContains(response, heading)
+                    self.assertContains(response, '/css/public.css?v=')

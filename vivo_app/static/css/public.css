@@ -2249,14 +2249,14 @@ td.citation-data.pub-item {
 	padding: 10px;
 }
 /* The public profile template owns this spacing instead of saved inline styles. */
-.prepared-publications-heading { padding-bottom: 21px; }
+.publications-heading { padding-bottom: 21px; }
 
 /* Match the Rails result wrapper without repeating a document ID. */
-.prepared-result-intro { display: flex; flex-direction: column; margin: auto auto 20px; }
-@media screen and (max-width: 991px) { .prepared-result-intro { margin: 0; } }
+.result-intro { display: flex; flex-direction: column; margin: auto auto 20px; }
+@media screen and (max-width: 991px) { .result-intro { margin: 0; } }
 
 /* Saved search-match previews retain the reference page's text treatment. */
-.prepared-match-tooltip {
+.match-tooltip {
   position: absolute;
   z-index: 9999;
   padding: 8px;
@@ -2269,9 +2269,9 @@ td.citation-data.pub-item {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 16px;
 }
-.prepared-match-tooltip .ui-tooltip-content { max-width: 300px; text-align: left; }
-.prepared-match-tooltip strong { color: blue; background-color: #F5F2EC; }
+.match-tooltip .ui-tooltip-content { max-width: 300px; text-align: left; }
+.match-tooltip strong { color: blue; background-color: #F5F2EC; }
 
-.prepared-data #wrapper-content { min-height: 0; }
+.public-page #wrapper-content { min-height: 0; }
 #section_overview #tabPublications > h3,
 #section_overview #tabAffiliations > h3 { padding-bottom: 21px; }

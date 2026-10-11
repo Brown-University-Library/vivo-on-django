@@ -3,7 +3,7 @@
 {% block title %}{{ graph.page_title }} {% if graph.kind == 'coauthors' %}Coauthor{% else %}Collaborator{% endif %} network{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% versioned_static 'css/network_graph.css' %}">{% endblock %}
 {% block content %}
-{% include "includes/prepared_search.html" %}
+{% include "includes/search_form.html" %}
 <div class="network-page{% if graph.type == 'PEOPLE' and not graph.empty_network %} network-person{% elif graph.type != 'PEOPLE' %} network-organization{% endif %}{% if graph.empty_network %} network-empty{% if graph.kind == 'coauthors' %} network-empty-coauthor{% else %} network-empty-collaboration{% endif %}{% endif %}">
   <h1 class="researcherName">{{ graph.name }}</h1>
   {% if graph.title %}<h3 class="facultyTitle">{{ graph.title }}</h3>{% endif %}

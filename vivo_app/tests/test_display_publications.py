@@ -1,44 +1,19 @@
-from django.test import TestCase
+"""
+Checks unsupported publication entry paths retain their existing unavailable response.
+"""
+
+from django.http import HttpResponse
+from django.test import SimpleTestCase
 
 
-class DisplayPublicationsTests(TestCase):
-    def test_publications_json_people(self):
-        resp = self.client.get("/display/n7/publications/?format=json")
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.headers.get("Content-Type"), "application/json")
-        data = resp.json()
-        self.assertEqual(data.get("id"), "n7")
-        self.assertEqual(data.get("type"), "PEOPLE")
-        pubs = data.get("publications")
-        self.assertIsInstance(pubs, list)
-        self.assertGreaterEqual(len(pubs), 2)
-        self.assertIn("Sample Publication 1 for n7", pubs[0].get("title", ""))
-
-    def test_publications_html_people(self):
-        resp = self.client.get("/display/n7/publications/")
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn(b"Publications", resp.content)
-        self.assertIn(b"Sample Publication", resp.content)
-
-    def test_publications_json_org(self):
-        resp = self.client.get("/display/org123/publications/?format=json")
-        self.assertEqual(resp.status_code, 200)
-        data = resp.json()
-        self.assertEqual(data.get("id"), "org123")
-        self.assertEqual(data.get("type"), "ORGANIZATION")
-        self.assertIsInstance(data.get("publications"), list)
-
-    def test_publications_json_unknown(self):
-        resp = self.client.get("/display/x999/publications/?format=json")
-        self.assertEqual(resp.status_code, 200)
-        data = resp.json()
-        self.assertEqual(data.get("id"), "x999")
-        # unknown type returns None
-        self.assertIsNone(data.get("type"))
-        self.assertIsInstance(data.get("publications"), list)
-        self.assertEqual(len(data.get("publications")), 0)
-
-    def test_publications_html_unknown(self):
-        resp = self.client.get("/display/x999/publications/")
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn(b"No publications yet.", resp.content)
+class DisplayPublicationsTests(SimpleTestCase):
+    def test_publication_entry_remains_unavailable(self) -> None:
+        """
+        Checks HTML and JSON query variants retain the same status, media type, and message.
+        """
+        for query in ('', '?format=json'):
+            response = self.client.get('/display/example/publications/' + query)
+            assert isinstance(response, HttpResponse)
+            self.assertEqual(response.status_code, 503)
+            self.assertEqual(response['Content-Type'], 'text/plain')
+            self.assertEqual(response.content, b'This endpoint is not connected to source data yet.')

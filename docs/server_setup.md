@@ -11,7 +11,7 @@ These procedures apply to the current application. Keep actual configuration, ad
 
 ## Prepare the installation
 
-1. Keep the private environment file outside the checkout. Configure live sources using [source configuration](source_journey.md), or supply compatible external inputs for a retained offline mode.
+1. Keep the private environment file outside the checkout. Configure sources using [source configuration](source_journey.md).
 2. Create the writable directories required by database, cache, logs, and STATIC_ROOT settings.
 3. Install locked packages with the appropriate group: `uv sync --locked --group staging` or `uv sync --locked --group prod`. The groups supply PyMySQL for homepage books. Use the existing process manager and WSGI configuration.
 4. Keep the existing access restriction. ALLOWED_HOSTS_JSON checks the requested hostname; it does not authenticate visitors.
@@ -38,13 +38,13 @@ A general `uv run ./manage.py check --deploy` also reports settings that depend 
 
 ## Source checks
 
-Without --source, this checks the selected mode and validates prepared inputs if selected; it makes no source-service requests:
+Without --source, this checks required source configuration; it makes no source-service requests:
 
 ```console
 uv run ./manage.py check_dev_sources
 ```
 
-With --source, the command checks only named live services, independently of PAGE_DATA_MODE. These commands send read-only requests or read active book rows. They change no source data or environment values:
+With --source, the command checks only named services. These commands send read-only requests or read active book rows. They change no source data or environment values:
 
 ```console
 uv run ./manage.py check_dev_sources --source solr
@@ -64,4 +64,6 @@ After environment changes, restart through the existing process manager. Check /
 
 Load affected pages through the existing access restriction. Check returned content and delivered assets, including a search, profile, organization, and homepage when their sources change. Workstation access and a successful version response do not establish server-source connectivity.
 
-Retained prepared mode also needs a compatible external bundle. `uv run ./manage.py validate_prepared_data` checks it without service requests. Fix the configured path or supply the required files, then restart to load a new bundle. See [the retained-code review](code_retirement_review.md).
+Remove obsolete data-selection and saved-bundle entries from the private environment file when updating an older installation. Keep a private copy of the prior configuration if reverting the code may be necessary. Preserve source-service settings and TEAM_SOURCE_MANIFEST.
+
+After stylesheet renames, run collectstatic and verify that the organization page requests css/organization.css successfully. Check browser caches and the actual delivered files. Avoid deleting shared static output blindly.
