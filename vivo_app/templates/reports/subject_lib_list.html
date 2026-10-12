@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .report-list td { width: 30%; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div>
+    <h2>Subject Librarian Reports</h2>
+    <p>Download the data for a specific report</p>
+    <table class="report-list">
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Excel/XML</th>
+            <th>CSV</th>
+        </tr>
+        {% for report in reports %}
+        <tr>
+            <td>{{ report.name|default_if_none:'' }}</td>
+            <td>{{ report.description|default_if_none:'' }}</td>
+            <td><a href="{% url 'subject_lib_format' list_id=report.id fmt='xml' %}">download</a></td>
+            <td><a href="{% url 'subject_lib_format' list_id=report.id fmt='csv' %}">download</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

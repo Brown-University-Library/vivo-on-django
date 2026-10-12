@@ -19,12 +19,17 @@ Paths below are relative to the application's configured browser prefix. IDs, qu
 | `/source-images/…`, `/source-documents/…`, `/docs/…`, `/file/…` | Images, documents, PDFs, supported redirects, and legacy links. | Configured sources. |
 | `/display/`, `/people`, `/ous`, `/individual/{id}` | Existing redirects and their reviewed destinations. | Redirects and destination data. |
 | Informational pages | About, Help, FAQ, terms, history, roadmap, publications, visualization help, institution pages, aliases, and anchors. | Templates and assets. |
-| `/reports/subject-lib` | Redirect home rather than render the separate report workflow. | No report source read for this entry. |
+| `/reports/subject-lib` and `/reports/subject-lib/` | Protected report list with names, descriptions, and CSV/XML links. | Private JSON definitions. |
+| `/reports/subject-lib/{id}`, `/{id}/`, `/{id}.csv`, `/{id}.xml` | Protected attachments containing five tables; XML is an Excel-readable SpreadsheetML workbook. Suffix forms also accept a trailing slash. | Private JSON selectors, Solr faculty, and the completed-report cache. |
 | `/challenge` | Configured Turnstile flow, disabled behavior, and sessions. | Turnstile for a configured challenge. |
 | `/status`, `/version/` | Status/error behavior and distinction between checkout and loaded revisions. | Solr for status; local revision data for version. |
 | `/services/data/v1/faculty/{id}` | Registered handoff to the separate data service. | Existing service outside this webapp. |
 
 Use exact registered routes for suffixes and slash aliases. Keep export routes before the generic individual redirect. An HTTP 200 alone does not establish correct content or download metadata.
+
+Report URLs check the trusted server attribute before reading definitions or cached downloads. Shibboleth handles sign-in and staff eligibility. Report IDs retain Rails' leading-integer interpretation. A suffix takes precedence over the `format` query parameter; only `xml` selects XML, and other values use CSV. GET and HEAD are supported. Unknown IDs return an HTML 404; unusable definitions, source failures, and report-generation failures return an HTML 500. These URLs do not provide report JSON.
+
+Reports keep Rails faculty order, course/research-area sorting, publication sorting, five section headings, text truncation, filename cleanup, and attachment media types. CSV uses LF rows with CRLF between sections and distinguishes null from empty text. XML uses string cells and numeric escapes for non-ASCII characters. The eight-hour default cache serves both formats from the same faculty reads; see [report configuration](source_journey.md#subject-librarian-reports) for freshness and local development settings.
 
 Search accepts `q`, `page`, `rows`, `fq`, and names beginning with `fq_`, matching the Rails search parser. Other search parameter names are dropped and logged without their values. The search continues using the accepted parameters; dropped names do not become Solr query options. As in Rails, `rows` cannot change the fixed 20-result page size. Existing query-value limits and the allowed filter fields still apply. The views handle `format=json` and the facet selector `f_name` separately.
 

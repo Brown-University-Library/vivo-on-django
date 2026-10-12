@@ -35,6 +35,8 @@ For layouts, inspect desktop/narrow views through the footer. Keep current font 
 
 Before reusing earlier comparisons, check current code, source content, assets, viewport, fonts, and control state. Record new observations for changed areas. This is regression work for the current request, not a continuation of retired batches.
 
+For report changes, run `uv run ./run_tests.py vivo_app -v`. Report tests cover JSON validation, trusted server access, mounted links, CSV/XML bytes and cells, source ordering and failures, timeout behavior, and generation shared by separate worker processes. They use temporary files and made-up records. For live comparisons, identify each URL as Rails or Django, retain real files outside Git, and set the Django report timeout to zero. Compare the list through the footer at desktop and narrow widths and compare both formats for every configured report. Same-input Ruby/Django comparisons separate export differences from changes in source data.
+
 ## Use the retained comparison tool
 
 [Browser comparison](browser_comparison.md) explains commands and file/network behavior. The tool can capture a reference, compare pages, and check its detector. Generated files remain outside Git.

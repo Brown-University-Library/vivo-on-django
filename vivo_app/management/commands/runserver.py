@@ -18,6 +18,11 @@ class Command(StaticRunserverCommand):
         Called by: Django runserver inner_run()
         """
         handler = super().get_handler(*args, **options)
+        settings.REPORTS_LOCAL_RUNSERVER = bool(
+            settings.DEBUG
+            and settings.REPORTS_ALLOW_LOCAL_DEVELOPMENT
+            and getattr(self, 'addr', None) in {'127.0.0.1', '::1'}
+        )
         if not options.get('use_static_handler'):
             detail = 'The --nostatic option disables static files. Omit it for a styled local preview.'
         elif not settings.DEBUG and not options.get('insecure_serving'):

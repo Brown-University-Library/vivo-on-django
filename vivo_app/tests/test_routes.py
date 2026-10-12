@@ -13,7 +13,6 @@ class RoutesTests(SimpleTestCase):
         """
         for path, status, location in (
             ('/display/', 302, '/search'),
-            ('/reports/subject-lib/', 302, '/'),
             ('/people/', 302, 'http://testserver/search?fq=record_type|PEOPLE'),
             ('/ous/', 302, 'http://testserver/search?fq=record_type|ORGANIZATION'),
             ('/individual/example/', 303, 'http://testserver/display/example'),
@@ -28,7 +27,7 @@ class RoutesTests(SimpleTestCase):
         """
         Checks previously rejected handlers cannot expose sample pages after cleanup.
         """
-        for path in ('/display/example/viz/', '/reports/subject-lib/example/', '/side_stuff/brown_classic/'):
+        for path in ('/display/example/viz/', '/side_stuff/brown_classic/'):
             response = self.client.get(path)
             assert isinstance(response, HttpResponse)
             self.assertEqual(response.status_code, 503)

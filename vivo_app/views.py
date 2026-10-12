@@ -13,6 +13,7 @@ from django.contrib.sessions.backends.base import SessionBase
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse, StreamingHttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 
 from .lib import version_helper
@@ -29,6 +30,8 @@ from .lib.page_data import (
 from .lib.page_errors import MissingRecordError, PageDataError
 from .lib.page_rendering import data_unavailable, query_pairs, render_or_stub
 from .lib.profile_navigation import profile_search_return
+from .lib.report_cache import cached_report
+from .lib.reports import ReportError, load_reports, rails_integer, report_access
 from .lib.search_errors import ReferenceSearchError
 from .lib.source_documents import document_response
 from .lib.source_formats import organization_json_data, profile_json_data, profile_json_text, raw_record_json_data
@@ -578,23 +581,57 @@ def original_document(request: HttpRequest, filename: str) -> HttpResponse | Str
 
 
 # Reports
+@never_cache
+@require_http_methods(['GET', 'HEAD'])
 def subject_lib_list(request: HttpRequest) -> HttpResponse:
     """
-    Redirects the public report entry home.
+    Shows the report definitions after checking trusted server access.
 
     Called by: config.urls report-list routes
     """
-    response = redirect(reverse('home'))
+    try:
+        if not report_access(request.META):
+            response = HttpResponse(b'Report access requires Shibboleth.', status=403, content_type='text/plain')
+        else:
+            response = render(request, 'reports/subject_lib_list.html', {'reports': load_reports()})
+    except ReportError as exc:
+        logger.error('report_error, ``%s``', exc)
+        response = render(
+            request, 'reports/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500
+        )
     return response
 
 
-def subject_lib(request: HttpRequest, list_id: str) -> HttpResponse:
+@never_cache
+@require_http_methods(['GET', 'HEAD'])
+def subject_lib(request: HttpRequest, list_id: str, fmt: str | None = None) -> HttpResponse:
     """
-    Preserves the unavailable response for this unsupported public route.
+    Returns a protected report attachment using the shared completed-report cache.
 
     Called by: config.urls
     """
-    return HttpResponse(b'This endpoint is not connected to source data yet.', status=503, content_type='text/plain')
+    try:
+        if not report_access(request.META):
+            response = HttpResponse(b'Report access requires Shibboleth.', status=403, content_type='text/plain')
+        else:
+            identifier = rails_integer(list_id)
+            report = next((report for report in load_reports() if report.id == identifier), None)
+            if report is None:
+                response = render(
+                    request, '404.html', {'hero_background_relpath': get_random_background_relpath()}, status=404
+                )
+            else:
+                bundle = cached_report(report)
+                download = bundle.xml if (fmt or request.GET.get('format')) == 'xml' else bundle.csv
+                response = HttpResponse(download.body, content_type=download.content_type)
+                response['Content-Disposition'] = f'attachment; filename="{download.filename}"'
+                response['X-Content-Type-Options'] = 'nosniff'
+    except ReportError as exc:
+        logger.error('report_error, ``%s``', exc)
+        response = render(
+            request, 'reports/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500
+        )
+    return response
 
 
 # Bot detection
