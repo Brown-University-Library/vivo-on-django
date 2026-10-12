@@ -17,6 +17,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from vivo_app.lib.reports import cache_timeout
+
 # Load quoted strings from .env; convert booleans, ports, and JSON below.
 load_dotenv()
 
@@ -243,6 +245,12 @@ VIZ_SERVICE_URL = os.getenv('VIZ_SERVICE_URL', '')
 VIVO_BACKEND_URL = os.getenv('VIVO_BACKEND_URL', '')
 VIZ_ENABLED = os.getenv('VIZ_ENABLED', 'true').lower() == 'true'
 TEAM_SOURCE_MANIFEST = os.getenv('TEAM_SOURCE_MANIFEST', '')
+REPORT_DEFINITIONS_PATH = os.getenv('REPORT_DEFINITIONS_PATH', '')
+REPORT_CACHE_TIMEOUT_SECONDS = cache_timeout(os.getenv('REPORT_CACHE_TIMEOUT_SECONDS', '28800'))
+REPORT_CACHE_LOCK_DIR = os.getenv('REPORT_CACHE_LOCK_DIR', '../cache_dir/report_locks')
+REPORTS_SHIB_ATTRIBUTE = os.getenv('REPORTS_SHIB_ATTRIBUTE', 'Shibboleth-isMemberOf')
+REPORTS_ALLOW_LOCAL_DEVELOPMENT = os.getenv('REPORTS_ALLOW_LOCAL_DEVELOPMENT', 'false').lower() == 'true'
+REPORTS_LOCAL_RUNSERVER = False  # Set only by our loopback-bound development command; never read from .env.
 
 # Live reload in development (opt-in via environment configuration)
 ENABLE_BROWSER_RELOAD = os.getenv('DJANGO_BROWSER_RELOAD', 'false').lower() == 'true'

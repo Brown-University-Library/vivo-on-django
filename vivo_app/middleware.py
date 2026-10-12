@@ -64,6 +64,7 @@ class SourceDataMiddleware:
             'source_document',
             'source_image',
             'subject_lib_list',
+            'subject_lib',
             'version',
             'visualization_coauthor',
             'visualization_coauthor_treemap',

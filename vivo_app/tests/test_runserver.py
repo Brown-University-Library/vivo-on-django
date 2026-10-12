@@ -17,6 +17,24 @@ from vivo_app.management.commands.runserver import Command
 class RunserverTests(SimpleTestCase):
     """Checks Django's actual static handler without starting a network server."""
 
+    @override_settings(DEBUG=True, REPORTS_ALLOW_LOCAL_DEVELOPMENT=True, REPORTS_LOCAL_RUNSERVER=False)
+    def test_report_development_access_requires_loopback_binding(self) -> None:
+        """
+        Checks only an explicit loopback binding enables the requested local report exception.
+        """
+        command = Command()
+        for address, expected in [('127.0.0.1', True), ('::1', True), ('0.0.0.0', False), ('192.0.2.1', False)]:
+            command.addr = address
+            command.get_handler(use_static_handler=True, insecure_serving=False)
+            self.assertEqual(settings.REPORTS_LOCAL_RUNSERVER, expected)
+        command.addr = '127.0.0.1'
+        with override_settings(DEBUG=False):
+            command.get_handler(use_static_handler=True, insecure_serving=True)
+            self.assertFalse(settings.REPORTS_LOCAL_RUNSERVER)
+        with override_settings(REPORTS_ALLOW_LOCAL_DEVELOPMENT=False):
+            command.get_handler(use_static_handler=True, insecure_serving=False)
+            self.assertFalse(settings.REPORTS_LOCAL_RUNSERVER)
+
     @override_settings(DEBUG=True)
     def test_local_preview_serves_styles(self) -> None:
         """

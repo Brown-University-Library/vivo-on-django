@@ -7,6 +7,7 @@ These procedures apply to the current application. Keep actual configuration, ad
 - [Prepare the installation](#prepare-the-installation)
 - [Check code and static files](#check-code-and-static-files)
 - [Source checks](#source-checks)
+- [Protected reports](#protected-reports)
 - [Restart and verify](#restart-and-verify)
 
 ## Prepare the installation
@@ -57,6 +58,15 @@ uv run ./manage.py check_dev_sources --source books
 ```
 
 Solr reads a count. Search/facets exercise their processors. Profile checks the requested person's collaborator data. Viz reads an availability list. VIVO reports status and a digest of the selected JSON-LD response. Books reads active rows and checks the image prefix. Failures return a nonzero exit status. Printed results omit actual addresses and returned record content.
+
+## Protected reports
+
+1. Place the private report-definition JSON outside the checkout, with read access for Django. Set `REPORT_DEFINITIONS_PATH`; relative paths resolve against the checkout. See [the file format](source_journey.md#subject-librarian-reports). No report migration is needed.
+2. Configure Shibboleth on both dev and prod to admit eligible staff to every Django report path, including the two list forms, extensionless downloads, CSV/XML downloads, slash aliases, and the application mount prefix. Configure sign-in to return staff to their requested Django URL.
+3. Supply `Shibboleth-isMemberOf` as a trusted WSGI request-environment attribute. Set `REPORTS_SHIB_ATTRIBUTE` if the environment name differs. Use the server's attribute/environment integration rather than ordinary HTTP request headers. Django checks for a nonempty value; staff eligibility remains the web server's responsibility.
+4. Leave `REPORTS_ALLOW_LOCAL_DEVELOPMENT=false` on both deployed servers, including dev. The workstation exception is limited to Django's loopback-bound development server.
+5. Ensure Django can write its file-based cache and `REPORT_CACHE_LOCK_DIR`, with both shared by workers on that server and outside publicly served directories. Cache entries contain report data. Set `REPORT_CACHE_TIMEOUT_SECONDS` if eight hours is unsuitable, then restart Django after environment changes.
+6. Test staff sign-in and return, rejected access, both list paths, every download form, and repeated CSV/XML downloads on dev. Compare fresh output with Rails using a zero timeout for the comparison, then restore the chosen timeout and verify reuse. Repeat access and download checks on prod when deploying. A local browser comparison cannot verify server access rules.
 
 ## Restart and verify
 
