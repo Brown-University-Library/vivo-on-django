@@ -492,49 +492,6 @@ def visualization_research(request: HttpRequest, id: str, fmt: str = '') -> Http
         return data_unavailable(exc)
 
 
-# Edit functionality
-@require_http_methods(['GET'])
-def edit_profile(request, id):
-    """Edit profile page."""
-    context = {'id': id}
-    return render_or_stub(request, 'edit/profile.html', context)
-
-
-@require_http_methods(['POST'])
-def overview_update(request, faculty_id):
-    """Update overview information."""
-    # TODO: Implement update logic
-    return JsonResponse({'status': 'success'})
-
-
-@require_http_methods(['POST'])
-def research_area_add(request, faculty_id):
-    """Add research area."""
-    # TODO: Implement add logic
-    return JsonResponse({'status': 'success'})
-
-
-@require_http_methods(['POST'])
-def research_area_delete(request, faculty_id):
-    """Delete research area."""
-    # TODO: Implement delete logic
-    return JsonResponse({'status': 'success'})
-
-
-@require_http_methods(['POST'])
-def web_link_save(request, faculty_id):
-    """Save web link."""
-    # TODO: Implement save logic
-    return JsonResponse({'status': 'success'})
-
-
-@require_http_methods(['POST'])
-def web_link_delete(request, faculty_id):
-    """Delete web link."""
-    # TODO: Implement delete logic
-    return JsonResponse({'status': 'success'})
-
-
 # Search
 def search(request: HttpRequest) -> HttpResponse:
     """
@@ -775,13 +732,6 @@ def individual_export(request: HttpRequest, id: str, fmt: str, id2: str | None =
         return result
     except PageDataError as exc:
         return data_unavailable(exc)
-
-
-# Editor fast search (de-prioritized functionality; stub only)
-@require_http_methods(['GET'])
-def edit_fast_search(request):
-    query = request.GET.get('q', '')
-    return JsonResponse({'query': query, 'results': []})
 
 
 def page_not_found(request, exception=None, template_name='404.html'):
