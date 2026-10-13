@@ -4,6 +4,7 @@
 
 - [Run the automated tests](#run-the-automated-tests)
 - [Check changed Python files](#check-changed-python-files)
+- [Check local error email](#check-local-error-email)
 - [Check affected pages and responses](#check-affected-pages-and-responses)
 - [Use the retained comparison tool](#use-the-retained-comparison-tool)
 
@@ -26,6 +27,33 @@ The runner selects made-up source settings before loading the private environmen
 Run Ruff checking and formatting checks on changed Python files. Use Pylance with the project's interpreter/settings, or Pyright if Pylance is unavailable. Fix reported problems rather than suppressing them.
 
 For a temporary missing helper package, use `uv run --no-project --with PACKAGE python SCRIPT ARGS`. Keep it out of the application's declarations.
+
+## Check local error email
+
+The `/error_check/` view raises an intentional exception when `DEBUG=True`. Django shows its error page and sends one administrator email through the `django.request` logger. With `DEBUG=False`, this endpoint returns 404 and sends no email. Other request errors can send administrator emails in either mode.
+
+1. Set these values in the private `../.env` for a local SMTP listener:
+
+   ```dotenv
+   DJANGO_DEBUG="true"
+   ADMINS_JSON='[["Local administrator", "admin@example.com"]]'
+   SERVER_EMAIL="errors@example.com"
+   EMAIL_HOST="localhost"
+   EMAIL_PORT="1026"
+   EMAIL_USE_TLS="false"
+   ```
+
+2. Start the listener in another terminal:
+
+   ```bash
+   uv run --no-project --python 3.12 --with aiosmtpd -m aiosmtpd -n -c aiosmtpd.handlers.Debugging --listen localhost:1026
+   ```
+
+   This prints received messages in that terminal; it does not deliver them to an inbox.
+
+3. Restart `runserver` to load the environment, then open <http://127.0.0.1:8000/error_check/> once. Expect HTTP 500, the intentional exception page, and one message in the SMTP terminal containing the traceback. A 500 response alone does not confirm email delivery.
+
+If there is no message, check the settings in the running process: `ADMINS` must contain a recipient, and the SMTP host, port, and TLS settings must match the listener. Django's error-email handler silently ignores delivery failures. This app reads `DJANGO_DEBUG`; `DEBUG_JSON` has no effect. Exported shell values override `.env`, and changing `.env` requires a process restart.
 
 ## Check affected pages and responses
 
