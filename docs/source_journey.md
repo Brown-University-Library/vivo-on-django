@@ -5,6 +5,7 @@
 - [Configure sources](#configure-sources)
 - [Homepage books](#homepage-books)
 - [Teams and custom organizations](#teams-and-custom-organizations)
+- [Public display downloads](#public-display-downloads)
 - [Subject librarian reports](#subject-librarian-reports)
 - [Failures and diagnosis](#failures-and-diagnosis)
 
@@ -43,6 +44,14 @@ Use made-up values when documenting the format:
 
 Missing required definitions produce errors. A configured member absent from Solr is skipped as in the original application. Real files stay outside Git.
 
+## Public display downloads
+
+CSV/XML downloads under `/display/` read full faculty records from Solr. Organization downloads use the organization's people, remove repeated faculty IDs, and include the existing custom additions. Configured teams use `TEAM_SOURCE_MANIFEST`. Export reads include `fis_updated_s` and `profile_updated_s`; they do not need portraits or graph availability. These downloads do not read `REPORT_DEFINITIONS_PATH` or require the trusted staff attribute.
+
+`REPORT_CACHE_TIMEOUT_SECONDS` controls both public display downloads and subject-librarian reports. It defaults to `28800` seconds (eight hours); set it in `.env` and restart Django to change the lifetime. `0` disables cache reads, writes, and generation locks for both families. Both completed formats share one entry whose lifetime begins after successful generation. Downloading a cached file does not extend its lifetime.
+
+Public cache keys and generation locks are separate from protected-report keys and locks. They use the same Django cache and `REPORT_CACHE_LOCK_DIR`. Changing the source setting, timeout, export version, or applicable private membership definitions selects a new public entry. Definitions are checked on each team/custom-organization request; definition changes during generation stop that attempt. Source faculty and membership changes appear after expiry and regeneration. Failed generation is not cached, and an expired file is not returned after a refresh failure. Concurrent requests wait for the same successful generation, subject to the existing 30-second lock wait limit.
+
 ## Subject librarian reports
 
 `REPORT_DEFINITIONS_PATH` names a private UTF-8 JSON file. Relative paths resolve against the checkout, independent of the process's working directory. Keep the file outside Git. The report handlers read and validate it on every permitted request, retaining the report-array order. They do not query a Rails database or require report models or migrations.
@@ -57,7 +66,7 @@ Use made-up names and records in repository examples; real data stays outside Gi
 
 Generation begins with explicit faculty IDs, then reads every department page from Solr, and removes repeated IDs while retaining first occurrence. Missing faculty are skipped; failed reads and incomplete department paging stop the report. Solr provides current faculty details when the report is generated.
 
-`REPORT_CACHE_TIMEOUT_SECONDS` accepts nonnegative integer seconds and defaults to `28800` (eight hours). `"28_800"` is also accepted. `0` disables report-cache reads, writes, and generation locks for fresh comparisons. Invalid or negative values prevent startup with a clear configuration error. Both formats share one successful cache entry. Its fixed lifetime begins after generation; downloads do not extend it. A definition-file change selects a new cache entry immediately. Changing the source setting, timeout, or export-code version also selects a new entry. Failures are not cached and expired output is not served after a refresh failure. Protected responses use `no-store`; caching occurs only on the server.
+`REPORT_CACHE_TIMEOUT_SECONDS` accepts nonnegative integer seconds and defaults to `28800` (eight hours). `"28_800"` is also accepted. This setting also controls public display downloads. `0` disables cache reads, writes, and generation locks for both families for fresh comparisons. Invalid or negative values prevent startup with a clear configuration error. Both formats share one successful cache entry. Its fixed lifetime begins after generation; downloads do not extend it. A definition-file change selects a new cache entry immediately. Changing the source setting, timeout, or export-code version also selects a new entry. Failures are not cached and expired output is not served after a refresh failure. Protected responses use `no-store`; caching occurs only on the server.
 
 The configured file-based cache and `REPORT_CACHE_LOCK_DIR` coordinate workers on one Unix server. The lock directory defaults to `../cache_dir/report_locks`, relative to the checkout. A waiting request rechecks the cache after obtaining its lock. After 30 seconds of waiting it returns the report error page; staff can retry after the generating request finishes. Process exit releases the lock. Do not remove lock files while workers are running. Separate servers require their own cache and locks, or a separately designed shared-cache arrangement.
 
