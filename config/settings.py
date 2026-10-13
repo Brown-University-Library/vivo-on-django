@@ -52,9 +52,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.example.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'true').lower() == 'true'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'webmaster@example.com')
+ADMINS = json.loads(os.getenv('ADMINS_JSON', '[]'))
+SERVER_EMAIL = os.getenv('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
 
 # Session settings
 SESSION_COOKIE_AGE = 1209600  # 2 weeks, in seconds
@@ -183,6 +183,11 @@ LOGGING = {
         },
     },
     'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
+        },
         'file': {
             'level': 'DEBUG' if DEBUG else 'INFO',
             'class': 'logging.FileHandler',
@@ -196,6 +201,12 @@ LOGGING = {
         },
     },
     'loggers': {
+        'django.request': {
+            # Send request errors even with DEBUG=True; keep file/console logging through django.
+            'handlers': ['mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'django': {
             'handlers': ['file', 'console'],
             'level': 'INFO',

@@ -81,6 +81,31 @@ class EnvironmentSettingsTests(SimpleTestCase):
         """
         Checks that quoting does not make malformed ports or JSON acceptable.
         """
-        for content in ('EMAIL_PORT="invalid"', 'BOOK_COVER_DB_PORT="invalid"', 'ALLOWED_HOSTS_JSON="invalid"'):
+        for content in (
+            'EMAIL_PORT="invalid"',
+            'BOOK_COVER_DB_PORT="invalid"',
+            'ALLOWED_HOSTS_JSON="invalid"',
+            'ADMINS_JSON="invalid"',
+        ):
             with self.subTest(content=content), self.assertRaises(ValueError):
                 read_settings(content)
+
+    def test_administrator_email_settings(self) -> None:
+        """
+        Checks that administrator recipients and the error sender come from the environment.
+        """
+        configured = read_settings(
+            'ADMINS_JSON=\'[["Local administrator", "admin@example.com"]]\'\n'
+            'SERVER_EMAIL="errors@example.com"\n'
+            'DEFAULT_FROM_EMAIL="webmaster@example.com"\n'
+        )
+        self.assertEqual(configured['ADMINS'], [['Local administrator', 'admin@example.com']])
+        self.assertEqual(configured['SERVER_EMAIL'], 'errors@example.com')
+
+    def test_administrator_email_defaults(self) -> None:
+        """
+        Checks that omitted recipients disable email and the sender falls back to the default.
+        """
+        configured = read_settings('DEFAULT_FROM_EMAIL="webmaster@example.com"')
+        self.assertEqual(configured['ADMINS'], [])
+        self.assertEqual(configured['SERVER_EMAIL'], 'webmaster@example.com')
