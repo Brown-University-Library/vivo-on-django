@@ -10,7 +10,14 @@ from urllib.parse import quote, quote_plus, urlencode
 
 from django.conf import settings
 from django.contrib.sessions.backends.base import SessionBase
-from django.http import HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse, StreamingHttpResponse
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseNotAllowed,
+    HttpResponseNotFound,
+    JsonResponse,
+    StreamingHttpResponse,
+)
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
@@ -20,6 +27,8 @@ from .lib import version_helper
 from .lib.advanced_search import advanced_search_query
 from .lib.assets import get_random_background_relpath
 from .lib.bot_detect import SESSION_KEY, verify_token
+from .lib.display_cache import cached_display
+from .lib.display_exports import export_request
 from .lib.error_check import IntentionalErrorCheckError
 from .lib.page_data import (
     get_home_data,
@@ -277,6 +286,20 @@ def display_show(request: HttpRequest, id: str) -> HttpResponse:
     Called by: config.urls
     """
     try:
+        query_format = request.GET.get('format')
+        export = export_request(id, query_format if isinstance(query_format, str) else None)
+        if export is not None:
+            if request.method not in {'GET', 'HEAD'}:
+                return HttpResponseNotAllowed(['GET', 'HEAD'])
+            identifier, fmt = export
+            bundle = cached_display(identifier)
+            download = bundle.csv if fmt == 'csv' else bundle.xml
+            response = HttpResponse(download.body, content_type=download.content_type)
+            response['Content-Disposition'] = (
+                f'attachment; filename="{download.filename}"; filename*=UTF-8\'\'{download.filename}'
+            )
+            response['X-Content-Type-Options'] = 'nosniff'
+            return response
         if request.GET.get('format') == 'json_txt' or id.endswith('.json_txt'):
             if request.GET and list(query_pairs(request.GET)) != [('format', 'json_txt')]:
                 raise PageDataError('Raw JSON query options are unsupported.')
