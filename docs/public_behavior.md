@@ -13,6 +13,7 @@ Paths below are relative to the application's configured browser prefix. IDs, qu
 | `/search?…&format=json` | Existing JSON values, types, order, and encoding. | Solr. |
 | `/display/{id}` | Person sections, publication filters, organization groups, member links, teams, portraits, graph and document links. | Solr, images, graph availability, and membership definitions. |
 | `/display/{person_id}.json` | Profile JSON handled by the display view, distinct from VIVO JSON-LD. | Solr and graph availability. |
+| `/display/{id}.csv`, `/display/{id}.xml`, and `?format=csv` or `?format=xml` | Public faculty, organization, and configured-team attachments with five tables. Suffix and query forms accept a trailing slash on the path. | Solr faculty and membership, private team/custom additions, and the public export cache. |
 | `/display/{organization_id}/publications.tsv` | Publication rows, columns, bytes, and download metadata. | Solr membership and faculty data. |
 | `/display/{id}/viz/…` | Graphs, treemaps, publication/research charts, controls, exports, and empty states. | Visualization service or calculations from Solr. |
 | `/individual/{id}/{id}.{format}` and registered legacy forms | JSON-LD, Turtle, RDF/XML, applicable redirects, Accept handling, and original bytes. | VIVO/Vitro. |
@@ -26,6 +27,10 @@ Paths below are relative to the application's configured browser prefix. IDs, qu
 | `/services/data/v1/faculty/{id}` | Registered handoff to the separate data service. | Existing service outside this webapp. |
 
 Use exact registered routes for suffixes and slash aliases. Keep export routes before the generic individual redirect. An HTTP 200 alone does not establish correct content or download metadata.
+
+Public display downloads use filenames based on the requested ID. Both CSV and XML retain Rails' `application/xml` media type; XML is Excel-readable SpreadsheetML. A CSV/XML suffix takes precedence over the query format. Without a suffix, the last repeated `format` value selects the export. GET and HEAD are supported; other methods for these downloads return 405. Missing source records return the existing HTML 404; source, generation, or cache failures return the existing display error page with status 500. An empty organization produces five headings without faculty rows. Unsupported formats do not fall back to CSV. Existing HTML, JSON, and raw-JSON handling retains its existing validation.
+
+Organizations export each distinct member's full faculty record, including update dates and the faculty's own title and organization label. Custom additions and configured teams use existing membership definitions. Member reads use Rails' twenty-record batches and preserve source order within each batch. Missing members are skipped; incomplete or failed source responses stop generation. Public downloads require neither staff attributes nor report definitions. Their server cache shares `REPORT_CACHE_TIMEOUT_SECONDS` with protected reports, defaults to eight hours, and stores both completed formats together under separate public keys. See [public export sources](source_journey.md#public-display-downloads).
 
 Report URLs check the trusted server attribute before reading definitions or cached downloads. Shibboleth handles sign-in and staff eligibility. Report IDs retain Rails' leading-integer interpretation. A suffix takes precedence over the `format` query parameter; only `xml` selects XML, and other values use CSV. GET and HEAD are supported. Unknown IDs return an HTML 404; unusable definitions, source failures, and report-generation failures return an HTML 500. These URLs do not provide report JSON.
 
