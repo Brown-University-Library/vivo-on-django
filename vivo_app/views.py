@@ -31,9 +31,8 @@ from .lib.display_cache import cached_display
 from .lib.display_exports import export_request
 from .lib.error_check import IntentionalErrorCheckError
 from .lib.page_data import (
+    get_display_data,
     get_home_data,
-    get_organization_data,
-    get_profile_data,
     get_search_data,
 )
 from .lib.page_errors import MissingRecordError, PageDataError
@@ -58,6 +57,7 @@ from .lib.source_requests import (
 )
 from .lib.source_status import status_data, status_error_data
 from .lib.source_teams import custom_organization_members
+from .lib.source_types import SourceResponse
 from .lib.version_helper import GatherCommitAndBranchData
 
 logger = logging.getLogger(__name__)
@@ -317,18 +317,17 @@ def display_show(request: HttpRequest, id: str) -> HttpResponse:
                 content_type='application/json; charset=utf-8',
             )
         else:
-            if id.startswith(('org-', 'team-')):
-                organization_data = get_organization_data(request.path_info, query_pairs(request.GET))
-                return render(request, 'display/organization_data.html', {'organization': organization_data})
-            profile_data = get_profile_data(request.path_info, query_pairs(request.GET))
-            return render(
-                request,
-                'display/show.html',
-                {
-                    'profile': profile_data,
-                    'back_to_search': profile_search_return(request),
-                },
-            )
+            display_data = get_display_data(request.path_info, query_pairs(request.GET))
+            if isinstance(display_data, SourceResponse):
+                response = HttpResponse(
+                    display_data.body, status=display_data.status, content_type='application/json; charset=utf-8'
+                )
+                response['X-Content-Type-Options'] = 'nosniff'
+                return response
+            context = dict(display_data.context)
+            if 'profile' in context:
+                context['back_to_search'] = profile_search_return(request)
+            return render(request, display_data.template_name, context)
     except MissingRecordError:
         return page_not_found(request)
     except Exception:

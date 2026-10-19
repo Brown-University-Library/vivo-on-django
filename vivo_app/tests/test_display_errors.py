@@ -21,8 +21,8 @@ class DisplayErrorTests(SimpleTestCase):
         Checks source display failures show HTML, feedback and search without exposing the error.
         """
         cases = (
-            ('org-example', 'get_organization_data'),
-            ('example-person', 'get_profile_data'),
+            ('org-example', 'get_display_data'),
+            ('example-person', 'get_display_data'),
             ('example-person?format=json', 'profile_json_data'),
             ('org-example.json', 'organization_json_data'),
             ('org-example?format=json_txt', 'raw_record_json_data'),
@@ -61,7 +61,7 @@ class DisplayErrorTests(SimpleTestCase):
         original_prefix = get_script_prefix()
         try:
             set_script_prefix(prefix)
-            with patch('vivo_app.views.get_organization_data', side_effect=PageDataError('Example source failure')):
+            with patch('vivo_app.views.get_display_data', side_effect=PageDataError('Example source failure')):
                 response = self.client.get('/display/org-example', SCRIPT_NAME=prefix)
             assert isinstance(response, HttpResponse)
             self.assertContains(response, f'action="{prefix}/search"', status_code=500)
@@ -74,7 +74,7 @@ class DisplayErrorTests(SimpleTestCase):
         """
         Checks an absent organization remains a 404 rather than a server error.
         """
-        with patch('vivo_app.views.get_organization_data', side_effect=MissingRecordError('Example absent record')):
+        with patch('vivo_app.views.get_display_data', side_effect=MissingRecordError('Example absent record')):
             response = self.client.get('/display/org-example')
         assert isinstance(response, HttpResponse)
         self.assertContains(response, 'Page not found', status_code=404)

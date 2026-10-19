@@ -1129,19 +1129,36 @@ def profile_panels(sections: list[dict[str, str]]) -> list[dict[str, str]]:
     return panels
 
 
-def profile_data(identifier: str, reader: SourceReader | None = None) -> dict[str, object]:
+def display_document(identifier: str, reader: SourceReader | None = None) -> dict[str, object]:
     """
-    Supplies a person profile from one Solr record and required lookups.
+    Reads one display record and checks that Solr returned the requested identifier.
 
-    Called by: page_data.get_profile_data(), tests
+    Called by: page_data.get_display_data(), profile_data(), organization_data()
     """
     if reader is None:
         reader = read_source
     response = response_object(profile_key(identifier), reader)
     docs, _ = documents(response)
     if not docs:
-        raise MissingRecordError('The requested profile is absent from Solr.')
+        raise MissingRecordError('The requested display record is absent from Solr.')
     doc = docs[0]
+    if record_id(doc) != identifier:
+        raise PageDataError('Solr returned an unrelated display record.')
+    return doc
+
+
+def profile_data(
+    identifier: str, reader: SourceReader | None = None, *, doc: dict[str, object] | None = None
+) -> dict[str, object]:
+    """
+    Supplies a person profile from one Solr record and required lookups.
+
+    Called by: page_data.get_display_data(), tests
+    """
+    if reader is None:
+        reader = read_source
+    if doc is None:
+        doc = display_document(identifier, reader)
     if first_text(doc.get('record_type')) != 'PEOPLE' or record_id(doc) != identifier:
         raise PageDataError('The requested source record is not a person profile.')
     item = record_data(doc)
@@ -1252,20 +1269,21 @@ def organization_preview_graph() -> dict[str, object]:
 
 
 def organization_data(
-    identifier: str, reader: SourceReader | None = None, extra_member_ids: list[str] | None = None
+    identifier: str,
+    reader: SourceReader | None = None,
+    extra_member_ids: list[str] | None = None,
+    *,
+    doc: dict[str, object] | None = None,
 ) -> dict[str, object]:
     """
     Builds an organization and its member portraits from exact Solr responses.
 
-    Called by: page_data.get_organization_data(), tests
+    Called by: page_data.get_display_data(), tests
     """
     if reader is None:
         reader = read_source
-    response = response_object(profile_key(identifier), reader)
-    docs, _ = documents(response)
-    if not docs:
-        raise MissingRecordError('The requested organization is absent from Solr.')
-    doc = docs[0]
+    if doc is None:
+        doc = display_document(identifier, reader)
     if first_text(doc.get('record_type')) != 'ORGANIZATION' or record_id(doc) != identifier:
         raise PageDataError('The requested source record is not an organization.')
     item = record_data(doc)

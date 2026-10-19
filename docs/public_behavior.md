@@ -38,6 +38,8 @@ Reports keep Rails faculty order, course/research-area sorting, publication sort
 
 Search accepts `q`, `page`, `rows`, `fq`, and names beginning with `fq_`, matching the Rails search parser. Other search parameter names are dropped and logged without their values. The search continues using the accepted parameters; dropped names do not become Solr query options. As in Rails, `rows` cannot change the fixed 20-result page size. Existing query-value limits and the allowed filter fields still apply. The views handle `format=json` and the facet selector `f_name` separately.
 
+Ordinary `/display/{id}` requests select the person or organization HTML page using the Solr record type, rather than the ID prefix. Configured `team-` IDs retain their separate membership handling. Other nonempty record types, including `UNCATEGORIZED`, return the original VIVO JSON-LD bytes with the backend's successful or not-found status and `application/json` content type. Missing Solr records or records without a type return the HTML 404 page. Failed source reads retain the display error page. Explicit JSON, raw-JSON, CSV, and XML requests keep their existing handlers.
+
 ## Supporting services and boundaries
 
 The webapp reads existing services. It does not rebuild Manager, provision Solr, or implement VIVO. External destinations remain separate workflows.
