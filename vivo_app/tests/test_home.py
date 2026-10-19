@@ -7,6 +7,7 @@ that we aim to keep aligned with production.
 
 import json
 from unittest.mock import patch
+from urllib.parse import parse_qs, urlsplit
 
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
@@ -100,3 +101,34 @@ class HomePageTests(TestCase):
         assert isinstance(response, HttpResponse)
         expected_location: str = f'{reverse("search")}?q=Nicole+Nugent'
         self.assertRedirects(response, expected_location, fetch_redirect_response=False)
+
+    def test_unrelated_query_parameters_do_not_change_homepage_data(self) -> None:
+        """
+        Checks unrelated parameters render the homepage without reaching the book-source request.
+        """
+        with patch('vivo_app.lib.source_books.read_source', return_value=SourceResponse(200, (), b'[]')) as source:
+            plain = self.client.get('/')
+            assert isinstance(plain, HttpResponse)
+            self.assertEqual(plain.status_code, 200)
+            expected = source.call_args
+            for query in ('id=example&r=1', 'rest_route=example', 'utm_source=example&url=other', 'alias='):
+                with self.subTest(query=query):
+                    source.reset_mock()
+                    response = self.client.get('/?' + query)
+                    self.assertContains(response, 'Search for a Researcher')
+                    source.assert_called_once()
+                    self.assertEqual(source.call_args, expected)
+
+    def test_alias_stays_an_encoded_local_search_with_extra_parameters(self) -> None:
+        """
+        Checks alias text stays inside the local search query and unrelated parameters are discarded.
+        """
+        alias = 'Example_Name & Other'
+        response = self.client.get('/', {'alias': alias, 'utm_source': 'example', 'next': 'other'})
+        assert isinstance(response, HttpResponse)
+        self.assertEqual(response.status_code, 302)
+        location = urlsplit(response['Location'])
+        self.assertEqual(location.scheme, '')
+        self.assertEqual(location.netloc, '')
+        self.assertEqual(location.path, reverse('search'))
+        self.assertEqual(parse_qs(location.query), {'q': ['Example Name & Other']})

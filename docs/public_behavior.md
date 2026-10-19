@@ -44,6 +44,10 @@ Successful legacy display JSON-LD responses are cached for GET and HEAD using `R
 
 Collaboration CSV requests through `/display/{id}/viz/collab.csv` or `/display/{id}/viz/collab?format=csv` return HTTP 200 with an empty body when the source supplies a valid empty graph. Empty downloads have no header row, matching other graph downloads without connections. JSON retains the source representation and HTML explains that no collaboration data is available. Missing or malformed graph fields and source failures retain HTTP 503 responses.
 
+The homepage uses a nonempty `alias` to redirect to a local search with the alias encoded as search text. Other homepage parameters are ignored. Display requests use `format` to select a representation and ignore other query parameters, including tracking parameters. Ignored parameters are not passed to source readers or included in the legacy JSON-LD cache lookup. They do not change the response format or extend the cache lifetime.
+
+Display CSV/XML suffixes retain precedence over the query format; without a suffix, the last `format` value selects those downloads. JSON suffixes accept an absent or matching query format. Profile JSON accepts repeated matching `format=json` values; raw JSON accepts at most one `format=json_txt` value. On ordinary and JSON display requests, empty, unsupported, or conflicting formats return HTTP 400 before source reads or cache lookup. Explicit formats continue using their own handlers, separate from the ordinary display JSON-LD cache. Django's configured query-field limit remains enforced. These changes apply to homepage and display requests; other endpoint query rules remain unchanged.
+
 ## Supporting services and boundaries
 
 The webapp reads existing services. It does not rebuild Manager, provision Solr, or implement VIVO. External destinations remain separate workflows.

@@ -240,18 +240,78 @@ class DisplayJsonldCacheTests(SimpleTestCase):
         self.assertEqual(cache.get(export_key), b'Example export')
         self.assertEqual(cache.get(report_key), b'Example protected report')
 
-    def test_query_and_post_do_not_reuse_cached_response(self) -> None:
+    def test_ignored_query_reuses_cache_and_post_reads_fresh_sources(self) -> None:
         """
-        Checks invalid query options still fail and POST retains fresh source reads.
+        Checks unrelated parameters share cached bytes and POST retains fresh source reads.
         """
         self.get_display()
         self.requested.clear()
-        with self.assertLogs('vivo_app.views', level='ERROR'):
-            self.assertEqual(self.get_display('/display/invented-other?unexpected=1').status_code, 500)
+        with patch('vivo_app.lib.display_jsonld_cache.cache.set') as write:
+            self.assertEqual(self.get_display('/display/invented-other?unexpected=1').content, self.body)
+            write.assert_not_called()
         self.assertEqual(self.requested, [])
         self.responses[vitro_key('invented-other', 'jsonld')] = SourceResponse(200, (), b'{"label":"Fresh"}')
         self.assertEqual(self.get_display(method='POST').content, b'{"label":"Fresh"}')
         self.assertEqual(len(self.requested), 2)
+        self.assertEqual(self.get_display().content, self.body)
+
+    def test_tracking_request_populates_the_same_cache_entry(self) -> None:
+        """
+        Checks a first request with unrelated parameters creates the entry later used by a plain request.
+        """
+        response = self.get_display('/display/invented-other?utm_source=example&id=other&url=example')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, self.body)
+        self.assertEqual(self.requested, [profile_key('invented-other'), vitro_key('invented-other', 'jsonld')])
+        self.requested.clear()
+        self.assertEqual(self.get_display().content, self.body)
+        self.assertEqual(self.requested, [])
+
+    def test_invalid_formats_do_not_read_or_replace_cached_jsonld(self) -> None:
+        """
+        Checks invalid and conflicting format requests return 400 before source reads or cache lookup.
+        """
+        self.get_display()
+        self.requested.clear()
+        for suffix in (
+            '?format=',
+            '?format=unknown',
+            '?format=json&format=unknown',
+            '?format=csv&format=json',
+            '.json?format=json_txt',
+            '.json_txt?format=json',
+        ):
+            with self.subTest(suffix=suffix), patch('vivo_app.views.cached_display_data') as cached:
+                response = self.get_display('/display/invented-other' + suffix + '&utm_source=example')
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(response.content, b'Unsupported display format.')
+                cached.assert_not_called()
+        self.assertEqual(self.requested, [])
+        self.assertEqual(self.get_display().content, self.body)
+
+    def test_json_formats_with_tracking_keep_their_own_responses(self) -> None:
+        """
+        Checks explicit JSON and raw JSON cannot return or replace the cached legacy response.
+        """
+        self.get_display()
+        self.requested.clear()
+        for suffix, loader in (
+            ('?format=json', 'profile_json_data'),
+            ('.json?utm_medium=example', 'profile_json_data'),
+            ('?format=json_txt', 'raw_record_json_data'),
+            ('.json_txt?utm_medium=example', 'raw_record_json_data'),
+        ):
+            with (
+                self.subTest(suffix=suffix),
+                patch('vivo_app.views.' + loader, return_value={'name': 'Example explicit response'}) as source,
+            ):
+                response = self.get_display('/display/invented-other' + suffix + '&utm_source=example')
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response['Content-Type'].split(';')[0], 'application/json')
+                self.assertIn(b'Example explicit response', response.content)
+                self.assertNotEqual(response.content, self.body)
+                source.assert_called_once_with('invented-other')
+        self.assertEqual(self.requested, [])
         self.assertEqual(self.get_display().content, self.body)
 
     def test_explicit_formats_do_not_use_jsonld_cache(self) -> None:

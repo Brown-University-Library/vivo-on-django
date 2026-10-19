@@ -10,9 +10,11 @@ from urllib.parse import quote, quote_plus, urlencode
 
 from django.conf import settings
 from django.contrib.sessions.backends.base import SessionBase
+from django.core.exceptions import BadRequest, SuspiciousOperation
 from django.http import (
     HttpRequest,
     HttpResponse,
+    HttpResponseBadRequest,
     HttpResponseNotAllowed,
     HttpResponseNotFound,
     JsonResponse,
@@ -150,7 +152,7 @@ def home_index(request):
         return redirect(redirect_url)
 
     try:
-        home_data = get_home_data(request.path_info, query_pairs(request.GET))
+        home_data = get_home_data(request.path_info, [])
         backgrounds = home_data['backgrounds']
         if isinstance(backgrounds, list):
             home_data['hero_background_url'] = random.choice(backgrounds)
@@ -286,6 +288,8 @@ def display_show(request: HttpRequest, id: str) -> HttpResponse:
     Called by: config.urls
     """
     try:
+        ## Only format selects a display representation; other query parameters are ignored.
+        pairs = [(key, value) for key, value in query_pairs(request.GET) if key == 'format']
         query_format = request.GET.get('format')
         export = export_request(id, query_format if isinstance(query_format, str) else None)
         if export is not None:
@@ -300,13 +304,16 @@ def display_show(request: HttpRequest, id: str) -> HttpResponse:
             )
             response['X-Content-Type-Options'] = 'nosniff'
             return response
+        suffix_format = 'json_txt' if id.endswith('.json_txt') else 'json' if id.endswith('.json') else None
+        if suffix_format is not None and any(value != suffix_format for _, value in pairs):
+            return HttpResponseBadRequest(b'Unsupported display format.', content_type='text/plain; charset=utf-8')
         if request.GET.get('format') == 'json_txt' or id.endswith('.json_txt'):
-            if request.GET and list(query_pairs(request.GET)) != [('format', 'json_txt')]:
-                raise PageDataError('Raw JSON query options are unsupported.')
+            if pairs and pairs != [('format', 'json_txt')]:
+                return HttpResponseBadRequest(b'Unsupported display format.', content_type='text/plain; charset=utf-8')
             return JsonResponse(raw_record_json_data(id.removesuffix('.json_txt')))
         elif request.GET.get('format') == 'json' or id.endswith('.json'):
-            if any(key != 'format' or value != 'json' for key, value in query_pairs(request.GET)):
-                raise PageDataError('Profile JSON query options are unsupported.')
+            if any(value != 'json' for _, value in pairs):
+                return HttpResponseBadRequest(b'Unsupported display format.', content_type='text/plain; charset=utf-8')
             identifier = id.removesuffix('.json')
             if identifier.startswith('org-'):
                 return JsonResponse(
@@ -317,7 +324,9 @@ def display_show(request: HttpRequest, id: str) -> HttpResponse:
                 content_type='application/json; charset=utf-8',
             )
         else:
-            display_data = cached_display_data(request.path_info, query_pairs(request.GET), request.method)
+            if pairs:
+                return HttpResponseBadRequest(b'Unsupported display format.', content_type='text/plain; charset=utf-8')
+            display_data = cached_display_data(request.path_info, [], request.method)
             if isinstance(display_data, SourceResponse):
                 response = HttpResponse(
                     display_data.body, status=display_data.status, content_type='application/json; charset=utf-8'
@@ -330,6 +339,8 @@ def display_show(request: HttpRequest, id: str) -> HttpResponse:
             return render(request, display_data.template_name, context)
     except MissingRecordError:
         return page_not_found(request)
+    except (BadRequest, SuspiciousOperation):
+        raise
     except Exception:
         logger.exception('Could not render display record; id, ``%s``', id)
         return render(request, 'search/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500)

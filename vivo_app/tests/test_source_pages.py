@@ -2062,10 +2062,11 @@ class SourcePageTests(TestCase):
         with patch('vivo_app.lib.source_formats.read_source', side_effect=self.read):
             person = self.get_page('/display/invented-a?format=json_txt')
             organization = self.get_page('/display/org-example.json_txt')
-            invalid = self.get_page('/display/invented-a?format=json_txt&extra=1')
+            extra = self.get_page('/display/invented-a?format=json_txt&extra=1')
         self.assertEqual(json.loads(person.content)['name'], 'Invented Researcher')
         self.assertEqual(json.loads(organization.content)['name'], 'Example Department')
-        self.assertEqual(invalid.status_code, 500)
+        self.assertEqual(extra.status_code, 200)
+        self.assertEqual(extra.content, person.content)
 
     def test_organization_json_contains_websites_and_members(self) -> None:
         """

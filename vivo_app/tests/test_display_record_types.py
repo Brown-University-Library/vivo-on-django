@@ -160,11 +160,33 @@ class DisplayRecordTypeTests(SimpleTestCase):
         self.assertContains(response, 'Oops! Something went wrong', status_code=500)
         self.assertNotContains(response, 'Example source request failed', status_code=500)
 
-    def test_unsupported_query_does_not_read_sources(self) -> None:
+    def test_unrelated_query_does_not_change_source_requests(self) -> None:
         """
-        Checks unrecognized display query options retain the existing error response.
+        Checks unrelated parameters leave the requested record and source requests unchanged.
         """
-        with self.assertLogs('vivo_app.views', level='ERROR'):
-            response = self.get_display('/display/invented-other?unexpected=1')
-        self.assertContains(response, 'Oops! Something went wrong', status_code=500)
+        self.add_record('invented-other', ['UNCATEGORIZED'])
+        response = self.get_display('/display/invented-other?utm_source=example&id=other&url=example&fq=other')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, self.body)
+        self.assertEqual(self.requested, [profile_key('invented-other'), vitro_key('invented-other', 'jsonld')])
+
+    def test_tracking_parameter_keeps_profile_html(self) -> None:
+        """
+        Checks a tracking link renders the faculty profile with the same source request as a plain link.
+        """
+        self.add_record('invented-person', ['PEOPLE'])
+        response = self.get_display('/display/invented-person?utm_source=example')
+        self.assertContains(response, 'Example record')
+        self.assertTemplateUsed(response, 'display/profile_data.html')
+        self.assertEqual(self.requested, [profile_key('invented-person')])
+
+    @override_settings(DATA_UPLOAD_MAX_NUMBER_FIELDS=2)
+    def test_query_field_limit_remains_enforced(self) -> None:
+        """
+        Checks Django still rejects requests exceeding the configured query-field limit.
+        """
+        for path in ('/', '/display/invented-other'):
+            with self.subTest(path=path):
+                response = self.get_display(path + '?one=1&two=2&three=3')
+                self.assertEqual(response.status_code, 400)
         self.assertEqual(self.requested, [])
