@@ -9,5 +9,6 @@ The reviewed code is the baseline for maintenance. These earlier owner choices e
 | AD03, October 8, 2026 | Retain the homepage FAQ link's absent-anchor behavior; consider correcting that entry separately. | Applies to that entry; working FAQ section links remain. |
 | Application boundary | Preserve links to Manager and existing services without rebuilding their workflows. | Keep the handoff separate from the frontend. |
 | Account/editing code | Leave disabled routes and supporting code for later assessment. | Do not enable or remove them during this cleanup. |
+| Empty collaboration downloads, October 19, 2026 | Return a successful empty CSV for a valid empty collaboration graph. | Matching Rails does not require preserving its HTTP 500 response for valid empty data. Keep source failures distinguishable from empty results. |
 
 The owner's final URL comparisons and code changes completed the conversion review. If reviewed code differs from an earlier observation, inspect the current implementation and recorded choice before changing it. [Historical decision notes](../historical_conversion_info/decisions/accepted_differences.md) preserve the rationale.

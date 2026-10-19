@@ -399,9 +399,6 @@ def visualization_graph_csv(request: HttpRequest, id: str, kind: str) -> HttpRes
         if request.GET:
             raise PageDataError('Visualization query options are unsupported.')
         data = visualization_graph(kind, id)
-        if kind == 'collaborators' and data.get('graph') == {}:
-            ## Matches the reference CSV error for its valid empty collaboration response.
-            return HttpResponse(b'error', status=500, content_type='text/plain; charset=utf-8')
         return HttpResponse(graph_csv(data, kind).encode(), content_type='text/plain; charset=utf-8')
     except PageDataError as exc:
         return data_unavailable(exc)
@@ -459,9 +456,6 @@ def visualization_network(request: HttpRequest, identifier: str, kind: str) -> H
         if response_format == 'json':
             return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
         if response_format == 'csv':
-            if kind == 'collaborators' and data.get('graph') == {}:
-                ## Matches the reference CSV error for its valid empty collaboration response.
-                return HttpResponse(b'error', status=500, content_type='text/plain; charset=utf-8')
             return HttpResponse(graph_csv(data, kind).encode(), content_type='text/plain; charset=utf-8')
         subject = graph_subject_data(kind, identifier)
         return render(

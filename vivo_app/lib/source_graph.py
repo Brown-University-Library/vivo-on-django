@@ -299,13 +299,15 @@ def graph_csv(value: dict[str, object], kind: str) -> str:
     """
     Writes the public graph download columns from connected nodes.
 
-    Called by: views.visualization_network(), tests
+    Called by: views.visualization_graph_csv(), views.visualization_network(), views.visualization_coauthor_treemap(), tests
     """
     if not value:
         return ''
     graph = value.get('data') if kind == 'coauthors' else value.get('graph')
     if not isinstance(graph, dict):
         raise PageDataError('The visualization graph is unavailable.')
+    if kind == 'collaborators' and not graph:
+        return ''
     nodes = graph.get('nodes')
     links = graph.get('links')
     if not isinstance(nodes, list) or not isinstance(links, list):

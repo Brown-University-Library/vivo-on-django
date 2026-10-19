@@ -175,7 +175,7 @@ class SourceGraphTests(TestCase):
 
     def test_empty_graph_preserves_json_and_renders_recovery_links(self) -> None:
         """
-        Checks a valid empty graph preserves JSON, the CSV error and its recovery page.
+        Checks a valid empty graph preserves JSON and its recovery page and produces a successful empty CSV.
         """
         empty = {'graph': {}, 'rabid': 'invented-a', 'updated': '2026-01-02'}
         self.replies[visualization_key('collaborators', 'invented-a')] = empty
@@ -185,8 +185,8 @@ class SourceGraphTests(TestCase):
             query_csv = self.get_page('/display/invented-a/viz/collab?format=csv')
             page = self.get_page('/display/invented-a/viz/collab')
         self.assertEqual(json.loads(data.content), empty)
-        self.assertEqual(csv.status_code, 500)
-        self.assertEqual(csv.content, b'error')
+        self.assertEqual(csv.status_code, 200)
+        self.assertEqual(csv.content, b'')
         self.assertEqual(csv['Content-Type'], 'text/plain; charset=utf-8')
         self.assertEqual(query_csv.status_code, csv.status_code)
         self.assertEqual(query_csv.content, csv.content)
@@ -198,6 +198,36 @@ class SourceGraphTests(TestCase):
         self.assertEqual(graph['source'], {'nodes': [], 'links': []})
         self.assertTrue(graph['empty_collaboration'])
         self.assertTrue(graph['empty_network'])
+
+    def test_invalid_collaboration_csv_remains_an_error(self) -> None:
+        """
+        Checks missing or malformed graph data cannot become a successful empty CSV.
+        """
+        for value in ({'rabid': 'invented-a'}, {'graph': None}, {'graph': []}, {'graph': {'nodes': []}}):
+            self.replies[visualization_key('collaborators', 'invented-a')] = value
+            for path in ('/display/invented-a/viz/collab.csv', '/display/invented-a/viz/collab?format=csv'):
+                with (
+                    self.subTest(value=value, path=path),
+                    patch('vivo_app.lib.source_graph.read_source', side_effect=self.read),
+                ):
+                    response = self.get_page(path)
+                self.assertEqual(response.status_code, 503)
+                self.assertIn(b'Page data unavailable', response.content)
+
+    def test_collaboration_csv_source_failure_remains_an_error(self) -> None:
+        """
+        Checks a failed source read cannot become a successful empty CSV.
+        """
+        for path in ('/display/invented-a/viz/collab.csv', '/display/invented-a/viz/collab?format=csv'):
+            with (
+                self.subTest(path=path),
+                patch(
+                    'vivo_app.lib.source_graph.read_source', side_effect=PageDataError('The graph source is unavailable.')
+                ),
+            ):
+                response = self.get_page(path)
+            self.assertEqual(response.status_code, 503)
+            self.assertIn(b'Page data unavailable', response.content)
 
     def test_empty_coauthor_graph_keeps_recovery_and_original_links(self) -> None:
         """

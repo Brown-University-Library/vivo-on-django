@@ -42,6 +42,8 @@ Ordinary `/display/{id}` requests select the person or organization HTML page us
 
 Successful legacy display JSON-LD responses are cached for GET and HEAD using `REPORT_CACHE_TIMEOUT_SECONDS` (eight hours by default; `0` disables caching). Cache hits skip both source reads. The fixed lifetime starts after fetching the response, and 404s or failures are not saved. HTML pages remain uncached by this mechanism. See [legacy display JSON-LD](source_journey.md#legacy-display-json-ld) for freshness, source changes, and shared-worker behavior.
 
+Collaboration CSV requests through `/display/{id}/viz/collab.csv` or `/display/{id}/viz/collab?format=csv` return HTTP 200 with an empty body when the source supplies a valid empty graph. Empty downloads have no header row, matching other graph downloads without connections. JSON retains the source representation and HTML explains that no collaboration data is available. Missing or malformed graph fields and source failures retain HTTP 503 responses.
+
 ## Supporting services and boundaries
 
 The webapp reads existing services. It does not rebuild Manager, provision Solr, or implement VIVO. External destinations remain separate workflows.
