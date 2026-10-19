@@ -92,13 +92,22 @@ def search_key(query: str, page: int, filters: list[tuple[str, str]], facet_limi
     return RequestKey('solr', '/select', tuple(pairs))
 
 
+def valid_profile_identifier(identifier: str) -> bool:
+    """
+    Checks the allowed profile identifier characters and length without changing the input.
+
+    Called by: profile_key(), views.display_show()
+    """
+    return re.fullmatch(r'[A-Za-z0-9_-]{1,80}', identifier) is not None
+
+
 def profile_key(identifier: str) -> RequestKey:
     """
     Looks up one canonical person or organization by its public identifier.
 
     Called by: source_pages.profile_data(), source_pages.organization_data(), source_pages.organization_thumbnail(), tests
     """
-    if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', identifier) is None:
+    if not valid_profile_identifier(identifier):
         raise PageDataError('The requested profile identifier is unsupported.')
     query = f'id:{quoted("http://vivo.brown.edu/individual/" + identifier)}'
     return RequestKey(

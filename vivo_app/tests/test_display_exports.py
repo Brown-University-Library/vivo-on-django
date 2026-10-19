@@ -271,7 +271,7 @@ class DisplayDownloadTests(SimpleTestCase):
         self.source.return_value = solr_response([person_doc('invented-a', overview='invalid\x00text')])
         self.assertEqual(self.response('/display/invented-a.csv').status_code, 500)
         self.assertEqual(self.response('/display/invented-a?format=').status_code, 400)
-        self.assertEqual(self.response('/display/invented-a.unsupported').status_code, 500)
+        self.assertEqual(self.response('/display/invented-a.unsupported').status_code, 404)
         self.assertEqual(self.response('/display/invented-a.csv', 'POST').status_code, 405)
         self.assertEqual(self.response('/reports/subject-lib/1.csv').status_code, 403)
 

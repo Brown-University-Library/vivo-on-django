@@ -48,6 +48,8 @@ The homepage uses a nonempty `alias` to redirect to a local search with the alia
 
 Display CSV/XML suffixes retain precedence over the query format; without a suffix, the last `format` value selects those downloads. JSON suffixes accept an absent or matching query format. Profile JSON accepts repeated matching `format=json` values; raw JSON accepts at most one `format=json_txt` value. On ordinary and JSON display requests, empty, unsupported, or conflicting formats return HTTP 400 before source reads or cache lookup. Explicit formats continue using their own handlers, separate from the ordinary display JSON-LD cache. Django's configured query-field limit remains enforced. These changes apply to homepage and display requests; other endpoint query rules remain unchanged.
 
+Display identifiers must contain 1–80 ASCII letters, digits, underscores, or hyphens. Recognized `.json`, `.json_txt`, `.csv`, and `.xml` suffixes are removed before checking the identifier. Invalid identifiers return the existing 404 response before cache or source reads, including GET and HEAD requests. Identifiers are not trimmed or decoded a second time. Valid identifiers retain normal missing-record and source-failure handling.
+
 ## Supporting services and boundaries
 
 The webapp reads existing services. It does not rebuild Manager, provision Solr, or implement VIVO. External destinations remain separate workflows.

@@ -127,6 +127,56 @@ class DisplayRecordTypeTests(SimpleTestCase):
         self.assertContains(response, 'Page not found', status_code=404)
         self.assertEqual(self.requested, [profile_key('invented-other')])
 
+    def test_invalid_identifiers_return_not_found_without_cache_or_source_reads(self) -> None:
+        """
+        Checks malformed display identifiers return 404 without being trimmed, decoded again, or fetched.
+        """
+        for identifier in ('invented-a%20', 'invented-a%2520', '%20invented-a', 'invented.a', 'a' * 81):
+            with self.subTest(identifier=identifier), patch('vivo_app.views.cached_display_data') as cached:
+                response = self.get_display('/display/' + identifier)
+                self.assertContains(response, 'Page not found', status_code=404)
+                self.assertNotIn('Location', response)
+                cached.assert_not_called()
+        self.assertEqual(self.requested, [])
+
+    def test_invalid_identifiers_return_not_found_for_formats_and_aliases(self) -> None:
+        """
+        Checks malformed identifiers cannot enter any display format handler, including HEAD and mounted URLs.
+        """
+        with (
+            patch('vivo_app.views.cached_display_data') as cached,
+            patch('vivo_app.views.cached_display') as exports,
+            patch('vivo_app.views.profile_json_data') as profile,
+            patch('vivo_app.views.organization_json_data') as organization,
+            patch('vivo_app.views.raw_record_json_data') as raw,
+        ):
+            for suffix in ('/', '.json', '.json_txt', '.csv', '.xml', '?format=json', '?format=json_txt', '?format=csv'):
+                for method in ('GET', 'HEAD'):
+                    with self.subTest(suffix=suffix, method=method):
+                        response = self.get_display(
+                            '/display/invented-other%2520' + suffix, method=method, prefix='/mounted-app'
+                        )
+                        self.assertEqual(response.status_code, 404)
+                        self.assertNotIn('Location', response)
+                        if method == 'HEAD':
+                            self.assertEqual(response.content, b'')
+            for handler in (cached, exports, profile, organization, raw):
+                handler.assert_not_called()
+        self.assertEqual(self.requested, [])
+
+    def test_valid_identifier_length_boundaries_keep_working(self) -> None:
+        """
+        Checks one-character and eighty-character identifiers retain normal source lookups.
+        """
+        for identifier in ('a', 'Example_1-' + 'a' * 70):
+            with self.subTest(identifier=identifier):
+                self.add_record(identifier, ['UNCATEGORIZED'])
+                self.requested.clear()
+                response = self.get_display('/display/' + identifier)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.content, self.body)
+                self.assertEqual(self.requested, [profile_key(identifier), vitro_key(identifier, 'jsonld')])
+
     def test_unrelated_solr_record_is_not_forwarded_to_vivo(self) -> None:
         """
         Checks a mismatched source ID remains an error instead of selecting a VIVO response.

@@ -55,6 +55,7 @@ from .lib.source_requests import (
     image_path,
     read_source,
     source_origin,
+    valid_profile_identifier,
     vitro_key,
 )
 from .lib.source_status import status_data, status_error_data
@@ -288,6 +289,10 @@ def display_show(request: HttpRequest, id: str) -> HttpResponse:
     Called by: config.urls
     """
     try:
+        base, _, suffix = id.rpartition('.')
+        identifier = base if suffix in {'csv', 'xml', 'json', 'json_txt'} else id
+        if not valid_profile_identifier(identifier):
+            return page_not_found(request)
         ## Only format selects a display representation; other query parameters are ignored.
         pairs = [(key, value) for key, value in query_pairs(request.GET) if key == 'format']
         query_format = request.GET.get('format')
