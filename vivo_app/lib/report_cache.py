@@ -56,7 +56,7 @@ def generation_lock(key: str) -> Iterator[None]:
     """
     Holds a Unix file lock shared by workers, releasing it even after failure or process exit.
 
-    Called by: cached_report(), tests
+    Called by: cached_report(), display_cache.cached_display(), display_jsonld_cache.cached_display_data(), tests
     """
     directory = Path(settings.REPORT_CACHE_LOCK_DIR)
     if not directory.is_absolute():

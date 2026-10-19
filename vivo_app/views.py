@@ -29,9 +29,9 @@ from .lib.assets import get_random_background_relpath
 from .lib.bot_detect import SESSION_KEY, verify_token
 from .lib.display_cache import cached_display
 from .lib.display_exports import export_request
+from .lib.display_jsonld_cache import cached_display_data
 from .lib.error_check import IntentionalErrorCheckError
 from .lib.page_data import (
-    get_display_data,
     get_home_data,
     get_search_data,
 )
@@ -317,7 +317,7 @@ def display_show(request: HttpRequest, id: str) -> HttpResponse:
                 content_type='application/json; charset=utf-8',
             )
         else:
-            display_data = get_display_data(request.path_info, query_pairs(request.GET))
+            display_data = cached_display_data(request.path_info, query_pairs(request.GET), request.method)
             if isinstance(display_data, SourceResponse):
                 response = HttpResponse(
                     display_data.body, status=display_data.status, content_type='application/json; charset=utf-8'

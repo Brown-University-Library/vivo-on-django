@@ -40,6 +40,8 @@ Search accepts `q`, `page`, `rows`, `fq`, and names beginning with `fq_`, matchi
 
 Ordinary `/display/{id}` requests select the person or organization HTML page using the Solr record type, rather than the ID prefix. Configured `team-` IDs retain their separate membership handling. Other nonempty record types, including `UNCATEGORIZED`, return the original VIVO JSON-LD bytes with the backend's successful or not-found status and `application/json` content type. Missing Solr records or records without a type return the HTML 404 page. Failed source reads retain the display error page. Explicit JSON, raw-JSON, CSV, and XML requests keep their existing handlers.
 
+Successful legacy display JSON-LD responses are cached for GET and HEAD using `REPORT_CACHE_TIMEOUT_SECONDS` (eight hours by default; `0` disables caching). Cache hits skip both source reads. The fixed lifetime starts after fetching the response, and 404s or failures are not saved. HTML pages remain uncached by this mechanism. See [legacy display JSON-LD](source_journey.md#legacy-display-json-ld) for freshness, source changes, and shared-worker behavior.
+
 ## Supporting services and boundaries
 
 The webapp reads existing services. It does not rebuild Manager, provision Solr, or implement VIVO. External destinations remain separate workflows.

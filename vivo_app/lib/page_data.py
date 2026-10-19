@@ -45,7 +45,7 @@ def get_display_data(path: str, query: list[tuple[str, str]]) -> DisplayPage | S
     """
     Selects an HTML page by record type or reads the original VIVO JSON-LD response.
 
-    Called by: views.display_show()
+    Called by: display_jsonld_cache.cached_display_data()
     """
     if query:
         raise PageDataError('Display query options are not connected to source data yet.')
