@@ -8,6 +8,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from django.http import HttpResponse
+from django.templatetags.static import static
 from django.test import TestCase, override_settings
 from django.urls import get_script_prefix, set_script_prefix
 from django.utils import translation
@@ -974,6 +975,98 @@ class SourcePageTests(TestCase):
             organization_data('org-example', self.read)
         with self.assertRaises(PageDataError):
             organization_json_data('org-example', self.read)
+
+    def test_organization_keeps_uncategorized_member_with_placeholder_portrait(self) -> None:
+        """
+        Checks mixed member types render with original row details, normal portraits, and the expected fallback.
+        """
+        organization_key = profile_key('org-example')
+        source = json.loads(self.responses[organization_key].body)
+        item = json.loads(source['response']['docs'][0]['json_txt'][0])
+        person = json.loads(self.responses[member_key(['invented-a'])].body)['response']['docs'][0]
+        other_uri = person['id'].rsplit('/', 1)[0] + '/invented-b'
+        item['people'].append(
+            {
+                'faculty_uri': other_uri,
+                'label': 'Other, Invented',
+                'specific_position': 'Example Lecturer',
+                'general_position': 'http://vivoweb.org/ontology/core#FacultyPosition',
+            }
+        )
+        source['response']['docs'][0]['json_txt'] = [json.dumps(item)]
+        self.responses[organization_key] = self.solr_response(source['response']['docs'], 1)
+        for record_type in ('UNCATEGORIZED', ['UNCATEGORIZED']):
+            with self.subTest(record_type=record_type):
+                other = {
+                    'id': other_uri,
+                    'record_type': record_type,
+                    'thumbnail_file_path_s': '/file/n999/unused.jpg',
+                }
+                self.responses[member_key(['invented-a', 'invented-b'])] = self.solr_response([person, other], 2)
+                result = organization_data('org-example', self.read)
+                faculty = result['faculty_positions']
+                assert isinstance(faculty, list)
+                self.assertEqual(
+                    faculty,
+                    [
+                        {
+                            'name': 'Other, Invented',
+                            'title': 'Example Lecturer',
+                            'url': '/display/invented-b',
+                            'image': static('images/person_placeholder.jpg'),
+                        },
+                        {
+                            'name': 'Researcher, Invented',
+                            'title': 'Example Professor',
+                            'url': '/display/invented-a',
+                            'image': thumbnail_url(person),
+                        },
+                    ],
+                )
+                with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
+                    page = self.get_page('/display/org-example')
+                self.assertContains(page, '<a href="/display/invented-b">Other, Invented</a>', html=True)
+                self.assertContains(page, '<span>Example Lecturer</span>', html=True)
+                self.assertContains(page, static('images/person_placeholder.jpg'))
+                self.assertContains(page, thumbnail_url(person))
+                self.assertNotContains(page, 'unused.jpg')
+
+    def test_organization_rejects_unexpected_uncategorized_member(self) -> None:
+        """
+        Checks UNCATEGORIZED does not permit an unrequested member to enter the page.
+        """
+        key = member_key(['invented-a'])
+        doc = json.loads(self.responses[key].body)['response']['docs'][0]
+        doc['id'] = doc['id'].rsplit('/', 1)[0] + '/invented-unrequested'
+        doc['record_type'] = ['UNCATEGORIZED']
+        self.responses[key] = self.solr_response([doc], 1)
+        with self.assertRaises(PageDataError):
+            organization_data('org-example', self.read)
+
+    def test_organization_rejects_duplicate_members_with_uncategorized_type(self) -> None:
+        """
+        Checks fallback portraits still count as seen when subsequent records repeat the member ID.
+        """
+        key = member_key(['invented-a'])
+        person = json.loads(self.responses[key].body)['response']['docs'][0]
+        other = {**person, 'record_type': ['UNCATEGORIZED']}
+        for docs in ([other, other], [other, person], [person, other]):
+            with self.subTest(record_types=[doc['record_type'] for doc in docs]):
+                self.responses[key] = self.solr_response(docs, 2)
+                with self.assertRaises(PageDataError):
+                    organization_data('org-example', self.read)
+
+    def test_organization_rejects_other_member_types(self) -> None:
+        """
+        Checks the portrait fallback does not accept other record types or a missing type.
+        """
+        key = member_key(['invented-a'])
+        doc = json.loads(self.responses[key].body)['response']['docs'][0]
+        for record_type in ('ORGANIZATION', 'TEAM', 'OTHER', None, []):
+            with self.subTest(record_type=record_type):
+                self.responses[key] = self.solr_response([{**doc, 'record_type': record_type}], 1)
+                with self.assertRaises(PageDataError):
+                    organization_data('org-example', self.read)
 
     def test_organization_without_logo_uses_borderless_placeholder(self) -> None:
         """Matches the organization page's plain default image."""

@@ -1303,9 +1303,12 @@ def organization_data(
         member_docs, _ = documents(member_response)
         for member_doc in member_docs:
             member_id = record_id(member_doc)
-            if member_id not in batch or first_text(member_doc.get('record_type')) != 'PEOPLE' or member_id in portraits:
+            record_type = first_text(member_doc.get('record_type'))
+            if member_id not in batch or record_type not in {'PEOPLE', 'UNCATEGORIZED'} or member_id in portraits:
                 raise PageDataError('Solr returned an unrelated organization member.')
-            portraits[member_id] = thumbnail_url(member_doc)
+            portraits[member_id] = (
+                thumbnail_url(member_doc) if record_type == 'PEOPLE' else static('images/person_placeholder.jpg')
+            )
     administrative: list[dict[str, str]] = []
     faculty: list[dict[str, str]] = []
     custom_members = identifier in CUSTOM_ORGANIZATION_IDS

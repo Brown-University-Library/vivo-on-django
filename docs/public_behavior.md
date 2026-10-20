@@ -52,6 +52,8 @@ Display identifiers must contain 1–80 ASCII letters, digits, underscores, or h
 
 Collaboration, coauthor, and coauthor-treemap HTML pages look up their profile before reading graph data. A successful Solr response with zero matches and no documents returns the existing 404 page without a graph request. Failed requests, malformed responses, inconsistent result counts, and mismatched records retain HTTP 503 responses. Existing profiles with valid empty graphs retain HTTP 200 and their explanatory message. Missing-profile responses are not stored in the application cache; the next page request checks Solr again. JSON and CSV graph downloads retain their existing graph-only reads.
 
+Organization HTML pages retain an expected member marked `UNCATEGORIZED` and use the standard person placeholder portrait, even when that member's record includes a thumbnail. The member's name, title, and link still come from the organization record. `PEOPLE` records retain their normal portrait handling. Unexpected or duplicate member IDs, other unsupported record types, and failed source requests remain errors. This fallback applies only to organization-page portrait lookup; other membership and export rules remain unchanged.
+
 ## Supporting services and boundaries
 
 The webapp reads existing services. It does not rebuild Manager, provision Solr, or implement VIVO. External destinations remain separate workflows.
