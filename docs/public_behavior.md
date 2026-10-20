@@ -50,6 +50,8 @@ Display CSV/XML suffixes retain precedence over the query format; without a suff
 
 Display identifiers must contain 1–80 ASCII letters, digits, underscores, or hyphens. Recognized `.json`, `.json_txt`, `.csv`, and `.xml` suffixes are removed before checking the identifier. Invalid identifiers return the existing 404 response before cache or source reads, including GET and HEAD requests. Identifiers are not trimmed or decoded a second time. Valid identifiers retain normal missing-record and source-failure handling.
 
+Collaboration, coauthor, and coauthor-treemap HTML pages look up their profile before reading graph data. A successful Solr response with zero matches and no documents returns the existing 404 page without a graph request. Failed requests, malformed responses, inconsistent result counts, and mismatched records retain HTTP 503 responses. Existing profiles with valid empty graphs retain HTTP 200 and their explanatory message. Missing-profile responses are not stored in the application cache; the next page request checks Solr again. JSON and CSV graph downloads retain their existing graph-only reads.
+
 ## Supporting services and boundaries
 
 The webapp reads existing services. It does not rebuild Manager, provision Solr, or implement VIVO. External destinations remain separate workflows.

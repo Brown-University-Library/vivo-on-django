@@ -3,7 +3,7 @@ Checks visualization response routing with made-up graph data and no network.
 """
 
 import json
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from django.http import HttpResponse
 from django.template.loader import render_to_string
@@ -20,6 +20,7 @@ from vivo_app.lib.source_graph import (
 )
 from vivo_app.lib.source_requests import graph_root_key, member_details_key, profile_key
 from vivo_app.lib.source_types import RequestKey, SourceResponse
+from vivo_app.tests.source_fixtures import solr_response
 
 
 @override_settings(VIZ_SERVICE_URL='http://example.invalid')
@@ -125,6 +126,133 @@ class SourceGraphTests(TestCase):
         self.assertEqual(json.loads(collab.content), self.replies[visualization_key('collaborators', 'invented-a')])
         self.assertEqual(json.loads(coauthor.content), self.replies[visualization_key('coauthors', 'invented-a')])
         self.assertEqual(missing.status_code, 503)
+
+    def test_missing_visualization_profiles_return_404_without_graph_reads(self) -> None:
+        """
+        Checks absent profiles return 404 before graph requests for page aliases, mounts, and HEAD.
+        """
+        for page in ('collab', 'coauthor', 'coauthor_treemap'):
+            suffixes = ('', '/') if page == 'coauthor_treemap' else ('', '/', '?fit=1')
+            for suffix in suffixes:
+                for method in ('GET', 'HEAD'):
+                    with (
+                        self.subTest(page=page, suffix=suffix, method=method),
+                        patch('vivo_app.lib.source_graph.read_source', return_value=solr_response([], 0)) as source,
+                        patch('vivo_app.views.visualization_graph') as graph,
+                    ):
+                        response = self.client.generic(
+                            method, '/display/invented-missing/viz/' + page + suffix, SCRIPT_NAME='/mounted-app'
+                        )
+                        assert isinstance(response, HttpResponse)
+                        self.assertEqual(response.status_code, 404)
+                        if method == 'GET':
+                            self.assertContains(response, 'Page not found', status_code=404)
+                        else:
+                            self.assertEqual(response.content, b'')
+                        source.assert_called_once_with(profile_key('invented-missing'))
+                        graph.assert_not_called()
+
+    def test_invalid_visualization_profile_responses_remain_errors(self) -> None:
+        """
+        Checks malformed, inconsistent, and mismatched profile responses remain 503 errors.
+        """
+        doc = json.loads(self.read(profile_key('invented-a')).body)['response']['docs'][0]
+        responses = (
+            SourceResponse(200, (), b'{}'),
+            SourceResponse(200, (), b'not json'),
+            solr_response([], 1),
+            solr_response([doc], 0),
+            solr_response([doc], 1),
+        )
+        for page in ('collab', 'coauthor', 'coauthor_treemap'):
+            for result in responses:
+                with (
+                    self.subTest(page=page, body=result.body),
+                    patch('vivo_app.lib.source_graph.read_source', return_value=result) as source,
+                    patch('vivo_app.views.visualization_graph') as graph,
+                ):
+                    response = self.get_page('/display/invented-missing/viz/' + page)
+                    self.assertEqual(response.status_code, 503)
+                    source.assert_called_once_with(profile_key('invented-missing'))
+                    graph.assert_not_called()
+
+    def test_visualization_profile_source_failures_remain_errors(self) -> None:
+        """
+        Checks a failed profile request returns 503 without requesting graph data.
+        """
+        for page in ('collab', 'coauthor', 'coauthor_treemap'):
+            with (
+                self.subTest(page=page),
+                patch('vivo_app.lib.source_graph.read_source', side_effect=PageDataError('Example source failure.')),
+                patch('vivo_app.views.visualization_graph') as graph,
+            ):
+                response = self.get_page('/display/invented-a/viz/' + page)
+                self.assertEqual(response.status_code, 503)
+                graph.assert_not_called()
+
+    def test_graph_failures_after_valid_profile_lookup_remain_errors(self) -> None:
+        """
+        Checks unavailable or malformed graph data still returns 503 after a successful profile lookup.
+        """
+        profile = self.read(profile_key('invented-a'))
+        for page, kind in (('collab', 'collaborators'), ('coauthor', 'coauthors'), ('coauthor_treemap', 'coauthors')):
+            for result in (PageDataError('Example graph failure.'), SourceResponse(200, (), b'not json')):
+                with (
+                    self.subTest(page=page, result=result),
+                    patch('vivo_app.lib.source_graph.read_source', side_effect=[profile, result]) as source,
+                ):
+                    response = self.get_page('/display/invented-a/viz/' + page)
+                    self.assertEqual(response.status_code, 503)
+                    self.assertEqual(
+                        source.call_args_list, [call(profile_key('invented-a')), call(visualization_key(kind, 'invented-a'))]
+                    )
+
+    def test_newly_available_visualization_profiles_are_read_again(self) -> None:
+        """
+        Checks a profile appearing after a 404 can immediately render a page without clearing a cache.
+        """
+        for page, kind in (('collab', 'collaborators'), ('coauthor', 'coauthors'), ('coauthor_treemap', 'coauthors')):
+            with (
+                self.subTest(page=page),
+                patch(
+                    'vivo_app.lib.source_graph.read_source',
+                    side_effect=[
+                        solr_response([], 0),
+                        self.read(profile_key('invented-a')),
+                        self.read(visualization_key(kind, 'invented-a')),
+                    ],
+                ) as source,
+            ):
+                path = '/display/invented-a/viz/' + page
+                self.assertEqual(self.get_page(path).status_code, 404)
+                self.assertContains(self.get_page(path), 'Invented A')
+                self.assertEqual(
+                    source.call_args_list,
+                    [
+                        call(profile_key('invented-a')),
+                        call(profile_key('invented-a')),
+                        call(visualization_key(kind, 'invented-a')),
+                    ],
+                )
+
+    def test_graph_downloads_still_skip_profile_lookup(self) -> None:
+        """
+        Checks JSON and CSV downloads continue reading only graph data when no profile is available.
+        """
+        del self.replies[profile_key('invented-a')]
+        for page, kind in (('collab', 'collaborators'), ('coauthor', 'coauthors'), ('coauthor_treemap', 'coauthors')):
+            suffixes = ['?format=json', '?format=csv']
+            if page != 'coauthor_treemap':
+                suffixes.extend(['.json', '.csv'])
+            for suffix in suffixes:
+                with (
+                    self.subTest(page=page, suffix=suffix),
+                    patch('vivo_app.lib.source_graph.read_source', side_effect=self.read) as source,
+                ):
+                    response = self.get_page('/display/invented-a/viz/' + page + suffix)
+                    self.assertEqual(response.status_code, 200)
+                    self.assertIn(b'invented-a', response.content)
+                    source.assert_called_once_with(visualization_key(kind, 'invented-a'))
 
     def test_graph_json_preserves_reference_utf8_and_compact_text(self) -> None:
         """
@@ -237,8 +365,10 @@ class SourceGraphTests(TestCase):
         with patch('vivo_app.lib.source_graph.read_source', side_effect=self.read):
             data = self.get_page('/display/invented-a/viz/coauthor.json')
             page = self.get_page('/display/invented-a/viz/coauthor')
+            treemap = self.get_page('/display/invented-a/viz/coauthor_treemap')
         self.assertEqual(json.loads(data.content), {})
         self.assertContains(page, 'No coauthor data is available for this researcher.')
+        self.assertContains(treemap, 'No coauthor data is available for this researcher.')
         self.assertContains(page, 'two Brown University coauthors must approve the same publication.')
         self.assertContains(page, 'review and approve your publications via the')
         self.assertContains(page, 'network-empty-coauthor')

@@ -435,14 +435,16 @@ def visualization_coauthor_treemap(request: HttpRequest, id: str) -> HttpRespons
         pairs = query_pairs(request.GET)
         if len(pairs) > 1 or any(key != 'format' or value not in {'json', 'csv'} for key, value in pairs):
             raise PageDataError('Visualization query options are unsupported.')
-        data = visualization_graph('coauthors', id)
         response_format = request.GET.get('format')
+        subject = graph_subject_data('coauthors', id) if response_format is None else None
+        data = visualization_graph('coauthors', id)
         if response_format == 'json':
             return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
         if response_format == 'csv':
             return HttpResponse(graph_csv(data, 'coauthors').encode(), content_type='text/plain; charset=utf-8')
-        subject = graph_subject_data('coauthors', id)
         return render(request, 'visualization/treemap_data.html', {'graph': graph_page_data(data, 'coauthors', id, subject)})
+    except MissingRecordError:
+        return page_not_found(request)
     except PageDataError as exc:
         return data_unavailable(exc)
 
@@ -467,18 +469,20 @@ def visualization_network(request: HttpRequest, identifier: str, kind: str) -> H
             for key, value in pairs
         ):
             raise PageDataError('Visualization query options are unsupported.')
-        data = visualization_graph(kind, identifier)
         response_format = request.GET.get('format')
+        subject = graph_subject_data(kind, identifier) if response_format is None else None
+        data = visualization_graph(kind, identifier)
         if response_format == 'json':
             return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
         if response_format == 'csv':
             return HttpResponse(graph_csv(data, kind).encode(), content_type='text/plain; charset=utf-8')
-        subject = graph_subject_data(kind, identifier)
         return render(
             request,
             'visualization/network_data.html',
             {'graph': graph_page_data(data, kind, identifier, subject), 'force_to_fit': request.GET.get('fit') == '1'},
         )
+    except MissingRecordError:
+        return page_not_found(request)
     except PageDataError as exc:
         return data_unavailable(exc)
 

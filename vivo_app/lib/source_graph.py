@@ -11,7 +11,7 @@ import re
 import time
 from collections.abc import Callable
 
-from vivo_app.lib.page_errors import PageDataError
+from vivo_app.lib.page_errors import MissingRecordError, PageDataError
 from vivo_app.lib.source_formats import faculty_item_from_doc
 from vivo_app.lib.source_pages import (
     documents,
@@ -266,7 +266,7 @@ def graph_subject_data(kind: str, identifier: str, reader: GraphReader | None = 
     """
     Reads the person or organization heading shown on a source-backed graph page.
 
-    Called by: views.visualization_network()
+    Called by: views.visualization_network(), views.visualization_coauthor_treemap()
     """
     if reader is None:
         reader = read_source
@@ -276,8 +276,10 @@ def graph_subject_data(kind: str, identifier: str, reader: GraphReader | None = 
         name, _ = team_definition(identifier)
         return {'name': name, 'page_title': name, 'title': '', 'type': 'TEAM'}
     response = response_object(profile_key(identifier), reader)
-    docs, _ = documents(response)
-    if not docs or record_id(docs[0]) != identifier:
+    docs, count = documents(response)
+    if count == 0 and not docs:
+        raise MissingRecordError('The visualization profile is absent from Solr.')
+    if count != 1 or len(docs) != 1 or record_id(docs[0]) != identifier:
         raise PageDataError('The visualization profile is unavailable.')
     doc = docs[0]
     record_type = first_text(doc.get('record_type'))
