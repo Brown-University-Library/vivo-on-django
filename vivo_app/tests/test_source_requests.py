@@ -14,6 +14,41 @@ from vivo_app.lib.source_types import RequestKey
 class SourceRequestDiagnosticsTests(SimpleTestCase):
     """Checks useful failure metadata and private request and response content."""
 
+    @override_settings(IMAGES_URL='https://source.invalid')
+    def test_portrait_above_ten_megabytes_is_accepted(self) -> None:
+        """
+        Checks a large portrait fits the image limit without changing its bytes.
+        """
+        body = b'\xff\xd8\xff' + b'x' * 10_999_997
+        response = MagicMock()
+        response.status_code = 200
+        response.headers = {'content-type': 'image/jpeg'}
+        response.iter_bytes.return_value = [body]
+        with patch('vivo_app.lib.source_requests.httpx2.Client') as client:
+            client.return_value.__enter__.return_value.stream.return_value.__enter__.return_value = response
+            result = read_source(RequestKey('images', '/profile-images/abc/portrait.jpg'))
+        self.assertEqual(result.body, body)
+
+    @override_settings(IMAGES_URL='https://source.invalid', DOCUMENTS_URL='https://source.invalid')
+    def test_missing_media_remains_distinct_from_source_failures(self) -> None:
+        """
+        Checks missing files reach their handlers as 404s while forbidden and unavailable sources remain errors.
+        """
+        for service in ('images', 'documents'):
+            for status in (404, 403, 503):
+                with self.subTest(service=service, status=status):
+                    response = MagicMock()
+                    response.status_code = status
+                    response.headers = {'content-type': 'text/html'}
+                    response.iter_bytes.return_value = [b'Example source response']
+                    with patch('vivo_app.lib.source_requests.httpx2.Client') as client:
+                        client.return_value.__enter__.return_value.stream.return_value.__enter__.return_value = response
+                        if status == 404:
+                            self.assertEqual(read_source(RequestKey(service, '/example')).status, 404)
+                        else:
+                            with self.assertRaises(PageDataError):
+                                read_source(RequestKey(service, '/example'))
+
     @override_settings(IMAGES_URL='https://source.invalid', SOLR_URL='https://source.invalid/core')
     def test_images_allow_larger_bodies_without_expanding_solr_limit(self) -> None:
         """

@@ -26,7 +26,7 @@ class Report:
     source: dict[str, object]
 
 
-def cache_timeout(value: str) -> int:
+def cache_timeout(value: str, setting_name: str = 'REPORT_CACHE_TIMEOUT_SECONDS') -> int:
     """
     Converts seconds, including Python's underscore spelling, to a nonnegative integer.
 
@@ -37,7 +37,7 @@ def cache_timeout(value: str) -> int:
         if result < 0:
             raise ValueError
     except ValueError as exc:
-        raise ImproperlyConfigured('REPORT_CACHE_TIMEOUT_SECONDS must be a nonnegative integer.') from exc
+        raise ImproperlyConfigured(f'{setting_name} must be a nonnegative integer.') from exc
     return result
 
 

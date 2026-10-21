@@ -39,7 +39,7 @@ COMMUNITY_RESEARCH_AREAS = (
 )
 MAX_RESPONSE_BYTES = 3_000_000
 MAX_DOCUMENT_BYTES = 10_000_000
-MAX_IMAGE_BYTES = 10_000_000
+MAX_IMAGE_BYTES = 20_000_000
 logger = logging.getLogger(__name__)
 
 
@@ -398,7 +398,9 @@ def read_source(
                 result = SourceResponse(response.status_code, tuple(headers), b''.join(chunks))
         except httpx2.HTTPError as exc:
             raise PageDataError(f'{key.service} source request failed.') from exc
-    allowed_status = {200, 301, 302} if key.service == 'documents' else ({200, 404} if key.service == 'vitro' else {200})
+    allowed_status = (
+        {200, 301, 302, 404} if key.service == 'documents' else ({200, 404} if key.service in {'vitro', 'images'} else {200})
+    )
     if result.status not in allowed_status or len(result.body) > limit:
         logger.warning(
             'source_response_unusable: service, ``%s``; status, ``%s``; query_bytes, ``%s``; response_bytes, ``%s``',

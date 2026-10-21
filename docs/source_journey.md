@@ -3,6 +3,7 @@
 ## Contents
 
 - [Configure sources](#configure-sources)
+- [Public images and CV files](#public-images-and-cv-files)
 - [Homepage books](#homepage-books)
 - [Teams and custom organizations](#teams-and-custom-organizations)
 - [Public display downloads](#public-display-downloads)
@@ -18,7 +19,7 @@ The webapp reads current source data while serving requests. Keep actual address
 | --- | --- |
 | `SOLR_URL` | Search, record lookup, membership, facets, and calculated charts/graphs; include the core or collection in the address. |
 | `IMAGES_URL` | Profile and affiliation images through Django's source-images route. |
-| `DOCUMENTS_URL` | Supported CV PDFs and version redirects through source-documents. |
+| `DOCUMENTS_URL` | Validated CV PDFs and version redirects through source-documents. |
 | `VIZ_SERVICE_URL` | Graph availability lists and ordinary coauthor/collaboration responses. |
 | `VIVO_BACKEND_URL` | Original JSON-LD, Turtle, and RDF/XML representations. |
 | `VIZ_ENABLED` | Organization visualization display switch. |
@@ -26,6 +27,14 @@ The webapp reads current source data while serving requests. Keep actual address
 Sources have different responsibilities. Profile JSON is distinct from VIVO JSON-LD. Team/custom graphs can be calculated from Solr member records; ordinary graphs use the visualization service. Organization TSV and charts read membership/faculty data. Keep current ordering, metadata, and empty-state behavior.
 
 Startup checks verify required configuration without contacting services. Use sources appropriate to the installation; changing source addresses is a separate operational decision.
+
+## Public images and CV files
+
+Image reads accept up to 20,000,000 bytes; document reads remain limited to 10,000,000 bytes. CV links keep their existing `.pdf` path and optional `dt` query. A successful source response must declare `application/pdf` and have bytes beginning with `%PDF-`. A rejected file returns a friendly HTML 404 page asking the visitor to contact the profile owner. A warning identifies the relative CV filename so the source can be corrected; rejected files do not generate administrator error email. Validation failures remain uncached, allowing a corrected PDF to appear on the next request. Valid PDF bytes, HEAD metadata, and byte-range responses retain their existing behavior. Missing source files return 404; connection and service failures remain 503.
+
+`MEDIA_CACHE_TIMEOUT_SECONDS` sets a separate short lifetime for successful images and CV files, defaulting to 60 seconds. Set it to `0` to disable media cache reads, writes, and locks. Negative or invalid values prevent startup. Change the private environment setting and restart Django to apply a new lifetime. The existing Django file cache and `REPORT_CACHE_LOCK_DIR` coordinate workers, with media keys separate from exports and reports. A source address, file path, document version, timeout, or media-code version change selects a new entry.
+
+The lifetime starts after a successful source read, and cache hits do not extend it. Browser responses use `no-store` so they do not add another cache lifetime. A replacement at the same source path can take up to the configured lifetime to appear after the source makes it available; a new image path or CV `dt` value reads independently. Redirects, 404s, and failures are never stored. An expired file is not returned after a failed refresh. Ordinary profile HTML is unaffected.
 
 ## Homepage books
 

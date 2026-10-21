@@ -2,6 +2,8 @@
 Checks PDF delivery for document viewers using made-up document bytes.
 """
 
+import io
+import zipfile
 from functools import partial
 from unittest.mock import patch
 
@@ -15,7 +17,104 @@ from vivo_app.lib.source_requests import document_key
 from vivo_app.lib.source_types import SourceResponse
 
 
+def word_document_bytes() -> bytes:
+    """
+    Builds a small Word archive with made-up content for format checks.
+
+    Called by: SourceDocumentTests, SourceMediaTests
+    """
+    output = io.BytesIO()
+    with zipfile.ZipFile(output, 'w') as archive:
+        archive.writestr('[Content_Types].xml', '<Types/>')
+        archive.writestr('word/document.xml', '<document>Example CV</document>')
+    return output.getvalue()
+
+
 class SourceDocumentTests(SimpleTestCase):
+    def test_word_files_at_pdf_urls_show_friendly_404_without_error_email(self) -> None:
+        """
+        Checks Word CVs are withheld with a friendly page and warning, including HEAD and original URLs.
+        """
+        for body in (
+            b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1' + b'\x00' * 64 + 'WordDocument'.encode('utf-16-le'),
+            word_document_bytes(),
+        ):
+            source = SourceResponse(200, (('content-type', 'application/pdf'),), body)
+            for prefix in ('/source-documents', ''):
+                for method in ('get', 'head'):
+                    with self.subTest(prefix=prefix, method=method, signature=body[:4]):
+                        with (
+                            patch('vivo_app.views.read_source', return_value=source),
+                            patch('django.utils.log.AdminEmailHandler.emit') as email,
+                            self.assertLogs('vivo_app.views', level='WARNING') as logs,
+                        ):
+                            response = getattr(self.client, method)(
+                                prefix + '/docs/i/invented_cv.pdf?dt=1', HTTP_RANGE='bytes=0-4'
+                            )
+                        self.assertEqual(response.status_code, 404)
+                        self.assertEqual(response['Content-Type'], 'text/html; charset=utf-8')
+                        if method == 'get':
+                            self.assertContains(
+                                response,
+                                'This CV is temporarily unavailable. Please contact the profile owner.',
+                                status_code=404,
+                            )
+                            self.assertTemplateUsed(response, 'documents/unavailable.html')
+                        else:
+                            self.assertEqual(response.content, b'')
+                        self.assertNotIn(body, response.content)
+                        self.assertNotIn('Content-Disposition', response)
+                        self.assertNotIn('Accept-Ranges', response)
+                        self.assertIn('no-store', response['Cache-Control'])
+                        self.assertIn('cv_pdf_validation_failed', logs.output[0])
+                        self.assertIn('filename, ``docs/i/invented_cv.pdf``', logs.output[0])
+                        self.assertTrue(all(record.levelname == 'WARNING' for record in logs.records))
+                        email.assert_not_called()
+
+    def test_unsupported_files_are_not_sent_as_successful_documents(self) -> None:
+        """
+        Checks HTML, incomplete ZIPs, unrelated containers, and empty documents keep the unavailable response.
+        """
+        other_zip = io.BytesIO()
+        with zipfile.ZipFile(other_zip, 'w') as archive:
+            archive.writestr('example.txt', 'Example content')
+        for body in (b'<html>Example error</html>', b'PK\x03\x04broken', other_zip.getvalue(), b''):
+            with self.subTest(body=body[:20]):
+                with patch(
+                    'vivo_app.views.read_source',
+                    return_value=SourceResponse(200, (('content-type', 'application/pdf'),), body),
+                ):
+                    response = self.client.get('/source-documents/docs/i/invented_cv.pdf')
+                assert isinstance(response, HttpResponse)
+                self.assertContains(response, 'This CV is temporarily unavailable.', status_code=404)
+                self.assertIn('no-store', response['Cache-Control'])
+
+    def test_pdf_signature_alone_does_not_bypass_content_type_check(self) -> None:
+        """
+        Checks that PDF-looking bytes still need the source's PDF content type.
+        """
+        for content_type in ('application/octet-stream', 'application/msword', 'text/html', ''):
+            source = SourceResponse(200, (('content-type', content_type),), b'%PDF-1.7 Example CV')
+            with self.subTest(content_type=content_type), patch('vivo_app.views.read_source', return_value=source):
+                response = self.client.get('/source-documents/docs/i/invented_cv.pdf')
+            assert isinstance(response, HttpResponse)
+            self.assertContains(response, 'This CV is temporarily unavailable.', status_code=404)
+
+    def test_unavailable_cv_page_keeps_mounted_search_link(self) -> None:
+        """
+        Checks the error page renders a usable search link when the application has a browser prefix.
+        """
+        source = SourceResponse(200, (('content-type', 'application/pdf'),), b'Example invalid document')
+        previous_prefix = get_script_prefix()
+        set_script_prefix('/mounted')
+        try:
+            with patch('vivo_app.views.read_source', return_value=source):
+                response = self.client.get('/docs/i/invented_cv.pdf', SCRIPT_NAME='/mounted')
+        finally:
+            set_script_prefix(previous_prefix)
+        assert isinstance(response, HttpResponse)
+        self.assertContains(response, 'href="/mounted/search"', status_code=404)
+
     def test_original_document_path_uses_selected_reader_and_range_handler(self) -> None:
         """
         Checks source original paths preserve version queries, full GET, HEAD and ranges.

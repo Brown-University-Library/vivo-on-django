@@ -71,6 +71,7 @@ def configure_test_environment() -> None:
             'SOLR_URL': 'https://source.invalid/solr',
             'IMAGES_URL': 'https://source.invalid',
             'DOCUMENTS_URL': 'https://source.invalid',
+            'MEDIA_CACHE_TIMEOUT_SECONDS': '0',
             'VIZ_SERVICE_URL': 'https://source.invalid',
             'VIVO_BACKEND_URL': 'https://source.invalid',
             'BOOK_COVER_BASE_PATH': '/book-images',

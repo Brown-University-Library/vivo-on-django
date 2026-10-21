@@ -4,6 +4,7 @@ import runpy
 from pathlib import Path
 from unittest.mock import patch
 
+from django.core.exceptions import ImproperlyConfigured
 from django.test import SimpleTestCase
 from dotenv import dotenv_values
 
@@ -37,6 +38,19 @@ def read_settings(content: str) -> dict[str, object]:
 
 
 class EnvironmentSettingsTests(SimpleTestCase):
+    def test_media_cache_lifetime_is_short_configurable_and_validated(self) -> None:
+        """
+        Checks media defaults to sixty seconds, can be disabled, and names its own invalid setting.
+        """
+        self.assertEqual(read_settings('')['MEDIA_CACHE_TIMEOUT_SECONDS'], 60)
+        for value in ('0', '30', '1_200'):
+            configured = read_settings(f'MEDIA_CACHE_TIMEOUT_SECONDS="{value}"')
+            self.assertEqual(configured['MEDIA_CACHE_TIMEOUT_SECONDS'], int(value))
+            self.assertEqual(configured['REPORT_CACHE_TIMEOUT_SECONDS'], 28800)
+        for value in ('-1', 'invalid'):
+            with self.assertRaisesRegex(ImproperlyConfigured, 'MEDIA_CACHE_TIMEOUT_SECONDS must be a nonnegative integer'):
+                read_settings(f'MEDIA_CACHE_TIMEOUT_SECONDS="{value}"')
+
     def test_boolean_strings_use_the_same_case_rules(self) -> None:
         """
         Checks quoted boolean strings and earlier mixed-case values for every boolean setting.

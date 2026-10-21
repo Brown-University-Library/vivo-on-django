@@ -9,3 +9,7 @@ class PageDataError(ValueError):
 
 class MissingRecordError(PageDataError):
     """Identifies an exact source lookup with no matching public record."""
+
+
+class InvalidDocumentError(PageDataError):
+    """Identifies a successful document response that fails the PDF checks."""

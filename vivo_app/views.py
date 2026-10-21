@@ -37,7 +37,7 @@ from .lib.page_data import (
     get_home_data,
     get_search_data,
 )
-from .lib.page_errors import MissingRecordError, PageDataError
+from .lib.page_errors import InvalidDocumentError, MissingRecordError, PageDataError
 from .lib.page_rendering import data_unavailable, query_pairs, render_or_stub
 from .lib.profile_navigation import profile_search_return
 from .lib.report_cache import cached_report
@@ -46,6 +46,7 @@ from .lib.search_errors import ReferenceSearchError
 from .lib.source_documents import document_response
 from .lib.source_formats import organization_json_data, profile_json_data, profile_json_text, raw_record_json_data
 from .lib.source_graph import graph_csv, graph_page_data, graph_subject_data, visualization_graph
+from .lib.source_media import cached_media
 from .lib.source_org_charts import publication_history_csv, publication_history_data, research_areas_data
 from .lib.source_pages import facet_values_data, organization_publications_data, search_json_data
 from .lib.source_requests import (
@@ -66,6 +67,7 @@ from .lib.version_helper import GatherCommitAndBranchData
 logger = logging.getLogger(__name__)
 
 
+@never_cache
 def source_image(request: HttpRequest, filename: str) -> HttpResponse:
     """
     Returns an image from the configured source.
@@ -73,26 +75,32 @@ def source_image(request: HttpRequest, filename: str) -> HttpResponse:
     Called by: config.urls
     """
     try:
-        result = read_source(image_key('/' + filename))
-        content_type = next((value for key, value in result.headers if key.lower() == 'content-type'), '')
-        if content_type not in {'image/jpeg', 'image/png', 'image/gif', 'image/webp'}:
-            raise PageDataError('The image source returned an unsupported content type.')
+        result = cached_media(image_key('/' + filename), read_source)
+        if result.status == 404:
+            return HttpResponseNotFound(b'Image not found.', content_type='text/plain')
+        content_type = dict(result.headers)['content-type']
         response = HttpResponse(result.body, content_type=content_type)
+        response['Content-Length'] = str(len(result.body))
+        if request.method == 'HEAD':
+            response.content = b''
         response['X-Content-Type-Options'] = 'nosniff'
         return response
     except PageDataError as exc:
         return data_unavailable(exc)
 
 
+@never_cache
 def source_document(request: HttpRequest, filename: str) -> HttpResponse | StreamingHttpResponse:
     """
-    Serves one configured PDF while keeping a source version redirect local.
+    Serves one configured CV while keeping a source version redirect local.
 
     Called by: config.urls, original_document()
     """
     try:
         key = document_key('/' + filename, tuple(query_pairs(request.GET)))
-        result = read_source(key)
+        result = cached_media(key, read_source)
+        if result.status == 404:
+            return HttpResponseNotFound(b'Document not found.', content_type='text/plain')
         headers = dict(result.headers)
         if result.status in {301, 302}:
             location = headers.get('location', '')
@@ -101,9 +109,10 @@ def source_document(request: HttpRequest, filename: str) -> HttpResponse | Strea
             if target.query:
                 redirect_url += '?' + urlencode(target.query)
             return HttpResponse(status=result.status, headers={'Location': redirect_url})
-        if headers.get('content-type', '').split(';', 1)[0] != 'application/pdf' or not result.body.startswith(b'%PDF-'):
-            raise PageDataError('The document source returned an unsupported PDF response.')
         return document_response(request, result.body)
+    except InvalidDocumentError:
+        logger.warning('cv_pdf_validation_failed: filename, ``%s``', filename)
+        return render(request, 'documents/unavailable.html', status=404)
     except PageDataError as exc:
         return data_unavailable(exc)
 

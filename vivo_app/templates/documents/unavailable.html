@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}CV unavailable{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>CV unavailable</h1>
+    <p>This CV is temporarily unavailable. Please contact the profile owner.</p>
+    <p>You can return to <a href="{% url 'search' %}">search for a researcher</a>.</p>
+</div>
+{% endblock %}

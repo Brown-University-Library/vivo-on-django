@@ -69,4 +69,5 @@ def document_response(request: HttpRequest, body: bytes) -> HttpResponse | Strea
         response['Content-Length'] = str(len(response.content))
         if request.method == 'HEAD':
             response.content = b''
+    response['X-Content-Type-Options'] = 'nosniff'
     return response
