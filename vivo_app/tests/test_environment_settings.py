@@ -38,6 +38,20 @@ def read_settings(content: str) -> dict[str, object]:
 
 
 class EnvironmentSettingsTests(SimpleTestCase):
+    def test_chart_cache_lifetime_is_short_configurable_and_validated(self) -> None:
+        """
+        Checks charts default to sixty seconds, can be disabled, and identify an invalid setting.
+        """
+        self.assertEqual(read_settings('')['CHART_CACHE_TIMEOUT_SECONDS'], 60)
+        for value in ('0', '30', '1_200'):
+            configured = read_settings(f'CHART_CACHE_TIMEOUT_SECONDS="{value}"')
+            self.assertEqual(configured['CHART_CACHE_TIMEOUT_SECONDS'], int(value))
+            self.assertEqual(configured['REPORT_CACHE_TIMEOUT_SECONDS'], 28800)
+            self.assertEqual(configured['MEDIA_CACHE_TIMEOUT_SECONDS'], 60)
+        for value in ('-1', 'invalid'):
+            with self.assertRaisesRegex(ImproperlyConfigured, 'CHART_CACHE_TIMEOUT_SECONDS must be a nonnegative integer'):
+                read_settings(f'CHART_CACHE_TIMEOUT_SECONDS="{value}"')
+
     def test_media_cache_lifetime_is_short_configurable_and_validated(self) -> None:
         """
         Checks media defaults to sixty seconds, can be disabled, and names its own invalid setting.

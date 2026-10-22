@@ -33,6 +33,7 @@ from .lib.display_cache import cached_display
 from .lib.display_exports import export_request
 from .lib.display_jsonld_cache import cached_display_data
 from .lib.error_check import IntentionalErrorCheckError
+from .lib.organization_chart_cache import cached_chart
 from .lib.page_data import (
     get_home_data,
     get_search_data,
@@ -496,6 +497,7 @@ def visualization_network(request: HttpRequest, identifier: str, kind: str) -> H
         return data_unavailable(exc)
 
 
+@never_cache
 def visualization_publications(request: HttpRequest, id: str, fmt: str = '') -> HttpResponse:
     """
     Serves an organization's publication timeline and its source-backed formats.
@@ -505,7 +507,7 @@ def visualization_publications(request: HttpRequest, id: str, fmt: str = '') -> 
     try:
         if id.startswith('team-') or fmt not in {'', 'json', 'csv'} or request.GET:
             raise PageDataError('The publication chart request is unsupported.')
-        name, data = publication_history_data(id)
+        name, data = cached_chart(id, 'publications', publication_history_data)
         if fmt == 'json':
             return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
         if fmt == 'csv':
@@ -515,10 +517,13 @@ def visualization_publications(request: HttpRequest, id: str, fmt: str = '') -> 
                 headers={'Content-Disposition': f'attachment; filename="{id}.csv"; filename*=UTF-8\'\'{id}.csv'},
             )
         return render(request, 'visualization/publications_data.html', {'id': id, 'name': name, 'chart': data})
+    except MissingRecordError:
+        return page_not_found(request)
     except PageDataError as exc:
         return data_unavailable(exc)
 
 
+@never_cache
 def visualization_research(request: HttpRequest, id: str, fmt: str = '') -> HttpResponse:
     """
     Serves an organization's shared research areas and the underlying data.
@@ -528,7 +533,7 @@ def visualization_research(request: HttpRequest, id: str, fmt: str = '') -> Http
     try:
         if fmt not in {'', 'json'} or request.GET:
             raise PageDataError('The research chart request is unsupported.')
-        name, data = research_areas_data(id)
+        name, data = cached_chart(id, 'research', research_areas_data)
         if fmt == 'json':
             return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
         return render(
@@ -536,6 +541,8 @@ def visualization_research(request: HttpRequest, id: str, fmt: str = '') -> Http
             'visualization/research_data.html',
             {'id': id, 'name': name, 'chart': data, 'is_team': id.startswith('team-')},
         )
+    except MissingRecordError:
+        return page_not_found(request)
     except PageDataError as exc:
         return data_unavailable(exc)
 

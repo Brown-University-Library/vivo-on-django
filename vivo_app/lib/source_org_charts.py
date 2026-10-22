@@ -8,7 +8,7 @@ import io
 import time
 from collections import Counter
 
-from vivo_app.lib.page_errors import PageDataError
+from vivo_app.lib.page_errors import MissingRecordError, PageDataError
 from vivo_app.lib.source_pages import (
     CUSTOM_ORGANIZATION_IDS,
     SourceReader,
@@ -38,8 +38,15 @@ def organization_chart_members(
         name, member_ids = team_definition(identifier)
     else:
         response = response_object(profile_key(identifier), reader)
-        docs, _ = documents(response)
-        if not docs or record_id(docs[0]) != identifier or first_text(docs[0].get('record_type')) != 'ORGANIZATION':
+        docs, total = documents(response)
+        if not docs and total == 0:
+            raise MissingRecordError('The requested chart organization does not exist.')
+        if (
+            total != 1
+            or len(docs) != 1
+            or record_id(docs[0]) != identifier
+            or first_text(docs[0].get('record_type')) != 'ORGANIZATION'
+        ):
             raise PageDataError('The requested chart organization is unavailable.')
         organization = record_data(docs[0])
         name = first_text(organization.get('name')) or first_text(docs[0].get('display_name_s'))
@@ -54,8 +61,8 @@ def organization_chart_members(
             ),
         )
         member_ids = list(dict.fromkeys(record_id({'id': first_text(row.get('faculty_uri'))}) for row in members))
-    if not name or len(member_ids) > 500:
-        raise PageDataError('The chart organization has no usable member list.')
+    if not name:
+        raise PageDataError('The chart organization has no usable name.')
     found: dict[str, tuple[dict[str, object], str]] = {}
     ## preserves the reference's twenty-member batches and each response's faculty order.
     for start in range(0, len(member_ids), 20):

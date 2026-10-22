@@ -125,6 +125,96 @@ class OrganizationChartTests(TestCase):
         self.assertEqual([node['nodeName'] for node in nodes[1] if isinstance(node, dict)], ['Area A'])
         self.assertEqual(len(links), 2)
 
+    def test_large_organization_keeps_every_member_in_small_source_requests(self) -> None:
+        """
+        Checks an organization above five hundred members produces complete charts using twenty-member requests.
+        """
+        prefix = 'http://vivo.brown.edu/individual/'
+        identifiers = [f'invented-{index:04}' for index in range(793)]
+        self.responses[profile_key('org-example')] = self.response(
+            [
+                {
+                    'id': prefix + 'org-example',
+                    'record_type': 'ORGANIZATION',
+                    'json_txt': json.dumps(
+                        {
+                            'name': 'Example Organization',
+                            'people': [{'faculty_uri': prefix + identifier} for identifier in identifiers],
+                        }
+                    ),
+                }
+            ]
+        )
+        batches = [identifiers[start : start + 20] for start in range(0, len(identifiers), 20)]
+        for batch in batches:
+            self.responses[chart_member_key(batch)] = self.response(
+                [
+                    {
+                        'id': prefix + identifier,
+                        'record_type': 'PEOPLE',
+                        'json_txt': json.dumps(
+                            {
+                                'name': identifier,
+                                'contributor_to': [{'date': '2020-01-01'}],
+                                'research_areas': ['Shared area'],
+                            }
+                        ),
+                    }
+                    for identifier in batch
+                ]
+            )
+        with patch('vivo_app.lib.source_org_charts.time.sleep'):
+            _, publications = publication_history_data('org-example', self.read)
+            _, research = research_areas_data('org-example', self.read)
+        self.assertEqual(publications['columns'], identifiers)
+        self.assertEqual(publications['matrix'], [{'year': 2020, 'total': 793, **dict.fromkeys(identifiers, 1)}])
+        groups = research['nodes']
+        links = research['links']
+        assert isinstance(groups, list)
+        assert isinstance(links, list)
+        self.assertEqual([node['nodeName'] for node in groups[0]], identifiers)
+        self.assertEqual(len(links), 793)
+        self.assertEqual(
+            self.requested,
+            [profile_key('org-example'), *(chart_member_key(batch) for batch in batches)] * 2,
+        )
+
+    def test_missing_organization_returns_404_for_all_chart_formats(self) -> None:
+        """
+        Checks an exact empty organization lookup returns not found without administrator error email.
+        """
+        self.responses[profile_key('org-example')] = self.response([])
+        with (
+            patch('vivo_app.lib.source_org_charts.read_source', side_effect=self.read),
+            patch('django.utils.log.AdminEmailHandler.emit') as email,
+        ):
+            for suffix in ('publications', 'publications.json', 'publications.csv', 'research', 'research.json'):
+                with self.subTest(suffix=suffix):
+                    response = self.client.get('/display/org-example/viz/' + suffix)
+                    assert isinstance(response, HttpResponse)
+                    self.assertEqual(response.status_code, 404)
+            email.assert_not_called()
+
+    def test_inconsistent_or_unrelated_organization_lookup_remains_an_error(self) -> None:
+        """
+        Checks wrong IDs, unsupported record types, and inconsistent result counts are not treated as missing.
+        """
+        original = json.loads(self.responses[profile_key('org-example')].body)
+        for changes in (
+            {'id': 'http://vivo.brown.edu/individual/org-other'},
+            {'record_type': 'PEOPLE'},
+            {'record_type': 'UNCATEGORIZED'},
+            {'json_txt': 'invalid'},
+        ):
+            doc = {**original['response']['docs'][0], **changes}
+            self.responses[profile_key('org-example')] = self.response([doc])
+            with self.subTest(changes=changes), self.assertRaises(PageDataError):
+                research_areas_data('org-example', self.read)
+        original['response']['docs'] = []
+        self.responses[profile_key('org-example')] = SourceResponse(200, (), json.dumps(original).encode())
+        with self.assertRaises(PageDataError):
+            research_areas_data('org-example', self.read)
+
     def test_publication_csv_follows_its_header_column_order(self) -> None:
         """
         Checks CSV rows follow the named columns even when source keys are reordered.

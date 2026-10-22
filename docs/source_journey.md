@@ -4,6 +4,7 @@
 
 - [Configure sources](#configure-sources)
 - [Public images and CV files](#public-images-and-cv-files)
+- [Organization charts](#organization-charts)
 - [Homepage books](#homepage-books)
 - [Teams and custom organizations](#teams-and-custom-organizations)
 - [Public display downloads](#public-display-downloads)
@@ -35,6 +36,14 @@ Image reads accept up to 20,000,000 bytes; document reads remain limited to 10,0
 `MEDIA_CACHE_TIMEOUT_SECONDS` sets a separate short lifetime for successful images and CV files, defaulting to 60 seconds. Set it to `0` to disable media cache reads, writes, and locks. Negative or invalid values prevent startup. Change the private environment setting and restart Django to apply a new lifetime. The existing Django file cache and `REPORT_CACHE_LOCK_DIR` coordinate workers, with media keys separate from exports and reports. A source address, file path, document version, timeout, or media-code version change selects a new entry.
 
 The lifetime starts after a successful source read, and cache hits do not extend it. Browser responses use `no-store` so they do not add another cache lifetime. A replacement at the same source path can take up to the configured lifetime to appear after the source makes it available; a new image path or CV `dt` value reads independently. Redirects, 404s, and failures are never stored. An expired file is not returned after a failed refresh. Ordinary profile HTML is unaffected.
+
+## Organization charts
+
+Publication and research-area charts read the complete organization member list in groups of twenty. The total list is not limited to five hundred members. Existing source-response size limits, small requests, and brief pauses between requests remain in place. An exact organization lookup with zero results returns 404; incorrect IDs, unsupported record types, inconsistent result counts, and source failures remain errors. Existing member ordering and missing-member handling are preserved.
+
+`CHART_CACHE_TIMEOUT_SECONDS` controls a separate cache of successful completed charts, defaulting to 60 seconds. Set it to `0` to disable chart cache reads, writes, and locks. Negative or invalid values prevent startup. The existing Django file cache and `REPORT_CACHE_LOCK_DIR` coordinate workers so simultaneous requests generate a given chart once. HTML, JSON, and CSV for the same chart share the result; publication and research-area charts have separate entries.
+
+The fixed lifetime starts when chart generation succeeds, and cache hits do not extend it. Source changes can take up to the configured lifetime to appear after a completed chart is cached. Browser responses use `no-store` to avoid an additional delay. A changed source address, team or custom membership definition, cache setting, calendar year, or chart-code version selects a fresh entry. Failures and missing organizations are not saved, and expired charts are not returned after a failed refresh. Ordinary profile HTML remains uncached by this mechanism.
 
 ## Homepage books
 
