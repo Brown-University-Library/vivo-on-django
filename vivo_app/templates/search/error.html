@@ -3,11 +3,16 @@
 
 {% block content %}
 <div class="error-404-wrapper">
+    {% if temporarily_unavailable %}
+    <h1>Page temporarily unavailable</h1>
+    <p>We couldn't load this page's information in time. Please try again in a minute.</p>
+    {% else %}
     <h1>Oops! Something went wrong</h1>
     <p>We've logged the error and will review it. However, if you need assistance,
         please let us know via the
         <a href="{{ contact_us_url }}" target="_blank" rel="noopener" title="Submit feedback">Contact Us</a>
         form.</p>
+    {% endif %}
     <div class="row hero" style="background-image: url({% static hero_background_relpath %}); background-size: cover; background-position: 50% 50%; background-repeat: no-repeat;">
         <div class="theme-showcase"><div class="col-md-12"><div class="container" role="main">
             <div class="jumbotron"><img src="{% static 'images/RaB-type2.svg' %}" alt="Researchers at Brown" style="width: 64%; padding-bottom: 0; margin-bottom: 0;"></div>

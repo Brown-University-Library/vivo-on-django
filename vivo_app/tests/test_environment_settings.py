@@ -38,6 +38,22 @@ def read_settings(content: str) -> dict[str, object]:
 
 
 class EnvironmentSettingsTests(SimpleTestCase):
+    def test_display_cache_has_a_separate_short_lifetime(self) -> None:
+        """
+        Checks display JSON-LD defaults to sixty seconds and rejects invalid cache settings.
+        """
+        self.assertEqual(read_settings('')['DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS'], 60)
+        for value in ('0', '30', '1_200'):
+            configured = read_settings(f'DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS="{value}"')
+            self.assertEqual(configured['DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS'], int(value))
+            self.assertEqual(configured['REPORT_CACHE_TIMEOUT_SECONDS'], 28800)
+        self.assertEqual(read_settings('REPORT_CACHE_TIMEOUT_SECONDS="0"')['DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS'], 60)
+        for value in ('-1', 'invalid'):
+            with self.assertRaisesRegex(
+                ImproperlyConfigured, 'DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS must be a nonnegative integer'
+            ):
+                read_settings(f'DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS="{value}"')
+
     def test_chart_cache_lifetime_is_short_configurable_and_validated(self) -> None:
         """
         Checks charts default to sixty seconds, can be disabled, and identify an invalid setting.

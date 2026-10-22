@@ -10,7 +10,7 @@ import httpx2
 from django.conf import settings
 from django.urls import reverse
 
-from vivo_app.lib.page_errors import PageDataError
+from vivo_app.lib.page_errors import PageDataError, SourceTimeoutError
 from vivo_app.lib.source_types import RequestKey, SourceResponse
 
 SEARCH_FIELDS = (
@@ -396,6 +396,8 @@ def read_source(
                 if key.service == 'documents' and 'location' in response.headers:
                     headers.append(('location', response.headers['location']))
                 result = SourceResponse(response.status_code, tuple(headers), b''.join(chunks))
+        except httpx2.TimeoutException as exc:
+            raise SourceTimeoutError(f'{key.service} source request timed out.') from exc
         except httpx2.HTTPError as exc:
             raise PageDataError(f'{key.service} source request failed.') from exc
     allowed_status = (

@@ -22,6 +22,7 @@ from django.http import (
 )
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.cache import add_never_cache_headers
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 
@@ -38,7 +39,7 @@ from .lib.page_data import (
     get_home_data,
     get_search_data,
 )
-from .lib.page_errors import InvalidDocumentError, MissingRecordError, PageDataError
+from .lib.page_errors import InvalidDocumentError, MissingRecordError, PageDataError, SourceTimeoutError
 from .lib.page_rendering import data_unavailable, query_pairs, render_or_stub
 from .lib.profile_navigation import profile_search_return
 from .lib.report_cache import cached_report
@@ -347,13 +348,26 @@ def display_show(request: HttpRequest, id: str) -> HttpResponse:
                     display_data.body, status=display_data.status, content_type='application/json; charset=utf-8'
                 )
                 response['X-Content-Type-Options'] = 'nosniff'
+                add_never_cache_headers(response)
                 return response
             context = dict(display_data.context)
             if 'profile' in context:
                 context['back_to_search'] = profile_search_return(request)
             return render(request, display_data.template_name, context)
     except MissingRecordError:
-        return page_not_found(request)
+        return render(request, '404.html', {'hero_background_relpath': get_random_background_relpath()}, status=404)
+    except SourceTimeoutError as exc:
+        logger.warning('Display source request timed out; id, ``%s``; reason, ``%s``', id, exc)
+        response = render(
+            request,
+            'search/error.html',
+            {'hero_background_relpath': get_random_background_relpath(), 'temporarily_unavailable': True},
+            status=503,
+        )
+        response['Retry-After'] = '60'
+        add_never_cache_headers(response)
+        request.META['vivo.display_timeout'] = True
+        return response
     except (BadRequest, SuspiciousOperation):
         raise
     except Exception:

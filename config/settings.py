@@ -172,6 +172,11 @@ CACHES = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'skip_display_timeout_emails': {
+            '()': 'vivo_app.lib.request_logging.SkipDisplayTimeoutEmails',
+        },
+    },
     'formatters': {
         'verbose': {
             'format': '{levelname} {asctime} {module} {message}',
@@ -187,6 +192,7 @@ LOGGING = {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
             'include_html': True,
+            'filters': ['skip_display_timeout_emails'],
         },
         'file': {
             'level': 'DEBUG' if DEBUG else 'INFO',
@@ -256,6 +262,9 @@ MEDIA_CACHE_TIMEOUT_SECONDS = cache_timeout(os.getenv('MEDIA_CACHE_TIMEOUT_SECON
 CHART_CACHE_TIMEOUT_SECONDS = cache_timeout(os.getenv('CHART_CACHE_TIMEOUT_SECONDS', '60'), 'CHART_CACHE_TIMEOUT_SECONDS')
 VIZ_SERVICE_URL = os.getenv('VIZ_SERVICE_URL', '')
 VIVO_BACKEND_URL = os.getenv('VIVO_BACKEND_URL', '')
+DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS = cache_timeout(
+    os.getenv('DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS', '60'), 'DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS'
+)
 VIZ_ENABLED = os.getenv('VIZ_ENABLED', 'true').lower() == 'true'
 TEAM_SOURCE_MANIFEST = os.getenv('TEAM_SOURCE_MANIFEST', '')
 REPORT_DEFINITIONS_PATH = os.getenv('REPORT_DEFINITIONS_PATH', '')

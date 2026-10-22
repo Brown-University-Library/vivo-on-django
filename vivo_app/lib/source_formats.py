@@ -11,6 +11,7 @@ from vivo_app.lib.source_pages import (
     documents,
     entries,
     first_text,
+    matching_document,
     organization_members,
     publication_year,
     record_data,
@@ -53,18 +54,10 @@ def raw_record_json_data(identifier: str, reader: FormatReader | None = None) ->
     if reader is None:
         reader = read_source
     response = response_object(profile_key(identifier), reader)
-    docs, _ = documents(response)
-    if (
-        not docs
-        or record_id(docs[0]) != identifier
-        or first_text(docs[0].get('record_type'))
-        not in {
-            'PEOPLE',
-            'ORGANIZATION',
-        }
-    ):
+    doc = matching_document(response, identifier)
+    if first_text(doc.get('record_type')) not in {'PEOPLE', 'ORGANIZATION'}:
         raise PageDataError('The requested source record is unavailable.')
-    return record_data(docs[0])
+    return record_data(doc)
 
 
 def organization_json_data(
@@ -78,10 +71,9 @@ def organization_json_data(
     if reader is None:
         reader = read_source
     response = response_object(profile_key(identifier), reader)
-    docs, _ = documents(response)
-    if not docs or record_id(docs[0]) != identifier or first_text(docs[0].get('record_type')) != 'ORGANIZATION':
+    doc = matching_document(response, identifier)
+    if first_text(doc.get('record_type')) != 'ORGANIZATION':
         raise PageDataError('The requested source record is not an organization.')
-    doc = docs[0]
     raw = record_data(doc)
     uri = first_text(raw.get('uri')) or first_text(doc.get('id'))
     path = image_path(doc.get('thumbnail_file_path_s'))
@@ -262,8 +254,8 @@ def profile_json_data(identifier: str, reader: FormatReader | None = None) -> di
     if reader is None:
         reader = read_source
     response = response_object(profile_export_key(identifier), reader)
-    docs, _ = documents(response)
-    if not docs or record_id(docs[0]) != identifier or first_text(docs[0].get('record_type')) != 'PEOPLE':
+    doc = matching_document(response, identifier)
+    if first_text(doc.get('record_type')) != 'PEOPLE':
         raise PageDataError('The requested source record is not a person.')
     from vivo_app.lib.source_graph import visualization_list
 
@@ -272,12 +264,12 @@ def profile_json_data(identifier: str, reader: FormatReader | None = None) -> di
     except PageDataError:
         coauthors = {}
     collaborators = {}
-    if entries(record_data(docs[0]), 'collaborators'):
+    if entries(record_data(doc), 'collaborators'):
         try:
             collaborators = visualization_list('collaborators', reader)
         except PageDataError:
             pass
-    return faculty_item_from_doc(docs[0], coauthors, collaborators)
+    return faculty_item_from_doc(doc, coauthors, collaborators)
 
 
 def faculty_item_from_doc(

@@ -14,7 +14,7 @@ from vivo_app.lib.source_types import RequestKey, SourceResponse
 from vivo_app.tests.source_fixtures import page_responses, solr_response
 
 
-@override_settings(TURNSTILE_ENABLED=False, VIZ_ENABLED=False, REPORT_CACHE_TIMEOUT_SECONDS=0)
+@override_settings(TURNSTILE_ENABLED=False, VIZ_ENABLED=False, DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS=0)
 class DisplayRecordTypeTests(SimpleTestCase):
     def setUp(self) -> None:
         """

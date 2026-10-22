@@ -1129,6 +1129,21 @@ def profile_panels(sections: list[dict[str, str]]) -> list[dict[str, str]]:
     return panels
 
 
+def matching_document(response: dict[str, object], identifier: str) -> dict[str, object]:
+    """
+    Requires one matching record, distinguishing confirmed absence from inconsistent source results.
+
+    Called by: display_document(), source_formats.raw_record_json_data(), source_formats.organization_json_data(),
+    source_formats.profile_json_data()
+    """
+    docs, total = documents(response)
+    if not docs and total == 0:
+        raise MissingRecordError('The requested display record is absent from Solr.')
+    if total != 1 or len(docs) != 1 or record_id(docs[0]) != identifier:
+        raise PageDataError('Solr did not return one matching display record.')
+    return docs[0]
+
+
 def display_document(identifier: str, reader: SourceReader | None = None) -> dict[str, object]:
     """
     Reads one display record and checks that Solr returned the requested identifier.
@@ -1138,13 +1153,7 @@ def display_document(identifier: str, reader: SourceReader | None = None) -> dic
     if reader is None:
         reader = read_source
     response = response_object(profile_key(identifier), reader)
-    docs, _ = documents(response)
-    if not docs:
-        raise MissingRecordError('The requested display record is absent from Solr.')
-    doc = docs[0]
-    if record_id(doc) != identifier:
-        raise PageDataError('Solr returned an unrelated display record.')
-    return doc
+    return matching_document(response, identifier)
 
 
 def profile_data(

@@ -14,7 +14,7 @@ from vivo_app.lib.report_cache import generation_lock
 from vivo_app.lib.source_requests import profile_key
 from vivo_app.lib.source_types import SourceResponse
 
-JSONLD_VERSION = 1
+JSONLD_VERSION = 2
 
 
 def jsonld_cache_key(identifier: str) -> str:
@@ -24,7 +24,7 @@ def jsonld_cache_key(identifier: str) -> str:
     Called by: cached_display_data(), tests
     """
     profile_key(identifier)
-    inputs = [settings.SOLR_URL, settings.VIVO_BACKEND_URL, settings.REPORT_CACHE_TIMEOUT_SECONDS, JSONLD_VERSION]
+    inputs = [settings.SOLR_URL, settings.VIVO_BACKEND_URL, settings.DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS, JSONLD_VERSION]
     digest = hashlib.sha256(json.dumps(inputs, ensure_ascii=True).encode('utf-8')).hexdigest()
     return f'display-jsonld:{identifier}:{digest}'
 
@@ -36,7 +36,7 @@ def cached_display_data(path: str, query: list[tuple[str, str]], method: str | N
     Called by: views.display_show(), tests
     """
     identifier = path.rstrip('/').rsplit('/', 1)[-1]
-    timeout = settings.REPORT_CACHE_TIMEOUT_SECONDS
+    timeout = settings.DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS
     result: DisplayPage | SourceResponse
     try:
         if timeout == 0 or query or method not in {'GET', 'HEAD'} or identifier.startswith('team-'):

@@ -4,15 +4,31 @@ Checks source failure diagnostics without contacting a service or logging record
 
 from unittest.mock import MagicMock, patch
 
+import httpx2
 from django.test import SimpleTestCase, override_settings
 
-from vivo_app.lib.page_errors import PageDataError
+from vivo_app.lib.page_errors import PageDataError, SourceTimeoutError
 from vivo_app.lib.source_requests import read_source
 from vivo_app.lib.source_types import RequestKey
 
 
 class SourceRequestDiagnosticsTests(SimpleTestCase):
     """Checks useful failure metadata and private request and response content."""
+
+    @override_settings(VIVO_BACKEND_URL='https://source.invalid')
+    def test_timeout_remains_distinct_from_other_request_failures(self) -> None:
+        """
+        Checks connection and read timeouts retain their cause without classifying other failures as timeouts.
+        """
+        for error in (httpx2.ReadTimeout, httpx2.ConnectTimeout, httpx2.ConnectError):
+            with self.subTest(error=error), patch('vivo_app.lib.source_requests.httpx2.Client') as client:
+                source_error = error('Example private connection detail')
+                client.return_value.__enter__.return_value.stream.side_effect = source_error
+                with self.assertRaises(PageDataError) as caught:
+                    read_source(RequestKey('vitro', '/individual/invented-a/invented-a.jsonld'))
+            self.assertIs(caught.exception.__cause__, source_error)
+            self.assertEqual(isinstance(caught.exception, SourceTimeoutError), error is not httpx2.ConnectError)
+            self.assertNotIn('Example private connection detail', str(caught.exception))
 
     @override_settings(IMAGES_URL='https://source.invalid')
     def test_portrait_above_ten_megabytes_is_accepted(self) -> None:

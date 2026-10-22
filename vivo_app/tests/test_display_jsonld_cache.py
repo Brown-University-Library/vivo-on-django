@@ -14,7 +14,7 @@ from django.test import SimpleTestCase, override_settings
 
 from vivo_app.lib.display_cache import display_cache_key
 from vivo_app.lib.display_jsonld_cache import cached_display_data, jsonld_cache_key
-from vivo_app.lib.page_errors import PageDataError
+from vivo_app.lib.page_errors import PageDataError, SourceTimeoutError
 from vivo_app.lib.report_cache import generation_lock, report_cache_key
 from vivo_app.lib.reports import parse_report
 from vivo_app.lib.source_requests import profile_key, vitro_key
@@ -43,7 +43,7 @@ class DisplayJsonldCacheTests(SimpleTestCase):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         config = override_settings(
-            REPORT_CACHE_TIMEOUT_SECONDS=60,
+            DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS=60,
             REPORT_CACHE_LOCK_DIR=self.directory.name + '/locks',
             SOLR_URL='https://source.invalid/solr',
             VIVO_BACKEND_URL='https://source.invalid/vivo',
@@ -113,6 +113,7 @@ class DisplayJsonldCacheTests(SimpleTestCase):
             self.assertEqual(response.content, self.body)
             self.assertEqual(response['Content-Type'], 'application/json; charset=utf-8')
             self.assertEqual(response['X-Content-Type-Options'], 'nosniff')
+            self.assertIn('no-store', response['Cache-Control'])
         self.assertEqual(self.get_display(method='HEAD').content, b'')
         self.assertEqual(self.requested, [profile_key('invented-other'), vitro_key('invented-other', 'jsonld')])
 
@@ -120,8 +121,11 @@ class DisplayJsonldCacheTests(SimpleTestCase):
         """
         Checks default and custom lifetimes start after source work and expire despite intervening hits.
         """
-        for timeout in (28800, 60):
-            with override_settings(REPORT_CACHE_TIMEOUT_SECONDS=timeout), patch('time.time', return_value=100) as clock:
+        for timeout in (60, 30):
+            with (
+                override_settings(DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS=timeout),
+                patch('time.time', return_value=100) as clock,
+            ):
                 self.clock = clock
                 self.requested.clear()
                 self.get_display()
@@ -140,7 +144,7 @@ class DisplayJsonldCacheTests(SimpleTestCase):
         self.get_display()
         self.requested.clear()
         with (
-            override_settings(REPORT_CACHE_TIMEOUT_SECONDS=0),
+            override_settings(DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS=0),
             patch('vivo_app.lib.display_jsonld_cache.cache') as backend,
             patch('vivo_app.lib.display_jsonld_cache.generation_lock') as lock,
         ):
@@ -168,6 +172,72 @@ class DisplayJsonldCacheTests(SimpleTestCase):
             self.requested.clear()
             self.assertEqual(self.get_display().content, b'{"label":"Updated"}')
             self.assertEqual(self.requested, [])
+
+    def test_one_timeout_retries_and_caches_the_success_without_email(self) -> None:
+        """
+        Checks one timeout retries only VIVO and later visitors reuse the successful response.
+        """
+        with (
+            patch(
+                'vivo_app.lib.page_data.read_source',
+                side_effect=[SourceTimeoutError('Example VIVO timeout.'), self.source_response],
+            ) as source,
+            patch('vivo_app.lib.page_data.time.sleep') as pause,
+            patch('django.utils.log.AdminEmailHandler.emit') as email,
+            self.assertLogs('vivo_app.lib.page_data', level='WARNING'),
+        ):
+            self.assertEqual(self.get_display().content, self.body)
+            self.assertEqual(self.get_display().content, self.body)
+        self.assertEqual(source.call_count, 2)
+        self.assertEqual(self.requested, [profile_key('invented-other')])
+        pause.assert_called_once_with(0.25)
+        email.assert_not_called()
+        self.assertEqual(cache.get(jsonld_cache_key('invented-other')), self.source_response)
+
+    def test_repeated_timeouts_return_uncached_503_without_email(self) -> None:
+        """
+        Checks exhausted retries show a temporary message, log warnings, and recover on the next request.
+        """
+        for debug in (False, True):
+            with (
+                self.subTest(debug=debug),
+                override_settings(DEBUG=debug),
+                patch(
+                    'vivo_app.lib.page_data.read_source', side_effect=SourceTimeoutError('Example private detail')
+                ) as source,
+                patch('vivo_app.lib.page_data.time.sleep'),
+                patch('django.utils.log.AdminEmailHandler.emit') as email,
+                self.assertLogs('vivo_app', level='WARNING') as logs,
+            ):
+                response = self.get_display()
+            self.assertContains(response, 'Page temporarily unavailable', status_code=503)
+            self.assertContains(response, 'Please try again in a minute.', status_code=503)
+            self.assertContains(response, 'id="search-homepage"', status_code=503)
+            self.assertNotContains(response, 'Oops!', status_code=503)
+            self.assertNotContains(response, 'Example private detail', status_code=503)
+            self.assertNotContains(response, '{%', status_code=503)
+            self.assertEqual(response['Retry-After'], '60')
+            self.assertIn('no-store', response['Cache-Control'])
+            self.assertEqual(source.call_count, 2)
+            self.assertEqual(len(logs.records), 2)
+            self.assertIsNone(cache.get(jsonld_cache_key('invented-other')))
+            email.assert_not_called()
+        self.assertEqual(self.get_display().content, self.body)
+
+    def test_other_vivo_failures_still_send_email_without_retry(self) -> None:
+        """
+        Checks invalid source responses keep their existing error alert and never retry as timeouts.
+        """
+        with (
+            patch('vivo_app.lib.page_data.read_source', side_effect=PageDataError('Example invalid response')) as source,
+            patch('vivo_app.lib.page_data.time.sleep') as pause,
+            patch('django.utils.log.AdminEmailHandler.emit') as email,
+            self.assertLogs('vivo_app.views', level='ERROR'),
+        ):
+            self.assertEqual(self.get_display().status_code, 500)
+        source.assert_called_once()
+        pause.assert_not_called()
+        email.assert_called_once()
 
     def test_missing_records_and_upstream_404_are_not_cached(self) -> None:
         """
@@ -212,14 +282,14 @@ class DisplayJsonldCacheTests(SimpleTestCase):
         for setting in (
             {'SOLR_URL': 'https://changed.invalid/solr'},
             {'VIVO_BACKEND_URL': 'https://changed.invalid/vivo'},
-            {'REPORT_CACHE_TIMEOUT_SECONDS': 30},
+            {'DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS': 30},
         ):
             with self.subTest(setting=setting), override_settings(**setting):
                 self.assertNotEqual(key, jsonld_cache_key('invented-other'))
                 self.requested.clear()
                 self.get_display()
                 self.assertEqual(len(self.requested), 2)
-        with patch('vivo_app.lib.display_jsonld_cache.JSONLD_VERSION', 2):
+        with patch('vivo_app.lib.display_jsonld_cache.JSONLD_VERSION', 3):
             self.assertNotEqual(key, jsonld_cache_key('invented-other'))
             self.requested.clear()
             self.get_display()
@@ -239,6 +309,34 @@ class DisplayJsonldCacheTests(SimpleTestCase):
             self.assertEqual(self.get_display().content, self.body)
         self.assertEqual(cache.get(export_key), b'Example export')
         self.assertEqual(cache.get(report_key), b'Example protected report')
+
+    def test_report_lifetime_does_not_change_display_freshness(self) -> None:
+        """
+        Checks a longer report lifetime cannot extend display caching or change its key.
+        """
+        key = jsonld_cache_key('invented-other')
+        with override_settings(REPORT_CACHE_TIMEOUT_SECONDS=28800), patch('time.time', return_value=100) as clock:
+            self.get_display()
+            self.responses[vitro_key('invented-other', 'jsonld')] = SourceResponse(200, (), b'{"label":"Updated"}')
+            clock.return_value = 159
+            self.assertEqual(self.get_display().content, self.body)
+            clock.return_value = 161
+            self.assertEqual(self.get_display().content, b'{"label":"Updated"}')
+            self.assertEqual(len(self.requested), 4)
+            self.assertEqual(key, jsonld_cache_key('invented-other'))
+
+    def test_changed_record_type_uses_fresh_html_after_expiry(self) -> None:
+        """
+        Checks a record changed to a person stops returning cached JSON-LD when its minute expires.
+        """
+        with patch('time.time', return_value=100) as clock:
+            self.get_display()
+            self.responses[profile_key('invented-other')] = solr_response([person_doc('invented-other')], 1)
+            clock.return_value = 161
+            self.assertContains(self.get_display(), 'invented-other')
+            self.assertTrue(self.get_display()['Content-Type'].startswith('text/html'))
+            self.assertIsNone(cache.get(jsonld_cache_key('invented-other')))
+            self.assertEqual(self.requested.count(vitro_key('invented-other', 'jsonld')), 1)
 
     def test_ignored_query_reuses_cache_and_post_reads_fresh_sources(self) -> None:
         """
