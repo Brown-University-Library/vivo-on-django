@@ -1,5 +1,5 @@
 """
-Keeps handled display timeouts in the logs without sending administrator email.
+Keeps handled source timeouts in the logs without sending administrator email.
 """
 
 import logging
@@ -7,8 +7,8 @@ import logging
 from django.http import HttpRequest
 
 
-class SkipDisplayTimeoutEmails(logging.Filter):
-    """Excludes only a handled display timeout's 503 response from administrator email."""
+class SkipSourceTimeoutEmails(logging.Filter):
+    """Excludes only a handled source timeout's 503 response from administrator email."""
 
     def filter(self, record: logging.LogRecord) -> bool:
         """
@@ -19,7 +19,7 @@ class SkipDisplayTimeoutEmails(logging.Filter):
         request = getattr(record, 'request', None)
         handled_timeout = (
             isinstance(request, HttpRequest)
-            and request.META.get('vivo.display_timeout') is True
+            and request.META.get('vivo.source_timeout') is True
             and getattr(record, 'status_code', None) == 503
         )
         return not handled_timeout

@@ -51,6 +51,7 @@ from .lib.source_graph import graph_csv, graph_page_data, graph_subject_data, vi
 from .lib.source_media import cached_media
 from .lib.source_org_charts import publication_history_csv, publication_history_data, research_areas_data
 from .lib.source_pages import facet_values_data, organization_publications_data, search_json_data
+from .lib.source_representations import cached_representation
 from .lib.source_requests import (
     document_key,
     document_key_from_url,
@@ -59,7 +60,6 @@ from .lib.source_requests import (
     read_source,
     source_origin,
     valid_profile_identifier,
-    vitro_key,
 )
 from .lib.source_status import status_data, status_error_data
 from .lib.source_teams import custom_organization_members
@@ -366,7 +366,7 @@ def display_show(request: HttpRequest, id: str) -> HttpResponse:
         )
         response['Retry-After'] = '60'
         add_never_cache_headers(response)
-        request.META['vivo.display_timeout'] = True
+        request.META['vivo.source_timeout'] = True
         return response
     except (BadRequest, SuspiciousOperation):
         raise
@@ -818,6 +818,7 @@ def individual_redirect(request: HttpRequest, id: str) -> HttpResponse:
         return data_unavailable(exc)
 
 
+@never_cache
 def individual_export(request: HttpRequest, id: str, fmt: str, id2: str | None = None) -> HttpResponse:
     """
     Returns unchanged bytes from an original VIVO representation.
@@ -827,14 +828,22 @@ def individual_export(request: HttpRequest, id: str, fmt: str, id2: str | None =
     try:
         if id2 != id or request.GET:
             raise PageDataError('The requested VIVO representation is unsupported.')
-        key = vitro_key(id, fmt)
-        response = read_source(key)
+        response = cached_representation(id, fmt, read_source, request.method)
         content_type = {'jsonld': 'application/json', 'ttl': 'text/turtle', 'rdf': 'application/rdf+xml'}[fmt]
         result = HttpResponse(response.body, status=response.status, content_type=content_type + '; charset=utf-8')
         result['X-Content-Type-Options'] = 'nosniff'
-        return result
+    except SourceTimeoutError as exc:
+        logger.warning('VIVO download timed out; id, ``%s``; fmt, ``%s``; reason, ``%s``', id, fmt, exc)
+        result = HttpResponse(
+            b'Download temporarily unavailable. Please try again in a minute.',
+            status=503,
+            content_type='text/plain; charset=utf-8',
+        )
+        result['Retry-After'] = '60'
+        request.META['vivo.source_timeout'] = True
     except PageDataError as exc:
-        return data_unavailable(exc)
+        result = data_unavailable(exc)
+    return result
 
 
 def page_not_found(request, exception=None, template_name='404.html'):

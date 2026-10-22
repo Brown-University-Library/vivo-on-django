@@ -214,7 +214,7 @@ def vitro_key(identifier: str, fmt: str) -> RequestKey:
     """
     Names one original VIVO representation and its Rails request header.
 
-    Called by: views.individual_export(), tests
+    Called by: source_representations.cached_representation(), page_data.get_display_data(), tests
     """
     formats = {'jsonld': 'application/json', 'ttl': 'text/turtle', 'rdf': 'application/rdf+xml'}
     content_type = formats.get(fmt)

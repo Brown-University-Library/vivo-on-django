@@ -182,9 +182,9 @@ class DisplayJsonldCacheTests(SimpleTestCase):
                 'vivo_app.lib.page_data.read_source',
                 side_effect=[SourceTimeoutError('Example VIVO timeout.'), self.source_response],
             ) as source,
-            patch('vivo_app.lib.page_data.time.sleep') as pause,
+            patch('vivo_app.lib.source_representations.time.sleep') as pause,
             patch('django.utils.log.AdminEmailHandler.emit') as email,
-            self.assertLogs('vivo_app.lib.page_data', level='WARNING'),
+            self.assertLogs('vivo_app.lib.source_representations', level='WARNING'),
         ):
             self.assertEqual(self.get_display().content, self.body)
             self.assertEqual(self.get_display().content, self.body)
@@ -205,7 +205,7 @@ class DisplayJsonldCacheTests(SimpleTestCase):
                 patch(
                     'vivo_app.lib.page_data.read_source', side_effect=SourceTimeoutError('Example private detail')
                 ) as source,
-                patch('vivo_app.lib.page_data.time.sleep'),
+                patch('vivo_app.lib.source_representations.time.sleep'),
                 patch('django.utils.log.AdminEmailHandler.emit') as email,
                 self.assertLogs('vivo_app', level='WARNING') as logs,
             ):
@@ -230,7 +230,7 @@ class DisplayJsonldCacheTests(SimpleTestCase):
         """
         with (
             patch('vivo_app.lib.page_data.read_source', side_effect=PageDataError('Example invalid response')) as source,
-            patch('vivo_app.lib.page_data.time.sleep') as pause,
+            patch('vivo_app.lib.source_representations.time.sleep') as pause,
             patch('django.utils.log.AdminEmailHandler.emit') as email,
             self.assertLogs('vivo_app.views', level='ERROR'),
         ):

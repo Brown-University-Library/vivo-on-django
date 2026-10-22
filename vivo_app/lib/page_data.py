@@ -2,20 +2,17 @@
 Supplies application page data from configured sources.
 """
 
-import logging
-import time
 from dataclasses import dataclass
 
 from django.conf import settings
 
-from vivo_app.lib.page_errors import MissingRecordError, PageDataError, SourceTimeoutError
+from vivo_app.lib.page_errors import MissingRecordError, PageDataError
 from vivo_app.lib.source_books import homepage_books
 from vivo_app.lib.source_pages import display_document, first_text, organization_data, profile_data, search_data
+from vivo_app.lib.source_representations import read_representation
 from vivo_app.lib.source_requests import read_source, vitro_key
 from vivo_app.lib.source_teams import custom_organization_members, team_data
 from vivo_app.lib.source_types import SourceResponse
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -68,23 +65,7 @@ def get_display_data(path: str, query: list[tuple[str, str]]) -> DisplayPage | S
         elif not record_type:
             raise MissingRecordError('The requested display record has no record type.')
         else:
-            result = display_jsonld_response(identifier)
-    return result
-
-
-def display_jsonld_response(identifier: str) -> SourceResponse:
-    """
-    Retries a timed-out VIVO display read once, preserving source validation and response bytes.
-
-    Called by: get_display_data()
-    """
-    key = vitro_key(identifier, 'jsonld')
-    try:
-        result = read_source(key)
-    except SourceTimeoutError:
-        logger.warning('Retrying timed-out VIVO display read; id, ``%s``', identifier)
-        time.sleep(0.25)
-        result = read_source(key)
+            result = read_representation(vitro_key(identifier, 'jsonld'), read_source)
     return result
 
 

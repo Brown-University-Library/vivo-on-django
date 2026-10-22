@@ -9,6 +9,7 @@
 - [Teams and custom organizations](#teams-and-custom-organizations)
 - [Public display downloads](#public-display-downloads)
 - [Legacy display JSON-LD](#legacy-display-json-ld)
+- [VIVO downloads](#vivo-downloads)
 - [Subject librarian reports](#subject-librarian-reports)
 - [Failures and diagnosis](#failures-and-diagnosis)
 
@@ -84,6 +85,14 @@ Workers on one server use the shared file lock and recheck the cache after acqui
 A timed-out VIVO display request is retried once after a quarter-second pause, while the same generation lock remains held. Each attempt keeps the existing ten-second connection and read limits. A successful retry is cached normally. If the retry also times out, the page returns HTTP 503 with a brief message, the search box, and `Retry-After: 60`. Handled display timeouts log a warning and do not send administrator email. Their responses are not cached; the next request can try again. Other errors retain their alerts. A source timeout while looking up a person, organization, or explicit JSON display also returns this temporary-unavailable response, without retrying those source reads.
 
 HTML and explicit JSON display lookups require exactly one matching source record. A successful lookup with zero results and no documents returns the HTML 404 page, including `json` and `json_txt` requests. Incorrect result counts, mismatched IDs, invalid source data, and unsupported record types remain errors. Missing records are not cached, so a newly available record can appear on the next request.
+
+## VIVO downloads
+
+RDF/XML, Turtle, and JSON-LD downloads under `/individual/` preserve the original VIVO response bytes and their existing content types. Successful GET and HEAD requests use the existing Django file cache and `REPORT_CACHE_LOCK_DIR`. Each record and format has its own entry, separate from display pages and reports. Workers recheck the cache after obtaining the shared lock, so simultaneous requests reuse one successful source read.
+
+`VIVO_EXPORT_CACHE_TIMEOUT_SECONDS` defaults to 60 seconds. The lifetime starts after a successful read, and hits do not extend it. Faculty changes can take up to this lifetime to appear in downloads after the source makes them available. Ordinary profile HTML is unaffected. Set the value to `0` to disable download cache reads, writes, and locks. Invalid or negative values prevent startup. A changed source address, lifetime, or download-code version selects a new entry. Responses use `no-store` so browsers do not add another cache delay.
+
+A source timeout retries once after a quarter-second pause, under the same lock. Both attempts retain the existing source size and time limits. Repeated timeouts return HTTP 503 with “Download temporarily unavailable. Please try again in a minute.” and `Retry-After: 60`. These responses use plain text so an error message is not presented as RDF. Handled timeouts log warnings without administrator email; other errors retain their alerts. Missing files and failed reads are not cached. A failed refresh never serves expired content, and the next request can try again. Existing request validation and redirects remain in place; other request methods bypass caching.
 
 ## Subject librarian reports
 

@@ -38,6 +38,22 @@ def read_settings(content: str) -> dict[str, object]:
 
 
 class EnvironmentSettingsTests(SimpleTestCase):
+    def test_vivo_download_cache_has_a_separate_short_lifetime(self) -> None:
+        """
+        Checks VIVO downloads default to sixty seconds, support disabling caching, and reject invalid lifetimes.
+        """
+        self.assertEqual(read_settings('')['VIVO_EXPORT_CACHE_TIMEOUT_SECONDS'], 60)
+        for value in ('0', '30', '1_200'):
+            configured = read_settings(f'VIVO_EXPORT_CACHE_TIMEOUT_SECONDS="{value}"')
+            self.assertEqual(configured['VIVO_EXPORT_CACHE_TIMEOUT_SECONDS'], int(value))
+            self.assertEqual(configured['REPORT_CACHE_TIMEOUT_SECONDS'], 28800)
+            self.assertEqual(configured['DISPLAY_JSONLD_CACHE_TIMEOUT_SECONDS'], 60)
+        for value in ('-1', 'invalid'):
+            with self.assertRaisesRegex(
+                ImproperlyConfigured, 'VIVO_EXPORT_CACHE_TIMEOUT_SECONDS must be a nonnegative integer'
+            ):
+                read_settings(f'VIVO_EXPORT_CACHE_TIMEOUT_SECONDS="{value}"')
+
     def test_display_cache_has_a_separate_short_lifetime(self) -> None:
         """
         Checks display JSON-LD defaults to sixty seconds and rejects invalid cache settings.

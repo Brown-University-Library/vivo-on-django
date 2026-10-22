@@ -6,7 +6,7 @@ import logging
 
 from django.test import RequestFactory, SimpleTestCase
 
-from vivo_app.lib.request_logging import SkipDisplayTimeoutEmails
+from vivo_app.lib.request_logging import SkipSourceTimeoutEmails
 
 
 class RequestLoggingTests(SimpleTestCase):
@@ -14,13 +14,13 @@ class RequestLoggingTests(SimpleTestCase):
         """
         Checks unmarked requests, absent requests, and later 500 errors are never excluded from email.
         """
-        email_filter = SkipDisplayTimeoutEmails()
+        email_filter = SkipSourceTimeoutEmails()
         request = RequestFactory().get('/display/invented-a')
         values: dict[str, object] = {'msg': 'Example request failure', 'status_code': 503}
         self.assertTrue(email_filter.filter(logging.makeLogRecord(values)))
         values['request'] = request
         self.assertTrue(email_filter.filter(logging.makeLogRecord(values)))
-        request.META['vivo.display_timeout'] = True
+        request.META['vivo.source_timeout'] = True
         self.assertFalse(email_filter.filter(logging.makeLogRecord(values)))
         values['status_code'] = 500
         self.assertTrue(email_filter.filter(logging.makeLogRecord(values)))
