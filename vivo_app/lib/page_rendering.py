@@ -34,13 +34,25 @@ def render_or_stub(
     return response
 
 
-def query_pairs(query: QueryDict) -> list[tuple[str, str]]:
+def query_pairs(query: QueryDict, allowed_names: set[str] | None = None) -> list[tuple[str, str]]:
     """
-    Preserves every value of repeated query parameters.
+    Preserves repeated query values, optionally keeping only names used by the requested page.
 
-    Called by: views.search(), views.display_show(), views.search_facets()
+    Called by: views.search(), views.display_show(), views.source_document(), valid_format_query(), visualization views
     """
-    return [(key, value) for key, values in query.lists() for value in values]
+    return [
+        (key, value) for key, values in query.lists() if allowed_names is None or key in allowed_names for value in values
+    ]
+
+
+def valid_format_query(query: QueryDict, fmt: str) -> bool:
+    """
+    Accepts an absent format parameter or one value matching the URL's explicit format.
+
+    Called by: views.individual_export(), views.visualization_publications(), and the other visualization views
+    """
+    pairs = query_pairs(query, {'format'})
+    return not pairs or (bool(fmt) and pairs == [('format', fmt)])
 
 
 def data_unavailable(error: PageDataError) -> HttpResponse:

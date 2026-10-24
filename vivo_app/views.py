@@ -4,7 +4,6 @@ import datetime
 import json
 import logging
 import random
-import re
 import sys
 from urllib.parse import quote, quote_plus, urlencode
 
@@ -40,7 +39,7 @@ from .lib.page_data import (
     get_search_data,
 )
 from .lib.page_errors import InvalidDocumentError, MissingRecordError, PageDataError, SourceTimeoutError
-from .lib.page_rendering import data_unavailable, query_pairs, render_or_stub
+from .lib.page_rendering import data_unavailable, query_pairs, render_or_stub, valid_format_query
 from .lib.profile_navigation import profile_search_return
 from .lib.report_cache import cached_report
 from .lib.reports import ReportError, load_reports, rails_integer, report_access
@@ -70,6 +69,7 @@ logger = logging.getLogger(__name__)
 
 
 @never_cache
+@require_http_methods(['GET', 'HEAD'])
 def source_image(request: HttpRequest, filename: str) -> HttpResponse:
     """
     Returns an image from the configured source.
@@ -77,7 +77,11 @@ def source_image(request: HttpRequest, filename: str) -> HttpResponse:
     Called by: config.urls
     """
     try:
-        result = cached_media(image_key('/' + filename), read_source)
+        key = image_key('/' + filename)
+    except PageDataError:
+        return HttpResponseNotFound(b'Image not found.', content_type='text/plain')
+    try:
+        result = cached_media(key, read_source)
         if result.status == 404:
             return HttpResponseNotFound(b'Image not found.', content_type='text/plain')
         content_type = dict(result.headers)['content-type']
@@ -92,6 +96,7 @@ def source_image(request: HttpRequest, filename: str) -> HttpResponse:
 
 
 @never_cache
+@require_http_methods(['GET', 'HEAD'])
 def source_document(request: HttpRequest, filename: str) -> HttpResponse | StreamingHttpResponse:
     """
     Serves one configured CV while keeping a source version redirect local.
@@ -99,7 +104,14 @@ def source_document(request: HttpRequest, filename: str) -> HttpResponse | Strea
     Called by: config.urls, original_document()
     """
     try:
-        key = document_key('/' + filename, tuple(query_pairs(request.GET)))
+        document_key('/' + filename)
+    except PageDataError:
+        return HttpResponseNotFound(b'Document not found.', content_type='text/plain')
+    try:
+        key = document_key('/' + filename, tuple(query_pairs(request.GET, {'dt'})))
+    except PageDataError:
+        return HttpResponseBadRequest(b'Invalid document version.', content_type='text/plain; charset=utf-8')
+    try:
         result = cached_media(key, read_source)
         if result.status == 404:
             return HttpResponseNotFound(b'Document not found.', content_type='text/plain')
@@ -413,15 +425,18 @@ def visualization_home(request: HttpRequest, id: str) -> HttpResponse:
     return HttpResponse(b'This endpoint is not connected to source data yet.', status=503, content_type='text/plain')
 
 
+@require_http_methods(['GET', 'HEAD'])
 def visualization_graph_json(request: HttpRequest, id: str, kind: str) -> HttpResponse:
     """
     Returns one unchanged graph object from a configured visualization response.
 
     Called by: config.urls
     """
+    if not valid_profile_identifier(id):
+        return page_not_found(request)
+    if not valid_format_query(request.GET, 'json'):
+        return HttpResponseBadRequest(b'Unsupported visualization format.', content_type='text/plain; charset=utf-8')
     try:
-        if request.GET:
-            raise PageDataError('Visualization query options are unsupported.')
         return HttpResponse(
             profile_json_text(visualization_graph(kind, id)).encode('utf-8'), content_type='application/json; charset=utf-8'
         )
@@ -429,15 +444,18 @@ def visualization_graph_json(request: HttpRequest, id: str, kind: str) -> HttpRe
         return data_unavailable(exc)
 
 
+@require_http_methods(['GET', 'HEAD'])
 def visualization_graph_csv(request: HttpRequest, id: str, kind: str) -> HttpResponse:
     """
     Serves the public graph CSV path from the same source graph as JSON and HTML.
 
     Called by: config.urls
     """
+    if not valid_profile_identifier(id):
+        return page_not_found(request)
+    if not valid_format_query(request.GET, 'csv'):
+        return HttpResponseBadRequest(b'Unsupported visualization format.', content_type='text/plain; charset=utf-8')
     try:
-        if request.GET:
-            raise PageDataError('Visualization query options are unsupported.')
         data = visualization_graph(kind, id)
         return HttpResponse(graph_csv(data, kind).encode(), content_type='text/plain; charset=utf-8')
     except PageDataError as exc:
@@ -449,16 +467,19 @@ def visualization_coauthor(request, id):
     return visualization_network(request, id, 'coauthors')
 
 
+@require_http_methods(['GET', 'HEAD'])
 def visualization_coauthor_treemap(request: HttpRequest, id: str) -> HttpResponse:
     """
     Renders a coauthor treemap from the same graph used by the network page.
 
     Called by: config.urls
     """
+    if not valid_profile_identifier(id):
+        return page_not_found(request)
+    pairs = query_pairs(request.GET, {'format'})
+    if len(pairs) > 1 or any(value not in {'json', 'csv'} for _, value in pairs):
+        return HttpResponseBadRequest(b'Unsupported visualization format.', content_type='text/plain; charset=utf-8')
     try:
-        pairs = query_pairs(request.GET)
-        if len(pairs) > 1 or any(key != 'format' or value not in {'json', 'csv'} for key, value in pairs):
-            raise PageDataError('Visualization query options are unsupported.')
         response_format = request.GET.get('format')
         subject = graph_subject_data('coauthors', id) if response_format is None else None
         data = visualization_graph('coauthors', id)
@@ -478,21 +499,21 @@ def visualization_collab(request, id):
     return visualization_network(request, id, 'collaborators')
 
 
+@require_http_methods(['GET', 'HEAD'])
 def visualization_network(request: HttpRequest, identifier: str, kind: str) -> HttpResponse:
     """
     Serves the graph page and its JSON or CSV representation.
 
     Called by: visualization_coauthor(), visualization_collab()
     """
+    if not valid_profile_identifier(identifier):
+        return page_not_found(request)
+    pairs = query_pairs(request.GET, {'format', 'fit'})
+    if len(pairs) > 1 or any(
+        (key == 'format' and value not in {'json', 'csv'}) or (key == 'fit' and value != '1') for key, value in pairs
+    ):
+        return HttpResponseBadRequest(b'Unsupported visualization options.', content_type='text/plain; charset=utf-8')
     try:
-        pairs = query_pairs(request.GET)
-        if len(pairs) > 1 or any(
-            (key == 'format' and value not in {'json', 'csv'})
-            or (key == 'fit' and value != '1')
-            or key not in {'format', 'fit'}
-            for key, value in pairs
-        ):
-            raise PageDataError('Visualization query options are unsupported.')
         response_format = request.GET.get('format')
         subject = graph_subject_data(kind, identifier) if response_format is None else None
         data = visualization_graph(kind, identifier)
@@ -512,15 +533,18 @@ def visualization_network(request: HttpRequest, identifier: str, kind: str) -> H
 
 
 @never_cache
+@require_http_methods(['GET', 'HEAD'])
 def visualization_publications(request: HttpRequest, id: str, fmt: str = '') -> HttpResponse:
     """
     Serves an organization's publication timeline and its source-backed formats.
 
     Called by: config.urls
     """
+    if not valid_profile_identifier(id) or id.startswith('team-') or fmt not in {'', 'json', 'csv'}:
+        return page_not_found(request)
+    if not valid_format_query(request.GET, fmt):
+        return HttpResponseBadRequest(b'Unsupported publication chart format.', content_type='text/plain; charset=utf-8')
     try:
-        if id.startswith('team-') or fmt not in {'', 'json', 'csv'} or request.GET:
-            raise PageDataError('The publication chart request is unsupported.')
         name, data = cached_chart(id, 'publications', publication_history_data)
         if fmt == 'json':
             return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
@@ -538,15 +562,18 @@ def visualization_publications(request: HttpRequest, id: str, fmt: str = '') -> 
 
 
 @never_cache
+@require_http_methods(['GET', 'HEAD'])
 def visualization_research(request: HttpRequest, id: str, fmt: str = '') -> HttpResponse:
     """
     Serves an organization's shared research areas and the underlying data.
 
     Called by: config.urls
     """
+    if not valid_profile_identifier(id) or fmt not in {'', 'json'}:
+        return page_not_found(request)
+    if not valid_format_query(request.GET, fmt):
+        return HttpResponseBadRequest(b'Unsupported research chart format.', content_type='text/plain; charset=utf-8')
     try:
-        if fmt not in {'', 'json'} or request.GET:
-            raise PageDataError('The research chart request is unsupported.')
         name, data = cached_chart(id, 'research', research_areas_data)
         if fmt == 'json':
             return HttpResponse(profile_json_text(data).encode('utf-8'), content_type='application/json; charset=utf-8')
@@ -797,37 +824,38 @@ def faculty_service_redirect(request: HttpRequest, id: str) -> HttpResponse:
 
 
 # Legacy VIVO individual handlers
+@require_http_methods(['GET', 'HEAD'])
 def individual_redirect(request: HttpRequest, id: str) -> HttpResponse:
     """
     Redirects a VIVO record to the selected HTML or original-data representation.
 
     Called by: config.urls
     """
-    try:
-        if re.fullmatch(r'[A-Za-z0-9_-]{1,80}', id) is None:
-            raise PageDataError('The requested VIVO identifier is unsupported.')
-        formats = {'application/json': 'jsonld', 'text/turtle': 'ttl', 'application/rdf+xml': 'rdf'}
-        fmt = formats.get(request.META.get('HTTP_ACCEPT', ''))
-        path = (
-            reverse('individual_export_public', kwargs={'id': id, 'id2': id, 'fmt': fmt})
-            if fmt
-            else reverse('display_show_public', args=[id])
-        )
-        return HttpResponse(status=303, headers={'Location': request.build_absolute_uri(path)})
-    except PageDataError as exc:
-        return data_unavailable(exc)
+    if not valid_profile_identifier(id):
+        return page_not_found(request)
+    formats = {'application/json': 'jsonld', 'text/turtle': 'ttl', 'application/rdf+xml': 'rdf'}
+    fmt = formats.get(request.META.get('HTTP_ACCEPT', ''))
+    path = (
+        reverse('individual_export_public', kwargs={'id': id, 'id2': id, 'fmt': fmt})
+        if fmt
+        else reverse('display_show_public', args=[id])
+    )
+    return HttpResponse(status=303, headers={'Location': request.build_absolute_uri(path)})
 
 
 @never_cache
+@require_http_methods(['GET', 'HEAD'])
 def individual_export(request: HttpRequest, id: str, fmt: str, id2: str | None = None) -> HttpResponse:
     """
     Returns unchanged bytes from an original VIVO representation.
 
     Called by: config.urls
     """
+    if not valid_profile_identifier(id) or id2 != id or fmt not in {'jsonld', 'ttl', 'rdf'}:
+        return page_not_found(request)
+    if not valid_format_query(request.GET, fmt):
+        return HttpResponseBadRequest(b'Unsupported download format.', content_type='text/plain; charset=utf-8')
     try:
-        if id2 != id or request.GET:
-            raise PageDataError('The requested VIVO representation is unsupported.')
         response = cached_representation(id, fmt, read_source, request.method)
         content_type = {'jsonld': 'application/json', 'ttl': 'text/turtle', 'rdf': 'application/rdf+xml'}[fmt]
         result = HttpResponse(response.body, status=response.status, content_type=content_type + '; charset=utf-8')

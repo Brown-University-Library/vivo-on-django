@@ -1521,7 +1521,7 @@ class SourcePageTests(TestCase):
         self.responses.pop(member_key(['invented-a']))
         with patch('vivo_app.lib.source_pages.read_source', side_effect=self.read):
             self.assertEqual(self.get_page('/display/org-example').status_code, 500)
-        self.assertEqual(self.get_page('/source-documents/docs/../../private.pdf').status_code, 503)
+        self.assertEqual(self.get_page('/source-documents/docs/../../private.pdf').status_code, 404)
 
     def test_absent_person_and_organization_show_not_found(self) -> None:
         """

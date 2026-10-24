@@ -123,9 +123,9 @@ class RepresentationCacheTests(SimpleTestCase):
                 self.assertEqual(self.download().content, updated.body)
         self.assertEqual(len(self.requested), 4)
 
-    def test_disabled_cache_and_other_methods_bypass_storage_and_locks(self) -> None:
+    def test_disabled_cache_reads_fresh_data_and_other_methods_skip_reads(self) -> None:
         """
-        Checks disabling caching and non-GET/HEAD requests always read fresh data.
+        Checks disabled caching reads fresh data, while unsupported methods skip both sources and storage.
         """
         self.download()
         self.requested.clear()
@@ -135,12 +135,13 @@ class RepresentationCacheTests(SimpleTestCase):
                 patch('vivo_app.lib.source_representations.cache') as backend,
                 patch('vivo_app.lib.source_representations.generation_lock') as lock,
             ):
-                self.download(method=method)
-                self.download(method=method)
+                expected_status = 200 if method == 'GET' else 405
+                self.assertEqual(self.download(method=method).status_code, expected_status)
+                self.assertEqual(self.download(method=method).status_code, expected_status)
                 backend.get.assert_not_called()
                 backend.set.assert_not_called()
                 lock.assert_not_called()
-        self.assertEqual(len(self.requested), 4)
+        self.assertEqual(len(self.requested), 2)
 
     def test_timeout_retries_once_and_caches_success_without_email(self) -> None:
         """
@@ -275,16 +276,16 @@ class RepresentationCacheTests(SimpleTestCase):
         """
         self.download()
         self.requested.clear()
-        for path in (
-            '/individual/invented-a/other.rdf',
-            '/individual/invented-a/invented-a.unknown',
-            '/individual/invented-a/invented-a.rdf?format=json',
-            '/individual/bad%22name/bad%22name.rdf',
+        for path, status in (
+            ('/individual/invented-a/other.rdf', 404),
+            ('/individual/invented-a/invented-a.unknown', 404),
+            ('/individual/invented-a/invented-a.rdf?format=json', 400),
+            ('/individual/bad%22name/bad%22name.rdf', 404),
         ):
             with patch('vivo_app.lib.source_representations.cache') as backend:
                 response = self.client.get(path)
                 assert isinstance(response, HttpResponse)
-                self.assertEqual(response.status_code, 503)
+                self.assertEqual(response.status_code, status)
                 backend.get.assert_not_called()
                 backend.set.assert_not_called()
         self.assertEqual(self.requested, [])

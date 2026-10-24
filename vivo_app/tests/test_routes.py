@@ -33,14 +33,14 @@ class RoutesTests(SimpleTestCase):
             self.assertEqual(response.status_code, 503)
             self.assertEqual(response.content, b'This endpoint is not connected to source data yet.')
 
-    def test_unsupported_exports_keep_their_error(self) -> None:
+    def test_unsupported_exports_return_not_found(self) -> None:
         """
-        Checks unconfirmed export forms keep their error instead of returning made-up records.
+        Checks unsupported export addresses return not found instead of claiming a source outage.
         """
         for path in ('/individual/example.json/', '/individual/example/example.json/'):
             response = self.client.get(path)
             assert isinstance(response, HttpResponse)
-            self.assertEqual(response.status_code, 503)
+            self.assertEqual(response.status_code, 404)
 
     def test_file_old_image_returns_404(self) -> None:
         """

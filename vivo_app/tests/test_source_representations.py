@@ -86,6 +86,6 @@ class SourceRepresentationTests(TestCase):
             mismatch = self.client.get('/individual/invented-a/other.rdf')
         assert isinstance(missing, HttpResponse) and isinstance(mismatch, HttpResponse)
         self.assertEqual(missing.status_code, 503)
-        self.assertEqual(mismatch.status_code, 503)
+        self.assertEqual(mismatch.status_code, 404)
         with self.assertRaises(PageDataError):
             vitro_key('invented-a', 'unsupported')
