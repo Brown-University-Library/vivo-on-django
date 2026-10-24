@@ -282,6 +282,135 @@ class OrganizationChartTests(TestCase):
         _, chart = publication_history_data('org-example', self.read)
         self.assertEqual(chart['columns'], ['invented-a', 'invented-b'])
 
+    def test_charts_include_available_data_for_uncategorized_members(self) -> None:
+        """
+        Checks listed uncategorized members contribute their available publications and research areas.
+        """
+        key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
+        docs = json.loads(self.responses[key].body)['response']['docs']
+        for record_type in ('UNCATEGORIZED', ['UNCATEGORIZED']):
+            with self.subTest(record_type=record_type):
+                docs[0]['record_type'] = record_type
+                self.responses[key] = self.response(docs)
+                _, publications = publication_history_data('org-example', self.read)
+                self.assertEqual(publications['columns'], ['invented-a', 'invented-b'])
+                self.assertEqual(
+                    publication_history_csv(publications),
+                    'year,year_total,invented-a,invented-b\n2020,3,2,1\n2021,1,1,0',
+                )
+                _, research = research_areas_data('org-example', self.read)
+                groups = research['nodes']
+                assert isinstance(groups, list)
+                self.assertEqual([node['nodeName'] for node in groups[0]], ['invented-a', 'invented-b', 'invented-c'])
+                self.assertEqual(groups[0][0]['display'], 'Invented A')
+                self.assertEqual(groups[1][0]['nodeName'], 'Area A')
+                self.assertEqual(
+                    research['links'], [{'source': 1, 'target': 4, 'value': 1}, {'source': 2, 'target': 4, 'value': 1}]
+                )
+
+    def test_uncategorized_members_without_chart_fields_keep_other_members_data(self) -> None:
+        """
+        Checks absent optional fields retain the named research member without inventing publications or research areas.
+        """
+        key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
+        docs = json.loads(self.responses[key].body)['response']['docs']
+        docs[2].update(record_type='UNCATEGORIZED', json_txt='{}', display_name_s=['Invented C'])
+        self.responses[key] = self.response(docs)
+        _, publications = publication_history_data('org-example', self.read)
+        self.assertEqual(publications['columns'], ['invented-a', 'invented-b'])
+        _, research = research_areas_data('org-example', self.read)
+        groups = research['nodes']
+        assert isinstance(groups, list)
+        self.assertEqual(groups[0][2]['nodeName'], 'invented-c')
+        self.assertEqual(groups[0][2]['display'], 'Invented C')
+        self.assertEqual(groups[0][2]['areas'], '')
+        links = research['links']
+        assert isinstance(links, list)
+        self.assertEqual(len(links), 2)
+
+    def test_charts_reject_unexpected_duplicate_or_malformed_members(self) -> None:
+        """
+        Checks accepting uncategorized members preserves ID, type, duplicate, and record-content checks in both charts.
+        """
+        key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
+        original = json.loads(self.responses[key].body)['response']['docs']
+        for builder in (publication_history_data, research_areas_data):
+            for record_type in ('PEOPLE', 'UNCATEGORIZED'):
+                for changes in (
+                    {'id': 'http://vivo.brown.edu/individual/invented-other'},
+                    {'id': original[0]['id']},
+                    {'record_type': 'ORGANIZATION'},
+                    {'record_type': ''},
+                    {'json_txt': 'invalid'},
+                    {'json_txt': '[]'},
+                    {'json_txt': None},
+                ):
+                    with self.subTest(builder=builder.__name__, record_type=record_type, changes=changes):
+                        doc = {**original[1], 'record_type': record_type, **changes}
+                        self.responses[key] = self.response([original[0], doc, original[2]])
+                        with self.assertRaises(PageDataError):
+                            builder('org-example', self.read)
+                with self.subTest(builder=builder.__name__, record_type=record_type, duplicate_first=True):
+                    doc = {**original[0], 'record_type': record_type}
+                    self.responses[key] = self.response([doc, *original])
+                    with self.assertRaises(PageDataError):
+                        builder('org-example', self.read)
+
+    def test_uncategorized_member_charts_share_cache_and_show_updated_data_after_expiry(self) -> None:
+        """
+        Checks all chart formats work without error email and repeated visits cannot delay a member's updated data.
+        """
+        key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
+        docs = json.loads(self.responses[key].body)['response']['docs']
+        updated = list(docs)
+        docs[0] = {**docs[0], 'record_type': 'UNCATEGORIZED', 'json_txt': '{"name": "Invented A"}'}
+        self.responses[key] = self.response(docs)
+        with (
+            TemporaryDirectory() as directory,
+            override_settings(
+                CHART_CACHE_TIMEOUT_SECONDS=60,
+                REPORT_CACHE_LOCK_DIR=directory + '/locks',
+                CACHES={
+                    'default': {
+                        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+                        'LOCATION': directory + '/cache',
+                    }
+                },
+            ),
+            patch('vivo_app.lib.source_org_charts.read_source', side_effect=self.read),
+            patch('django.utils.log.AdminEmailHandler.emit') as email,
+            patch('time.time', return_value=100) as clock,
+        ):
+            for suffix in ('publications', 'publications.json', 'publications.csv', 'research', 'research.json'):
+                with self.subTest(suffix=suffix):
+                    response = self.client.get('/display/org-example/viz/' + suffix)
+                    assert isinstance(response, HttpResponse)
+                    self.assertEqual(response.status_code, 200)
+                    self.assertIn('no-store', response['Cache-Control'])
+                    if suffix in ('publications', 'research'):
+                        self.assertContains(response, 'Example Organization')
+                    elif suffix == 'publications.csv':
+                        self.assertEqual(response.content.decode(), 'year,year_total,invented-b\n2020,1,1')
+            self.assertEqual(self.requested, [profile_key('org-example'), key] * 2)
+            self.responses[key] = self.response(updated)
+            clock.return_value = 159
+            response = self.client.get('/display/org-example/viz/publications.json')
+            assert isinstance(response, HttpResponse)
+            self.assertEqual(json.loads(response.content)['columns'], ['invented-b'])
+            response = self.client.get('/display/org-example/viz/research.json')
+            assert isinstance(response, HttpResponse)
+            self.assertEqual(json.loads(response.content)['links'], [])
+            self.assertEqual(len(self.requested), 4)
+            clock.return_value = 161
+            response = self.client.get('/display/org-example/viz/publications.json')
+            assert isinstance(response, HttpResponse)
+            self.assertEqual(json.loads(response.content)['columns'], ['invented-a', 'invented-b'])
+            response = self.client.get('/display/org-example/viz/research.json')
+            assert isinstance(response, HttpResponse)
+            self.assertEqual(len(json.loads(response.content)['links']), 2)
+            self.assertEqual(self.requested, [profile_key('org-example'), key] * 4)
+            email.assert_not_called()
+
     def test_team_chart_uses_solr_member_order(self) -> None:
         """Keeps the order in which the source returns team faculty records."""
         source = json.loads(self.responses[chart_member_key(['invented-a', 'invented-b', 'invented-c'])].body)
