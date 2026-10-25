@@ -9,7 +9,7 @@ from django.shortcuts import render
 from django.template.loader import get_template
 from django.utils.log import log_response
 
-from vivo_app.lib.page_errors import PageDataError
+from vivo_app.lib.page_errors import ChartRetryError, PageDataError
 from vivo_app.lib.reports import ReportError
 
 logger = logging.getLogger(__name__)
@@ -59,18 +59,21 @@ def valid_format_query(query: QueryDict, fmt: str) -> bool:
 
 def log_error_response(request: HttpRequest, response: HttpResponse, error: Exception | None) -> HttpResponse:
     """
-    Logs handled responses as warnings and unexpected exceptions once with their traceback for administrator email.
+    Logs handled failures as warnings, chart-delay repeats at debug level, and unexpected exceptions for email.
 
     Called by: data_unavailable(), middleware.SourceDataMiddleware, and views returning error responses
     """
+    level = 'warning' if error is None or isinstance(error, (PageDataError, ReportError)) else 'error'
+    if isinstance(error, ChartRetryError) and error.cached:
+        level = 'debug'
     log_response(
         '%s: %s',
         response.reason_phrase,
         request.path,
         response=response,
         request=request,
-        level='warning' if error is None or isinstance(error, (PageDataError, ReportError)) else 'error',
-        exception=error,
+        level=level,
+        exception=None if level == 'debug' else error,
     )
     return response
 
@@ -79,8 +82,11 @@ def data_unavailable(request: HttpRequest, error: PageDataError) -> HttpResponse
     """
     Reports unavailable data while keeping the handled exception in warning logs without administrator email.
 
-    Called by: views.search(), views.display_show(), views.search_facets()
+    Called by: views returning unavailable source data, including the organization chart views
     """
-    logger.warning('page_data_error, ``%s``', error, exc_info=error)
     response = HttpResponse(f'Page data unavailable: {error}'.encode(), status=503, content_type='text/plain; charset=utf-8')
+    if isinstance(error, ChartRetryError):
+        response['Retry-After'] = str(error.retry_after)
+    else:
+        logger.warning('page_data_error, ``%s``', error, exc_info=error)
     return log_error_response(request, response, error)

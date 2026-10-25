@@ -466,9 +466,9 @@ class OrganizationChartTests(TestCase):
             self.assertEqual(self.requested, [profile_key('org-example'), key] * 4)
             email.assert_not_called()
 
-    def test_malformed_member_data_remains_uncached_and_recovers_after_correction(self) -> None:
+    def test_malformed_member_data_is_retried_after_brief_delay(self) -> None:
         """
-        Checks damaged member content fails every chart format and corrected content is available on the next request.
+        Checks damaged member content fails every chart format and corrected content appears after the fixed retry delay.
         """
         key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
         original = self.responses[key]
@@ -490,6 +490,7 @@ class OrganizationChartTests(TestCase):
             ),
             patch('vivo_app.lib.source_org_charts.read_source', side_effect=self.read),
             patch('django.utils.log.AdminEmailHandler.emit') as email,
+            patch('time.time', return_value=100) as clock,
         ):
             for suffix in suffixes:
                 with self.subTest(suffix=suffix):
@@ -499,14 +500,22 @@ class OrganizationChartTests(TestCase):
                     self.assertIn('no-store', response['Cache-Control'])
                     self.assertNotIn(b'Incomplete', response.content)
             email.assert_not_called()
-            self.assertEqual(self.requested, [profile_key('org-example'), key] * len(suffixes))
+            self.assertEqual(self.requested, [profile_key('org-example'), key] * 2)
             self.responses[key] = original
+            clock.return_value = 109
+            for suffix in suffixes:
+                response = self.client.get('/display/org-example/viz/' + suffix)
+                assert isinstance(response, HttpResponse)
+                self.assertEqual(response.status_code, 503)
+                self.assertEqual(response['Retry-After'], '1')
+            self.assertEqual(self.requested, [profile_key('org-example'), key] * 2)
+            clock.return_value = 110
             for suffix in suffixes:
                 response = self.client.get('/display/org-example/viz/' + suffix)
                 assert isinstance(response, HttpResponse)
                 self.assertEqual(response.status_code, 200)
             email.assert_not_called()
-            self.assertEqual(self.requested, [profile_key('org-example'), key] * (len(suffixes) + 2))
+            self.assertEqual(self.requested, [profile_key('org-example'), key] * 4)
 
     def test_team_chart_uses_solr_member_order(self) -> None:
         """Keeps the order in which the source returns team faculty records."""
