@@ -12,7 +12,7 @@ from django.urls import reverse
 from vivo_app.lib.bot_detect import challenge_passed
 from vivo_app.lib.page_data import check_source_configuration
 from vivo_app.lib.page_errors import PageDataError
-from vivo_app.lib.page_rendering import data_unavailable
+from vivo_app.lib.page_rendering import data_unavailable, log_error_response
 
 
 class SourceDataMiddleware:
@@ -79,6 +79,7 @@ class SourceDataMiddleware:
             response = HttpResponse(
                 b'This endpoint is not connected to source data yet.', status=503, content_type='text/plain'
             )
+            response = log_error_response(request, response, None)
         return response
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
@@ -90,7 +91,7 @@ class SourceDataMiddleware:
         try:
             check_source_configuration()
         except PageDataError as exc:
-            response = data_unavailable(exc)
+            response = data_unavailable(request, exc)
         else:
             response = self.get_response(request)
         return response

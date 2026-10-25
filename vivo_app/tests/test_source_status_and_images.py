@@ -79,7 +79,7 @@ class SourceStatusTests(TestCase):
             with (
                 patch('vivo_app.views.status_data', side_effect=error),
                 patch('vivo_app.lib.source_status.uuid.uuid4', return_value=identifier),
-                self.assertLogs('vivo_app.views', level='ERROR') as logs,
+                self.assertLogs('vivo_app.views', level='WARNING' if isinstance(error, PageDataError) else 'ERROR') as logs,
             ):
                 response = self.client.get('/status')
             assert isinstance(response, HttpResponse)
@@ -87,7 +87,9 @@ class SourceStatusTests(TestCase):
             self.assertEqual(response['Content-Type'], 'application/json')
             self.assertEqual(json.loads(response.content), {'status': 'ERROR', 'message': message})
             self.assertIn(str(identifier), logs.output[0])
-            self.assertNotIn('Made-up', logs.output[0])
+            self.assertIn('Made-up', logs.output[0])
+            self.assertIsNotNone(logs.records[0].exc_info)
+            self.assertNotIn(b'Made-up', response.content)
 
     def test_failures_receive_distinct_tracking_ids(self) -> None:
         """
@@ -96,7 +98,7 @@ class SourceStatusTests(TestCase):
         identifiers: list[str] = []
         with (
             patch('vivo_app.views.status_data', side_effect=PageDataError('Made-up failure.')),
-            self.assertLogs('vivo_app.views', level='ERROR'),
+            self.assertLogs('vivo_app.views', level='WARNING'),
         ):
             for _ in range(2):
                 response = self.client.get('/status')

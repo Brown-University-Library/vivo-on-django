@@ -251,7 +251,7 @@ class PublicRequestHandlingTests(SimpleTestCase):
             )
             email.assert_not_called()
 
-    def test_real_source_failures_with_url_additions_keep_error_alerts(self) -> None:
+    def test_handled_source_failures_with_url_additions_send_no_email(self) -> None:
         """
         Checks request cleanup does not hide failures while retrieving media, charts, graphs, or original downloads.
         """
@@ -274,7 +274,7 @@ class PublicRequestHandlingTests(SimpleTestCase):
             for path in paths:
                 with self.subTest(path=path):
                     self.assertEqual(self.request_response(path).status_code, 503)
-            self.assertEqual(email.call_count, len(paths))
+            email.assert_not_called()
 
     def test_invalid_source_redirect_remains_a_source_error(self) -> None:
         """
@@ -286,4 +286,4 @@ class PublicRequestHandlingTests(SimpleTestCase):
             patch('django.utils.log.AdminEmailHandler.emit') as email,
         ):
             self.assertEqual(self.request_response('/docs/i/invented_cv.pdf?dt=1&utm_source=example').status_code, 503)
-            email.assert_called_once()
+            email.assert_not_called()

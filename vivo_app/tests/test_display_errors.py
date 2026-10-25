@@ -34,7 +34,7 @@ class DisplayErrorTests(SimpleTestCase):
                     override_settings(DEBUG=True),
                     patch('vivo_app.views.' + loader, side_effect=error_type('Example private error detail')),
                     patch('vivo_app.views.custom_organization_members', return_value=[]),
-                    self.assertLogs('vivo_app.views', level='ERROR') as logs,
+                    self.assertLogs('vivo_app.views', level='WARNING' if error_type is PageDataError else 'ERROR') as logs,
                 ):
                     response = self.client.get('/display/' + identifier)
                 assert isinstance(response, HttpResponse)

@@ -194,9 +194,9 @@ class RepresentationCacheTests(SimpleTestCase):
                 email.assert_not_called()
         self.assertEqual(self.download().content, self.body)
 
-    def test_other_failures_keep_email_including_after_a_timeout(self) -> None:
+    def test_handled_failures_send_no_email_including_after_a_timeout(self) -> None:
         """
-        Checks unrelated failures still alert administrators, even when they follow a timed-out first attempt.
+        Checks recognized failures log warnings without email, including after a timed-out first attempt.
         """
         failure = PageDataError('Example source failure')
         for failures in ([failure], [SourceTimeoutError('Example timeout'), failure]):
@@ -209,7 +209,7 @@ class RepresentationCacheTests(SimpleTestCase):
                 self.assertEqual(self.download().status_code, 503)
             self.assertEqual(source.call_count, len(failures))
             self.assertEqual(pause.call_count, len(failures) - 1)
-            email.assert_called_once()
+            email.assert_not_called()
             self.assertIsNone(cache.get(representation_cache_key('invented-a', 'rdf')))
 
     def test_missing_records_are_not_cached(self) -> None:
@@ -290,9 +290,9 @@ class RepresentationCacheTests(SimpleTestCase):
                 backend.set.assert_not_called()
         self.assertEqual(self.requested, [])
 
-    def test_cache_storage_and_lock_failures_keep_error_alerts(self) -> None:
+    def test_cache_storage_and_lock_failures_log_without_email(self) -> None:
         """
-        Checks storage failures and busy locks return an error with email instead of an unhandled exception.
+        Checks handled storage failures and busy locks return an error with warning logs and no email.
         """
         for target, failure in (
             ('cache.get', OSError('Example read failure')),
@@ -302,10 +302,10 @@ class RepresentationCacheTests(SimpleTestCase):
             with (
                 patch('vivo_app.lib.source_representations.' + target, side_effect=failure),
                 patch('django.utils.log.AdminEmailHandler.emit') as email,
-                self.assertLogs('vivo_app', level='ERROR'),
+                self.assertLogs('vivo_app', level='WARNING'),
             ):
                 self.assertEqual(self.download().status_code, 503)
-                email.assert_called_once()
+                email.assert_not_called()
 
     def test_processes_share_source_reads(self) -> None:
         """

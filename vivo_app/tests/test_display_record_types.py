@@ -183,7 +183,7 @@ class DisplayRecordTypeTests(SimpleTestCase):
         """
         self.add_record('invented-other', ['UNCATEGORIZED'])
         self.responses[profile_key('invented-requested')] = self.responses[profile_key('invented-other')]
-        with self.assertLogs('vivo_app.views', level='ERROR'):
+        with self.assertLogs('vivo_app.views', level='WARNING'):
             response = self.get_display('/display/invented-requested')
         self.assertContains(response, 'Oops! Something went wrong', status_code=500)
         self.assertEqual(self.requested, [profile_key('invented-requested')])
@@ -205,7 +205,7 @@ class DisplayRecordTypeTests(SimpleTestCase):
         """
         self.add_record('invented-other', ['UNCATEGORIZED'])
         del self.responses[vitro_key('invented-other', 'jsonld')]
-        with self.assertLogs('vivo_app.views', level='ERROR'):
+        with self.assertLogs('vivo_app.views', level='WARNING'):
             response = self.get_display('/display/invented-other')
         self.assertContains(response, 'Oops! Something went wrong', status_code=500)
         self.assertNotContains(response, 'Example source request failed', status_code=500)

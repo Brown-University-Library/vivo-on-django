@@ -7,8 +7,10 @@ import logging
 from django.http import HttpRequest, HttpResponse, JsonResponse, QueryDict
 from django.shortcuts import render
 from django.template.loader import get_template
+from django.utils.log import log_response
 
 from vivo_app.lib.page_errors import PageDataError
+from vivo_app.lib.reports import ReportError
 
 logger = logging.getLogger(__name__)
 
@@ -55,11 +57,30 @@ def valid_format_query(query: QueryDict, fmt: str) -> bool:
     return not pairs or (bool(fmt) and pairs == [('format', fmt)])
 
 
-def data_unavailable(error: PageDataError) -> HttpResponse:
+def log_error_response(request: HttpRequest, response: HttpResponse, error: Exception | None) -> HttpResponse:
     """
-    Reports unavailable data without exposing any record or filesystem values.
+    Logs handled responses as warnings and unexpected exceptions once with their traceback for administrator email.
+
+    Called by: data_unavailable(), middleware.SourceDataMiddleware, and views returning error responses
+    """
+    log_response(
+        '%s: %s',
+        response.reason_phrase,
+        request.path,
+        response=response,
+        request=request,
+        level='warning' if error is None or isinstance(error, (PageDataError, ReportError)) else 'error',
+        exception=error,
+    )
+    return response
+
+
+def data_unavailable(request: HttpRequest, error: PageDataError) -> HttpResponse:
+    """
+    Reports unavailable data while keeping the handled exception in warning logs without administrator email.
 
     Called by: views.search(), views.display_show(), views.search_facets()
     """
-    logger.error(f'page_data_error, ``{error}``')
-    return HttpResponse(f'Page data unavailable: {error}'.encode(), status=503, content_type='text/plain; charset=utf-8')
+    logger.warning('page_data_error, ``%s``', error, exc_info=error)
+    response = HttpResponse(f'Page data unavailable: {error}'.encode(), status=503, content_type='text/plain; charset=utf-8')
+    return log_error_response(request, response, error)

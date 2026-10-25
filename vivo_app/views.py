@@ -39,7 +39,7 @@ from .lib.page_data import (
     get_search_data,
 )
 from .lib.page_errors import InvalidDocumentError, MissingRecordError, PageDataError, SourceTimeoutError
-from .lib.page_rendering import data_unavailable, query_pairs, render_or_stub, valid_format_query
+from .lib.page_rendering import data_unavailable, log_error_response, query_pairs, render_or_stub, valid_format_query
 from .lib.profile_navigation import profile_search_return
 from .lib.report_cache import cached_report
 from .lib.reports import ReportError, load_reports, rails_integer, report_access
@@ -92,7 +92,7 @@ def source_image(request: HttpRequest, filename: str) -> HttpResponse:
         response['X-Content-Type-Options'] = 'nosniff'
         return response
     except PageDataError as exc:
-        return data_unavailable(exc)
+        return data_unavailable(request, exc)
 
 
 @never_cache
@@ -128,7 +128,7 @@ def source_document(request: HttpRequest, filename: str) -> HttpResponse | Strea
         logger.warning('cv_pdf_validation_failed: filename, ``%s``', filename)
         return render(request, 'documents/unavailable.html', status=404)
     except PageDataError as exc:
-        return data_unavailable(exc)
+        return data_unavailable(request, exc)
 
 
 # Standard application support endpoints
@@ -182,7 +182,7 @@ def home_index(request):
             home_data['hero_background_url'] = random.choice(backgrounds)
         return render(request, 'home/index.html', home_data)
     except PageDataError as exc:
-        return data_unavailable(exc)
+        return data_unavailable(request, exc)
 
 
 def home_about(request: HttpRequest) -> HttpResponse:
@@ -277,13 +277,14 @@ def home_status(request: HttpRequest) -> HttpResponse:
         return JsonResponse(status_data())
     except Exception as exc:
         error_data = status_error_data(exc)
-        logger.exception(
+        logger.log(
+            logging.WARNING if isinstance(exc, (PageDataError, ReportError)) else logging.ERROR,
             'status_check_failed: message, ``%s``; error_type, ``%s``',
             error_data['message'],
             type(exc).__name__,
-            exc_info=False,
+            exc_info=exc,
         )
-        return JsonResponse(error_data, status=500)
+        return log_error_response(request, JsonResponse(error_data, status=500), exc)
 
 
 def home_brown_classic(request, name=None):
@@ -382,9 +383,17 @@ def display_show(request: HttpRequest, id: str) -> HttpResponse:
         return response
     except (BadRequest, SuspiciousOperation):
         raise
-    except Exception:
-        logger.exception('Could not render display record; id, ``%s``', id)
-        return render(request, 'search/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500)
+    except Exception as exc:
+        logger.log(
+            logging.WARNING if isinstance(exc, (PageDataError, ReportError)) else logging.ERROR,
+            'Could not render display record; id, ``%s``',
+            id,
+            exc_info=exc,
+        )
+        response = render(
+            request, 'search/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500
+        )
+        return log_error_response(request, response, exc)
 
 
 def display_publications(request: HttpRequest, id: str) -> HttpResponse:
@@ -393,7 +402,8 @@ def display_publications(request: HttpRequest, id: str) -> HttpResponse:
 
     Called by: config.urls
     """
-    return HttpResponse(b'This endpoint is not connected to source data yet.', status=503, content_type='text/plain')
+    response = HttpResponse(b'This endpoint is not connected to source data yet.', status=503, content_type='text/plain')
+    return log_error_response(request, response, None)
 
 
 def organization_publications_tsv(request: HttpRequest, id: str) -> HttpResponse:
@@ -412,7 +422,7 @@ def organization_publications_tsv(request: HttpRequest, id: str) -> HttpResponse
             headers={'Content-Disposition': f'attachment; filename="{id}.tsv"; filename*=UTF-8\'\'{id}.tsv'},
         )
     except PageDataError as exc:
-        return data_unavailable(exc)
+        return data_unavailable(request, exc)
 
 
 # Visualizations
@@ -422,7 +432,8 @@ def visualization_home(request: HttpRequest, id: str) -> HttpResponse:
 
     Called by: config.urls
     """
-    return HttpResponse(b'This endpoint is not connected to source data yet.', status=503, content_type='text/plain')
+    response = HttpResponse(b'This endpoint is not connected to source data yet.', status=503, content_type='text/plain')
+    return log_error_response(request, response, None)
 
 
 @require_http_methods(['GET', 'HEAD'])
@@ -441,7 +452,7 @@ def visualization_graph_json(request: HttpRequest, id: str, kind: str) -> HttpRe
             profile_json_text(visualization_graph(kind, id)).encode('utf-8'), content_type='application/json; charset=utf-8'
         )
     except PageDataError as exc:
-        return data_unavailable(exc)
+        return data_unavailable(request, exc)
 
 
 @require_http_methods(['GET', 'HEAD'])
@@ -459,7 +470,7 @@ def visualization_graph_csv(request: HttpRequest, id: str, kind: str) -> HttpRes
         data = visualization_graph(kind, id)
         return HttpResponse(graph_csv(data, kind).encode(), content_type='text/plain; charset=utf-8')
     except PageDataError as exc:
-        return data_unavailable(exc)
+        return data_unavailable(request, exc)
 
 
 def visualization_coauthor(request, id):
@@ -491,7 +502,7 @@ def visualization_coauthor_treemap(request: HttpRequest, id: str) -> HttpRespons
     except MissingRecordError:
         return page_not_found(request)
     except PageDataError as exc:
-        return data_unavailable(exc)
+        return data_unavailable(request, exc)
 
 
 def visualization_collab(request, id):
@@ -529,7 +540,7 @@ def visualization_network(request: HttpRequest, identifier: str, kind: str) -> H
     except MissingRecordError:
         return page_not_found(request)
     except PageDataError as exc:
-        return data_unavailable(exc)
+        return data_unavailable(request, exc)
 
 
 @never_cache
@@ -558,7 +569,7 @@ def visualization_publications(request: HttpRequest, id: str, fmt: str = '') -> 
     except MissingRecordError:
         return page_not_found(request)
     except PageDataError as exc:
-        return data_unavailable(exc)
+        return data_unavailable(request, exc)
 
 
 @never_cache
@@ -585,7 +596,7 @@ def visualization_research(request: HttpRequest, id: str, fmt: str = '') -> Http
     except MissingRecordError:
         return page_not_found(request)
     except PageDataError as exc:
-        return data_unavailable(exc)
+        return data_unavailable(request, exc)
 
 
 # Search
@@ -610,18 +621,21 @@ def search(request: HttpRequest) -> HttpResponse:
             if isinstance(session, SessionBase):
                 session['search_url'] = request.get_full_path()
             return render(request, 'search/results.html', search_data)
-    except ReferenceSearchError:
-        logger.error('reference_search_filter_error')
+    except ReferenceSearchError as exc:
         if request.GET.get('format') == 'json':
-            return JsonResponse(
+            response = JsonResponse(
                 {'status': 500, 'error': 'Internal Server Error'},
                 status=500,
                 content_type='application/json; charset=UTF-8',
                 json_dumps_params={'separators': (',', ':')},
             )
-        return render(request, 'search/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500)
+        else:
+            response = render(
+                request, 'search/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500
+            )
+        return log_error_response(request, response, exc)
     except PageDataError as exc:
-        return data_unavailable(exc)
+        return data_unavailable(request, exc)
 
 
 def advanced_search(request: HttpRequest) -> HttpResponse:
@@ -640,7 +654,7 @@ def advanced_search(request: HttpRequest) -> HttpResponse:
         try:
             query = advanced_search_query(title, name, department, url_encoded=True)
         except PageDataError as exc:
-            return data_unavailable(exc)
+            return data_unavailable(request, exc)
         if query:
             return redirect(reverse('search').rstrip('/') + '?q=' + query)
     return render(request, 'search/advanced.html', {'name': name, 'title': title})
@@ -657,11 +671,11 @@ def search_facets(request: HttpRequest) -> HttpResponse:
             return JsonResponse(None, safe=False)
         values = facet_values_data(query_pairs(request.GET))
         return HttpResponse(profile_json_text(values).encode('utf-8'), content_type='application/json; charset=utf-8')
-    except ReferenceSearchError:
-        logger.error('reference_search_filter_error')
-        return JsonResponse(None, safe=False, status=500, content_type='application/json; charset=utf-8')
+    except ReferenceSearchError as exc:
+        response = JsonResponse(None, safe=False, status=500, content_type='application/json; charset=utf-8')
+        return log_error_response(request, response, exc)
     except PageDataError as exc:
-        return data_unavailable(exc)
+        return data_unavailable(request, exc)
 
 
 def original_document(request: HttpRequest, filename: str) -> HttpResponse | StreamingHttpResponse:
@@ -688,10 +702,10 @@ def subject_lib_list(request: HttpRequest) -> HttpResponse:
         else:
             response = render(request, 'reports/subject_lib_list.html', {'reports': load_reports()})
     except ReportError as exc:
-        logger.error('report_error, ``%s``', exc)
         response = render(
             request, 'reports/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500
         )
+        response = log_error_response(request, response, exc)
     return response
 
 
@@ -720,10 +734,10 @@ def subject_lib(request: HttpRequest, list_id: str, fmt: str | None = None) -> H
                 response['Content-Disposition'] = f'attachment; filename="{download.filename}"'
                 response['X-Content-Type-Options'] = 'nosniff'
     except ReportError as exc:
-        logger.error('report_error, ``%s``', exc)
         response = render(
             request, 'reports/error.html', {'hero_background_relpath': get_random_background_relpath()}, status=500
         )
+        response = log_error_response(request, response, exc)
     return response
 
 
@@ -739,11 +753,11 @@ def bot_detect_challenge(request: HttpRequest) -> HttpResponse:
     if not settings.TURNSTILE_ENABLED and not configured:
         return HttpResponseNotFound()
     if not configured:
-        return data_unavailable(PageDataError('The browser challenge is not configured.'))
+        return data_unavailable(request, PageDataError('The browser challenge is not configured.'))
     if request.method == 'POST':
         session = getattr(request, 'session', None)
         if not isinstance(session, SessionBase):
-            return data_unavailable(PageDataError('The browser challenge cannot save a session.'))
+            return data_unavailable(request, PageDataError('The browser challenge cannot save a session.'))
         try:
             payload: object = json.loads(request.body) if len(request.body) <= 4096 else None
         except (ValueError, UnicodeError):
@@ -772,7 +786,7 @@ def people(request: HttpRequest) -> HttpResponse:
     """
     search_url = request.build_absolute_uri(reverse('search').rstrip('/'))
     if search_url is None:
-        return data_unavailable(PageDataError('The search destination is unavailable.'))
+        return data_unavailable(request, PageDataError('The search destination is unavailable.'))
     destination = search_url + '?fq=record_type|PEOPLE'
     return HttpResponse(status=302, headers={'Location': destination})
 
@@ -785,7 +799,7 @@ def organizations(request: HttpRequest) -> HttpResponse:
     """
     search_url = request.build_absolute_uri(reverse('search').rstrip('/'))
     if search_url is None:
-        return data_unavailable(PageDataError('The search destination is unavailable.'))
+        return data_unavailable(request, PageDataError('The search destination is unavailable.'))
     destination = search_url + '?fq=record_type|ORGANIZATION'
     return HttpResponse(status=302, headers={'Location': destination})
 
@@ -802,7 +816,7 @@ def old_image(request: HttpRequest, id: str, file_name: str) -> HttpResponse:
     try:
         location = source_origin('images') + path
     except PageDataError as exc:
-        return data_unavailable(exc)
+        return data_unavailable(request, exc)
     return HttpResponse(status=301, headers={'Location': location})
 
 
@@ -870,7 +884,7 @@ def individual_export(request: HttpRequest, id: str, fmt: str, id2: str | None =
         result['Retry-After'] = '60'
         request.META['vivo.source_timeout'] = True
     except PageDataError as exc:
-        result = data_unavailable(exc)
+        result = data_unavailable(request, exc)
     return result
 
 

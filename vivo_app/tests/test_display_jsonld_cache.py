@@ -163,7 +163,7 @@ class DisplayJsonldCacheTests(SimpleTestCase):
             self.get_display()
         del self.responses[vitro_key('invented-other', 'jsonld')]
         with patch('time.time', return_value=161):
-            with self.assertLogs('vivo_app.views', level='ERROR'):
+            with self.assertLogs('vivo_app.views', level='WARNING'):
                 failed = self.get_display()
             self.assertContains(failed, 'Oops! Something went wrong', status_code=500)
             self.assertIsNone(cache.get(jsonld_cache_key('invented-other')))
@@ -224,20 +224,20 @@ class DisplayJsonldCacheTests(SimpleTestCase):
             email.assert_not_called()
         self.assertEqual(self.get_display().content, self.body)
 
-    def test_other_vivo_failures_still_send_email_without_retry(self) -> None:
+    def test_other_vivo_failures_warn_without_email_or_retry(self) -> None:
         """
-        Checks invalid source responses keep their existing error alert and never retry as timeouts.
+        Checks handled source failures log warnings without email and never retry as timeouts.
         """
         with (
             patch('vivo_app.lib.page_data.read_source', side_effect=PageDataError('Example invalid response')) as source,
             patch('vivo_app.lib.source_representations.time.sleep') as pause,
             patch('django.utils.log.AdminEmailHandler.emit') as email,
-            self.assertLogs('vivo_app.views', level='ERROR'),
+            self.assertLogs('vivo_app.views', level='WARNING'),
         ):
             self.assertEqual(self.get_display().status_code, 500)
         source.assert_called_once()
         pause.assert_not_called()
-        email.assert_called_once()
+        email.assert_not_called()
 
     def test_missing_records_and_upstream_404_are_not_cached(self) -> None:
         """
@@ -427,7 +427,7 @@ class DisplayJsonldCacheTests(SimpleTestCase):
             with (
                 self.subTest(path=path),
                 patch('vivo_app.views.' + loader, side_effect=PageDataError('Example format failure.')) as source,
-                self.assertLogs('vivo_app.views', level='ERROR'),
+                self.assertLogs('vivo_app.views', level='WARNING'),
             ):
                 self.assertEqual(self.get_display(path).status_code, 500)
                 source.assert_called_once()
@@ -446,7 +446,7 @@ class DisplayJsonldCacheTests(SimpleTestCase):
                 patch(
                     'vivo_app.lib.display_jsonld_cache.cache.' + operation, side_effect=OSError('Example storage failure')
                 ),
-                self.assertLogs('vivo_app.views', level='ERROR'),
+                self.assertLogs('vivo_app.views', level='WARNING'),
             ):
                 self.assertEqual(self.get_display().status_code, 500)
             self.assertIsNone(cache.get(jsonld_cache_key('invented-other')))

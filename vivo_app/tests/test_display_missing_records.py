@@ -99,7 +99,7 @@ class DisplayMissingRecordTests(SimpleTestCase):
                 with self.subTest(total=total, documents=len(docs), suffix=suffix):
                     self.responses[profile_key('invented-a')] = solr_response(docs, total)
                     self.responses[profile_export_key('invented-a')] = solr_response(docs, total)
-                    with self.assertLogs('vivo_app.views', level='ERROR'):
+                    with self.assertLogs('vivo_app.views', level='WARNING'):
                         response = self.get_display('invented-a', suffix)
                     self.assertContains(response, 'Oops! Something went wrong', status_code=500)
 
@@ -116,5 +116,5 @@ class DisplayMissingRecordTests(SimpleTestCase):
                                 self.responses.pop(key, None)
                             else:
                                 self.responses[key] = response
-                        with self.assertLogs('vivo_app.views', level='ERROR'):
+                        with self.assertLogs('vivo_app.views', level='WARNING'):
                             self.assertEqual(self.get_display(identifier, suffix).status_code, 500)

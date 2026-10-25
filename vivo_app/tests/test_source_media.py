@@ -127,9 +127,9 @@ class SourceMediaTests(SimpleTestCase):
         self.assertEqual(response.content, self.pdf_response.body)
         reader.assert_called_once_with(self.document)
 
-    def test_document_source_failure_remains_503_with_error_email(self) -> None:
+    def test_document_source_failure_remains_503_without_error_email(self) -> None:
         """
-        Checks genuine source failures retain their error response and administrator notification.
+        Checks handled source failures retain their error response without administrator email.
         """
         with (
             patch('vivo_app.views.read_source', side_effect=PageDataError('Example connection failure.')),
@@ -139,7 +139,7 @@ class SourceMediaTests(SimpleTestCase):
         self.assertEqual(response.status_code, 503)
         self.assertNotIn(b'This CV is temporarily unavailable.', response.content)
         self.assertIsNone(cache.get(media_cache_key(self.document)))
-        email.assert_called_once()
+        email.assert_not_called()
 
     def test_fixed_expiry_shows_replaced_files_without_extension_by_hits(self) -> None:
         """

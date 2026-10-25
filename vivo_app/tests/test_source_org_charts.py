@@ -466,6 +466,48 @@ class OrganizationChartTests(TestCase):
             self.assertEqual(self.requested, [profile_key('org-example'), key] * 4)
             email.assert_not_called()
 
+    def test_malformed_member_data_remains_uncached_and_recovers_after_correction(self) -> None:
+        """
+        Checks damaged member content fails every chart format and corrected content is available on the next request.
+        """
+        key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
+        original = self.responses[key]
+        docs = json.loads(original.body)['response']['docs']
+        docs[0].update(record_type='UNCATEGORIZED', json_txt='{"name": "Incomplete')
+        self.responses[key] = self.response(docs)
+        suffixes = ('publications', 'publications.json', 'publications.csv', 'research', 'research.json')
+        with (
+            TemporaryDirectory() as directory,
+            override_settings(
+                CHART_CACHE_TIMEOUT_SECONDS=60,
+                REPORT_CACHE_LOCK_DIR=directory + '/locks',
+                CACHES={
+                    'default': {
+                        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+                        'LOCATION': directory + '/cache',
+                    }
+                },
+            ),
+            patch('vivo_app.lib.source_org_charts.read_source', side_effect=self.read),
+            patch('django.utils.log.AdminEmailHandler.emit') as email,
+        ):
+            for suffix in suffixes:
+                with self.subTest(suffix=suffix):
+                    response = self.client.get('/display/org-example/viz/' + suffix)
+                    assert isinstance(response, HttpResponse)
+                    self.assertEqual(response.status_code, 503)
+                    self.assertIn('no-store', response['Cache-Control'])
+                    self.assertNotIn(b'Incomplete', response.content)
+            email.assert_not_called()
+            self.assertEqual(self.requested, [profile_key('org-example'), key] * len(suffixes))
+            self.responses[key] = original
+            for suffix in suffixes:
+                response = self.client.get('/display/org-example/viz/' + suffix)
+                assert isinstance(response, HttpResponse)
+                self.assertEqual(response.status_code, 200)
+            email.assert_not_called()
+            self.assertEqual(self.requested, [profile_key('org-example'), key] * (len(suffixes) + 2))
+
     def test_team_chart_uses_solr_member_order(self) -> None:
         """Keeps the order in which the source returns team faculty records."""
         source = json.loads(self.responses[chart_member_key(['invented-a', 'invented-b', 'invented-c'])].body)

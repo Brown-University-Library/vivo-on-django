@@ -30,7 +30,7 @@ For a temporary missing helper package, use `uv run --no-project --with PACKAGE 
 
 ## Check local error email
 
-The `/error_check/` view raises an intentional exception when `DEBUG=True`. Django shows its error page and sends one administrator email through the `django.request` logger. With `DEBUG=False`, this endpoint returns 404 and sends no email. Other request errors can send administrator emails in either mode. Handled display timeouts retain HTTP 503 and log warnings, but their administrator email is filtered out; other failures retain their alerts.
+The `/error_check/` view raises an intentional exception when `DEBUG=True`. Django shows its error page and sends one administrator email through the `django.request` logger. With `DEBUG=False`, this endpoint returns 404 and sends no email. Unexpected exceptions from code failures send one administrator email in either mode, including the original traceback and underlying cause in text and HTML. The application preserves this traceback when it catches an unexpected exception to show an error page. Recognized source, record-validation, report, configuration, and cache failures log warnings without email, even when the response is 500 or 503. Handled display and VIVO download timeouts retain their existing warning-only reporting. Production error pages do not expose tracebacks.
 
 1. Set these values in the private `../.env` for a local SMTP listener:
 
@@ -53,6 +53,8 @@ The `/error_check/` view raises an intentional exception when `DEBUG=True`. Djan
 
 3. Restart `runserver` to load the environment, then open <http://127.0.0.1:8000/error_check/> once. Expect HTTP 500, the intentional exception page, and one message in the SMTP terminal containing the traceback. A 500 response alone does not confirm email delivery.
 
+Run `uv run ./run_tests.py vivo_app.tests.test_request_logging -v` to check actual email contents using Django's in-memory email backend. These tests keep messages inside the test process and check traceback text, underlying causes, HTML attachments, single-email delivery for unexpected code failures, and no email for recognized failures or handled timeouts.
+
 If there is no message, check the settings in the running process: `ADMINS` must contain a recipient, and the SMTP host, port, and TLS settings must match the listener. Django's error-email handler silently ignores delivery failures. This app reads `DJANGO_DEBUG`; `DEBUG_JSON` has no effect. Exported shell values override `.env`, and changing `.env` requires a process restart.
 
 ## Check affected pages and responses
@@ -67,7 +69,7 @@ For report changes, run `uv run ./run_tests.py vivo_app -v`. Report tests cover 
 
 Public display downloads also have focused tests in `vivo_app.tests.test_display_exports` and `vivo_app.tests.test_display_cache`. They check suffix/query forms, slash aliases, attachment headers and contents, member ordering across twenty-record batches, missing and malformed records, empty organizations, shared CSV/XML generation, fixed expiry, and separate public/report cache entries and locks. Public downloads must work without report definitions or staff attributes; protected reports must continue rejecting unauthorized requests.
 
-VIVO download checks in `vivo_app.tests.test_representation_cache` cover exact RDF/XML, Turtle, and JSON-LD bytes, HEAD and URL aliases, fixed expiry, refreshed source contents, and source reads shared across workers. They also check one timeout retry, persistent timeouts without administrator email, other failures retaining email, uncached missing records, storage and lock failures, and recovery after expiry. Run them with `uv run ./run_tests.py vivo_app.tests.test_representation_cache -v`. All source responses are made up; these tests do not contact live services.
+VIVO download checks in `vivo_app.tests.test_representation_cache` cover exact RDF/XML, Turtle, and JSON-LD bytes, HEAD and URL aliases, fixed expiry, refreshed source contents, and source reads shared across workers. They also check one timeout retry, persistent timeouts without administrator email, other handled failures without email, uncached missing records, storage and lock failures, and recovery after expiry. Run them with `uv run ./run_tests.py vivo_app.tests.test_representation_cache -v`. All source responses are made up; these tests do not contact live services.
 
 Legacy display JSON-LD caching has focused tests in `vivo_app.tests.test_display_jsonld_cache`. They use temporary file storage and made-up source responses to check that hits skip both Solr and VIVO, the lifetime starts after fetching and does not extend on hits, expiry triggers new reads, failures and 404s remain uncached, and separate workers share one successful fetch. They also check distinct keys for sources, IDs, versions, exports, and reports, a separate 60-second lifetime, one retry after a VIVO timeout, and the temporary-unavailable response without timeout email. `vivo_app.tests.test_display_missing_records` checks HTML and explicit JSON missing-record responses, inconsistent results, and immediate recovery when a record becomes available. Run them with `uv run ./run_tests.py vivo_app.tests.test_display_jsonld_cache -v`. These checks provide examples for testing additional URL caches without contacting real services.
 
