@@ -18,7 +18,7 @@ from vivo_app.lib.source_pages import CUSTOM_ORGANIZATION_IDS
 from vivo_app.lib.source_requests import profile_key, source_origin
 from vivo_app.lib.source_teams import source_definitions
 
-CHART_VERSION = 2
+CHART_VERSION = 3
 
 
 @dataclass(frozen=True)

@@ -76,7 +76,9 @@ def organization_chart_members(
             record_type = first_text(doc.get('record_type'))
             if member_id not in batch or record_type not in {'PEOPLE', 'UNCATEGORIZED'} or member_id in found:
                 raise PageDataError('Solr returned an unrelated chart member.')
-            found[member_id] = (record_data(doc), first_text(doc.get('display_name_s')))
+            ## An expected uncategorized member may have no saved record; present content still requires validation.
+            person = {} if record_type == 'UNCATEGORIZED' and 'json_txt' not in doc else record_data(doc)
+            found[member_id] = (person, first_text(doc.get('display_name_s')))
     result = [(member_id, person, display) for member_id, (person, display) in found.items()]
     return name, result
 

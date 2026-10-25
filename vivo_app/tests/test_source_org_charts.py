@@ -328,6 +328,53 @@ class OrganizationChartTests(TestCase):
         assert isinstance(links, list)
         self.assertEqual(len(links), 2)
 
+    def test_uncategorized_member_without_record_data_keeps_other_members_data(self) -> None:
+        """
+        Checks an absent record field keeps a listed uncategorized member without inventing chart contributions.
+        """
+        key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
+        docs = json.loads(self.responses[key].body)['response']['docs']
+        del docs[0]['json_txt']
+        docs[0]['display_name_s'] = ['Invented A']
+        for record_type in ('UNCATEGORIZED', ['UNCATEGORIZED']):
+            with self.subTest(record_type=record_type):
+                docs[0]['record_type'] = record_type
+                self.responses[key] = self.response(docs)
+                _, publications = publication_history_data('org-example', self.read)
+                self.assertEqual(publications['columns'], ['invented-b'])
+                self.assertEqual(publication_history_csv(publications), 'year,year_total,invented-b\n2020,1,1')
+                _, research = research_areas_data('org-example', self.read)
+                groups = research['nodes']
+                assert isinstance(groups, list)
+                self.assertEqual([node['nodeName'] for node in groups[0]], ['invented-a', 'invented-b', 'invented-c'])
+                self.assertEqual(groups[0][0]['display'], 'Invented A')
+                self.assertEqual(groups[0][0]['areas'], '')
+                self.assertEqual(groups[0][0]['nodeValue'], 0.9)
+                self.assertEqual(research['links'], [])
+
+    def test_absent_record_data_still_requires_an_expected_uncategorized_member(self) -> None:
+        """
+        Checks missing record data does not excuse ordinary people, unsupported types, unrelated IDs, or duplicate members.
+        """
+        key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
+        original = json.loads(self.responses[key].body)['response']['docs']
+        member = {key: value for key, value in original[1].items() if key != 'json_txt'}
+        for builder in (publication_history_data, research_areas_data):
+            for changes in (
+                {'record_type': 'PEOPLE'},
+                {'record_type': 'ORGANIZATION'},
+                {'record_type': 'UNCATEGORIZED', 'id': 'http://vivo.brown.edu/individual/invented-other'},
+                {'record_type': 'UNCATEGORIZED', 'id': original[0]['id']},
+            ):
+                with self.subTest(builder=builder.__name__, changes=changes):
+                    self.responses[key] = self.response([original[0], {**member, **changes}, original[2]])
+                    with self.assertRaises(PageDataError):
+                        builder('org-example', self.read)
+            duplicate = {**member, 'record_type': 'UNCATEGORIZED'}
+            self.responses[key] = self.response([duplicate, duplicate])
+            with self.subTest(builder=builder.__name__, duplicate=True), self.assertRaises(PageDataError):
+                builder('org-example', self.read)
+
     def test_charts_reject_unexpected_duplicate_or_malformed_members(self) -> None:
         """
         Checks accepting uncategorized members preserves ID, type, duplicate, and record-content checks in both charts.
@@ -344,6 +391,10 @@ class OrganizationChartTests(TestCase):
                     {'json_txt': 'invalid'},
                     {'json_txt': '[]'},
                     {'json_txt': None},
+                    {'json_txt': ''},
+                    {'json_txt': []},
+                    {'json_txt': ['']},
+                    {'json_txt': 'null'},
                 ):
                     with self.subTest(builder=builder.__name__, record_type=record_type, changes=changes):
                         doc = {**original[1], 'record_type': record_type, **changes}
@@ -363,7 +414,11 @@ class OrganizationChartTests(TestCase):
         key = chart_member_key(['invented-a', 'invented-b', 'invented-c'])
         docs = json.loads(self.responses[key].body)['response']['docs']
         updated = list(docs)
-        docs[0] = {**docs[0], 'record_type': 'UNCATEGORIZED', 'json_txt': '{"name": "Invented A"}'}
+        docs[0] = {
+            'id': docs[0]['id'],
+            'record_type': ['UNCATEGORIZED'],
+            'display_name_s': 'Invented A',
+        }
         self.responses[key] = self.response(docs)
         with (
             TemporaryDirectory() as directory,

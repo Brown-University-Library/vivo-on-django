@@ -172,7 +172,7 @@ class OrganizationChartCacheTests(SimpleTestCase):
         for change in ({'SOLR_URL': 'https://changed.invalid/solr'}, {'CHART_CACHE_TIMEOUT_SECONDS': 30}):
             with override_settings(**change):
                 self.assertNotEqual(original, chart_cache_key('org-example', 'research'))
-        with patch('vivo_app.lib.organization_chart_cache.CHART_VERSION', 3):
+        with patch('vivo_app.lib.organization_chart_cache.CHART_VERSION', 4):
             self.assertNotEqual(original, chart_cache_key('org-example', 'research'))
         with patch('vivo_app.lib.organization_chart_cache.datetime.datetime') as clock:
             clock.now.return_value.astimezone.return_value.year = 2099
