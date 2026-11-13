@@ -29,7 +29,7 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 
 - Purpose: run and maintain the Researchers@Brown Django webapp, preserving the reviewed public behavior described in `docs/public_behavior.md`.
 - Primary language: Python; framework: Django 5.2.
-- Target runtime: Python 3.12.14, as required by `pyproject.toml`.
+- Target runtime: Python >=3.12.16,<3.13, as required by `pyproject.toml`.
 - Dependency / execution tool: `uv`
 - The only dependency groups in `pyproject.toml` are `local`, `staging`, and `prod`. `local` is for laptop-only tools; `staging` is for the development server; `prod` is for the production server. Do not add a `dev` group: `uv sync` and `uv run` install it by default, including on the development server.
 - The repository root contains this file, `.git/`, `manage.py`, and `pyproject.toml`. The enclosing workspace contains separate repositories and local support files.
