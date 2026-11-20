@@ -42,13 +42,13 @@ If other instruction files exist (Copilot, IDE rules, contributor docs) and conf
 - Use `uv` to run Python code; do not invoke `python` or `python3` directly.
 - Install the locked dependencies with `uv sync --locked`; use the repository's `.venv` interpreter.
 - Prepare `../.env` and the local directories as described in `README.md` before running Django commands or tests. Use `example.env` for source configuration; tests supply made-up responses.
-- Optional tools and drivers require an explicit group: `uv sync --locked --group local` for browser/image comparisons, or `uv sync --locked --group staging` for local homepage books. A plain sync installs only the base dependencies and removes packages from unselected groups.
+- Use the `local` group for Playwright and the `staging` group for local homepage books. A plain sync installs only the base dependencies and removes packages from unselected groups.
 - Run a script via: `uv run ./path_to_script.py --help`
 - Run tests via: `uv run ./run_tests.py`. This discovers all tests.
 - Run the local Django app tests via: `uv run ./run_tests.py vivo_app -v`.
 - Pass a dotted module, class, or method name for a smaller selection, for example: `uv run ./run_tests.py vivo_app.tests.test_home -v`. The runner's docstring includes examples; `-v` or `--verbose` shows each test's name, docstring, and result.
 - `run_tests.py` initializes Django and uses its configured test runner, including test database setup and cleanup. It uses `config.settings` unless `DJANGO_SETTINGS_MODULE` is already set, runs without interactive prompts, and exits with a nonzero status when tests fail.
-- Keep the full test suite runnable with the application's base dependencies. Playwright belongs in `local`; Pillow is in `local` and `staging` for image comparison checks. The current suite skips its Pillow image check when Pillow is absent; it does not launch Playwright browsers.
+- Keep the full test suite runnable with the application's base dependencies. The screenshot comparison test skips when Pillow is absent. To include it, run `uv run --locked --with pillow ./run_tests.py`. For browser comparisons, follow `docs/browser_comparison.md`.
 - Run Django management commands via: `uv run ./manage.py THE-COMMAND`.
 - For a standalone helper needing a missing package, use `uv run --no-project --with PACKAGE python SCRIPT ARGS`. Do not add temporary helper dependencies to `pyproject.toml` or install them globally.
 
