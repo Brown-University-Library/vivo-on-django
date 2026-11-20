@@ -14,13 +14,14 @@ dependencies = [
 
 [dependency-groups]
 local = [
-    "pillow==11.3.0",
     "playwright>=1.63,<2",
 ]
 staging = [ 
     "pymysql~=1.2.0",  # reads the separate homepage book database
-    "pillow==11.3.0",  # includes a wheel for older Linux systems used during staging checks
     ]
 prod = [ 
     "pymysql~=1.2.0",
     ]
+
+[tool.uv]
+constraint-dependencies = ["certifi>=2026.10.23"]

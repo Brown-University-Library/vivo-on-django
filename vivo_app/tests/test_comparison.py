@@ -60,7 +60,7 @@ class ComparisonTests(SimpleTestCase):
         changed = {**expected, 'images': [{'alt': 'Invented image', 'loaded': False}]}
         self.assertIn('current: missing image', compare_snapshots(expected, changed))
 
-    @skipUnless(find_spec('PIL') is not None, 'Pillow is available in the local and staging dependency groups.')
+    @skipUnless(find_spec('PIL') is not None, 'Run with uv run --with pillow to include the screenshot comparison test.')
     def test_pixel_changes_and_size_changes(self) -> None:
         """
         Checks a one-pixel layout change and different image dimensions cannot pass.

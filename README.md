@@ -72,7 +72,7 @@ uv run ./manage.py runserver 127.0.0.1:8000
 
 Open <http://127.0.0.1:8000/>. Stop the server with Ctrl+C. Keep `DJANGO_DEBUG=true` for ordinary local static-file serving. Local logs and cached responses use `../logs/django.log` and `../cache_dir`. After changing `.env`, stop and restart the server so it reads the new values.
 
-The webapp contacts the sources described in [source configuration](docs/source_journey.md) while serving requests. Homepage books also need PyMySQL; install it locally with `uv sync --locked --group staging`, then start the server with `uv run --locked --group staging ./manage.py runserver 127.0.0.1:8000`. The staging group also includes Pillow. A plain `uv sync --locked` removes packages from unselected groups; include the groups you still need when syncing.
+The webapp contacts the sources described in [source configuration](docs/source_journey.md) while serving requests. Homepage books also need PyMySQL. Install it locally with `uv sync --locked --group staging`, then start the server with `uv run --locked --group staging ./manage.py runserver 127.0.0.1:8000`. A plain `uv sync --locked` removes packages from unselected groups. Include the groups you still need when syncing.
 
 Missing required source configuration or unavailable source data produces the existing error response. Tests supply made-up source responses and do not require research-service connectivity.
 
@@ -94,7 +94,7 @@ uv run ./run_tests.py vivo_app -v
 
 Complete the local configuration steps first; the runner still needs `ALLOWED_HOSTS_JSON` and `STATIC_ROOT`. It selects made-up source settings and `/static/` before loading the private environment. Individual tests supply source responses, and unexpected network connections fail the test. Django creates and removes its test database. These tests do not verify connectivity to real services.
 
-The suite runs with the base dependencies. Its Pillow image check skips when Pillow is absent; include it with `uv run --locked --group local ./run_tests.py`. The suite does not launch Playwright browsers. See [development checks](docs/development_checks.md) for focused test selection and Python checks.
+The suite runs with the base dependencies and skips the screenshot comparison test when Pillow is absent. To include that test, run `uv run --locked --with pillow ./run_tests.py`. This supplies Pillow for that run. See [development checks](docs/development_checks.md) for focused test selection and Python checks.
 
 ## Primary dependencies
 
@@ -107,7 +107,7 @@ This list follows declarations in [pyproject.toml](pyproject.toml), imports/conf
 | `httpx2` | Source and Turnstile HTTP requests in [source_requests.py](vivo_app/lib/source_requests.py) and [bot_detect.py](vivo_app/lib/bot_detect.py). |
 | `django-browser-reload` | Local reload support configured in `config/settings.py` and `config/urls.py` when both `DJANGO_DEBUG` and `DJANGO_BROWSER_RELOAD` are enabled. Declared in the base dependencies. |
 | `pymysql` | Separate homepage book database in [source_books.py](vivo_app/lib/source_books.py); supplied by staging and prod. Django's own database uses SQLite. |
-| `playwright`, `pillow` | Browser and image comparisons in [compare_sites.py](tools/compare_sites.py); Playwright is in local, Pillow in local and staging. Pillow also supports the image check in `vivo_app/tests/test_comparison.py`. |
+| `playwright` | The local group provides Playwright to open pages and capture screenshots. See [browser comparison](docs/browser_comparison.md). |
 
 `trio` is also directly declared, but no direct application import was found. Review asynchronous backend use and package requirements before removing it; see [the review note](docs/code_retirement_review.md).
 

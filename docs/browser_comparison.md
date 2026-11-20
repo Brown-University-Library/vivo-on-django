@@ -15,7 +15,7 @@ Install the optional local tools and browser:
 
 ```bash
 uv sync --locked --group local
-uv run playwright install chromium
+uv run --locked --group local playwright install chromium
 ```
 
 These commands may download packages and Chromium. Alternatively pass --browser-executable with an existing compatible browser. Use the same browser/version for both sides.
@@ -42,13 +42,13 @@ Choose exact paths and selectors for the pages being checked. Real addresses and
 
 ## Run a comparison
 
-From the checkout:
+Run these commands from the checkout. The local group supplies Playwright. The commands that compare pixels use `--with pillow` to add Pillow for that run.
 
 ```bash
-uv run -m tools.compare_sites self-test --output ../comparison-detector-check
-uv run -m tools.compare_sites capture-reference --manifest ../comparison-cases.json --output ../comparison-reference
-uv run -m tools.compare_sites compare-local --manifest ../comparison-cases.json --baseline ../comparison-reference --output ../comparison-local
-uv run -m tools.compare_sites compare-target --manifest ../comparison-cases.json --baseline ../comparison-reference --output ../comparison-target
+uv run --locked --group local --with pillow -m tools.compare_sites self-test --output ../comparison-detector-check
+uv run --locked --group local -m tools.compare_sites capture-reference --manifest ../comparison-cases.json --output ../comparison-reference
+uv run --locked --group local --with pillow -m tools.compare_sites compare-local --manifest ../comparison-cases.json --baseline ../comparison-reference --output ../comparison-local
+uv run --locked --group local --with pillow -m tools.compare_sites compare-target --manifest ../comparison-cases.json --baseline ../comparison-reference --output ../comparison-target
 ```
 
 Self-test starts a small local test website and checks deliberate changes. Capture-reference visits selected reference pages, limits resource requests, pauses between pages, and writes a baseline. It performs form actions only when the manifest specifies them.
